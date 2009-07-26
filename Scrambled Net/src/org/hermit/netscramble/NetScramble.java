@@ -35,8 +35,8 @@ package org.hermit.netscramble;
 
 import java.util.Formatter;
 
-import org.hermit.android.AppUtils;
-import org.hermit.android.InfoBox;
+import org.hermit.android.core.AppUtils;
+import org.hermit.android.notice.InfoBox;
 import org.hermit.netscramble.BoardView.Skill;
 
 import android.app.Activity;
@@ -179,16 +179,10 @@ public class NetScramble
         setContentView(mainView);
 
         // Create the dialog we use for help and about.
-        AppUtils autils = new AppUtils(this);
+        AppUtils autils = AppUtils.getInstance(this);
         messageDialog = new InfoBox(this, R.string.button_close);
-		messageDialog.setLinkButtons(new int[] {
-				R.string.button_homepage,
-				R.string.button_license
-			},
-			new int[] {
-    			R.string.url_homepage,
-    			R.string.url_license
-		});
+        messageDialog.setLinkButton(1, R.string.button_homepage, R.string.url_homepage);
+        messageDialog.setLinkButton(2, R.string.button_license, R.string.url_license);
         String version = autils.getVersionString(AppUtils.Detail.SIMPLE);
 		messageDialog.setTitle(version);
 

@@ -184,7 +184,9 @@ class Cell
 		}
 
 		// Create and return a pixmap from the greyed-out pixel data.
-		return Bitmap.createBitmap(pixels, w, h, pixmap.getConfig());
+		// FIXME: get the real config.
+		Bitmap.Config config = Bitmap.Config.ARGB_8888;
+		return Bitmap.createBitmap(pixels, w, h, config);
 	}
 
 
