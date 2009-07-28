@@ -33,27 +33,20 @@
 package org.hermit.netscramble;
 
 
-import java.util.EnumMap;
-
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.view.MotionEvent;
-import android.view.View;
 
 
 /**
  * This class implements a cell in the game board.  It handles the logic
- * and state of the cell, and as a subclass of View, it implements
- * the visible view of the cell.
+ * and state of the cell, and implements the visible view of the cell.
  */
 class Cell
-	extends View
 {
 
 	// ******************************************************************** //
@@ -70,7 +63,7 @@ class Cell
 	 * it, or zero if none.  Note that this is the bitmap for
 	 * the cabling layer, not the background or foreground (terminal etc).
 	 */
-	public enum Dir {
+	enum Dir {
 		FREE(0),						// Unconnected cell.
 		___L(R.drawable.cable0001),
 		__D_(R.drawable.cable0010),
@@ -93,7 +86,17 @@ class Cell
 			imageId = img;
 		}
 		
-		public final int imageId;
+		private static Dir getDir(int bits) {
+		    return dirs[bits];
+		}
+		
+		
+		private static final Dir[] dirs = values();
+		
+		final int imageId;
+		
+		private Bitmap normalImg = null;
+		private Bitmap greyImg = null;
 	}
 
 
@@ -110,14 +113,12 @@ class Cell
 	 * @param	y				This cell's y-position in the board grid.
 	 */
 	Cell(NetScramble parent, BoardView board, int x, int y) {
-		super(parent);
-		
-		parentBoard = board;
 		xindex = x;
 		yindex = y;
 
 		// Create the temp. objects used in drawing.
-		cellBounds = new Rect(0, 0, 0, 0);
+		cellLeft = 0;
+        cellTop = 0;
 		cellWidth = 0;
 		cellHeight = 0;
 		cellPaint = new Paint();
@@ -132,29 +133,37 @@ class Cell
 	// ******************************************************************** //
 
 	/**
-	 * Initialize the pixmaps used by the Cell class.
+	 * Initialise the pixmaps used by the Cell class.
 	 * 
 	 * @param	res				Handle on the application resources.
+     * @param   width           The cell width.
+     * @param   height          The cell height.
+     * @param   config          The pixel format of the surface.
 	 */
-	static void initPixmaps(Resources res) {
+	static void initPixmaps(Resources res,
+	                        int width, int height, Bitmap.Config config)
+	{
 		// Load all the cable pixmaps.
-		for (Dir d : Dir.values()) {
+		for (Dir d : Dir.dirs) {
 			if (d.imageId == 0)
 				continue;
 			
-			// Load the pixmap for this cable configuration.
-			Bitmap pixmap = BitmapFactory.decodeResource(res, d.imageId);
-			cableNPixmaps.put(d, pixmap);
+			// Load the pixmap for this cable configuration.  Scale it to the
+			// right size.
+			Bitmap base = BitmapFactory.decodeResource(res, d.imageId);
+			Bitmap pixmap = Bitmap.createScaledBitmap(base, width, height, true);
+			d.normalImg = pixmap;
 
 			// Create a greyed-out version of the image for the
 			// disconnected version of the node.
-			cableGPixmaps.put(d, greyOut(pixmap));
+			d.greyImg = greyOut(pixmap, config);
 		}
 		
 		// Load the other pixmaps we use.
 		for (Image i: Image.values()) {
-			Bitmap pixmap = BitmapFactory.decodeResource(res, i.resid);
-			otherPixmaps.put(i, pixmap);
+			Bitmap base = BitmapFactory.decodeResource(res, i.resid);
+            Bitmap pixmap = Bitmap.createScaledBitmap(base, width, height, true);
+			i.bitmap = pixmap;
 		}
 	}
 
@@ -163,9 +172,10 @@ class Cell
 	 * Create a greyed-out version of the given pixmap.
 	 * 
 	 * @param	pixmap			Base pixmap.
+     * @param   config          The pixel format of the surface.
 	 * @return					Greyed-out version of this pixmap.
 	 */
-	private static Bitmap greyOut(Bitmap pixmap) {
+	private static Bitmap greyOut(Bitmap pixmap, Bitmap.Config config) {
 		// Get the pixel data from the pixmap.
 		int w = pixmap.getWidth();
 		int h = pixmap.getHeight();
@@ -184,9 +194,7 @@ class Cell
 		}
 
 		// Create and return a pixmap from the greyed-out pixel data.
-		// FIXME: get the real config.
-		Bitmap.Config config = Bitmap.Config.ARGB_8888;
-		return Bitmap.createBitmap(pixels, w, h, config);
+      return Bitmap.createBitmap(pixels, w, h, Bitmap.Config.ARGB_8888);
 	}
 
 
@@ -207,7 +215,11 @@ class Cell
 		isRoot = false;
 		isLocked = false;
 		isBlind = false;
-		currentAngle = 0;
+	    rotateTarget = 0;
+	    rotateStart = 0;
+		rotateAngle = 0;
+	    highlightOn = false;
+	    highlightStart = 0;
 		highlightPos = 0;
 		haveFocus = false;
 
@@ -224,23 +236,17 @@ class Cell
      * changed.  This is where we first discover our window size, so set
      * our geometry to match.
      * 
+     * @param   left            Left X co-ordinate of this cell in the view.
+     * @param   top             Top Y co-ordinate of this cell in the view.
      * @param	width			Current width of this view.
      * @param	height			Current height of this view.
-     * @param	oldw			Old width of this view.  0 if we were
-     * 							just added.
-     * @param	oldh			Old height of this view.   0 if we were
-     * 							just added.
      */
-	@Override
-	protected void onSizeChanged(int width, int height, int oldw, int oldh) {
-    	super.onSizeChanged(width, height, oldw, oldh);
-		cellBounds.left = 0;
-		cellBounds.top = 0;
-		cellBounds.right = width;
-		cellBounds.bottom = height;
+	protected void setGeometry(int left, int top, int width, int height) {
+		cellLeft = left;
+		cellTop = top;
 		cellWidth = width;
 		cellHeight = height;
-//		invalidate();
+		invalidate();
     }
     
 
@@ -379,8 +385,7 @@ class Cell
 			return;
 		
 		bits |= d.ordinal();
-		Dir[] dirs = Dir.values();
-		setDirs(dirs[bits]);
+		setDirs(Dir.getDir(bits));
 	}
 
 
@@ -396,73 +401,7 @@ class Cell
 		invalidate();
 	}
 
-
-	// ******************************************************************** //
-	// Rotation and Highlight State.
-	// ******************************************************************** //
-
-	/**
-	 * Move the rotation currentAngle for this cell.  This changes the cell's
-	 * idea of its connections, and with fractions of 90 degrees, is used to
-	 * animate rotation of the cell's connections.  Setting this causes the
-	 * cell's connections to be drawn at the given currentAngle; beyond +/-
-	 * 45 degrees, the connections are changed in accordance with the
-	 * direction the cell is now facing.
-	 * 
-	 * @param	a			Delta to add to the current rotation currentAngle
-	 * 						for this cell, in degrees, clockwise positive.
-	 * 						Should be in the range -360 to 360.
-	 */
-	void rotate(int a) {
-		currentAngle += a;
-		
-		// If we've gone past 45 degrees, change the connected directions.
-		// Rotate the directions bits (the bottom 4 bits of the ordinal)
-		// right or left, as appropriate.
-		int bits = connectedDirs.ordinal();	
-		while (currentAngle >= 45) {
-			currentAngle -= 90;
-			bits = ((bits & 0x01) << 3) | ((bits & 0x0e) >> 1);
-		}
-		while (currentAngle < -45) {
-			currentAngle += 90;
-			bits = ((bits & 0x08) >> 3) | ((bits & 0x07) << 1);
-		}
-
-		// If we changed direction, update the current direction.
-		// The new value's ordinal is in bits.  Otherwise, just
-		// invalidate to show the rotated image.
-		if (bits != connectedDirs.ordinal()) {
-			Dir[] dirs = Dir.values();
-			setDirs(dirs[bits]);
-		} else
-			invalidate();
-	}
-
-
-	/**
-	 * Query whether this cell is currently rotated off the orthogonal.
-	 * 
-	 * @return				true iff the cell is not at its base angle.
-	 */
-	boolean isRotated() {
-		return currentAngle != 0;
-	}
-
-
-	/**
-	 * Set the highlight state of the cell.
-	 * 
-	 * @param	l			The offset of a diagonal highlight band to be
-	 * 						drawn across the cell.  Valid range is
-	 * 						zero to cellWidth * 2.
-	 */
-	void setLight(int l) {
-		highlightPos = l;
-		invalidate();
-	}
-
-
+	
 	// ******************************************************************** //
 	// Display Options.
 	// ******************************************************************** //
@@ -571,17 +510,158 @@ class Cell
     }
 
 
+    // ******************************************************************** //
+    // Animation Handling.
+    // ******************************************************************** //
+
+    /**
+     * Move the rotation currentAngle for this cell.  This changes the cell's
+     * idea of its connections, and with fractions of 90 degrees, is used to
+     * animate rotation of the cell's connections.  Setting this causes the
+     * cell's connections to be drawn at the given currentAngle; beyond +/-
+     * 45 degrees, the connections are changed in accordance with the
+     * direction the cell is now facing.
+     * 
+     * @param   a           The angle in degrees to rotate to; clockwise
+     *                      positive.
+     */
+    void rotate(int a) {
+        // If we're already rotating, ignore this.
+        if (rotateTarget != 0)
+            return;
+        
+        rotateTarget = a;
+        rotateStart = System.currentTimeMillis();
+        rotateAngle = 0f;
+    }
+
+
+    /**
+     * Query whether this cell is currently rotated off the orthogonal.
+     * 
+     * @return              true iff the cell is not at its base angle.
+     */
+    boolean isRotated() {
+        return rotateTarget != 0;
+    }
+
+
+    /**
+     * Set the highlight state of the cell.
+     */
+    void doHighlight() {
+        // If one is currently running, just start over.
+        highlightOn = true;
+        highlightStart = System.currentTimeMillis();
+        highlightPos = 0;
+    }
+
+
+    /**
+     * Update the state of the application for the current frame.
+     * 
+     * <p>Applications must override this, and can use it to update
+     * for example the physics of a game.  This may be a no-op in some cases.
+     * 
+     * <p>doDraw() will always be called after this method is called;
+     * however, the converse is not true, as we sometimes need to draw
+     * just to update the screen.  Hence this method is useful for
+     * updates which are dependent on time rather than frames.
+     * 
+     * @param   now         Current time in ms.
+     * @return              true if this cell changed its connection state.
+     */
+    protected boolean doUpdate(long now) {
+        // Flag if we changed our connection state.
+        boolean changed = false;
+        
+        // If we've got a rotation going on, move it on.
+        if (rotateTarget != 0) {
+            // Calculate the angle based on how long we've been going.
+            rotateAngle = (float) (now - rotateStart) / ROTATE_TIME * 90f;
+            if (rotateTarget < 0)
+                rotateAngle = -rotateAngle;
+
+            // If we've gone past 90 degrees, change the connected directions.
+            // Rotate the directions bits (the bottom 4 bits of the ordinal)
+            // right or left, as appropriate.
+            if (Math.abs(rotateAngle) >= 90f) {
+                int bits = connectedDirs.ordinal(); 
+                if (rotateTarget > 0) {
+                    bits = ((bits & 0x01) << 3) | ((bits & 0x0e) >> 1);
+                    if (rotateAngle >= rotateTarget)
+                        rotateAngle = rotateTarget = 0f;
+                    else {
+                        rotateAngle -= 90f;
+                        rotateTarget -= 90f;
+                    }
+                } else {
+                    bits = ((bits & 0x08) >> 3) | ((bits & 0x07) << 1);
+                    if (rotateAngle <= rotateTarget)
+                        rotateAngle = rotateTarget = 0f;
+                    else {
+                        rotateAngle += 90f;
+                        rotateTarget += 90f;
+                    }
+                }
+                setDirs(Dir.getDir(bits));
+                changed = true;
+            }
+            
+            invalidate();
+        }
+        
+        // If there's a highlight showing, advance it.
+        if (highlightOn) {
+            // Calculate the position based on how long we've been going.
+            float frac = (float) (now - highlightStart) / HIGHLIGHT_TIME;
+            highlightPos = (int) (frac * cellWidth * 2);
+
+            // See if we're done.
+            if (highlightPos >= cellWidth * 2) {
+                highlightOn = false;
+                highlightStart = 0;
+                highlightPos = 0;
+            }
+            
+            invalidate();
+        }
+        
+        return changed;
+    }
+
+   
 	// ******************************************************************** //
 	// Cell Drawing.
 	// ******************************************************************** //
 	
 	/**
+	 * Set this cell's state to be invalid, forcing a redraw.
+	 */
+	private void invalidate() {
+	    stateValid = false;
+	}
+	
+	
+	/**
 	 * This method is called to ask the cell to draw itself.
 	 * 
 	 * @param	canvas		Canvas to draw into.
+     * @param   now         Current time in ms.
 	 */
-	@Override
-	protected void onDraw(Canvas canvas) {
+	protected void doDraw(Canvas canvas, long now) {
+	    // Nothing to do if we're up to date.
+	    if (stateValid)
+	        return;
+        
+        final int sx = cellLeft;
+        final int sy = cellTop;
+        final int ex = sx + cellWidth;
+        final int ey = sy + cellHeight;
+    
+        canvas.save();
+	    canvas.clipRect(sx, sy, ex, ey);
+    
 		// Draw the background tile.
 		{
 			Image bgImage = Image.BG;
@@ -591,26 +671,25 @@ class Cell
 				bgImage = Image.EMPTY;
 			else if (isLocked)
 				bgImage = Image.LOCKED;
-			Bitmap bitmap = otherPixmaps.get(bgImage);
-			canvas.drawBitmap(bitmap, null, cellBounds, cellPaint);
+			canvas.drawBitmap(bgImage.bitmap, sx, sy, cellPaint);
 		}
 
 		// Draw the highlight band, if active.
-		if (highlightPos != 0) {
+		if (highlightOn) {
 			cellPaint.setStyle(Paint.Style.STROKE);
 			cellPaint.setStrokeWidth(5f);
 			cellPaint.setColor(Color.WHITE);
 			if (highlightPos < cellWidth)
-				canvas.drawLine(0,
-								highlightPos,
-								highlightPos,
-								cellBounds.top, cellPaint);
+				canvas.drawLine(sx,
+								sy + highlightPos,
+								sx + highlightPos,
+								sy, cellPaint);
 			else {
 				int hp = highlightPos - cellWidth;
-				canvas.drawLine(hp,
-							    cellBounds.bottom,
-							    cellBounds.right,
-							    hp,
+				canvas.drawLine(sx + hp,
+							    ey,
+							    ex,
+							    sy + hp,
 							    cellPaint);
 			}
 		}
@@ -621,16 +700,16 @@ class Cell
 				// We need to rotate the drawing matrix if the cable is
 				// rotated.
 				canvas.save();
-				if (currentAngle != 0) {
-					int midx = cellWidth / 2;
-					int midy = cellHeight / 2;
-					canvas.rotate(currentAngle, midx, midy);
+				if (rotateTarget != 0) {
+					int midx = sx + cellWidth / 2;
+					int midy = sy + cellHeight / 2;
+					canvas.rotate(rotateAngle, midx, midy);
 				}
 
 				// Draw the cable pixmap.
-				Bitmap pixmap = isConnected ? cableNPixmaps.get(connectedDirs) :
-					cableGPixmaps.get(connectedDirs);
-				canvas.drawBitmap(pixmap, null, cellBounds, cellPaint);
+				Bitmap pixmap = isConnected ? connectedDirs.normalImg :
+					                          connectedDirs.greyImg;
+				canvas.drawBitmap(pixmap, sx, sy, cellPaint);
 				canvas.restore();
 			}
 
@@ -648,10 +727,8 @@ class Cell
 					else
 						equipImage = Image.COMP1;
 				}
-				if (equipImage != null) {
-					Bitmap sysPix = otherPixmaps.get(equipImage);
-					canvas.drawBitmap(sysPix, null, cellBounds, cellPaint);
-				}
+				if (equipImage != null)
+					canvas.drawBitmap(equipImage.bitmap, sx, sy, cellPaint);
 			}
 		}
 		
@@ -662,29 +739,13 @@ class Cell
 			cellPaint.setColor(Color.RED);
 			cellPaint.setStrokeWidth(0f);
 
-			canvas.drawRect(0, 0, cellWidth - 1, cellHeight - 1, cellPaint);
+			canvas.drawRect(sx, sy, ex - 1, ey - 1, cellPaint);
 		}
+		
+		canvas.restore();
+		
+		stateValid = true;
 	}
-
-
-	// ******************************************************************** //
-	// Input Event Handling.
-	// ******************************************************************** //
-	
-    /**
-     * Handle MotionEvent events.
-     * 
-     * @param	event			The motion event.
-     * @return					True if the event was handled, false otherwise.
-     */
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-    	if (event.getAction() == MotionEvent.ACTION_DOWN) {
-    		parentBoard.cellTapped(this);
-    		return true;
-    	} else
-    		return false;
-    }
 
 
     // ******************************************************************** //
@@ -703,7 +764,7 @@ class Cell
     	// Save the aspects of the state which aren't part of the board
         // configuration (that gets re-created on reload).
         map.putString("connectedDirs", connectedDirs.toString());
-        map.putInt("currentAngle", currentAngle);
+        map.putFloat("currentAngle", rotateAngle);
         map.putInt("highlightPos", highlightPos);
         map.putBoolean("isConnected", isConnected);
         map.putBoolean("isFullyConnected", isFullyConnected);
@@ -726,7 +787,7 @@ class Cell
      */
     void restoreState(Bundle map) {
     	connectedDirs = Dir.valueOf(map.getString("connectedDirs"));
-    	currentAngle = map.getInt("currentAngle");
+    	rotateAngle = map.getFloat("currentAngle");
     	highlightPos = map.getInt("highlightPos");
     	isConnected = map.getBoolean("isConnected");
     	isFullyConnected = map.getBoolean("isFullyConnected");
@@ -758,7 +819,9 @@ class Cell
 		SERVER1(R.drawable.server1);
 
 		private Image(int r) { resid = r; }
-		public int resid;
+		
+		public final int resid;
+        public Bitmap bitmap = null;
 	}
 
 	
@@ -769,23 +832,17 @@ class Cell
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "netscramble";
-	
-	// Pxmaps for the network elements: cables (normal), cables (greyed-
-	// out), and other stuff (backgrounds, terminals, the server).
-	private static final EnumMap<Dir, Bitmap> cableNPixmaps =
-									new EnumMap<Dir, Bitmap>(Dir.class);
-	private static final EnumMap<Dir, Bitmap> cableGPixmaps =
-									new EnumMap<Dir, Bitmap>(Dir.class);
-	private static final EnumMap<Image, Bitmap> otherPixmaps =
-									new EnumMap<Image, Bitmap>(Image.class);
 
+	// Time taken to rotate a cell, in ms.
+	private static final float ROTATE_TIME = 250f;
+	
+	// Time taken to display a highlight flash, in ms.
+	private static final float HIGHLIGHT_TIME = 200f;
+	
 	
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-
-	// Parent board.
-	private BoardView parentBoard;
 
 	// The cell's position in the board.
 	private final int xindex, yindex;
@@ -806,13 +863,22 @@ class Cell
 	// at the start of each game.
 	private Dir connectedDirs;
 
-	// This cell's current currentAngle, in degrees; used during animations of
-	// the cell rotation.
-	private int currentAngle;
+    // If we're currently rotating, the rotation target angle -- clockwise
+    // positive, anti negative; the time in ms at which we started;
+    // and the current angle in degrees.  rotateDirection == 0 if not
+	// rotating.
+    private float rotateTarget = 0;
+    private long rotateStart = 0;
+	private float rotateAngle = 0f;
 
-	// If non-0, the current offset of the highlight band across the cell.
+	// Status information for the highlight band across the cell.
 	// This is used to draw a diagonal band of highlightPos flicking across the
 	// cell, to highlight it when it is mis-clicked etc.
+    // Flag whether there is a highlight currently showing; and if so,
+    // the time in ms at which it started, and its current position across
+    // the cell.  The range of the latter is zero to cellWidth * 2.
+    private boolean highlightOn = false;
+    private long highlightStart = 0;
 	private int highlightPos;
 
 	// True iff the cell is currently isConnected (directly or not)
@@ -834,17 +900,23 @@ class Cell
 	// background to be highlighted.
 	private boolean isLocked;
 
-	// Cell's current bounds; used in onDraw().
-	private Rect cellBounds;
+    // Cell's left X co-ordinate.
+    private int cellLeft;
+    
+    // Cell's top Y co-ordinate.
+    private int cellTop;
 
-	// Cell's current width; used in onDraw().
+	// Cell's current width.
 	private int cellWidth;
 
-	// Cell's current height; used in onDraw().
+	// Cell's current height.
 	private int cellHeight;
 	
 	// Painter used in onDraw().
 	private Paint cellPaint;
+	
+	// True if the cell's rendered state is up to date.
+	private boolean stateValid = false;
 	
 }
 

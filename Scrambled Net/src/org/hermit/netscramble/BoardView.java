@@ -39,17 +39,19 @@ import java.util.Vector;
 
 import net.goui.util.MTRandom;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.netscramble.NetScramble.Sound;
 import org.hermit.netscramble.NetScramble.State;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.WindowManager;
-import android.widget.RelativeLayout;
 
 
 /**
@@ -63,7 +65,7 @@ import android.widget.RelativeLayout;
  * figuring out how big the board should be.
  */
 public class BoardView
-	extends RelativeLayout
+	extends SurfaceRunner
 {
 
 	// ******************************************************************** //
@@ -164,7 +166,7 @@ public class BoardView
         // size and shape of the cell matrix.
     	findMatrix(BOARD_MAJOR, BOARD_MINOR);
         
-        // Create all the cells in the calculated board.  In onSizeChanged()
+        // Create all the cells in the calculated board.  In appSize()
     	// we will take care of positioning them.  Set the cell grid and root
     	// so we have a valid state to save.
         Log.i(TAG, "Create board " + gridWidth + "x" + gridHeight);
@@ -172,16 +174,10 @@ public class BoardView
         for (int y = 0; y < gridHeight; ++y) {
         	for (int x = 0; x < gridWidth; ++x) {
             	Cell cell = new Cell(parent, this, x, y);
-            	cell.setId(y * gridWidth + x + 1);
                 cellMatrix[x][y] = cell;
-            	addView(cell);
             }
         }
         rootCell = cellMatrix[0][0];
-
-        // Create the animation objects used to animate moves.
-        cellRotator = new CellRotation();
-        cellBlinker = new CellBlink();
         
         // Create the connected flags and connecting cell connectingCells
         // (used in updateConnections()).
@@ -221,79 +217,110 @@ public class BoardView
 
 
     // ******************************************************************** //
-	// Initialization.
-	// ******************************************************************** //
+    // Run Control.
+    // ******************************************************************** //
 
     /**
-     * This is called during layout when the size of this view has
-     * changed.  This is where we first discover our window size, so set
-     * our geometry to match.
-     * 
-     * @param	width			Current width of this view.
-     * @param	height			Current height of this view.
-     * @param	oldw			Old width of this view.  0 if we were
-     * 							just added.
-     * @param	oldh			Old height of this view.   0 if we were
-     * 							just added.
+     * The application is starting.  Perform any initial set-up prior to
+     * starting the application.  We may not have a screen size yet,
+     * so this is not a good place to allocate resources which depend on
+     * that.
      */
     @Override
-	protected void onSizeChanged(int width, int height, int oldw, int oldh) {
-    	super.onSizeChanged(width, height, oldw, oldh);
+    protected void appStart() {
+        
+    }
+    
 
-    	// We usually get a zero-sized resize, which is useless;
-    	// ignore it.
-    	if (width < 1 || height < 1)
-    		return;
+    /**
+     * Set the screen size.  This is guaranteed to be called before
+     * animStart(), but perhaps not before appStart().
+     * 
+     * @param   width       The new width of the surface.
+     * @param   height      The new height of the surface.
+     * @param   config      The pixel format of the surface.
+     */
+    @Override
+    protected void appSize(int width, int height, Bitmap.Config config) {
+        // We usually get a zero-sized resize, which is useless;
+        // ignore it.
+        if (width < 1 || height < 1)
+            return;
+        
+        // Create our backing bitmap.
+        backingBitmap = getBitmap();
+        backingCanvas = new Canvas(backingBitmap);
 
         // Calculate the cell size which makes the board fit.  Make the cells
         // square.
-    	cellWidth = width / gridWidth;
-    	cellHeight = height / gridHeight;
-    	if (cellWidth < cellHeight)
-    		cellHeight = cellWidth;
-    	else if (cellHeight < cellWidth)
-    		cellWidth = cellHeight;
+        cellWidth = width / gridWidth;
+        cellHeight = height / gridHeight;
+        if (cellWidth < cellHeight)
+            cellHeight = cellWidth;
+        else if (cellHeight < cellWidth)
+            cellWidth = cellHeight;
 
-    	// See if we have a usable size.
-    	if (cellWidth < CELL_MIN || cellHeight < CELL_MIN)
-    		throw new RuntimeException("Screen size is not playable.");
-    	if (cellWidth > CELL_MAX || cellHeight > CELL_MAX) {
-        	cellWidth = CELL_MAX;
-        	cellHeight = CELL_MAX;
-    	}
-    	
-    	// Set up the board configuration.
+        // See if we have a usable size.
+        if (cellWidth < CELL_MIN || cellHeight < CELL_MIN)
+            throw new RuntimeException("Screen size is not playable.");
+        if (cellWidth > CELL_MAX || cellHeight > CELL_MAX) {
+            cellWidth = CELL_MAX;
+            cellHeight = CELL_MAX;
+        }
+        
+        // Set up the board configuration.
         Log.i(TAG, "Layout board " + gridWidth + "x" + gridHeight + ", " +
-        		"cells " + cellWidth + "x" + cellHeight);
+                "cells " + cellWidth + "x" + cellHeight);
 
-    	// Center the board in the window.
-    	int xpad = (width - gridWidth * cellWidth) / 2;
-    	int ypad = (height - gridHeight * cellHeight) / 2;
-    	setPadding(xpad, ypad, xpad, ypad);
-    	
-    	// Set the cell geometries and positions.
-    	for (int x = 0; x < gridWidth; ++x) {
-    		for (int y = 0; y < gridHeight; ++y) {
-    			RelativeLayout.LayoutParams layout =
-    				new RelativeLayout.LayoutParams(cellWidth, cellHeight);
-    			if (x > 0)
-    				layout.addRule(RelativeLayout.RIGHT_OF,
-    						y * gridWidth + x);
-    			else
-    				layout.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-    			if (y > 0)
-    				layout.addRule(RelativeLayout.BELOW,
-    						(y - 1) * gridWidth + x + 1);
-    			else
-    				layout.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-    			cellMatrix[x][y].setLayoutParams(layout);
-    		}
-    	}
-    	
-    	requestFocus();
+        // Center the board in the window.
+        paddingX = (width - gridWidth * cellWidth) / 2;
+        paddingY = (height - gridHeight * cellHeight) / 2;
+        
+        // Set the cell geometries and positions.
+        for (int x = 0; x < gridWidth; ++x) {
+            for (int y = 0; y < gridHeight; ++y) {
+                int xPos = x * cellWidth + paddingX;
+                int yPos = y * cellHeight + paddingY;
+                cellMatrix[x][y].setGeometry(xPos, yPos, cellWidth, cellHeight);
+            }
+        }
+
+        // Load all the pixmaps for the game tiles etc.
+        Cell.initPixmaps(parentApp.getResources(), cellWidth, cellHeight, config);
+    }
+ 
+
+    /**
+     * We are starting the animation loop.  The screen size is known.
+     * 
+     * <p>doUpdate() and doDraw() may be called from this point on.
+     */
+    @Override
+    protected void animStart() {
+        
     }
     
+
+    /**
+     * We are stopping the animation loop, for example to pause the app.
+     * 
+     * <p>doUpdate() and doDraw() will not be called from this point on.
+     */
+    @Override
+    protected void animStop() {
+        
+    }
     
+
+    /**
+     * The application is closing down.  Clean up any resources.
+     */
+    @Override
+    protected void appStop() {
+        
+    }
+    
+
 	// ******************************************************************** //
 	// Board Setup.
 	// ******************************************************************** //
@@ -324,7 +351,7 @@ public class BoardView
         // appropriate cells to go blind.
         for (int x = boardStartX; x < boardEndX; x++) {
             for (int y = boardStartY; y < boardEndY; y++) {
-            	cellMatrix[x][y].rotate(rng.nextInt(4) * 90);
+            	cellMatrix[x][y].rotate((rng.nextInt(4) - 2) * 90);
                 if (cellMatrix[x][y].numDirs() >= sk.blind)
                 	cellMatrix[x][y].setBlind(true);
             }
@@ -407,8 +434,8 @@ public class BoardView
         rootCell = cellMatrix[rootX][rootY];
         rootCell.setConnected(true);
         rootCell.setRoot(true);
-        Log.i(TAG, "Root cell " + rootCell.x() + "," + rootCell.y() + " (" +
-        		rootX + "," + rootY + ")");
+//        Log.i(TAG, "Root cell " + rootCell.x() + "," + rootCell.y() + " (" +
+//        		rootX + "," + rootY + ")");
         setFocus(rootCell);
 
         // Set up the connectingCells of cells awaiting connection.  Start
@@ -489,7 +516,7 @@ public class BoardView
             freecells.put(Cell.Dir.___L, lcell);
         
         if (freecells.isEmpty()) {
-        	Log.d(TAG, "addRandomDir: no free adjacents");
+//        	Log.d(TAG, "addRandomDir: no free adjacents");
             return;
         }
      
@@ -504,7 +531,7 @@ public class BoardView
         
         // Add the new cell to the outstanding connectingCells.
         list.add(dest);
-    	Log.d(TAG, "addRandomDir: connected to " + dest.x() + "," + dest.y());
+//    	Log.d(TAG, "addRandomDir: connected to " + dest.x() + "," + dest.y());
     }
 
 
@@ -572,8 +599,8 @@ public class BoardView
             }
         }
         
-        Log.d(TAG, "updateConnections: " + connections +
-        		   " connected (" + newConnections + " new)");
+//        Log.d(TAG, "updateConnections: " + connections +
+//        		   " connected (" + newConnections + " new)");
 
         // Tell the caller whether we got a new one.
         return newConnections != 0;
@@ -678,6 +705,81 @@ public class BoardView
     }
 
 
+    // ******************************************************************** //
+    // Client Methods.
+    // ******************************************************************** //
+  
+    /**
+     * Update the state of the application for the current frame.
+     * 
+     * <p>Applications must override this, and can use it to update
+     * for example the physics of a game.  This may be a no-op in some cases.
+     * 
+     * <p>doDraw() will always be called after this method is called;
+     * however, the converse is not true, as we sometimes need to draw
+     * just to update the screen.  Hence this method is useful for
+     * updates which are dependent on time rather than frames.
+     * 
+     * @param   now         Current time in ms.
+     */
+    @Override
+    protected void doUpdate(long now) {
+        // Flag if any cell changed its connection state.
+        Cell changedCell = null;
+        
+        // Update all the cells.
+        for (int x = 0; x < gridWidth; ++x)
+            for (int y = 0; y < gridHeight; ++y)
+                if (cellMatrix[x][y].doUpdate(now))
+                    changedCell = cellMatrix[x][y];
+
+        // If the connection state changed, update the network.
+        if (changedCell != null) {
+            if (updateConnections())
+                parentApp.postSound(Sound.CONNECT);
+
+            // If we're done, report it.
+            if (isSolved()) {
+                // Un-blind all cells.
+                for (int x = boardStartX; x < boardEndX; x++)
+                    for (int y = boardStartY; y < boardEndY; y++)
+                        cellMatrix[x][y].setBlind(false);
+
+                blink(changedCell);
+                parentApp.postState(State.SOLVED);
+                parentApp.postSound(Sound.WIN);
+            }
+        }
+    }
+
+    
+    /**
+     * Draw the current frame of the application.
+     * 
+     * <p>Applications must override this, and are expected to draw the
+     * entire screen into the provided canvas.
+     * 
+     * <p>This method will always be called after a call to doUpdate(),
+     * and also when the screen needs to be re-drawn.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   now         Current time in ms.  Will be the same as that
+     *                      passed to doUpdate(), if there was a preceding
+     *                      call to doUpdate().
+     */
+    @Override
+    protected void doDraw(Canvas canvas, long now) {
+        // Draw all the cells into the backing bitmap.  Only the
+        // dirty cells will redraw themselves.
+        for (int x = 0; x < gridWidth; ++x)
+            for (int y = 0; y < gridHeight; ++y)
+                cellMatrix[x][y].doDraw(backingCanvas, now);
+        
+        // Now push the backing bitmap to the screen.
+        canvas.drawBitmap(backingBitmap, 0, 0, null);
+    }
+
+
 	// ******************************************************************** //
 	// Input Handling.
 	// ******************************************************************** //
@@ -692,10 +794,6 @@ public class BoardView
 	 */
     @Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	// Don't allow a move while we're doing the previous one.
-    	if (cellBlinker.isRunning() || cellRotator.isRunning())
-    		return false;
-    	
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER:
@@ -752,18 +850,25 @@ public class BoardView
     
 
     /**
-     * The given cell has been tapped by the user.
+     * Handle MotionEvent events.
      * 
-     * @param	cell			The cell.
+     * @param   event           The motion event.
+     * @return                  True if the event was handled, false otherwise.
      */
-	void cellTapped(Cell cell) {
-    	// Don't allow a move while we're doing the previous one.
-    	if (cellBlinker.isRunning() || cellRotator.isRunning())
-    		return;
-    	
-		setFocus(cell);
-		cellRotate(cell, 1);
-	}
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            int cx = (int) ((event.getX() - paddingX) / cellWidth);
+            int cy = (int) ((event.getY() - paddingY) / cellHeight);
+            Cell cell = cellMatrix[cx][cy];
+            
+            setFocus(cell);
+            cellRotate(cell, 1);
+            return true;
+        }
+        
+        return false;
+    }
 
 	
 	/**
@@ -831,20 +936,23 @@ public class BoardView
 		if (cell != cellMatrix[x][y])
 			throw new RuntimeException("Cell identity mismatch");
 		
-		Log.i(TAG, "Cell clicked: " + x + "," + y);
+//		Log.i(TAG, "Cell clicked: " + x + "," + y);
 		
 		// See if the cell is empty or locked; give the user some negative
 		// feedback if so.
         Cell.Dir d = cell.dirs();
         if (d == Cell.Dir.FREE || d == Cell.Dir.NONE || cell.isLocked()) {
-            parentApp.makeSound(Sound.CLICK);
+            parentApp.postSound(Sound.CLICK);
             blink(cell);
             return;
         }
 
         // Give the user a click.  Set up an animation to do the rotation.
-        parentApp.makeSound(Sound.TURN);
-        cellRotator.start(cell, dirn);
+        parentApp.postSound(Sound.TURN);
+        cell.rotate(dirn);
+        
+        // Tell the parent we clicked this cell.
+        parentApp.cellClicked(cell);
 	}
 	
 	
@@ -862,7 +970,7 @@ public class BoardView
 	 * Pause the game.
 	 */
 	void pauseGame() {
-		parentApp.setState(State.PAUSED);
+		parentApp.postState(State.PAUSED);
 	}
 
 
@@ -872,7 +980,7 @@ public class BoardView
      * @param	cell			The cell to blink.
      */
     private void blink(Cell cell) {
-        cellBlinker.start(cell);
+        cell.doHighlight();
     }
 
 
@@ -883,117 +991,6 @@ public class BoardView
 		// Display the fully-connected version of the server.
 		rootCell.setSolved(true);
 	}
-
-
-	// ******************************************************************** //
-	// Animation.
-	// ******************************************************************** //
-
-    // This animation rotates a cell 90 degrees.
-    private final class CellRotation extends Timer {
-    	CellRotation() {
-    		// Tick every 20 ms.
-    		super(20);
-    	}
-    	
-    	public void start(Cell cell, int dirn) {
-    		// Don't touch the parameters if we're running.  This prevents
-    		// more than one animation at once, which is what we want
-    		// as we're only going to allocate one of these objects.
-    		if (isRunning())
-    			return;
-    		
-    		// Reset our state (including invocation counter).
-    		reset();
-    		this.cell = cell;
-    		this.angle = 0;
-    		
-    		// Rotate 6 degrees at a time, positive or negative.
-    		this.delta = 6 * dirn;
-    		
-    		super.start();
-    	}
-    	
-    	@Override
-		protected boolean step(int count, long time) {
-            cell.rotate(delta);
-            angle += delta;
-            
-            // The first time, update the connections to show the cell
-            // disconnected.
-            if (count == 0)
-            	updateConnections();
-            return Math.abs(angle) >= 90;
-        }
-        
-    	@Override
-		protected void done() {
-    		if (cell.isRotated())
-    			throw new RuntimeException("Cell rotate finished wrong");
-    		
-    		// Update the connections now the cell is in its new state.
-        	if (updateConnections())
-                parentApp.makeSound(Sound.CONNECT);
-            
-        	// Tell the parent we clicked this cell.
-            parentApp.cellClicked(cell);
-
-            // If we're done, report it.
-        	if (isSolved()) {
-        		// Un-blind all cells.
-        		for (int x = boardStartX; x < boardEndX; x++)
-        			for (int y = boardStartY; y < boardEndY; y++)
-        				cellMatrix[x][y].setBlind(false);
-
-        		blink(cell);
-        		parentApp.gameSolved();
-        	}
-        }
-
-        private Cell cell;
-        private int angle = 0;
-        private int delta = 0;
-    }
-
-
-    // This animation blinks a cell.
-    private final class CellBlink extends Timer {
-
-    	CellBlink() {
-    		super(20);
-    	}
-
-    	public void start(Cell cell) {
-    		// Don't touch the parameters if we're running.  This prevents
-    		// more than one animation at once, which is what we want
-    		// as we're only going to allocate one of these objects.
-    		if (isRunning())
-    			return;
-    		
-    		// Reset our state (including invocation counter).
-    		reset();
-    		this.cell = cell;
-    		this.offset = 0;
-    		super.start();
-    	}
-
-    	@Override
-		protected boolean step(int count, long time) {
-    		// Move the "light" band on the cell.
-    		cell.setLight(offset);
-            offset += 4;
-            return offset >= cellWidth * 2;
-        }
-
-    	@Override
-		protected void done() {
-    		// Clear the "light" band on the cell.
-            cell.setLight(0);
-        }
-
-        private Cell cell;
-        private int offset;
-    }
 
     
     // ******************************************************************** //
@@ -1008,7 +1005,8 @@ public class BoardView
 	 * @param	outState		A Bundle in which to place any state
 	 * 							information we wish to save.
      */
-    void saveState(Bundle outState) {
+    @Override
+    protected void saveState(Bundle outState) {
     	// Save the game state of the board.
     	outState.putInt("gridWidth", gridWidth);
     	outState.putInt("gridHeight", gridHeight);
@@ -1036,6 +1034,7 @@ public class BoardView
      * 						if the saved state was incompatible with the
      * 						current configuration.
      */
+    // FIXME:
     boolean restoreState(Bundle map, Skill skill) {
     	// Restore the game state of the board.
     	gameSkill = skill;
@@ -1236,6 +1235,10 @@ public class BoardView
 	private int cellWidth;
 	private int cellHeight;
 
+    // Horizontal and vertical padding used to center the board in the window.
+    private int paddingX = 0;
+    private int paddingY = 0;
+
 	// Size of the game board, and offset of the first and last active cells.
 	// These are set up to define the actual board area in use for a given
 	// game.  These change depending on the skill level.
@@ -1246,12 +1249,10 @@ public class BoardView
 	private int boardEndX;
 	private int boardEndY;
 
-	// Animation object used to manage a cell rotation.
-	private CellRotation cellRotator;
-
-	// Animation object used to blink a cell.
-	private CellBlink cellBlinker;
-
+	// Backing bitmap for the board, and a Canvas to draw in it.
+	private Bitmap backingBitmap = null;
+	private Canvas backingCanvas = null;
+	
 	// The skill level of the current game.
 	private Skill gameSkill;
 

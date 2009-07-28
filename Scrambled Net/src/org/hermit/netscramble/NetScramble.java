@@ -46,8 +46,11 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.media.MediaPlayer;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -81,8 +84,16 @@ public class NetScramble
     /**
      * Current state of the game.
      */
-    static enum State { NEW, RESTORED, INIT,
-    					PAUSED, HELP, RUNNING, SOLVED, ABORTED }
+    static enum State {
+        NEW, RESTORED, INIT,
+    					PAUSED, HELP, RUNNING, SOLVED, ABORTED;
+        
+        static State getValue(int ordinal) {
+            return states[ordinal];
+        }
+        
+        private static State[] states = values();
+    }
 
     /**
      * The sounds that we make.
@@ -98,7 +109,8 @@ public class NetScramble
     		soundRes = res;
     	}
     	
-     	int soundRes;			// Resource ID for the sound file.
+    	private final int soundRes;		// Resource ID for the sound file.
+     	private int soundId = 0;        // Sound ID for playing.
     }
 
     /**
@@ -113,7 +125,7 @@ public class NetScramble
     		menuId = res;
     	}
     	
-    	int menuId;				// ID of the corresponding menu item.
+    	private int menuId;				// ID of the corresponding menu item.
     }
 
     
@@ -152,9 +164,9 @@ public class NetScramble
 
         // We don't want a title bar.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        // Load all the pixmaps for the game tiles etc.
-        Cell.initPixmaps(appResources);
+        
+        // We want the audio controls to control our sound volume.
+        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         // Restore our preferences.
     	SharedPreferences prefs = getPreferences(0);
@@ -177,6 +189,9 @@ public class NetScramble
         // Create the GUI for the game.
         mainView = createGui();
         setContentView(mainView);
+        
+        // Load the sounds.
+        soundPool = createSoundPool();
 
         // Create the dialog we use for help and about.
         AppUtils autils = AppUtils.getInstance(this);
@@ -242,8 +257,9 @@ public class NetScramble
     @Override
 	protected void onStart() {
         Log.i(TAG, "onStart()");
-
     	super.onStart();
+    	
+        boardView.onStart();
     }
     
 
@@ -319,6 +335,8 @@ public class NetScramble
             Log.d(TAG, "onResume() !!" + gameState + "!!: init");
     	    // setState(State.INIT);		// Shouldn't get here.
         }
+        
+        boardView.onResume();
     }
 
 
@@ -398,8 +416,9 @@ public class NetScramble
     @Override
     protected void onPause() {
         Log.i(TAG, "onPause()");
-        
         super.onPause();
+        
+        boardView.onPause();
         
         // Pause the game.
         if (gameState == State.RUNNING)
@@ -422,8 +441,9 @@ public class NetScramble
     @Override
 	protected void onStop() {
         Log.i(TAG, "onStop()");
-        
     	super.onStop();
+        
+        boardView.onStop();
     }
 
     
@@ -530,7 +550,7 @@ public class NetScramble
     	final int FPAR = LinearLayout.LayoutParams.FILL_PARENT;
     	final int HORI = LinearLayout.HORIZONTAL;
     	final int VERT = LinearLayout.VERTICAL;
-    	
+
         // Set up our orientation and fill modes.
     	final int orient = landscape ? HORI : VERT;
     	final int orient2 = landscape ? VERT : HORI;
@@ -543,7 +563,6 @@ public class NetScramble
 
         // Construct the board, and add it to the layout.
         boardView = new BoardView(this);
-        boardView.setBackgroundColor(Color.BLACK);
         boardWrapper.addView(boardView,
         					 new LinearLayout.LayoutParams(FPAR, FPAR, 1));
         
@@ -589,7 +608,6 @@ public class NetScramble
         statusRight.setGravity(Gravity.RIGHT);
         clicksText = new StringBuilder(10);
         timeText = new StringBuilder(10);
-        timeFormatter = new Formatter(timeText);
         LinearLayout.LayoutParams lpr = new LinearLayout.LayoutParams(
         		LinearLayout.LayoutParams.WRAP_CONTENT,
         		LinearLayout.LayoutParams.WRAP_CONTENT, 1);
@@ -633,7 +651,23 @@ public class NetScramble
         return text;
     }
     
+    
+    // ******************************************************************** //
+    // Sound Setup.
+    // ******************************************************************** //
+    
+    /**
+     * Create a SoundPool containing the app's sound effects.
+     */
+    private SoundPool createSoundPool() {
+        SoundPool pool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
+        for (Sound sound : Sound.values())
+            sound.soundId = pool.load(this, sound.soundRes, 1);
         
+        return pool;
+    }
+    
+    
     // ******************************************************************** //
     // Menu Management.
     // ******************************************************************** //
@@ -865,26 +899,28 @@ public class NetScramble
 			setState(State.RUNNING);
     }
 
-    
-    /**
-     * This method is called by the board view when the network is
-     * solved.
-     * 
-     * If we allow the user to tinker after finishing, this may be called
-     * each time the user gets to a connected net.
-     */
-    void gameSolved() {
-		setState(State.SOLVED);
-
-        makeSound(Sound.WIN);
-        
-		// TODO: log the score: board size, 3600 - gameClock / 1000, clickCount
-    }
-
-    
+   
 	// ******************************************************************** //
 	// Game State.
 	// ******************************************************************** //
+    
+    /**
+     * Post a sound to be played on the main app thread.
+     * 
+     * @param   which           ID of the sound to play.
+     */
+    void postState(final State which) {
+        stateHandler.sendEmptyMessage(which.ordinal());
+    }
+
+
+    private Handler stateHandler = new Handler() {
+        @Override
+        public void handleMessage(Message m) {
+            setState(State.getValue(m.what));
+        }
+    };
+
 
     /**
      * Set the game state.  Set the screen display and start/stop the
@@ -944,7 +980,7 @@ public class NetScramble
         		prevClickedCell = null;
         		gameTimer.reset();
         		updateStatus();
-        		makeSound(Sound.START);
+        		makeSound(Sound.START.soundId);
         	}
         	hideSplashText();
             gameTimer.start();
@@ -1007,13 +1043,21 @@ public class NetScramble
 		// Use StringBuilders and a Formatter to avoid allocating new
 		// String objects every time -- this function is called often!
 		
-		clicksText.setLength(0);
-		clicksText.append(clickCount);
+		clicksText.setLength(3);
+		clicksText.setCharAt(0, (char) ('0' + clickCount / 100 % 10));
+        clicksText.setCharAt(1, (char) ('0' + clickCount / 10 % 10));
+        clicksText.setCharAt(2, (char) ('0' + clickCount % 10));
 		statusLeft.setText(clicksText);
 		
-		timeText.setLength(0);
-		long time = gameTimer.getTime();
-		timeFormatter.format("%02d:%02d", time / 60000, time / 1000 % 60);
+		timeText.setLength(5);
+		int time = (int) (gameTimer.getTime() / 1000);
+		int min = time / 60;
+		int sec = time % 60;
+		timeText.setCharAt(0, (char) ('0' + min / 10));
+        timeText.setCharAt(1, (char) ('0' + min % 10));
+        timeText.setCharAt(2, ':');
+        timeText.setCharAt(3, (char) ('0' + sec / 10));
+        timeText.setCharAt(4, (char) ('0' + sec % 10));
 		statusRight.setText(timeText);
 	}
 
@@ -1049,35 +1093,43 @@ public class NetScramble
 	}
 	
 
+    // ******************************************************************** //
+    // Sound.
+    // ******************************************************************** //
+    
+    /**
+     * Post a sound to be played on the main app thread.
+     * 
+     * @param   which           ID of the sound to play.
+     */
+    void postSound(final Sound which) {
+        soundHandler.sendEmptyMessage(which.soundId);
+    }
+
+
+	private Handler soundHandler = new Handler() {
+	    @Override
+        public void handleMessage(Message m) {
+	        makeSound(m.what);
+	    }
+	};
+
+
 	/**
 	 * Make a sound.
 	 * 
-	 * @param	which			ID of the sound to play.
+	 * @param	soundId			ID of the sound to play.
      */
-	void makeSound(Sound which) {
+	void makeSound(int soundId) {
 		if (soundMode == SoundMode.NONE)
 			return;
-
-		try {
-			MediaPlayer mp = MediaPlayer.create(this, which.soundRes);
-			mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-				public void onPrepared(MediaPlayer mp) { mp.start(); }
-			});
-			mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-				public void onCompletion(MediaPlayer mp) { mp.release(); }
-			});
-			
-			float vol = 1.0f;
-			if (soundMode == SoundMode.QUIET)
-				vol = 0.3f;
-			mp.setVolume(vol, vol);
-			
-			mp.prepareAsync();
-		} catch (Exception e) {
-			Log.d(TAG, e.toString());
-		}
+		
+        float vol = 1.0f;
+        if (soundMode == SoundMode.QUIET)
+            vol = 0.3f;
+		soundPool.play(soundId, vol, vol, 1, 0, 1f);
 	}
-	
+
 
     // ******************************************************************** //
     // State Save/Restore.
@@ -1186,7 +1238,9 @@ public class NetScramble
     // we update the status -- which is very often.
     private StringBuilder clicksText;
     private StringBuilder timeText;
-    private Formatter timeFormatter;
+    
+    // Sound pool used for sound effects.
+    private SoundPool soundPool;
     
     // The text widget used to display status messages.  When visible,
     // it covers the board.
