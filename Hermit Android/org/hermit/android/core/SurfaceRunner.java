@@ -29,7 +29,19 @@ import android.view.SurfaceView;
 
 
 /**
- * The view on a playing table.
+ * Common base for applications with an animated view.  This class can be
+ * used in games etc.  It handles all the setup states of a SurfaceView,
+ * and provides a Thread which the app can use to manage the animation.
+ * 
+ * <p>When using this class in an app, the app context <b>must</b> call
+ * these methods (usually from its corresponding Activity methods):
+ * 
+ * <ul>
+ * <li>{@link #onStart()}
+ * <li>{@link #onResume()}
+ * <li>{@link #onPause()}
+ * <li>{@link #onStop()}
+ * </ul>
  */
 public abstract class SurfaceRunner
 	extends SurfaceView
@@ -238,7 +250,7 @@ public abstract class SurfaceRunner
             
             if (animTicker != null && animTicker.isAlive())
                 animTicker.kill();
-            Log.i(TAG, "Table: set running: start ticker");
+            Log.i(TAG, "set running: start ticker");
             animTicker = new Ticker();
         }
     }
@@ -464,6 +476,20 @@ public abstract class SurfaceRunner
     
 
     // ******************************************************************** //
+    // Debug Control.
+    // ******************************************************************** //
+
+    /**
+     * Turn display of performance info on or off.
+     * 
+     * @param   enable      True to enable performance display.
+     */
+    public void setDebugPerf(boolean enable) {
+        showPerf = enable;
+    }
+    
+    
+    // ******************************************************************** //
     // Save and Restore.
     // ******************************************************************** //
 
@@ -568,7 +594,7 @@ public abstract class SurfaceRunner
 
     // Debugging tag.
 	@SuppressWarnings("unused")
-	private static final String TAG = "plughole";
+	private static final String TAG = "SurfaceRunner";
 
     // Enable flags.  In order to run, we need onSurfaceCreated() and
     // onResume(), which can come in either order.  So we track which ones
@@ -607,7 +633,7 @@ public abstract class SurfaceRunner
     private int fpsSinceLast = 0;
 
     // Display performance data on-screen.
-    private boolean showPerf = true;
+    private boolean showPerf = false;
 
     // Paint for drawing performance data.
     private Paint perfPaint = null;
