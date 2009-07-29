@@ -33,8 +33,6 @@
 package org.hermit.netscramble;
 
 
-import java.util.Formatter;
-
 import org.hermit.android.core.AppUtils;
 import org.hermit.android.notice.InfoBox;
 import org.hermit.netscramble.BoardView.Skill;
@@ -103,6 +101,7 @@ public class NetScramble
     	CLICK(R.raw.click),
     	TURN(R.raw.turn),
     	CONNECT(R.raw.connect),
+        POP(R.raw.pop),
     	WIN(R.raw.win);
     	
     	private Sound(int res) {
@@ -163,8 +162,10 @@ public class NetScramble
         gameTimer = new GameTimer();
 
         // We don't want a title bar.
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        
+
         // We want the audio controls to control our sound volume.
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 

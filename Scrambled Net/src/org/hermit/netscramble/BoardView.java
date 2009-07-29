@@ -47,6 +47,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -184,8 +185,11 @@ public class BoardView
         isConnected = new boolean[gridWidth][gridHeight];
         connectingCells = new Vector<Cell>();
        
-		// Handle key events on the board.
+		// Handle key events on the board.  Do so even after touch events.
 		setFocusable(true);
+		setFocusableInTouchMode(true);
+		
+		// Set the initial focus on the root cell.
         focusedCell = null;
         setFocus(rootCell);
     }
@@ -796,6 +800,10 @@ public class BoardView
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_DPAD_CENTER:
+		    // DPAD_CENTER is special: handle like a screen press, and check
+		    // for a long press.
+		    pressDown();
+            return true;
 		case KeyEvent.KEYCODE_ENTER:
 			cellRotate(focusedCell, 1);
 			return true;
@@ -837,6 +845,27 @@ public class BoardView
 	
 
     /**
+     * Handle key input.
+     * 
+     * @param   keyCode         The key code.
+     * @param   event           The KeyEvent object that defines the
+     *                          button action.
+     * @return                  True if the event was handled, false otherwise.
+     */
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+        case KeyEvent.KEYCODE_DPAD_CENTER:
+            // Special handling for DPAD_CENTER: cancel long press handling.
+            pressUp();
+            return true;
+        }
+        
+        return false;
+    }
+    
+
+    /**
      * Handle trackball motion events.
      * 
      * @param	event			The motion event.
@@ -858,19 +887,56 @@ public class BoardView
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            // Focus on the pressed cell.
             int cx = (int) ((event.getX() - paddingX) / cellWidth);
             int cy = (int) ((event.getY() - paddingY) / cellHeight);
-            Cell cell = cellMatrix[cx][cy];
+            setFocus(cellMatrix[cx][cy]);
             
-            setFocus(cell);
-            cellRotate(cell, 1);
-            return true;
-        }
-        
-        return false;
+            pressDown();
+        } else if (event.getAction() == MotionEvent.ACTION_UP)
+            pressUp();
+
+        return true;
     }
 
+    
+    /**
+     * Handle a screen or centre-button press.
+     */
+    private void pressDown() {
+        // Get ready to detect a long press.
+        longPressed = false;
+        longPressHandler.postDelayed(longPress, LONG_PRESS);
+    }
+    
+
+    /**
+     * Handle a screen or centre-button release.  If we didn't get a
+     * long press, handle like a click.
+     */
+    private void pressUp() {
+        if (!longPressed) {
+            // Cancel the long press handler.
+            longPressHandler.removeCallbacks(longPress);
+
+            // If we got here, rotate the cell.
+            cellRotate(focusedCell, 1);
+        }
+    }
+    
 	
+    /**
+     * Handler for a screen or centre-button long press.
+     */
+    private Runnable longPress = new Runnable() {
+        @Override
+        public void run() {
+            longPressed = true;
+            cellToggleLock(focusedCell);
+        }
+    };
+    
+    
 	/**
 	 * Move the cell focus in the given direction.
 	 * 
@@ -963,6 +1029,7 @@ public class BoardView
 	 */
 	void cellToggleLock(Cell cell) {
 		cell.setLocked(!cell.isLocked());
+        parentApp.postSound(Sound.POP);
 	}
 
 
@@ -1005,7 +1072,6 @@ public class BoardView
 	 * @param	outState		A Bundle in which to place any state
 	 * 							information we wish to save.
      */
-    @Override
     protected void saveState(Bundle outState) {
     	// Save the game state of the board.
     	outState.putInt("gridWidth", gridWidth);
@@ -1034,7 +1100,6 @@ public class BoardView
      * 						if the saved state was incompatible with the
      * 						current configuration.
      */
-    // FIXME:
     boolean restoreState(Bundle map, Skill skill) {
     	// Restore the game state of the board.
     	gameSkill = skill;
@@ -1196,6 +1261,9 @@ public class BoardView
 
     // Debugging tag.
 	private static final String TAG = "netscramble";
+	
+	// Time in ms for a long screen or centre-button press.
+	private static final int LONG_PRESS = 800;
 
 	// A mapping from each of the main directions to the contrary direction.
 	private static final EnumMap<Cell.Dir, Cell.Dir> contrdirs =
@@ -1267,6 +1335,12 @@ public class BoardView
 	
 	// List of outstanding connected cells; used in updateConnections().
     Vector<Cell> connectingCells;
+
+    // Long press handling.  The Handler gets notified after the long
+    // press time has elapsed; longPressed is set to true when a long
+    // press has been detected, so the subsequent up event can be ignored.
+    private Handler longPressHandler = new Handler();
+    private boolean longPressed = false;
 
 }
 
