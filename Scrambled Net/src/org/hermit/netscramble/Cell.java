@@ -40,6 +40,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.util.Log;
 
 
 /**
@@ -526,13 +527,14 @@ class Cell
      *                      positive.
      */
     void rotate(int a) {
-        // If we're already rotating, ignore this.
-        if (rotateTarget != 0)
-            return;
-        
-        rotateTarget = a;
-        rotateStart = System.currentTimeMillis();
-        rotateAngle = 0f;
+        // If we're not already rotating, set it up.
+        if (rotateTarget == 0) {
+            rotateStart = System.currentTimeMillis();
+            rotateAngle = 0f;
+        }
+
+        // Add the given rotation in.
+        rotateTarget += a;
     }
 
 
@@ -578,7 +580,8 @@ class Cell
         // If we've got a rotation going on, move it on.
         if (rotateTarget != 0) {
             // Calculate the angle based on how long we've been going.
-            rotateAngle = (float) (now - rotateStart) / ROTATE_TIME * 90f;
+            Log.d(TAG, "rot tim " + (now - rotateStart) + " ang " + rotateAngle);
+            rotateAngle = (float) (now - rotateStart) / (float) ROTATE_TIME * 90f;
             if (rotateTarget < 0)
                 rotateAngle = -rotateAngle;
 
@@ -594,6 +597,7 @@ class Cell
                     else {
                         rotateAngle -= 90f;
                         rotateTarget -= 90f;
+                        rotateStart += ROTATE_TIME;
                     }
                 } else {
                     bits = ((bits & 0x08) >> 3) | ((bits & 0x07) << 1);
@@ -602,8 +606,10 @@ class Cell
                     else {
                         rotateAngle += 90f;
                         rotateTarget += 90f;
+                        rotateStart += ROTATE_TIME;
                     }
                 }
+                Log.d(TAG, "rot new " + (now - rotateStart) + " ang " + rotateAngle);
                 setDirs(Dir.getDir(bits));
                 changed = true;
             }
@@ -614,7 +620,7 @@ class Cell
         // If there's a highlight showing, advance it.
         if (highlightOn) {
             // Calculate the position based on how long we've been going.
-            float frac = (float) (now - highlightStart) / HIGHLIGHT_TIME;
+            float frac = (float) (now - highlightStart) / (float) HIGHLIGHT_TIME;
             highlightPos = (int) (frac * cellWidth * 2);
 
             // See if we're done.
@@ -834,10 +840,10 @@ class Cell
 	private static final String TAG = "netscramble";
 
 	// Time taken to rotate a cell, in ms.
-	private static final float ROTATE_TIME = 250f;
+	private static final long ROTATE_TIME = 250;
 	
 	// Time taken to display a highlight flash, in ms.
-	private static final float HIGHLIGHT_TIME = 200f;
+	private static final long HIGHLIGHT_TIME = 200;
 	
 	
 	// ******************************************************************** //

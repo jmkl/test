@@ -888,17 +888,37 @@ public class BoardView
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             // Focus on the pressed cell.
-            int cx = (int) ((event.getX() - paddingX) / cellWidth);
-            int cy = (int) ((event.getY() - paddingY) / cellHeight);
-            setFocus(cellMatrix[cx][cy]);
-            
-            pressDown();
-        } else if (event.getAction() == MotionEvent.ACTION_UP)
-            pressUp();
+            pressedCell = findCell(event.getX(), event.getY());
+            if (pressedCell != null) {
+                setFocus(pressedCell);
+                pressDown();
+            }
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            if (pressedCell != null) {
+                pressedCell = null;
+                pressUp();
+            }
+        }
 
         return true;
     }
 
+    
+    /**
+     * Find the cell corresponding to a screen location.
+     * @param   x           Location X.
+     * @param   y           Location Y.
+     * @return              The cell at x,y; null if none.
+     */
+    private Cell findCell(float x, float y) {
+        // Focus on the pressed cell.
+        int cx = (int) ((x - paddingX) / cellWidth);
+        int cy = (int) ((y - paddingY) / cellHeight);
+        if (cx < 0 || cx >= gridWidth || cy < 0 || cy >= gridHeight)
+            return null;
+        return cellMatrix[cx][cy];
+    }
+    
     
     /**
      * Handle a screen or centre-button press.
@@ -996,14 +1016,6 @@ public class BoardView
 	 * @param	dirn			Direction: -1 for left, 1 for right.
      */
 	void cellRotate(Cell cell, int dirn) {
-		// Check for board consistency.
-		int x = cell.x();
-		int y = cell.y();
-		if (cell != cellMatrix[x][y])
-			throw new RuntimeException("Cell identity mismatch");
-		
-//		Log.i(TAG, "Cell clicked: " + x + "," + y);
-		
 		// See if the cell is empty or locked; give the user some negative
 		// feedback if so.
         Cell.Dir d = cell.dirs();
@@ -1015,7 +1027,7 @@ public class BoardView
 
         // Give the user a click.  Set up an animation to do the rotation.
         parentApp.postSound(Sound.TURN);
-        cell.rotate(dirn);
+        cell.rotate(dirn * 90);
         
         // Tell the parent we clicked this cell.
         parentApp.cellClicked(cell);
@@ -1028,6 +1040,15 @@ public class BoardView
 	 * @param	cell			The cell to toggle.
 	 */
 	void cellToggleLock(Cell cell) {
+        // See if the cell is empty; give the user some negative
+        // feedback if so.
+        Cell.Dir d = cell.dirs();
+        if (d == Cell.Dir.FREE || d == Cell.Dir.NONE) {
+            parentApp.postSound(Sound.CLICK);
+            blink(cell);
+            return;
+        }
+
 		cell.setLocked(!cell.isLocked());
         parentApp.postSound(Sound.POP);
 	}
@@ -1335,6 +1356,9 @@ public class BoardView
 	
 	// List of outstanding connected cells; used in updateConnections().
     Vector<Cell> connectingCells;
+    
+    // Cell currently being pressed in a touch event.
+    private Cell pressedCell = null;
 
     // Long press handling.  The Handler gets notified after the long
     // press time has elapsed; longPressed is set to true when a long
