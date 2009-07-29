@@ -41,6 +41,11 @@ import android.view.SurfaceView;
  * <li>{@link #onPause()}
  * <li>{@link #onStop()}
  * </ul>
+ * 
+ * <p>The surface is enabled once it is created and sized, and
+ * {@link #onStart()} and {@link #onResume()} have been called.  You then
+ * start and stop it by calling {@link #surfaceStart()} and
+ * {@link #surfaceStop()}.
  */
 public abstract class SurfaceRunner
 	extends SurfaceView
@@ -66,21 +71,6 @@ public abstract class SurfaceRunner
         // Make a Paint for drawing performance data.
         perfPaint = new Paint();
         perfPaint.setColor(0xffff0000);
-
-        // Create a Handler for messages to set the text overlay.
-//        Handler handler = new Handler() {
-//            @Override
-//            public void handleMessage(Message m) {
-//            	Bundle data = m.getData();
-//            	int vis = data.getInt("viz");
-//            	String msg = data.getString("text");
-//                Log.i(TAG, "Overlay: set vis " + vis +
-//             		   				" (" + (msg == null ? "" : msg) + ")");
-//            }
-//        };
- 
-		// Make sure we get key events.  TODO: check for touch mode stuff.
-        setFocusable(true);
     }
     
 
@@ -158,6 +148,26 @@ public abstract class SurfaceRunner
         Log.i(TAG, "onResume");
         
         setEnable(ENABLE_RESUMED);
+    }
+
+
+    /**
+     * Start the surface running.
+     */
+    public void surfaceStart() {
+        Log.i(TAG, "surfaceStart");
+        
+        setEnable(ENABLE_STARTED);
+    }
+
+
+    /**
+     * Stop the surface running.
+     */
+    public void surfaceStop() {
+        Log.i(TAG, "surfaceStop");
+        
+        clearEnable(ENABLE_STARTED);
     }
 
 
@@ -316,20 +326,16 @@ public abstract class SurfaceRunner
     // ******************************************************************** //
 
     private void tick() {
-        long now;
-        
-        synchronized (surfaceHolder) {
-            now = System.currentTimeMillis();
-            doUpdate(now);
+        long now = System.currentTimeMillis();
+        doUpdate(now);
 
-            // If we're tracking performance, update the metrics.
-            // Count microsecs, so we can display a number more than
-            // 1 per second.  The granularity sucks but hopefully
-            // it averages out.
-            if (showPerf) {
-                physTime += (System.currentTimeMillis() - now) * 1000;
-                ++physCount;
-            }
+        // If we're tracking performance, update the metrics.
+        // Count microsecs, so we can display a number more than
+        // 1 per second.  The granularity sucks but hopefully
+        // it averages out.
+        if (showPerf) {
+            physTime += (System.currentTimeMillis() - now) * 1000;
+            ++physCount;
         }
         
         refreshScreen(now);
@@ -579,8 +585,9 @@ public abstract class SurfaceRunner
     private static final int ENABLE_SURFACE = 0x01;
     private static final int ENABLE_SIZE = 0x02;
     private static final int ENABLE_RESUMED = 0x04;
+    private static final int ENABLE_STARTED = 0x08;
     private static final int ENABLE_ALL =
-                        ENABLE_SURFACE | ENABLE_SIZE | ENABLE_RESUMED;
+               ENABLE_SURFACE | ENABLE_SIZE | ENABLE_RESUMED | ENABLE_STARTED;
 
 	
 	// ******************************************************************** //
