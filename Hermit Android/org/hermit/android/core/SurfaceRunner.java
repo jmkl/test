@@ -22,7 +22,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -488,32 +487,7 @@ public abstract class SurfaceRunner
         showPerf = enable;
     }
     
-    
-    // ******************************************************************** //
-    // Save and Restore.
-    // ******************************************************************** //
-
-	/**
-	 * Save the state of the game in the provided Bundle.
-	 * 
-     * @param   icicle      The Bundle in which we should save our state.
-	 */
-    protected void saveState(Bundle icicle) {
-//		gameTable.saveState(icicle);
-	}
-
-	
-	/**
-	 * Restore the game state from the given Bundle.
-	 * 
-	 * @param	icicle		The Bundle containing the saved state.
-	 */
-    protected void restoreState(Bundle icicle) {
-//		gameTable.pause();
-//		gameTable.restoreState(icicle);
-	}
-	
-
+ 
     // ******************************************************************** //
     // Private Classes.
     // ******************************************************************** //
