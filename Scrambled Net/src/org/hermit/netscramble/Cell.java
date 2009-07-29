@@ -348,7 +348,8 @@ class Cell
 	 * 						given directions; else false.
 	 */
 	boolean hasConnection(Dir d) {
-		return (connectedDirs.ordinal() & d.ordinal()) == d.ordinal();
+		return !isRotated() &&
+		        (connectedDirs.ordinal() & d.ordinal()) == d.ordinal();
 	}
 	
 	

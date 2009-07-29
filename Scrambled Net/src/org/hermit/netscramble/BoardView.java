@@ -636,8 +636,7 @@ public class BoardView
     	
     	// See if there's an actual connection.  If either cell is rotated,
     	// there's no connection.
-    	if (!cell.hasConnection(dir) || !other.hasConnection(otherdir) ||
-    				cell.isRotated() || other.isRotated())
+    	if (!cell.hasConnection(dir) || !other.hasConnection(otherdir))
     		return false;
 
     	// OK, there's a connection, and it's new.  Mark it.
@@ -1028,6 +1027,9 @@ public class BoardView
         // Give the user a click.  Set up an animation to do the rotation.
         parentApp.postSound(Sound.TURN);
         cell.rotate(dirn * 90);
+        
+        // Thic cell is no longer connected.  Update the connection state.
+        updateConnections();
         
         // Tell the parent we clicked this cell.
         parentApp.cellClicked(cell);
