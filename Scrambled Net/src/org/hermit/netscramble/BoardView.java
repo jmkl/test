@@ -1284,7 +1284,7 @@ public class BoardView
 	private static final String TAG = "netscramble";
 	
 	// Time in ms for a long screen or centre-button press.
-	private static final int LONG_PRESS = 800;
+	private static final int LONG_PRESS = 650;
 
 	// A mapping from each of the main directions to the contrary direction.
 	private static final EnumMap<Cell.Dir, Cell.Dir> contrdirs =

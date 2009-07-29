@@ -40,7 +40,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.util.Log;
 
 
 /**
@@ -580,7 +579,6 @@ class Cell
         // If we've got a rotation going on, move it on.
         if (rotateTarget != 0) {
             // Calculate the angle based on how long we've been going.
-            Log.d(TAG, "rot tim " + (now - rotateStart) + " ang " + rotateAngle);
             rotateAngle = (float) (now - rotateStart) / (float) ROTATE_TIME * 90f;
             if (rotateTarget < 0)
                 rotateAngle = -rotateAngle;
@@ -609,7 +607,6 @@ class Cell
                         rotateStart += ROTATE_TIME;
                     }
                 }
-                Log.d(TAG, "rot new " + (now - rotateStart) + " ang " + rotateAngle);
                 setDirs(Dir.getDir(bits));
                 changed = true;
             }

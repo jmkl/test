@@ -504,25 +504,25 @@ public class NetScramble
 				   			   		   Animation.RELATIVE_TO_SELF, 0.0f,
 				   			   		   Animation.RELATIVE_TO_SELF, 0.0f,
 				   			   		   Animation.RELATIVE_TO_SELF, 0.0f);
-    	animSlideInLeft.setDuration(500);
+    	animSlideInLeft.setDuration(ANIM_TIME);
     	animSlideOutLeft =
     			new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
     				   			   	   Animation.RELATIVE_TO_SELF, -1.0f,
     				   			   	   Animation.RELATIVE_TO_SELF, 0.0f,
     				   			   	   Animation.RELATIVE_TO_SELF, 0.0f);
-    	animSlideOutLeft.setDuration(500);
+    	animSlideOutLeft.setDuration(ANIM_TIME);
     	animSlideInRight =
 				new TranslateAnimation(Animation.RELATIVE_TO_SELF, -1.0f,
 			   			   		   	   Animation.RELATIVE_TO_SELF, 0.0f,
 			   			   		   	   Animation.RELATIVE_TO_SELF, 0.0f,
 			   			   		   	   Animation.RELATIVE_TO_SELF, 0.0f);
-    	animSlideInRight.setDuration(500);
+    	animSlideInRight.setDuration(ANIM_TIME);
     	animSlideOutRight =
 				new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
 				   			   	   	   Animation.RELATIVE_TO_SELF, 1.0f,
 				   			   	   	   Animation.RELATIVE_TO_SELF, 0.0f,
 				   			   	   	   Animation.RELATIVE_TO_SELF, 0.0f);
-    	animSlideOutRight.setDuration(500);
+    	animSlideOutRight.setDuration(ANIM_TIME);
 
         // Add the board and status to the layout, filling all the space.
     	View playView = createPlayView(width > height);
@@ -1072,6 +1072,9 @@ public class NetScramble
 	void showSplashText(int msgId) {
 		splashText.setText(msgId);
 		if (viewSwitcher.getDisplayedChild() != 1) {
+	        // Stop the game.
+	        boardView.surfaceStop();
+	        
 	    	viewSwitcher.setInAnimation(animSlideInRight);
 	    	viewSwitcher.setOutAnimation(animSlideOutRight);
 			viewSwitcher.setDisplayedChild(1);
@@ -1090,8 +1093,19 @@ public class NetScramble
 	    	viewSwitcher.setInAnimation(animSlideInLeft);
 	    	viewSwitcher.setOutAnimation(animSlideOutLeft);
 			viewSwitcher.setDisplayedChild(0);
+	        
+	        // Start the game -- after the animation.
+			soundHandler.postDelayed(startRunner, ANIM_TIME);
 		}
 	}
+	
+	
+	private Runnable startRunner = new Runnable() {
+        @Override
+        public void run() {
+            boardView.surfaceStart();
+        }
+	};
 	
 
     // ******************************************************************** //
@@ -1214,6 +1228,9 @@ public class NetScramble
 
     // Debugging tag.
 	private static final String TAG = "netscramble";
+	
+	// Time in ms for slide in/out animations.
+	private static final int ANIM_TIME = 500;
 
     
     // ******************************************************************** //
