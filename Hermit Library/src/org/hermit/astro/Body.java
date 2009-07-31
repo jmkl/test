@@ -46,7 +46,6 @@ import static java.lang.Math.tan;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.hermit.astro.Observation.OField;
@@ -162,10 +161,15 @@ public abstract class Body
 		public final double V_o;
 	}
 
+    /**
+     * The names of all the celestial bodies we have information on.
+     */
+    public static final Name[] ALL_BODIES = Name.values();
+
 	/**
 	 * The number of celestial bodies we have information on.
 	 */
-	public static final int NUM_BODIES = Name.values().length;
+	public static final int NUM_BODIES = ALL_BODIES.length;
 	
 
 	// Class embodying a calculate method which works out one or more fields.
@@ -526,7 +530,7 @@ public abstract class Body
 		put(Field.LOCAL_AZIMUTH, A);
 		put(Field.LOCAL_ALTITUDE, h - p);
 	}
-
+	
 
 	/**
 	 * Calculate the apparent diameter of this body from the Earth for the
@@ -875,107 +879,6 @@ public abstract class Body
 		put(Field.MAGNITUDE, mag);
 	}
 
-
-    // ******************************************************************** //
-    // Rise / Set / Transit Calculation.
-    // ******************************************************************** //
-
-	public class Event {
-	    
-	}
-	
-	public ArrayList<Event> calculateEvents(double jd1, double jd2)
-	    throws AstroError
-	{
-        if (whichBody == Name.EARTH)
-            throw new AstroError("Cannot calculate rise/set for the Earth");
-        
-        // Figure out the standard altitude for this body's rise or set, h_o.
-        // If this is the Moon, calculate h_o based on parallax.  Otherwise,
-        // h_o is refraction plus the semi-diameter, in radians.
-        // Note that θ_o is the full diameter.
-        double h_o;
-        if (whichBody == Name.MOON) {
-            double π = get(Field.HORIZ_PARALLAX);
-            h_o = 0.7275 * π - REFRACTION;
-        } else
-            h_o = -(REFRACTION + whichBody.θ_o / 2);
-        
-        // Get the observer's position.  NOTE: my L is positive east,
-        // the opposite to Astronomical Algorithms.
-        Position pos = observation.getObserverPosition();
-        double φ = pos.getLatRads();
-        double L = pos.getLonRads();
-
-        // We need the apparent sidereal time for midnight UT, in radians.
-        // NOTE: this is midnight Universal Time!
-        double Θ0 = observation.get(Observation.OField.GAST_MIDNIGHT) * 15.0;
-        Θ0 = toRadians(Θ0);
-
-        // Calculate the Julian day number.  We need observations of the
-        // body's positions for jday-1, jday, and jday+1 at 0h TD.
-        // NOTE: these times are midnight Dynamical Time!
-        Instant when = observation.getTime();
-        double ΔT = when.getΔT();
-        double jday = round(when.getTd() + 0.5) - 0.5;
-
-        Observation o1 = new Observation(Instant.fromTd(jday - 1));
-        Body b1 = o1.getBody(whichBody);
-        Observation o2 = new Observation(Instant.fromTd(jday));
-        Body b2 = o2.getBody(whichBody);
-        Observation o3 = new Observation(Instant.fromTd(jday + 1));
-        Body b3 = o3.getBody(whichBody);
-
-        // Get this body's position on each day.
-        double α1 = b1.get(Field.RIGHT_ASCENSION_AP);
-        double δ1 = b1.get(Field.DECLINATION_AP);
-        double α2 = b2.get(Field.RIGHT_ASCENSION_AP);
-        double δ2 = b2.get(Field.DECLINATION_AP);
-        double α3 = b3.get(Field.RIGHT_ASCENSION_AP);
-        double δ3 = b3.get(Field.DECLINATION_AP);
-        double[] αn = { α1, α2, α3 };
-        double[] δn = { δ1, δ2, δ3 };
-        
-        // OK!  First, calculate approximate time.
-        double cosH0 = (sin(h_o) - sin(φ) * sin(δ2)) / (cos(φ) * cos(δ2));
-        if (cosH0  < -1 || cosH0 > 1)
-            ;  // FIXME: signal no rise or set!
-        double H0 = acos(cosH0) % PI;
-        if (H0 < 0)
-            H0 += PI;
-
-        // Calculate transit, rise and set.  These are in fractions of a day.
-        // Note the reversed sign of L relative to Meeus.
-        double transit = ((α2 - L - Θ0) / TWOPI) % 1.0;
-        if (transit < 0)
-            transit += 1.0;
-        double rise = (transit - H0 / TWOPI) % 1.0;
-        if (rise < 0)
-            rise += 1.0;
-        double set = (transit + H0 / TWOPI) % 1.0;
-        if (set < 0)
-            set += 1.0;
-
-        // Refine the values by interpolation.
-        transit = refineRiseSet(h_o, Θ0, φ, L, ΔT, αn, null, transit) * 24.0;
-        rise = refineRiseSet(h_o, Θ0, φ, L, ΔT, αn, δn, rise) * 24.0;
-        set = refineRiseSet(h_o, Θ0, φ, L, ΔT, αn, δn, set) * 24.0;
-
-        put(Field.RISE_TIME, rise);
-        put(Field.TRANSIT_TIME, transit);
-        put(Field.SET_TIME, set);
-        
-        // Now, if this is the Sun, calculate the times of twilight.
-        if (whichBody == Name.SUN) {
-            // Calculate the duration of twilight.
-            double t = calculateTwilight(Θ0, φ, L, ΔT, αn, δn,
-                                         set / 24.0, HALFPI + TWILIGHT);
-            put(Field.RISE_TWILIGHT, rise - t);
-            put(Field.SET_TWILIGHT, set + t);
-        }
-	    return null;
-	}
-	
 
     // ******************************************************************** //
 	// Global Utilities.

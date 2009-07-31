@@ -168,15 +168,26 @@ public class Observation
 	 *						to the astronomical epoch of 4713 BC UTC.
 	 */
 	public Observation(Instant i) {
-		observationTime = i;
-		observerPos = new Position(0, 0);
-		
-		// Create the table where we will store bodies as we create them.
-		celestialBodies = new Body[Body.NUM_BODIES];
-		
-		// Create the data cache.
-		dataCache = new HashMap<OField, Double>();
+		this(i, new Position(0, 0));
 	}
+
+
+    /**
+     * Create an observation for a given Julian day.
+     * 
+     * @param   jd          The date to set as a Julian date relative
+     *                      to the astronomical epoch of 4713 BC UTC.
+     */
+    public Observation(Instant i, Position pos) {
+        observationTime = i;
+        observerPos = pos;
+        
+        // Create the table where we will store bodies as we create them.
+        celestialBodies = new Body[Body.NUM_BODIES];
+        
+        // Create the data cache.
+        dataCache = new HashMap<OField, Double>();
+    }
 
 
 	/**
@@ -188,6 +199,17 @@ public class Observation
 	public Observation(long time) {
 		this(new Instant(time));
 	}
+
+
+    /**
+     * Create an observation for a given Java time.
+     * 
+     * @param   time        Java-style time in milliseconds since 1 Jan,
+     *                      1970.
+     */
+    public Observation(long time, Position pos) {
+        this(new Instant(time), pos);
+    }
 
 
 	/**
