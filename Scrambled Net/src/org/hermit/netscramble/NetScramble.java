@@ -643,6 +643,8 @@ public class NetScramble
         		return true;
         	}
         };
+        text.setFocusable(true);
+        text.setFocusableInTouchMode(true);
         text.setGravity(Gravity.CENTER);
         text.setBackgroundColor(Color.WHITE);
         text.setTextColor(Color.argb(255, 100, 100, 255));
@@ -1080,7 +1082,7 @@ public class NetScramble
 			viewSwitcher.setDisplayedChild(1);
 		}
 		
-		// Any key dismisses it, so we need focus.  TODO: doesn't work.
+		// Any key dismisses it, so we need focus.
 		splashText.requestFocus();
 	}
 
