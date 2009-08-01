@@ -177,11 +177,8 @@ public class AppUtils
     	String res = null;
     	if (detail == Detail.DEBUG)
     		res = String.format("%s (%s) %s (%d)", aname, pname, vname, vcode);
-    	else {
-    		// TODO: the "version" should really come from a resource,
-    		// but I don't want a separate resources file in this package.
-    		res = String.format("%s version %s", aname, vname);
-    	}
+    	else
+    		res = String.format("%s %s", aname, vname);
 
     	return res;
     }
