@@ -85,7 +85,7 @@ public class SplashActivity
         // Get our parameters from the intent.
         Intent intent = getIntent();
         int imageId = intent.getIntExtra(EXTRAS_IMAGE_ID, 0);
-        long time = intent.getIntExtra(EXTRAS_TIME_ID, 3000);
+        long time = intent.getLongExtra(EXTRAS_TIME_ID, 3000);
         
         // Create the splash view.
         ImageView splashView = new ImageView(this);
