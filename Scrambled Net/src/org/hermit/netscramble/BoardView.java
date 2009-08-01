@@ -34,6 +34,7 @@ package org.hermit.netscramble;
 
 
 import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.Vector;
 
@@ -183,7 +184,7 @@ public class BoardView
         // Create the connected flags and connecting cell connectingCells
         // (used in updateConnections()).
         isConnected = new boolean[gridWidth][gridHeight];
-        connectingCells = new Vector<Cell>();
+        connectingCells = new LinkedList<Cell>();
        
 		// Handle key events on the board.  Do so even after touch events.
 		setFocusable(true);
@@ -552,7 +553,7 @@ public class BoardView
      * @return					true iff one or more cells have been
      *							connected that previously weren't.
      */
-    private boolean updateConnections() {
+    private synchronized boolean updateConnections() {
     	// Reset the array of connected flags per cell.
         for (int x = 0; x < gridWidth; x++)
             for (int y = 0; y < gridHeight; y++)
@@ -574,7 +575,7 @@ public class BoardView
         // connections that we haven't flagged yet, and add those cells
         // to the connectingCells.
         while (!connectingCells.isEmpty()) {
-            Cell cell = connectingCells.firstElement();
+            Cell cell = connectingCells.remove();
 
             if (hasNewConnection(cell, Cell.Dir.U___, isConnected))
                 connectingCells.add(cell.next(Cell.Dir.U___));
@@ -584,18 +585,15 @@ public class BoardView
                 connectingCells.add(cell.next(Cell.Dir.__D_));
             if (hasNewConnection(cell, Cell.Dir.___L, isConnected))
                 connectingCells.add(cell.next(Cell.Dir.___L));
-            connectingCells.remove(0);
         }
 
         // Finally, scan the connection flags.  Set every cell's connected
         // status accordingly.  Count connected cells, and cells that are
         // connected but weren't previously.
-        int connections = 0;
         int newConnections = 0;
         for (int x = 0; x < gridWidth; x++) {
             for (int y = 0; y < gridHeight; y++) {
             	if (isConnected[x][y]) {
-            		++connections;
             		if (!cellMatrix[x][y].isConnected())
             			++newConnections;
             	}
@@ -649,7 +647,7 @@ public class BoardView
      * Determine whether the board is currently in a solved state -- i.e.
      * all terminals are connected to the server.
      * 
-     * Note that in some layouts (particularly in Expert mode), it is
+     * Note that in some layouts, it is
      * possible to connect all the terminals without using all the cable
      * sections.  Since the game intro asks the user to connect all the
      * terminals, which makes sense, we look for unconnected terminals
@@ -663,7 +661,7 @@ public class BoardView
      * 						state -- ie. every terminal cell is connected
      * 						to the server.
      */
-    boolean isSolved() {
+    synchronized boolean isSolved() {
     	// Scan the board; any non-connected non-empty cell means
     	// we're not done yet.
     	for (int x = boardStartX; x < boardEndX; x++) {
@@ -1028,7 +1026,7 @@ public class BoardView
         parentApp.postSound(Sound.TURN);
         cell.rotate(dirn * 90);
         
-        // Thic cell is no longer connected.  Update the connection state.
+        // This cell is no longer connected.  Update the connection state.
         updateConnections();
         
         // Tell the parent we clicked this cell.
@@ -1357,7 +1355,7 @@ public class BoardView
 	private boolean isConnected[][];
 	
 	// List of outstanding connected cells; used in updateConnections().
-    Vector<Cell> connectingCells;
+	private LinkedList<Cell> connectingCells;
     
     // Cell currently being pressed in a touch event.
     private Cell pressedCell = null;

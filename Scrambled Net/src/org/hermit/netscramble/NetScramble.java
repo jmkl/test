@@ -333,7 +333,7 @@ public class NetScramble
         	// We just paused without closing down.  Resume.
     	    setState(State.RUNNING);
         } else {
-            Log.d(TAG, "onResume() !!" + gameState + "!!: init");
+            Log.e(TAG, "onResume() !!" + gameState + "!!: init");
     	    // setState(State.INIT);		// Shouldn't get here.
         }
         
@@ -1096,6 +1096,9 @@ public class NetScramble
 	        
 	        // Start the game -- after the animation.
 			soundHandler.postDelayed(startRunner, ANIM_TIME);
+		} else {
+		    // Make sure we're running -- we can get here after a restart.
+            boardView.surfaceStart();
 		}
 	}
 	
