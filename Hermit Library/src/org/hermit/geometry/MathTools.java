@@ -85,22 +85,6 @@ public class MathTools {
         return (b - a) * precision > 1.0;
     }
 
-
-    public static int ccw(Point P0, Point P1, Point P2) {
-        double dx1, dx2, dy1, dy2;
-        dx1 = P1.getX() - P0.getX();
-        dy1 = P1.getY() - P0.getY();
-        dx2 = P2.getX() - P0.getX();
-        dy2 = P2.getY() - P0.getY();
-        if (dx1 * dy2 > dy1 * dx2)
-            return +1;
-        if (dx1 * dy2 < dy1 * dx2)
-            return -1;
-        if (dx1 * dx2 < 0 || dy1 * dy2 < 0)
-            return -1;
-        return 0;
-    }
-
     
     // ******************************************************************** //
     // Private Class Data.

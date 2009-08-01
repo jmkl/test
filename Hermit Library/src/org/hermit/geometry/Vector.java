@@ -227,7 +227,6 @@ public class Vector implements Comparable<Vector> {
      */
     @Override
     public String toString() {
-        // TODO: number format.
         return "<" + x + "," + y + ">";
     }
 

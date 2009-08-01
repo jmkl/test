@@ -199,7 +199,9 @@ public class Edge
         final double rx = rightDatum.getX();
         final double ry = rightDatum.getY();
 
-        // If the edge is vertical, ... TODO: is this right???
+        // If the edge is vertical, we have to handle it specially to avoid
+        // divide by zero below.  Return a unit vector either up or
+        // down as appropriate.
         if (lx == rx) {
             if (ly < ry)
                 return new Vector(-1, 0);
@@ -243,6 +245,11 @@ public class Edge
      * <p>This method simply compares the co-ordinates of the two points,
      * with a limited precision.
      * 
+     * <p>This comparison has little objective value; it is used to enforce
+     * a natural ordering on edges, so that arrays of edges can be compared
+     * easily for equality.  This is in turn used for testing.  Because
+     * compareTo() only compares vertices, so does this method.
+     * 
      * <p>Note that the precision of the test is limited by the precision
      * set in {@link MathTools#setPrecision(double)}.  That is, only as
      * many fractional digits are compared as configured there; hence,
@@ -260,7 +267,6 @@ public class Edge
 
         final Edge o = (Edge) obj;
         
-        // TODO: could really do better here.
         return VVertexA.equals(o.VVertexA) && VVertexB.equals(o.VVertexB);
     }
 
@@ -291,7 +297,7 @@ public class Edge
             me1 = VVertexB;
             me2 = VVertexA;
         }
-        
+
         Point o1, o2;
         if (ev.VVertexA.compareTo(ev.VVertexB) < 0) {
             o1 = ev.VVertexA;
@@ -300,7 +306,7 @@ public class Edge
             o1 = ev.VVertexB;
             o2 = ev.VVertexA;
         }
-        
+
         int stat = me1.compareTo(o1);
         if (stat == 0)
             stat = me2.compareTo(o2);

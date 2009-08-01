@@ -120,13 +120,8 @@ public class HaversineCalculator
 	 */
 	@Override
 	public Distance latDistance(Position p1, double lat) {
-		double p1Lat = p1.getLatRads();
-		double halfLat = (lat - p1Lat) / 2;
-		
-		// TODO: I'm sure this can be simplified.  A lot.
-		double sinHalfLat = sin(halfLat);
-		double sin2HalfLat = sinHalfLat * sinHalfLat;
-		double c = 2 * atan2(sinHalfLat, sqrt(1 - sin2HalfLat));
+	    // In a spherical model, the angular distance is trivial.
+		double c = lat - p1.getLatRads();
 		
 		// Convert the angular distance to metres.
 		Ellipsoid ellipsoid = getEllipsoid();

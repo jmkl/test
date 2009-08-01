@@ -436,7 +436,28 @@ public class GeodeticTests
 		Distance d2 = p2.distance(p1);
 		assertPercent(msg + ": reverse dst", d2.getMetres(), test.distance.getMetres(), tol);
 	}
-	
+
+
+    private void doLatDistance(String msg, TestData test, double tol) {
+        msg = msg + ": " + test.testName;
+        Position p1 = test.pos1;
+        Position p2 = test.pos2;
+        
+        // Getting the distance from 1 to the latitude of 2.  We will
+        // calculate the same distance with the regular method as our
+        // reference.
+        Position ref1 = new Position(p2.getLatRads(), p1.getLonRads());
+        Distance r1 = p1.distance(ref1);
+        Distance d1 = p1.latDistance(p2.getLatRads());
+        assertPercent(msg + ": forward lat dst", d1.getMetres(), r1.getMetres(), tol);
+
+        // Getting the distance from 2 to the latitude of 1.
+        Position ref2 = new Position(p1.getLatRads(), p2.getLonRads());
+        Distance r2 = p2.distance(ref2);
+        Distance d2 = p2.latDistance(p1.getLatRads());
+        assertPercent(msg + ": reverse lat dst", d2.getMetres(), r2.getMetres(), tol);
+    }
+    
 
 	private void doVector(String msg, TestData test, double tol) {
 		msg = msg + ": " + test.testName;
@@ -472,19 +493,26 @@ public class GeodeticTests
 			doOffset("Haversine offset", test, 0.6);
 	}
 	
+    
+    public void testHaversineVector() {
+        GeoCalculator.setAlgorithm(GeoCalculator.Algorithm.HAVERSINE);
+        for (TestData test : testData)
+            doVector("Haversine vector", test, 0.6);
+    }
+    
+
+    public void testHaversineLatDistance() {
+        GeoCalculator.setAlgorithm(GeoCalculator.Algorithm.HAVERSINE);
+        for (TestData test : testData)
+            doLatDistance("Haversine lat distance", test, 0.001);
+    }
+    
 
 	public void testVincentyOffset() {
 		for (TestData test : testData) {
 			GeoCalculator.setAlgorithm(GeoCalculator.Algorithm.VINCENTY, test.ellipsoid);
 			doOffset("Vincenty offset", test, 0.00001);
 		}		
-	}
-	
-	
-	public void testHaversineVector() {
-		GeoCalculator.setAlgorithm(GeoCalculator.Algorithm.HAVERSINE);
-		for (TestData test : testData)
-			doVector("Haversine vector", test, 0.6);
 	}
 	
 

@@ -304,7 +304,6 @@ public class Point implements Comparable<Point> {
      */
     @Override
     public String toString() {
-        // TODO: number format.
         return "<" + x + "," + y + ">";
     }
 

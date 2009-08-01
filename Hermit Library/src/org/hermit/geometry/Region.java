@@ -141,7 +141,6 @@ public class Region {
      */
     @Override
     public String toString() {
-        // TODO: number format.
         return "<" + x1 + "," + y1 + " -> " + x2 + "," + y2 + ">";
     }
 

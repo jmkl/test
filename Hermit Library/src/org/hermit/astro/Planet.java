@@ -184,7 +184,6 @@ public class Planet
 		// Note: we could iterate until the change in Δ becomes insignificant,
 		// but in reality two passes should do.
 
-		// FIXME: goes wrong here
 		// Calculate the geometric co-ordinates.
 		double λ = modTwoPi(atan2(y, x));
 		double β = atan2(z, sqrt(x * x + y * y));
