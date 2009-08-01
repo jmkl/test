@@ -4,7 +4,7 @@
 
     <!-- "New game". -->
     <item android:id="@+id/menu_new" android:title="@string/menu_game_new"
-    	  android:icon="@drawable/ic_menu_forward"/>
+    	  android:icon="@drawable/ic_menu_play"/>
 
     <!-- "Pause game". -->
     <item android:id="@+id/menu_pause" android:title="@string/menu_game_pause" 
@@ -28,7 +28,7 @@
 
     <!-- "Sound...".  -->
     <item android:id="@+id/sound_menu" android:title="@string/menu_sound"
-    	  android:icon="@drawable/ic_menu_sound">
+    	  android:icon="@drawable/ic_menu_volume">
         <menu>
             <group android:id="@+id/sound_group" android:checkableBehavior="single">
 
