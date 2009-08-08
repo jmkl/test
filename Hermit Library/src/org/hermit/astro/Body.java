@@ -243,10 +243,29 @@ public abstract class Body
 		 */
 		APPARENT_DIAMETER,
 		
+		/**
+		 * Time at which nautical twilight begins before sunrise (SUN only).
+		 */
 		RISE_TWILIGHT,
+        
+        /**
+         * Rise time.
+         */
 		RISE_TIME,
+        
+        /**
+         * Transit time.
+         */
 		TRANSIT_TIME,
+        
+        /**
+         * Set time.
+         */
 		SET_TIME,
+        
+        /**
+         * Time at which nautical twilight ends after sunset (SUN only).
+         */
 		SET_TWILIGHT,
 		
 		/**
@@ -260,9 +279,25 @@ public abstract class Body
 		 */
 		PHASE,
 		
+		/**
+		 * Parallactic angle of this body as seen from the Earth.
+		 */
 		PARALLACTIC,
+		
+		/**
+	     * The position angle of the bright limb of this body from North.
+	     */
 		ABS_BRIGHT_LIMB,
+        
+        /**
+         * The position angle of the bright limb of this body
+         * as seen from Earth.
+         */
 		OBS_BRIGHT_LIMB,
+        
+        /**
+         * The magnitude of this body as seen from Earth.
+         */
 		MAGNITUDE;
 
 		private static void register(Field field, Calc calc) {
