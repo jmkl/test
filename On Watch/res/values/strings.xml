@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">On Watch</string>
+    <string name="description">A cruising sailor's watch buddy.</string>
+
+
+    <string name="eula_title">NOT FOR NAVIGATION</string>
+    
+    <string name="eula_text">On Watch is intended to be used as a fun
+application to keep you company on night watches.  The information it
+displays (position, astronomical data, etc.) is intended to be interesting,
+but not reliable to the standards required for navigation or any situation
+in which adverse consequences may result from errors.\n\
+\n\
+This program is free software, and is distributed by its creator free
+of charge.  A free copy, and the source code, can be obtained on the
+project home page; see the About screen.\n\
+\n\
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
+for more details.\n</string>
+
+
+    <string name="help_text"><b>On Watch</b>\n\
+\n\
+On Watch displays a selection of useful information for a sailing
+watchkeeper, and sounds chimes and alerts to keep you on your toes.
+It also lets you know about interesting astronomical phenomena to look
+out for on those long night watches.\n\
+\n\
+You\'ll see a link to the project
+home page at the bottom of this screen; check it out for more info on
+On Watch.  On Watch is an open project, so if you want to join in and
+make contributions, you can.  See the project page for information.\n\
+</string>
+
+
+    <string name="about_title">About</string>
+    <string name="about_text"><b>On Watch</b> by Ian Cameron Smith
+(headstay).\n\
+\n\
+For information and source code see the project home page.\n\
+\n\
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.\n\
+\n\
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
+for more details.\n</string>
+
+
+    <!-- Menu strings. -->
+    <string name="menu_prefs">Settings</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+    <string name="menu_eula">Disclaimer</string>
+    <string name="menu_exit">Exit</string>
+    
+    <string name="menu_move_up">Move Up</string>
+    <string name="menu_move_down">Move Down</string>
+    <string name="menu_delete">Delete</string>
+    
+    <!-- Preferences strings. -->
+    <string name="prefs_title">Settings</string>
+<!--    <string name="prefs_cat_sound">Sound Settings</string>-->
+<!--    <string name="prefs_chime_watch">Sound watch chimes</string>-->
+<!--    <string name="prefs_chime_watch_summary">Sound traditional chimes for the watches</string>-->
+<!--    <string name="prefs_alert">Repeating alert</string>-->
+<!--    <string name="prefs_alert_summary">Configure a repeating wake-up alarm</string>-->
+<!--    <string name="prefs_alert_title">Repeating Alert</string>-->
+    <string name="prefs_cat_time">Time Settings</string>
+    <string name="prefs_naut_time">Use Nautical Time</string>
+    <string name="prefs_naut_time_summary">Set the timezone automatically by longitude</string>
+    <string name="prefs_cat_debug">Debug Settings</string>
+    <string name="prefs_debug_time">Manual Time Control</string>
+    <string name="prefs_debug_time_summary">Adjust time by the trackball</string>
+    <string name="prefs_debug_space">Manual Position Control</string>
+    <string name="prefs_debug_space_summary">Adjust location by the trackball</string>
+
+    <!-- Button strings. -->
+    <string name="button_ok">OK</string>
+    <string name="button_close">OK</string>
+    <string name="button_license">License</string>
+    <string name="button_homepage">Project</string>
+    <string name="button_manual">Manual</string>
+
+    <!-- URLs. -->
+    <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
+    <string name="url_homepage">http://code.google.com/p/tricorder/</string>
+    <string name="url_manual">http://code.google.com/p/tricorder/wiki/UserManual</string>
+
+    <!-- Names of the watch plans.  -->
+    <string name="wplan_ninety_s">90 min double</string>
+    <string name="wplan_three">3 hour watches</string>
+    <string name="wplan_three_d">3 hour &amp; dog watches</string>
+    <string name="wplan_three_s">3 hour double</string>
+    <string name="wplan_four">4 hour watches</string>
+    <string name="wplan_four_d">Traditional watches</string>
+    <string name="wplan_four_ds">Traditional doubled</string>
+    <string name="wplan_six">6 hour watches</string>
+    <string name="wplan_six_d">6 hour &amp; dog watches</string>
+
+    <!-- Names of the watches.  Each string is named by the starting
+         hour of its slot.  Note the two 2-hour dog watches.  -->
+    <string name="watch_00">Middle Watch</string>
+    <string name="watch_04">Morning Watch</string>
+    <string name="watch_08">Forenoon Watch</string>
+    <string name="watch_12">Afternoon Watch</string>
+    <string name="watch_16">First Dog Watch</string>
+    <string name="watch_18">Last Dog Watch</string>
+    <string name="watch_20">First Watch</string>
+
+    <!-- GPS states. -->
+    <string name="gps_unknown">GPS state unknown!</string>
+    <string name="gps_enabled">GPS OK</string>
+    <string name="gps_disabled">GPS disabled</string>
+    <string name="gps_oos">GPS out of service</string>
+    <string name="gps_temp_oos">Waiting for GPS...</string>
+
+    <!-- GPS last fix message, takes one parameter, minutes since last fix. -->
+    <string name="gps_last_fix">Last fix %d minutes ago</string>
+
+    <!-- Field Labels. -->
+    <string name="lab_head">Heading</string>
+    <string name="lab_speed">Speed</string>
+    <string name="lab_acc">Accuracy</string>
+
+    <!-- Astro Labels. -->
+    <string name="lab_body">Body</string>
+    <string name="lab_rise">Rise</string>
+    <string name="lab_set">Set</string>
+    <string name="lab_mag">Mag.</string>
+
+    <!-- Timezone picker. -->
+    <string name="title_timezone">Select a Time Zone</string>
+
+    <!-- Passages. -->
+    <string name="passage_edit_title">Passage Editor</string>
+    <string name="passage_edit">Edit</string>
+    <string name="passage_new">New</string>
+    <string name="passage_save">Save</string>
+    <string name="passage_delete">Delete</string>
+    <string name="passage_done">Done</string>
+    <string name="lab_passage_start">Start:</string>
+    <string name="lab_passage_end">End:</string>
+    <string name="lab_passage_status">Status:</string>
+    <string name="lab_passage_name">Name:</string>
+    <string name="lab_passage_from">From:</string>
+    <string name="lab_passage_to">To:</string>
+    <string name="lab_no_passage">Not under way.</string>
+    <string name="lab_passage_not_started">Not started</string>
+    <string name="lab_passage_under_way">Under way</string>
+    <string name="lab_passage_finished">Finished</string>
+    <string name="passage_start">Start</string>
+    <string name="passage_stop">Finish</string>
+
+    <!-- Crew Editor. -->
+    <string name="msg_no_crew">No crew entered.</string>
+    <string name="crew_edit_title">Watch Order Editor</string>
+    <string name="lab_watch_type">Watch plan:</string>
+    <string name="lab_dog_watches">Dog Watches</string>
+    <string name="lab_edit">Edit</string>
+    <string name="lab_add">Add</string>
+    <string name="lab_save">Done</string>
+
+    <!-- Various. -->
+    <string name="timezone_naut">Nautical</string>
+    <string name="timezone_naut_off">By longitude</string>
+
+</resources>
+

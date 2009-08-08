@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical">
+
+	<Spinner android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:id="@+id/passage_picker"></Spinner>
+
+	<TableLayout
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:layout_weight="1" android:shrinkColumns="*" android:stretchColumns="*">
+		<TableRow android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:text="@string/lab_passage_start" />
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/pass_start_place" />
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/pass_start_time" />
+		</TableRow>
+		
+		<TableRow android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:text="@string/lab_passage_end" />
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/pass_end_place" />
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/pass_end_time" />
+		</TableRow>
+		
+		<TableRow android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:text="@string/lab_passage_status" />
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/pass_stat_desc" />
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/pass_stat_aux" />
+		</TableRow>
+	</TableLayout>
+
+	<!--  The bottom button bar. -->
+	
+	<LinearLayout android:orientation="horizontal"
+		android:layout_width="fill_parent" android:layout_height="wrap_content">
+
+		<ImageButton android:id="@+id/flip_left"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:background="@drawable/btn_thin" android:src="@drawable/ic_left" />
+
+		<Button android:id="@+id/passage_start_button"
+			android:layout_width="fill_parent" android:layout_height="fill_parent"
+			android:layout_weight="1" android:background="@drawable/btn_thin"
+			android:text="@string/passage_start" android:textColor="#ffffff"
+			android:textSize="24dip" />
+
+		<Button android:id="@+id/passage_edit_button"
+			android:layout_width="fill_parent" android:layout_height="fill_parent"
+			android:layout_weight="1" android:background="@drawable/btn_thin"
+			android:text="@string/passage_edit" android:textColor="#ffffff"
+			android:textSize="24dip" />
+
+		<ImageButton android:id="@+id/flip_right"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:background="@drawable/btn_thin" android:src="@drawable/ic_right" />
+	</LinearLayout>
+
+</LinearLayout>
+

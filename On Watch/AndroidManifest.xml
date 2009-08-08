@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="org.hermit.onwatch" android:versionName="1.0"
+	android:versionCode="1">
+	
+	<application android:label="@string/app_name"
+		android:description="@string/description" android:debuggable="true" android:icon="@drawable/android">
+
+		<activity android:name=".OnWatch" android:label="@string/app_name"
+			android:launchMode="singleTop" android:theme="@style/OnWatchTheme">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		
+		<activity android:launchMode="singleTop" android:name="CrewEditor"
+			android:label="@string/crew_edit_title">
+		</activity>
+		
+		<activity android:launchMode="singleTop" android:name="PassageEditor"
+			android:label="@string/passage_edit_title">
+		</activity>
+
+		<activity android:name="org.hermit.android.widgets.TimeZoneActivity"
+			android:label="@string/title_timezone" android:launchMode="singleTop">
+		</activity>
+
+		<activity android:name="org.hermit.android.core.SplashActivity">
+		</activity>
+
+		<activity android:name=".Preferences" android:label="@string/prefs_title"
+			android:launchMode="singleTop">
+		</activity>
+
+	</application>
+	
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+	<uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+	<uses-permission android:name="android.permission.SET_TIME_ZONE"/>
+	
+	<uses-sdk android:minSdkVersion="3"/>
+
+
+</manifest> 
+
