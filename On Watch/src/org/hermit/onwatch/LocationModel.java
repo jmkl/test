@@ -452,9 +452,10 @@ public class LocationModel
      * Display the current date and time.
      */
 	private void update() {
+//      Log.v(TAG, "Location: update()");
+	    
 		int oldTz = nautTimezone;
 		
-		Log.v(TAG, "Location: update()");
 		synchronized (this) {
 			long time = System.currentTimeMillis();
 			

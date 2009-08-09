@@ -29,7 +29,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -87,7 +86,7 @@ public class AstroCalendarWidget
         // Get the time model.  Get a callback every 10 minutes to update
         // the display.
         timeModel = TimeModel.getInstance(context);
-        timeModel.listen(TimeModel.Field.MINUTE, new TimeModel.Listener() {
+        timeModel.listen(TimeModel.Field.HOUR, new TimeModel.Listener() {
             @Override
             public void change(Field field, long time, int value) {
                 Log.v(TAG, "Astro: time change");
@@ -114,6 +113,9 @@ public class AstroCalendarWidget
                 update();
             }
         });
+        
+        // Create an astro observation for later use.
+        astroObservation = new Observation();
         
         // Get our initial data set up.
         update();
@@ -158,10 +160,10 @@ public class AstroCalendarWidget
     	hourWidth = (float) dispWidth / (float) DISPLAY_HOURS;
     	bodyHeight = (float) dispHeight / (float) NUM_DISP_BODIES;
         
-        backingBitmap = Bitmap.createBitmap(width, height,
-                                            Bitmap.Config.RGB_565);
-        backingCanvas = new Canvas(backingBitmap);
-        reDrawContent();
+    	backingBitmap = Bitmap.createBitmap(width, height,
+    	        Bitmap.Config.RGB_565);
+    	backingCanvas = new Canvas(backingBitmap);
+    	reDrawContent();
 	}
 
 
@@ -173,60 +175,85 @@ public class AstroCalendarWidget
 	 * Update the displayed data.
 	 */
 	void update() {
-	    // Need a position to continue.
-	    Position pos = locationModel.getCurrentPos();
-	    if (pos == null) {
-            Log.v(TAG, "Astro: update: no position");
-	        return;
-        }
-    
-	    Calendar baseTime = Calendar.getInstance();
-	    baseTime.setTimeInMillis(System.currentTimeMillis());
-	    int baseHour = baseTime.get(Calendar.HOUR_OF_DAY);
-	    if (baseHour % 4 <= 2)
-	        baseHour -= 4;
-	    baseHour -= baseHour % 4;
-	    baseTime.set(Calendar.HOUR_OF_DAY, baseHour);
-        baseTime.set(Calendar.MINUTE, 0);
-        baseTime.set(Calendar.SECOND, 0);
-		if (altitudeTable != null && leftTime != null && leftTime.equals(baseTime))
-		    return;
-		leftTime = baseTime;
+	    long now = System.currentTimeMillis();
+	    
+	    synchronized (this) {
+	        // If we're already doing it, just continue.
+	        if (calcThread != null)
+	            return;
 
-		// Create the data tables.  Note that since we index them
-		// by ordinal, they need to be big enough for all bodies, not
-		// just the ones we display.
-		if (altitudeTable == null || azimuthTable == null || magnitudeTable == null) {
-		    altitudeTable = new float[Body.NUM_BODIES][CALC_HOURS];
-		    azimuthTable = new float[Body.NUM_BODIES][CALC_HOURS];
-		    magnitudeTable = new float[Body.NUM_BODIES][CALC_HOURS];
-		}
-		
-		// Get the tables of altitudes for all the bodies for
-		// the next HOURS hours.
-		long baseMillis = leftTime.getTimeInMillis();
-		Observation o = new Observation(baseMillis, pos);
-		for (int hour = 0; hour < CALC_HOURS; ++hour) {
-		    long time = baseMillis + 3600000 * hour;
-		    o.setJavaTime(time);
-	        for (Body.Name n : CALC_BODIES) {
-	            Body b = o.getBody(n);
-	            try {
-	                float alt = (float) b.get(Body.Field.LOCAL_ALTITUDE);
-                    altitudeTable[n.ordinal()][hour] = alt;
-                    float az = (float) b.get(Body.Field.LOCAL_AZIMUTH);
-                    azimuthTable[n.ordinal()][hour] = az;
-                    float mag = (float) b.get(Body.Field.MAGNITUDE);
-                    magnitudeTable[n.ordinal()][hour] = mag;
-                } catch (AstroError e) {
-                    Log.e(TAG, "Astro: Get data for " + n + ": " + e.getMessage());
-                }
+	        // Need a position to continue.
+	        Position pos = locationModel.getCurrentPos();
+	        if (pos == null) {
+	            Log.v(TAG, "Astro: update: no position");
+	            return;
 	        }
-		}
 
-        reDrawContent();
+	        Calendar baseTime = Calendar.getInstance();
+	        baseTime.setTimeInMillis(now);
+	        int baseHour = baseTime.get(Calendar.HOUR_OF_DAY);
+	        if (baseHour % 4 <= 2)
+	            baseHour -= 4;
+	        baseHour -= baseHour % 4;
+	        baseTime.set(Calendar.HOUR_OF_DAY, baseHour);
+	        baseTime.set(Calendar.MINUTE, 0);
+	        baseTime.set(Calendar.SECOND, 0);
+	        if (altitudeTable != null && leftTime != null && leftTime.equals(baseTime))
+	            return;
+	        leftTime = baseTime;
+	        basePosition = pos;
+
+	        calcThread = new Thread(calcRunner);
+	        calcThread.start();
+	    }
 	}
 
+	
+	private Runnable calcRunner = new Runnable() {
+        @Override
+        public void run() {
+            // Create the data tables.  Note that since we index them
+            // by ordinal, they need to be big enough for all bodies, not
+            // just the ones we display.
+            if (altitudeTable == null || azimuthTable == null || magnitudeTable == null) {
+                altitudeTable = new float[Body.NUM_BODIES][CALC_HOURS];
+                azimuthTable = new float[Body.NUM_BODIES][CALC_HOURS];
+                magnitudeTable = new float[Body.NUM_BODIES][CALC_HOURS];
+            }
+
+            // Get the tables of altitudes for all the bodies for
+            // the next HOURS hours.
+            long baseMillis = leftTime.getTimeInMillis();
+            astroObservation.setObserverPosition(basePosition);
+            for (int hour = 0; hour < CALC_HOURS; ++hour) {
+                long time = baseMillis + 3600000 * hour;
+                astroObservation.setJavaTime(time);
+                
+                synchronized (altitudeTable) {
+                    for (Body.Name n : CALC_BODIES) {
+                        Body b = astroObservation.getBody(n);
+                        try {
+                            float alt = (float) b.get(Body.Field.LOCAL_ALTITUDE);
+                            altitudeTable[n.ordinal()][hour] = alt;
+                            float az = (float) b.get(Body.Field.LOCAL_AZIMUTH);
+                            azimuthTable[n.ordinal()][hour] = az;
+                            float mag = (float) b.get(Body.Field.MAGNITUDE);
+                            magnitudeTable[n.ordinal()][hour] = mag;
+                        } catch (AstroError e) {
+                            Log.e(TAG, "Astro: Get data for " + n + ": " + e.getMessage());
+                        }
+                    }
+                }
+
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) { }
+            }
+            
+            reDrawContent();
+        }
+	};
+	
 
 	// ******************************************************************** //
 	// Cell Drawing.
@@ -244,8 +271,10 @@ public class AstroCalendarWidget
             return;
 
         // Just re-draw from our cached bitmap.
-        canvas.drawBitmap(backingBitmap, 0, 0, null);
-
+        synchronized (backingBitmap) {
+            canvas.drawBitmap(backingBitmap, 0, 0, null);
+        }
+        
         // Draw in the body labels.  We do this at the current scroll
         // X position, so they stay in the same place on screen.
         graphPaint.setStyle(Paint.Style.STROKE);
@@ -273,26 +302,28 @@ public class AstroCalendarWidget
         if (backingCanvas == null || altitudeTable == null)
             return;
         
-        final Canvas canvas = backingCanvas;
-		canvas.drawColor(0xff000000);
-        
-        // Draw in the daylight hours.
-		drawDaylight(canvas);
-		
-        // Draw in the hours grid and hour labels.
-        drawGrid(canvas);
+        synchronized (backingBitmap) {
+            final Canvas canvas = backingCanvas;
+            canvas.drawColor(0xff000000);
 
-        // Draw in the altitudes of all the bodies.
-		drawAltitudes(canvas);
-		
-        // Draw in the data labels for all the bodies.
-		drawDataPoints(canvas);
-		
-        // Widget needs a redraw now.
-        postInvalidate();
+            // Draw in the daylight hours.
+            drawDaylight(canvas);
+
+            // Draw in the hours grid and hour labels.
+            drawGrid(canvas);
+
+            // Draw in the altitudes of all the bodies.
+            drawAltitudes(canvas);
+
+            // Draw in the data labels for all the bodies.
+            drawDataPoints(canvas);
+
+            // Widget needs a redraw now.
+            postInvalidate();
+        }
     }
-    
-    
+
+
     /**
      * Draw in the grid and axis labels.
      */
@@ -375,6 +406,10 @@ public class AstroCalendarWidget
 
             prevAlt = alt;
         }
+
+        // If the sun is still up, draw the last day.
+        if (prevAlt >= 0f)
+            canvas.drawRect(riseX, 0, dispWidth + hourWidth, dispHeight, graphPaint);
     }
 
     
@@ -608,13 +643,22 @@ public class AstroCalendarWidget
 
 	// The time shown at the left edge of the display, in ms and
 	// hour of day; also the weekday.
-	private Calendar leftTime;
+	private Calendar leftTime = null;
 	
+	// Base position the calculations are based on.
+	private Position basePosition = null;
+	
+	// Observation for astronomical calculations.
+	private Observation astroObservation = null;
+
 	// Paint used for graphics.
 	private Paint graphPaint;
 	
 	// Char buffer used for formatting.
 	private char[] charBuf;
+	
+	// Thread which is calculating the astro data; null if not running.
+	private Thread calcThread = null;
 
 }
 

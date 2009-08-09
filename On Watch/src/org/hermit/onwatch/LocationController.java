@@ -22,7 +22,6 @@ import org.hermit.utils.Angle;
 
 import android.app.Activity;
 import android.location.Location;
-import android.util.Log;
 import android.widget.TextView;
 
 
@@ -76,7 +75,7 @@ public class LocationController
 	private void update(GpsState gpsState, String stateMsg,
 			  			Location l, String locMsg)
 	{
-		Log.v(TAG, "Location Display: update");
+//		Log.v(TAG, "Location Display: update");
 		
 		synchronized (this) {
 			statusField.setText(stateMsg);
