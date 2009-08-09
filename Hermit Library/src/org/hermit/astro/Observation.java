@@ -43,8 +43,6 @@ import static java.lang.Math.tan;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
-import java.util.HashMap;
-
 import org.hermit.geo.GeoConstants;
 import org.hermit.geo.Position;
 
@@ -155,6 +153,10 @@ public class Observation
 		
 		private Calc calculator = null;
 	}
+    
+    private static final OField[] ALL_FIELDS = OField.values();
+    
+    private static final int NUM_FIELDS = ALL_FIELDS.length;
 
 
 	// ******************************************************************** //
@@ -186,7 +188,8 @@ public class Observation
         celestialBodies = new Body[Body.NUM_BODIES];
         
         // Create the data cache.
-        dataCache = new HashMap<OField, Double>();
+        dataCache = new Double[NUM_FIELDS];
+        invalidate();
     }
 
 
@@ -491,15 +494,15 @@ public class Observation
 	 * @return				The field value.
 	 */
 	public double get(OField key) {
-		if (!dataCache.containsKey(key))
-			key.calculate(this);
-		
-		// Get the value.  It has to be there now.
-		Double val = dataCache.get(key);
-		if (val == null)
-			throw new CalcError("Calculator for observation field " +
-									   key + " failed");
-		
+        if (dataCache[key.ordinal()] == null)
+            key.calculate(this);
+        
+        // Get the value.  It has to be there now.
+        Double val = dataCache[key.ordinal()];
+        if (val == null)
+            throw new CalcError("Calculator for observation field " +
+                                key + " failed");
+
 		return val;
 	}
 	
@@ -511,7 +514,7 @@ public class Observation
 	 * @param	val			The value.
 	 */
 	protected void put(OField key, Double val) {
-		dataCache.put(key, val);
+        dataCache[key.ordinal()] = val;
 	}
 	
 	
@@ -520,7 +523,8 @@ public class Observation
 	 */
 	protected void invalidate() {
 		// Clear the data calculated for this Observation.
-		dataCache.clear();
+        for (int i = 0; i < NUM_FIELDS; ++i)
+            dataCache[i] = null;
 		
 		// Clear the caches in all the bodies.
 		for (Body b : celestialBodies)
@@ -1148,7 +1152,7 @@ public class Observation
 
 	// Cache of values calculated for this body at the currently
 	// configured date / time.
-	private HashMap<OField, Double> dataCache;
+	private Double[] dataCache;
 
 }
 

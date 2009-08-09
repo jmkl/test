@@ -46,8 +46,6 @@ import static java.lang.Math.tan;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
-import java.util.HashMap;
-
 import org.hermit.astro.Observation.OField;
 import org.hermit.geo.Position;
 
@@ -315,6 +313,10 @@ public abstract class Body
 		
 		private Calc calculator = null;
 	}
+	
+	private static final Field[] ALL_FIELDS = Field.values();
+	
+	private static final int NUM_FIELDS = ALL_FIELDS.length;
 
 	
 	// ******************************************************************** //
@@ -334,7 +336,8 @@ public abstract class Body
 		whichBody = which;
 		
 		// Create the data cache.
-		dataCache = new HashMap<Field, Double>();
+		dataCache = new Double[NUM_FIELDS];
+		invalidate();
 	}
 
 
@@ -370,11 +373,11 @@ public abstract class Body
 	 * @throws	AstroError	The request was invalid.
 	 */
 	public double get(Field key) throws AstroError {
-		if (!dataCache.containsKey(key))
+		if (dataCache[key.ordinal()] == null)
 			key.calculate(this);
 		
 		// Get the value.  It has to be there now.
-		Double val = dataCache.get(key);
+		Double val = dataCache[key.ordinal()];
 		if (val == null)
 			throw new CalcError("Calculator for field " + key + " failed");
 		
@@ -1042,7 +1045,7 @@ public abstract class Body
 	 * @param	val			The value.
 	 */
 	protected void put(Field key, Double val) {
-		dataCache.put(key, val);
+		dataCache[key.ordinal()] = val;
 	}
 	
 	
@@ -1050,7 +1053,8 @@ public abstract class Body
 	 * Invalidate the data cache.
 	 */
 	protected void invalidate() {
-		dataCache.clear();
+	    for (int i = 0; i < NUM_FIELDS; ++i)
+	        dataCache[i] = null;
 	}
 	
 	
@@ -1077,7 +1081,7 @@ public abstract class Body
 
 	// Cache of values calculated for this body at the currently
 	// configured date / time.
-	private HashMap<Field, Double> dataCache;
+	private Double[] dataCache;
 
 }
 
