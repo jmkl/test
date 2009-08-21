@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    
+    <!-- Entry names for the sound preferences menu. -->
+    <string-array name="prefs_sound_entries">
+        <item>No sound</item>
+        <item>Quiet sound</item>
+        <item>Full sound</item>  
+    </string-array>
+
+    <!-- Values for the sound preferences menu. -->
+    <string-array name="prefs_sound_values">
+        <item>NONE</item>
+        <item>QUIET</item>
+        <item>FULL</item>  
+    </string-array>
+    
+</resources>
+

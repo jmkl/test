@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="app_name">Tricorder</string>
+    <string name="description">Turn your phone into a working tricorder.</string>
+
+       
+    <string name="help_text"><b>Tricorder</b>\n\
+\n\
+Tricorder displays real data from the sensors built into your phone.\n\
+\n\
+This screen displays brief help on Tricorder.  For the full manual,
+press \"manual\" below.\n\
+\n\
+<b>CONTROLS</b>\n\
+\n\
+Select between the available data views (see VIEWS below) using the buttons
+on the left.\n\
+\n\
+In the GRAV and MAG views:\n\
+• touch the X/Y axis plot to switch between absolute and relative modes.
+When you enter relative mode, the current values are stored; the plot
+starts displaying changes relative to those values.  So, for example, in
+GRAV, touch to enter relative mode, and then you will see accelerations
+relative to that initial state.\n\
+• slide your finger up and down on the Magnitude graph to zoom the graph.\n\
+• touch the numeric data display to toggle it to an X/Y/Z graph plot; red
+is X, green is Y, and blue is Z.\n\
+\n\
+In the GEO view, touch the \"GPS Pwr\" button at the top-right to turn the
+GPS on and off.\n\
+\n\
+In the EMS view, touch the \"WiFi Pwr\" button at the top-right to turn the
+GPS on and off.\n\
+\n\
+<b>VIEWS</b>\n\
+\n\
+<b>GRAV</b> shows the local gravitational field, showing the individual
+components on an X/Y plot and a vertical gauge for the Z axis.  Additionally
+an altitude gauge shows the angle above or below the tricorder\'s horizontal
+plane.  Below this the absolute magnitude of the gravitational field
+is graphed, and then the raw numeric data is displayed, in units of m/s²:
+\"X\", \"Y\" and \"Z\" are the acceleration values in each of the three
+dimensions; \"Az\" is the direction of the gravitational field in the X-Y
+plane; \"Alt\" is the elevation of the gravitation pull above or below
+the horizontal, in degrees; and \"Mag\" is the absolute magnitude of the
+gravitational field, in units of m/s².  When this becomes zero,
+you are in free fall.\n\
+\n\
+<b>MAG</b> shows the local magnetic field, in the same format.  The X-Y plot
+can be used like a compass; keep the altitude at zero to see exactly which
+way the magnetic field is pointing.  The values displayed are in micro-Tesla.\n\
+\n\
+<b>ENV</b> shows some environmental sensor readouts: light level, object
+proximity, and temperature.  Each graph\'s header shows the current value
+in numeric form.  Light readings are in lux; proximity is measured in metres;
+temperature is in degrees celsius.\n\
+\n\
+Note that the values of these sensors can only be displayed
+if your device actually has the sensors equipped (the G1 phone, sadly,
+does not).  If the sensors are missing, simulated data can be displayed; see
+the preferences for this option.  A blue indicator in the header for each
+sensor indicates when it is in simulation mode.\n\
+\n\
+<b>GEO</b> shows geographic information from the various providers which
+your device has.  \"Cellular\" displays location from the cellular phone network;
+\"GPS\" is the GPS location, if GPS is enabled.  At the top-right corner you
+will see a \"GPS Pwr\" button which turns the GPS on and off.\n\
+\n\
+Locations are shown in latitude and longitude degrees and minutes, with
+fractional minutes.  \"Alt\" is the altitude in metres, and \"Acc\" is the
+estimated accuracy of
+the fix in metres.  If the location provider provides course data,
+then \"Head\" is the direction you are moving in, and \"Spd\" is your speed
+in metres per second.\n\
+\n\
+The latest available fix data, if there is any, will always be displayed.
+Note that this data may be old.  The data is coloured to indicate its
+age, and the age is also shown in the header bar for each location
+provider.\n\
+\n\
+<b>EMS</b> scans the electromagnetic spectrum for
+radio signals (as supported by hardware).  Detected signals are shown
+as strength bars and a numeric strength indicator -- zero is no signal
+(or too weak to be useful); 31 is maximum for cellular, and 41 seems to be
+maximum for WiFi.  At the top-right corner you
+will see a \"WiFi Pwr\" button which turns the WiFi on and off.\n\
+\n\
+For cellular, we display the cell ID, the network provider, and the
+signal strength above the strength bar.  For WiFi networks, we display
+the frequency in GHz, network ID, and signal strength.  The WiFi data
+is refreshed periodically; the age of the displayed WiFi data is shown
+in the WiFi header bar.\n\
+\n\
+In the preferences you can enable WiFi ping.  With this on, the device
+will ping after each WiFi network scan; an echo ping
+indicates the strength of the strongest detected signal.  (No echo means
+no detected WiFi.)\n\
+\n\
+<b>MENU</b>\n\
+\n\
+The \"menu\" button gets you to the program settings, the
+help screen (this one), and the about box.  In settings, you can set the
+basic sound level to off, quiet, or loud (note that you can also control the
+sound volume using the hardware volume keys).  You can enable WiFi ping;
+see \"EMS\" above.  And you can enable simulation of data for missing
+sensors; see \"ENV\" above.\n\
+\n\
+<b>GENERAL</b>\n\
+\n\
+Note that the availability and accuracy of the information
+presented depends
+on the underlying hardware.  In particular the magnetic field data is known
+to be unreliable on some currently available devices, and the gravity reading
+can be affected by playing music.\n\
+\n\
+You\'ll see a link to the project
+home page at the bottom of this screen; check it out for more info on
+Tricorder.  Tricorder is an open project, so if you want to join in and
+make contributions, you can.  See the project page for information.\n\
+</string>
+
+       
+    <string name="about_text"><b>Tricorder</b> by Ian Cameron Smith
+(headstay).  Inspired by:\n\
+\n\
+• Jeff Jetton\'s Tricorder for Palm Pilot: http://www.jeffjetton.com/tricorder/\n\
+• Adge's LCARS site: http://www.lcars.org.uk/\n\
+• And, of course, the work of Gene Roddenberry\n\
+\n\
+For information and source code see the project home page.\n\
+\n\
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.\n\
+\n\
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
+for more details.\n</string>
+
+
+    <string name="menu_prefs">Settings</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+    <string name="menu_exit">Exit</string>
+    
+    <!-- Preferences strings. -->
+    <string name="prefs_title">Settings</string>
+    <string name="prefs_cat_sound">Sound Settings</string>
+    <string name="prefs_sound">Sound level</string>
+    <string name="prefs_sound_summary">Set your desired sound level</string>
+    <string name="prefs_sound_title">Sound Level</string>
+    <string name="prefs_ping">WiFi ping</string>
+    <string name="prefs_ping_summary">Indicate WiFi signals by audible ping</string>
+    <string name="prefs_cat_data">Data Settings</string>
+    <string name="prefs_fake">Simulate missing</string>
+    <string name="prefs_fake_summary">Use simulated data for missing sensors</string>
+    
+    <string name="nav_gra">GRAV</string>
+    <string name="nav_mag">MAG</string>
+    <string name="nav_env">ENV</string>
+    <string name="nav_geo">GEO</string>
+    <string name="nav_com">EMS</string>
+    <string name="nav_sol">SOL</string>
+    
+    <string name="title_gra">Acceleration</string>
+    <string name="title_mag">Magnetic Flux</string>
+    <string name="title_env">Environmental</string>
+    <string name="title_geo">Geographic</string>
+    <string name="title_com">EM Spectrum</string>
+    <string name="title_sol">Solar Activity</string>
+    <string name="title_vect_abs">Absolute Vector</string>
+    <string name="title_vect_rel">Relative Vector</string>
+    <string name="title_mag_abs">Absolute Magnitude</string>
+    <string name="title_mag_rel">Relative Magnitude</string>
+    <string name="title_num_abs">Absolute Data</string>
+    <string name="title_num_rel">Relative Data</string>
+    <string name="title_xyz_abs">Absolute X, Y, Z</string>
+    <string name="title_xyz_rel">Relative X, Y, Z</string>
+    <string name="title_network">Cellular</string>
+    <string name="title_gps">GPS</string>
+
+    <string name="lab_x">X</string>
+    <string name="lab_y">Y</string>
+    <string name="lab_z">Z</string>
+    <string name="lab_azi">Az</string>
+    <string name="lab_alt">Alt</string>
+    <string name="lab_mag">Mag</string>
+    <string name="lab_light">Light</string>
+    <string name="lab_prox">Proxim</string>
+    <string name="lab_temp">Temp</string>
+    <string name="lab_acc">Acc</string>
+    <string name="lab_head">Head</string>
+    <string name="lab_speed">Spd</string>
+    <string name="lab_cell">Cellular</string>
+    <string name="lab_wifi">WiFi</string>
+    <string name="lab_gps_power">GPS Pwr</string>
+    <string name="lab_wifi_power">WiFi Pwr</string>
+    <string name="lab_solar_wind">Wind P,V,T</string>
+    <string name="lab_solar_part">Particles</string>
+    <string name="lab_solar_spots">Sunspots,RF</string>
+    <string name="lab_alt_mode">Mode Alt</string>
+    <string name="lab_blank">         </string>
+
+    <string name="msgNoData">No Data</string>
+    <string name="msgNoSignal">No Signal</string>
+    <string name="msgNoPower">Power Off</string>
+    <string name="msgPoweringOff">Powering Down</string>
+    <string name="msgPoweringOn">Powering Up</string>
+    <string name="msgDisabled">Disabled</string>
+    <string name="msgEnabled">Enabled</string>
+    <string name="msgOffline">Offline</string>
+    <string name="msgDormant">Dormant</string>
+    <string name="msgInvalid">Invalid</string>
+    <string name="msgScanning">Scanning</string>
+    <string name="msgAuthenticating">Authenticating</string>
+    <string name="msgLoading">Loading...</string>
+    
+    <!--  The "Associated" and similar messages take 2 arguments:
+          1 (string), the name of the network we're attached to;
+          2 (int), the received signal strength.  -->
+    <string name="msgAssociating">Attaching: %1$s %2$d</string>
+    <string name="msgAssociated">Link up: %1$s %2$d</string>
+    <string name="msgConnected">Online: %1$s %2$d</string>
+
+    <string name="about_title">About</string>
+    
+    <!-- Button strings. -->
+    <string name="button_ok">OK</string>
+    <string name="button_close">OK</string>
+    <string name="button_license">License</string>
+    <string name="button_homepage">Project</string>
+    <string name="button_manual">Manual</string>
+    
+    <!-- URLs. -->
+    <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
+    <string name="url_homepage">http://code.google.com/p/tricorder/</string>
+    <string name="url_manual">http://code.google.com/p/tricorder/wiki/UserManual</string>
+    
+</resources>
+

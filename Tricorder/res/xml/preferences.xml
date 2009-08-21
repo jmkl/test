@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/prefs_cat_sound">
+                           
+        <ListPreference
+                android:key="soundMode"
+                android:title="@string/prefs_sound"
+                android:summary="@string/prefs_sound_summary"
+                android:entries="@array/prefs_sound_entries"
+                android:entryValues="@array/prefs_sound_values"
+                android:dialogTitle="@string/prefs_sound_title" />
+                        
+        <CheckBoxPreference
+                android:key="wifiPing"
+                android:title="@string/prefs_ping"
+                android:summary="@string/prefs_ping_summary" />
+            
+    </PreferenceCategory>
+  
+    <PreferenceCategory android:title="@string/prefs_cat_data">
+                        
+        <CheckBoxPreference
+                android:key="fakeMissingData"
+                android:title="@string/prefs_fake"
+                android:summary="@string/prefs_fake_summary" />
+            
+    </PreferenceCategory>
+     
+</PreferenceScreen>
+

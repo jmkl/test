@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2440"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   width="444"
+   height="400"
+   version="1.0"
+   sodipodi:docname="Icon.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/home/folk/clint/Desktop/Projects/Android/Tricorder/Images/Icon.png"
+   inkscape:export-xdpi="35.119999"
+   inkscape:export-ydpi="35.119999">
+  <metadata
+     id="metadata2445">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs2443">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective2447" />
+    <inkscape:perspective
+       id="perspective3174"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+  </defs>
+  <sodipodi:namedview
+     inkscape:window-height="743"
+     inkscape:window-width="1356"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     showgrid="true"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:zoom="0.90509668"
+     inkscape:cx="82.024446"
+     inkscape:cy="212.44795"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:current-layer="svg2440"
+     inkscape:snap-global="true"
+     inkscape:snap-bbox="false"
+     inkscape:snap-nodes="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2451"
+       visible="true"
+       enabled="true"
+       units="px"
+       spacingx="4px"
+       spacingy="4px" />
+  </sodipodi:namedview>
+  <image
+     y="-34.25"
+     x="-58.390629"
+     id="image3176"
+     height="465"
+     width="600"
+     sodipodi:absref="/home/folk/clint/Desktop/Andy.png"
+     xlink:href="/home/folk/clint/Desktop/Andy.png" />
+  <path
+     sodipodi:type="arc"
+     style="fill:none;fill-rule:evenodd;stroke:#a4ca39;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="path3182"
+     sodipodi:cx="40"
+     sodipodi:cy="-80"
+     sodipodi:rx="48"
+     sodipodi:ry="48"
+     d="M 16,-121.56922 A 48,48 0 1 1 16,-38.43078"
+     sodipodi:start="4.1887902"
+     sodipodi:end="8.3775804"
+     sodipodi:open="true"
+     transform="matrix(0.6730795,0,0,1.0135199,317.07682,233.73055)" />
+  <path
+     sodipodi:type="arc"
+     style="fill:none;fill-rule:evenodd;stroke:#a4ca39;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="path3184"
+     sodipodi:cx="40"
+     sodipodi:cy="-80"
+     sodipodi:rx="88"
+     sodipodi:ry="88"
+     d="M -4.0000004,-156.21024 A 88,88 0 1 1 -3.9999993,-3.789764"
+     sodipodi:start="4.1887902"
+     sodipodi:end="8.3775804"
+     sodipodi:open="true"
+     transform="matrix(0.6730795,0,0,1.0135199,317.07682,233.73055)" />
+  <path
+     sodipodi:type="arc"
+     style="fill:none;fill-rule:evenodd;stroke:#a4ca39;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="path3186"
+     sodipodi:cx="40"
+     sodipodi:cy="-80"
+     sodipodi:rx="128"
+     sodipodi:ry="128.48102"
+     d="M -24.000001,-191.26783 A 128,128.48102 0 1 1 -23.999999,31.267826"
+     sodipodi:start="4.1887902"
+     sodipodi:end="8.3775804"
+     sodipodi:open="true"
+     transform="matrix(0.6730795,0,0,1.0135199,317.07682,234.21808)" />
+</svg>
