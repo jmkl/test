@@ -42,12 +42,21 @@ public abstract class WebFetcher
     // ******************************************************************** //
 	
 	/**
-	 * Level data exception.  Used to signal problems in the level data.
+	 * Web fetching exception.  Used to signal a problem while fetching data.
 	 */
 	public static class FetchException extends Exception {
+	    /**
+	     * Create a FetchException with a message.
+	     * @param s    The exception message.
+	     */
 		public FetchException(String s) {
 			super("Web fetch error: " + s);
 		}
+        /**
+         * Create a FetchException based on another exception.
+         * @param s    The exception message.
+         * @param e    The root exception.
+         */
 		public FetchException(String s, Exception e) {
 			super("Web fetch error: " + s +
 				(e.getMessage() == null ? "" : " (" + e.getMessage() + ")"), e);
@@ -97,6 +106,8 @@ public abstract class WebFetcher
 	/**
 	 * Queue a web fetch.  It will be executed when the current fetches
 	 * are done.
+	 * 
+	 * @param   fetcher        The web fetcher to queue.
 	 */
 	public static void queue(WebFetcher fetcher) {
 		synchronized (fetchQueue) {
@@ -233,13 +244,13 @@ public abstract class WebFetcher
 		// Run this fetch.
 	    URL current = null;
 		try {
-	        // Sleep a wee bit, to ensure our client gets some running in first.
-            sleep(500);
-    		if (isInterrupted())
-    			throw new InterruptedException();
-        
 		    // Fetch each URL in sequence.  If one fails, stop there.
 		    for (URL url : dataUrls) {
+	            // Sleep a wee bit, to ensure our client gets some running in first.
+	            sleep(500);
+	            if (isInterrupted())
+	                throw new InterruptedException();
+	        
 	    		current = url;
 		        Log.i(TAG, "R: start " + url);
 		        fetch(url, newerThanDate);
@@ -284,8 +295,8 @@ public abstract class WebFetcher
 	 * 							fetch will only be carried out if the remote
 	 * 							resource has been modified since this time.
 	 * 							If zero, fetch without this condition.
-	 * @throws FetchException 
-	 * @throws IOException 
+     * @throws  FetchException  Some problem was detected, such as a timeout.
+     * @throws  IOException     An I/O error occurred.
 	 */
     protected void fetch(URL url, long newer)
     	throws FetchException, IOException
@@ -332,8 +343,8 @@ public abstract class WebFetcher
 	 * @param	url				The URL we're reading.
 	 * @param	conn			The current connection to the URL.
 	 * @param	stream			The InputStream to read from.
-     * @throws FetchException 
-     * @throws IOException 
+     * @throws  FetchException  Some problem was detected, such as a timeout.
+     * @throws  IOException     An I/O error occurred.
 	 */
     protected void handle(URL url, URLConnection conn, InputStream stream)
         throws FetchException, IOException
@@ -367,11 +378,10 @@ public abstract class WebFetcher
 	 * @param	url				The URL we're reading.
 	 * @param	conn			The current connection to the URL.
 	 * @param	stream			The BufferedReader to read from.
-     * @throws FetchException 
-     * @throws IOException 
+     * @throws  FetchException  Some problem was detected, such as a timeout.
+     * @throws  IOException     An I/O error occurred.
 	 */
-    @SuppressWarnings("unused")
-    protected void handle(URL url, URLConnection conn, BufferedReader readc)
+    protected void handle(URL url, URLConnection conn, BufferedReader stream)
         throws FetchException, IOException
     {
     }

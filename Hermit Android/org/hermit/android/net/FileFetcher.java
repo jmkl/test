@@ -97,7 +97,8 @@ public class FileFetcher
 	 * @param	url				The URL we're reading.
 	 * @param	conn			The current connection to the URL.
 	 * @param	stream			The InputStream to read from.
-	 * @throws IOException 
+     * @throws  FetchException  Some problem was detected.
+	 * @throws  IOException     An I/O error occurred.
 	 */
 	@Override
 	protected void handle(URL url, URLConnection conn, InputStream stream)
@@ -109,7 +110,7 @@ public class FileFetcher
 		try {
 			// Read the file down and copy it to local storage.  If it fails,
 			// it throws.
-			fetchFile(url,  conn, stream);
+			fetchFile(url, conn, stream);
 			
 	   		// If we were killed, bomb out.
     		if (isInterrupted())
@@ -151,7 +152,7 @@ public class FileFetcher
 		FileOutputStream fos = null;
 		try {
 			fos = context.openFileOutput(tempName, Context.MODE_PRIVATE);
-			byte[] buf = new byte[1024];
+			byte[] buf = new byte[8192];
 			int count;
 			while ((count = stream.read(buf)) >= 0) {
 		   		// If we were killed, bomb out.
@@ -159,6 +160,13 @@ public class FileFetcher
 	    			throw new FetchException("timed out");
 	    		
 				fos.write(buf, 0, count);
+				
+                // Just don't hog the CPU.
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    throw new FetchException("interrupted");
+                }
 			}
 		} finally {
 			// On error, kill the file and bail.

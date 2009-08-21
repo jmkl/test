@@ -18,12 +18,15 @@
 
 package org.hermit.android.net;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Calendar;
 import java.util.TimeZone;
+
+import org.hermit.android.net.WebFetcher.FetchException;
 
 import android.content.ContentValues;
 
@@ -135,7 +138,8 @@ extends WebFetcher
 	 * @param	url				The URL we're reading.
 	 * @param	conn			The current connection to the URL.
 	 * @param	readc			The BufferedReader to read from.
-	 * @throws IOException 
+     * @throws  FetchException  Some problem was detected.
+     * @throws  IOException     An I/O error occurred.
 	 */
 	@Override
 	protected void handle(URL url, URLConnection conn, BufferedReader readc)
@@ -146,6 +150,7 @@ extends WebFetcher
 		
 		ContentValues rec = new ContentValues();
 		int stat;
+		int count = 0;
 		while ((stat = parse(readc, rec)) >= 0) {
 //			rec.put("debug", new String(dbgLine, 0, dbgIndex));
 			
@@ -155,6 +160,15 @@ extends WebFetcher
 
 			if (stat >= 1)
 				dataClient.onWebData(url, rec, date);
+			
+			if (++count % 20 == 0) {
+                // Just don't hog the CPU.
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    throw new FetchException("interrupted");
+                }
+			}
 		}
 	}
 
