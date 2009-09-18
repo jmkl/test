@@ -222,9 +222,9 @@ for more details.\n</string>
     <!--  The "Associated" and similar messages take 2 arguments:
           1 (string), the name of the network we're attached to;
           2 (int), the received signal strength.  -->
-    <string name="msgAssociating">Attaching: %1$s %2$d</string>
-    <string name="msgAssociated">Link up: %1$s %2$d</string>
-    <string name="msgConnected">Online: %1$s %2$d</string>
+	<string name="msgAssociating">Attaching</string>
+    <string name="msgAssociated">Link up</string>
+    <string name="msgConnected">Online</string>
 
     <string name="about_title">About</string>
     

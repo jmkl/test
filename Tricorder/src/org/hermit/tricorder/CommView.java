@@ -28,11 +28,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.telephony.CellLocation;
+import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
@@ -45,6 +50,7 @@ import android.view.SurfaceHolder;
  */
 class CommView
 	extends DataView
+	implements LocationListener
 {
 
 	// ******************************************************************** //
@@ -62,19 +68,22 @@ class CommView
 		
 		appContext = context;
 		surfaceHolder = sh;
-
+		
 		// Get the information providers we need.
         telephonyManager =
         	(TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        locationManager =
+        	(LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 		
         // Create the section header bars.
-		String[] cfields = { getRes(R.string.lab_cell) };
+		String[] cfields = { getRes(R.string.lab_cell) , "", "999 days 23h" };
 		cellHead = new HeaderBarElement(context, sh, cfields, 1);
 		cellHead.setBarColor(0xffdfb682);
 		cellHead.setText(0, 0, getRes(R.string.lab_cell));
 		String[] wfields = {
 			getRes(R.string.lab_wifi), "xx", "999 days 23h"
+
 		};
 		wifiHead = new HeaderBarElement(context, sh, wfields, 1);
 		wifiHead.setBarColor(0xffdfb682);
@@ -98,7 +107,13 @@ class CommView
 		cellBar = new BargraphElement(context, sh, 5f, 6.2f,
 									  COLOUR_GRID, COLOUR_PLOT, ctext, 1);
 		cellBar.setText(new String[][] { { getRes(R.string.msgNoData), "" } });
-
+		cellBars = new BargraphElement[MAX_CELL];
+		for (int w = 0; w < MAX_CELL; ++w) {
+			cellBars[w] = new BargraphElement(context, sh, 5f, 6.2f,
+					  COLOUR_GRID, COLOUR_GRID, ctext, 1);
+			cellBars[w].setText(new String[][] { { getRes(R.string.msgNoData), "" } });
+		}
+		
 		// Create the list of WiFi bargraphs, displaying ASU.  We'll assume
 		// a WiFi ASU range from 0 to 41.
 		wifiBars = new BargraphElement[MAX_WIFI];
@@ -151,6 +166,13 @@ class CommView
     	cellBar.setGeometry(new Rect(sx, y, ex, y + graphHeight));
     	y += graphHeight;
 		
+    	// Place all the neighboring bars.
+		for (int i = 0; i < MAX_CELL; ++i) {
+			int bh = cellBars[i].getPreferredHeight();
+			cellBars[i].setGeometry(new Rect(sx, y, ex, y + bh));
+	    	y += bh + appContext.getInnerGap();
+		}
+
 		// Now finalize the right bar.
 		rbrect.bottom = y;
 		cRightBar.setGeometry(rbrect);
@@ -233,7 +255,9 @@ class CommView
         // We already set up WiFi monitoring in appStart().
         
         viewRunning = true;
-	}
+
+    	locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, CELL_SCAN_INTERVAL*1000, 0f, this);
+    }
 	
 	
 	/**
@@ -251,6 +275,12 @@ class CommView
 			else
 				wifiHead.setText(0, 2, elapsed(age));
 
+			age = (time - cellSignalsTime) / 1000;
+			if (cellSignalsTime == 0)
+				cellHead.setText(0, 2, getRes(R.string.msgNoData));
+			else
+				cellHead.setText(0, 2, elapsed(age));
+			
 			// Scan for WiFi networks every WIFI_SCAN_INTERVAL secs at most.
 			long scan = (time - wifiScanTime) / 1000;
 			if (age > WIFI_SCAN_INTERVAL && scan > WIFI_SCAN_INTERVAL) {
@@ -290,6 +320,8 @@ class CommView
         
         // Don't unregister for WiFi results.  These come in so slowly
         // we'll take them when we get them -- as long as the app is running.
+        
+		locationManager.removeUpdates(this);
 	}
 
 	
@@ -359,7 +391,7 @@ class CommView
 		public void onServiceStateChanged(ServiceState serviceState) {
 			synchronized (surfaceHolder) {
 				cellState = serviceState.getState();
-				cellOp = serviceState.getOperatorAlphaShort();		
+				cellOp = serviceState.getOperatorAlphaLong();
 				updateHead();
 				if (cellState == ServiceState.STATE_OUT_OF_SERVICE ||
 								cellState == ServiceState.STATE_POWER_OFF)
@@ -406,6 +438,7 @@ class CommView
         		{ id, label, value }
         	};
         	cellBar.setText(labStr);
+        	getNeighbor();
 		}
 		
 	};
@@ -572,8 +605,38 @@ class CommView
 			wifiStatus.setText(0, 0, wifiPowerName);
 		else
 			wifiStatus.setText(0, 0, wifiConnState);
+		getScanResults();
 	}
 
+	private void getNeighbor() {
+		
+		synchronized (surfaceHolder) {
+			cellSignals = telephonyManager.getNeighboringCellInfo();
+			cellSignalsTime = System.currentTimeMillis();
+			
+			if (cellSignals == null) return;
+			
+			int w = 0;
+			
+			for (NeighboringCellInfo scan : cellSignals) {
+				if (w >= MAX_CELL)
+					break;
+
+				BargraphElement bar = cellBars[w++];
+
+				final int asu = scan.getRssi()/2;
+				// the documentation mentions a different range of values than actually seen on a G1
+				final String value = (asu < 10 ? " " : "") + asu;
+
+				String[][] labStr = {
+						{ ""+scan.getCid(), "", value }
+				};
+				bar.setText(labStr);
+
+				bar.setValue(asu);
+			}
+		}
+	}
 	
 	/**
 	 * Get the latest WiFi network scan results.  Update the display.
@@ -584,7 +647,9 @@ class CommView
 		synchronized (surfaceHolder) {
 			wifiSignals = wifiManager.getScanResults();
 			wifiSignalsTime = System.currentTimeMillis();
-
+			
+			if (wifiSignals == null) return;
+			
 			int w = 0;
 			for (ScanResult scan : wifiSignals) {
 				if (w >= MAX_WIFI)
@@ -606,6 +671,9 @@ class CommView
 						{ freq, scan.SSID, value }
 				};
 				bar.setText(labStr);
+				bar.setDataColors(COLOUR_GRID,wifiConnection != null && 
+						scan.BSSID.equals(wifiConnection.getBSSID())?
+						COLOUR_PLOT:COLOUR_GRID);
 
 				bar.setValue(asu);
 			}
@@ -665,6 +733,11 @@ class CommView
 			for (int w = 0; w < wifiSignals.size() && w < MAX_WIFI; ++w)
 				wifiBars[w].draw(canvas, now);
 		}
+		
+		if (cellSignals != null) {
+			for (int w = 0; w < cellSignals.size() && w < MAX_CELL; ++w)
+				cellBars[w].draw(canvas, now);
+		}
 	}
 
 
@@ -714,10 +787,12 @@ class CommView
 	private static final int INT_PADDING = 8;
 
 	// The maximum number of WiFi signals we will show.
-	private static final int MAX_WIFI = 7;
+	private static final int MAX_WIFI = 6;
+	private static final int MAX_CELL = 2;
 	
 	// Minimum interval in seconds between WiFi scans.
 	private static final int WIFI_SCAN_INTERVAL = 3;
+	private static final int CELL_SCAN_INTERVAL = 3;
 	
 	// Grid and plot colours.
 	private static final int COLOUR_GRID = 0xffdfb682;
@@ -739,6 +814,8 @@ class CommView
 
 	// The WiFi manager, for WiFi state updates.
 	private WifiManager wifiManager;
+	
+	private LocationManager locationManager;
 
 	// The header bars for the cellular and WiFi sections.
 	private HeaderBarElement cellHead;
@@ -753,7 +830,8 @@ class CommView
 	// The bargraphs for WiFi.  The number of these changes as we
 	// scan for WiFi signals.
 	private BargraphElement[] wifiBars;
-
+	private BargraphElement[] cellBars;
+	
 	// The left-side bars for cell and wifi (just solid colour bars).
 	private Element cRightBar;
 	private Element wLeftBar;
@@ -766,11 +844,13 @@ class CommView
 	
 	// Most recent WiFi scan results.  Null if no data.
 	private List<ScanResult> wifiSignals = null;
+	private List<NeighboringCellInfo> cellSignals = null;
 	
 	// Time at which we last started a WiFi scan, and the time we last
 	// got scan data.
 	private long wifiScanTime = 0;
 	private long wifiSignalsTime = 0;
+	private long cellSignalsTime = 0;
 	
 	// Current EiFi connection state.  Null if no data.
 	private WifiInfo wifiConnection = null;
@@ -785,6 +865,24 @@ class CommView
 	
 	// Flag whether this view is the up-front view.
 	private boolean viewRunning = false;
+
+	@Override
+	public void onLocationChanged(Location location) {
+		getNeighbor();
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+	}
+
+
+	@Override
+	public void onProviderEnabled(String provider) {
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+	}
 
 }
 
