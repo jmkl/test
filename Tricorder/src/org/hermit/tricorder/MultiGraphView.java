@@ -20,9 +20,10 @@ package org.hermit.tricorder;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.hardware.SensorListener;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 
@@ -31,7 +32,7 @@ import android.view.SurfaceHolder;
  */
 class MultiGraphView
 	extends DataView
-	implements SensorListener
+	implements SensorEventListener
 {
 
 	// ******************************************************************** //
@@ -41,14 +42,14 @@ class MultiGraphView
 	/**
 	 * Define the displayed graphs.
 	 */
-	public static enum GraphDefinition {
-		LIGHT(R.string.lab_light, SensorManager.SENSOR_LIGHT,
+	private static enum GraphDefinition {
+		LIGHT(R.string.lab_light, Sensor.TYPE_LIGHT,
 						SensorManager.LIGHT_SUNLIGHT, 1.25f,
 						0xffdfb682, 0xffd09cd0),
-		PROX(R.string.lab_prox, SensorManager.SENSOR_PROXIMITY,
+		PROX(R.string.lab_prox, Sensor.TYPE_PROXIMITY,
 						1f, 5.2f,
 						0xffccccff, 0xffff9e63),
-		TEMP(R.string.lab_temp, SensorManager.SENSOR_TEMPERATURE,
+		TEMP(R.string.lab_temp, Sensor.TYPE_TEMPERATURE,
 						10f, 4.2f,
 						0xffffcc66, 0xffd09cd0);
 
@@ -61,15 +62,16 @@ class MultiGraphView
 			plotColour = pcol;
 		}
 		
-		public final int labelId;
-		public final int sensorId;
-		public final float dataUnit;
-		public final float dataRange;
-		public final int gridColour;
-		public final int plotColour;
+		private final int labelId;
+		private final int sensorId;
+		private final float dataUnit;
+		private final float dataRange;
+		private final int gridColour;
+		private final int plotColour;
 		
-		public MagnitudeElement view = null;
-		public DataGenerator generator = null;
+		private Sensor sensor = null;
+		private MagnitudeElement view = null;
+		private DataGenerator generator = null;
 	}
 
 
@@ -104,10 +106,10 @@ class MultiGraphView
             		{ getRes(def.labelId), getRes(R.string.msgNoData) }
             	};
         	def.view.setText(labStr);
+            
+            // Get the sensor, if we have it.
+        	def.sensor = sensorManager.getDefaultSensor(def.sensorId);
         }
-        
-        // Find out what sensors we really have.
-        equippedSensors = sensorManager.getSensors();
 	}
 
 
@@ -160,7 +162,7 @@ class MultiGraphView
 			// For each graph, put it in simulation if requested and
 			// if its sensor is not present.
 			for (GraphDefinition def : GraphDefinition.values()) {
-	        	if (fakeIt && (equippedSensors & def.sensorId) == 0) {
+	        	if (fakeIt && def.sensor == null) {
 	        		def.generator = new DataGenerator(this, def.sensorId,
 	        									      1, def.dataUnit,
 	        									      def.dataRange);
@@ -187,11 +189,11 @@ class MultiGraphView
 	 */
 	@Override
 	public void start() {
-        for (GraphDefinition def : GraphDefinition.values()) {
-        	if ((equippedSensors & def.sensorId) != 0)
-                sensorManager.registerListener(this, def.sensorId,
-	   					   					   SensorManager.SENSOR_DELAY_GAME);
-        }
+	    for (GraphDefinition def : GraphDefinition.values()) {
+	        if (def.sensor != null)
+	            sensorManager.registerListener(this, def.sensor,
+	                                           SensorManager.SENSOR_DELAY_GAME);
+	    }
 	}
 	
 
@@ -216,26 +218,48 @@ class MultiGraphView
 	public void stop() {
 		// Unregister this listener for all sensors.
 		sensorManager.unregisterListener(this);
-	}
-	
+    }
+
+
+    /**
+     * Called when the accuracy of a sensor has changed.
+     * 
+     * @param   sensor          The sensor being monitored.
+     * @param   accuracy        The new accuracy of this sensor.
+     */
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // Don't need anything here.
+    }
+
+
+    /**
+     * Called when sensor values have changed.
+     *
+     * @param   event           The sensor event.
+     */
+    public void onSensorChanged(SensorEvent event) {
+        onSensorData(event.sensor.getType(), event.values);
+    }
+
 
     /**
      * Called when sensor values have changed.  The length and contents
      * of the values array vary depending on which sensor is being monitored.
      *
-	 * @param	sensor			The ID of the sensor being monitored.
-	 * @param	values			The new values for the sensor.
+     * @param   sensor          The ID of the sensor being monitored.
+     * @param   values          The new values for the sensor.
      */
-	public void onSensorChanged(int sensor, float[] values) {
+    @Override
+    public void onSensorData(int sensor, float[] values) {
 		final float value = values[0];
 
 		// Which graph is this for?
 		GraphDefinition valId = null;
-		if (sensor == SensorManager.SENSOR_LIGHT)
+		if (sensor == Sensor.TYPE_LIGHT)
 			valId = GraphDefinition.LIGHT;
-		else if (sensor == SensorManager.SENSOR_PROXIMITY)
+		else if (sensor == Sensor.TYPE_PROXIMITY)
 			valId = GraphDefinition.PROX;
-		else if (sensor == SensorManager.SENSOR_TEMPERATURE)
+		else if (sensor == Sensor.TYPE_TEMPERATURE)
 			valId = GraphDefinition.TEMP;
 		else
 			return;
@@ -244,17 +268,6 @@ class MultiGraphView
         	valId.view.setText(0, 1, format(value));
 			valId.view.setValue(value);
 		}
-	}
-
-
-	/**
-	 * Called when the accuracy of a sensor has changed.
-	 * 
-	 * @param	sensor			The ID of the sensor being monitored.
-	 * @param	accuracy		The new accuracy of this sensor.
-	 */
-	public void onAccuracyChanged(int sensor, int accuracy) {
-		// Don't need anything here.
 	}
 
 
@@ -275,41 +288,6 @@ class MultiGraphView
 		res.replace((bs < 0 ? 0 : bs), 3, b);
 		res.replace(7 - a.length(), 7, a);
 		return res.toString();
-	}
-
-
-	// ******************************************************************** //
-	// Input.
-	// ******************************************************************** //
-
-    /**
-     * Handle touch screen motion events.
-     * 
-     * @param	event			The motion event.
-     * @return					True if the event was handled, false otherwise.
-     */
-	@Override
-	public boolean handleTouchEvent(MotionEvent event) {
-		final int x = (int) event.getX();
-		final int y = (int) event.getY();
-		final int action = event.getAction();
-		boolean done = false;
-
-		synchronized (surfaceHolder) {
-			for (GraphDefinition def : GraphDefinition.values()) {
-				MagnitudeElement view = def.view;
-				Rect bounds = view.getBounds();
-				if (action == MotionEvent.ACTION_DOWN && bounds.contains(x, y))
-					done = view.handleTouchEvent(event);
-				else if (view.isZooming())
-					done = view.handleTouchEvent(event);
-				if (done)
-					break;
-			}
-		}
-
-		event.recycle();
-		return done;
 	}
 
 
@@ -356,9 +334,6 @@ class MultiGraphView
 
 	// The sensor manager, which we use to interface to all sensors.
     private SensorManager sensorManager;
-    
-	// The OR of the IDs of all the sensors which are acutally present.
-	private int equippedSensors = 0;
 
 }
 

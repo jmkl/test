@@ -180,7 +180,7 @@ class GeoElement
 	/**
 	 * Set the status part of the header text.
 	 * 
-	 * @param	text			The new status.  If null, there's no
+	 * @param	stat			The new status.  If null, there's no
 	 * 							status except "OK"; we'll display the data
 	 * 							age instead.
 	 */

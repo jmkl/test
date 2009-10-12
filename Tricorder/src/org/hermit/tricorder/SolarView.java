@@ -69,7 +69,7 @@ class SolarView
         TimeZone utc = TimeZone.getTimeZone("UTC");
         imageCal = Calendar.getInstance(utc);
 
-		String[] tfields1 = { getRes(R.string.lab_solar_wind),
+		String[] tfields1 = { getRes(R.string.lab_solar_elec),
 								"99 days to J 16 16:00" };
 		String[] tfields2 = { getRes(R.string.lab_solar_spots),
 							  "99 days to Jan 16" };
@@ -83,42 +83,37 @@ class SolarView
 		sunData = new TextAtom(context, sh, fields, 3);
 		sunData.setTextSize(context.getBaseTextSize() - 5);
 		sunData.setTextColor(COLOUR_PLOT);
-		
+
 		// Big solar image display, for alternate mode.
 		sunBigImage = new ImageAtom(context, sh, FILES_SOHO, SUN_URLS);
 
 		// Graph for solar wind data.
 		swindGraph = new MagnitudeElement(context, sh,
-		                                  DSD1_PLOT_FIELDS.length, 200, 5,
-										  COLOUR_GRID, DSD1_PLOT_COLS,
+		                                  EPAM1_PLOT_FIELDS.length, 400, 5,
+										  COLOUR_GRID, EPAM1_PLOT_COLS,
 										  tfields1, 1, false);       	
-		swindGraph.setTimeScale(DSD1_PLOT_TIMESCALE);
-		swindGraph.setDataSource(SRC_DSD, DSD1_PLOT_FIELDS);
-		swindGraph.setText(0, 0, getRes(R.string.lab_solar_wind));
+		swindGraph.setDataSource(SRC_EPAM, EPAM1_PLOT_FIELDS);
+		swindGraph.setText(0, 0, getRes(R.string.lab_solar_prot));
 		swindGraph.setText(0, 1, getRes(R.string.msgNoData));
-		swindGraph.setDataScale(DSD1_PLOT_SCALES);
 
 		// Graph for magnetic data.
 		epamGraph = new MagnitudeElement(context, sh,
-		                                 DSD2_PLOT_FIELDS.length, 200, 4,
-										 COLOUR_GRID, DSD2_PLOT_COLS,
+		                                 EPAM2_PLOT_FIELDS.length, 400, 5,
+										 COLOUR_GRID, EPAM2_PLOT_COLS,
 										 tfields1, 1, false);       	
-		epamGraph.setTimeScale(DSD2_PLOT_TIMESCALE);
-		epamGraph.setDataSource(SRC_DSD, DSD2_PLOT_FIELDS);
-		epamGraph.setText(0, 0, getRes(R.string.lab_solar_part));
+		epamGraph.setDataSource(SRC_EPAM, EPAM2_PLOT_FIELDS);
+		epamGraph.setText(0, 0, getRes(R.string.lab_solar_elec));
 		epamGraph.setText(0, 1, getRes(R.string.msgNoData));
-		epamGraph.setDataScale(DSD2_PLOT_SCALES);
 
 		// Graph for solar data (sunspots / flares).
 		solGraph = new MagnitudeElement(context, sh,
-		                                DSD3_PLOT_FIELDS.length, 10, 2,
-										COLOUR_GRID, DSD3_PLOT_COLS,
+		                                DSD_PLOT_FIELDS.length, 10, 2,
+										COLOUR_GRID, DSD_PLOT_COLS,
 										tfields2, 1, false);
-		solGraph.setTimeScale(DSD3_PLOT_TIMESCALE);
-		solGraph.setDataSource(SRC_DSD, DSD3_PLOT_FIELDS);
+		solGraph.setTimeScale(DSD_PLOT_TIMESCALE);
+		solGraph.setDataSource(SRC_DSD, DSD_PLOT_FIELDS);
 		solGraph.setText(0, 0, getRes(R.string.lab_solar_spots));
 		solGraph.setText(0, 1, getRes(R.string.msgNoData));
-		solGraph.setDataScale(DSD3_PLOT_SCALES);
 
 		// Listen for updates from the, for the captions.
 //		SRC_SWEPAM.addObserver(this);
@@ -482,16 +477,6 @@ class SolarView
 	}
 
 	
-	private String formatTime(long date) {
-		imageCal.setTimeInMillis(date);
-		return String.format("%1.1s%d %02d:%02d",
-						      SHORT_MONTHS[imageCal.get(Calendar.MONTH)],
-						      imageCal.get(Calendar.DAY_OF_MONTH),
-						      imageCal.get(Calendar.HOUR_OF_DAY),
-						      imageCal.get(Calendar.MINUTE));
-	}
-
-
 	// ******************************************************************** //
 	// View Control.
 	// ******************************************************************** //
@@ -537,18 +522,8 @@ class SolarView
 					int i = (currentSunImage + 1) % SUN_URLS.length;
 					setDisplayedSunImage(i);
 					appContext.postSound(Sound.CHIRP_LOW);
-				} else if (!altMode && swindBounds.contains(x, y))
-					done = swindGraph.handleTouchEvent(event);
-				else if (!altMode && epamBounds.contains(x, y))
-					done = epamGraph.handleTouchEvent(event);
-				else if (altMode && solBounds.contains(x, y))
-					done = solGraph.handleTouchEvent(event);
-			} else if (swindGraph.isZooming())
-				done = swindGraph.handleTouchEvent(event);
-			else if (epamGraph.isZooming())
-				done = epamGraph.handleTouchEvent(event);
-			else if (solGraph.isZooming())
-				done = solGraph.handleTouchEvent(event);
+				}
+			}
 		}
 
 		event.recycle();
@@ -635,7 +610,7 @@ class SolarView
 	// Database for solar data.  Bump the version number to nuke the data
 	// and start over.
 	private static final String DB_NAME = "SolarData";
-	private static final int DB_VER = 33;
+	private static final int DB_VER = 37;
 
 	// Source URLs for Sun images.
 	private static URL[] SUN_URLS;
@@ -667,11 +642,11 @@ class SolarView
 								new CachedFile("images_soho", SUN_URLS);
 
 	
-//	// Source URLs for ACE data.  See http://www.swpc.noaa.gov/ace/ and
-//	// http://www.swpc.noaa.gov/ftpdir/lists/ace2/README.
-//	private static final String URL_ACE_BASE =
-//						"http://www.swpc.noaa.gov/ftpdir/lists/ace2/";
-//
+	// Source URLs for ACE data.  See http://www.swpc.noaa.gov/ace/ and
+	// http://www.swpc.noaa.gov/ftpdir/lists/ace2/README.
+	private static final String URL_ACE_BASE =
+						"http://www.swpc.noaa.gov/ftpdir/lists/ace2/";
+
 //	// Solar Wind Electron Proton Alpha Monitor; hourly Averaged
 //	// Real-time Bulk Parameters of the Solar Wind Plasma.
 //	private static final String[] FIELDS_SWEPAM = {
@@ -721,41 +696,62 @@ class SolarView
 //	1, 1, 1, 0.5f
 //};
 
-//	// Electron, Proton, and Alpha Monitor; hourly Averaged Real-time
-//	// Differential Electron and Proton Flux.
-//	private static final String[] FIELDS_EPAM = {
-//		"statuse", "electrons38", "electrons175",
-//		"statusp", "protons47", "protons115", "protons310", "protons761",
-//		"protons1060", "anisotropy",
-//        // Synthetic fields at the end so they don't screw up the parser.
-//        "protonsL", "protonsH",
-//	};
-//	private static final WebBasedData SRC_EPAM =
-//		new WebBasedData("hourly_epam", URL_ACE_BASE, "_ace_epam_1h.txt",
-//						 3600000, true, FIELDS_EPAM) {
-//        @Override
-//        protected void process(ContentValues rec) {
-//            // Make up flares totals.
-//            float pro1 = rec.getAsInteger("protons47") / 15f +
-//                         rec.getAsInteger("protons115");
-//            pro1 /= 2f;
-//            float pro2 = rec.getAsInteger("protons310") +
-//                         rec.getAsInteger("protons761") * 10f +
-//                         rec.getAsInteger("protons1060") * 20f;
-//            pro2 /= 3f;
-//            rec.put("protonsL", pro1);
-//            rec.put("protonsH", pro2);
-//        }
-//    };
-//	private static final String[] EPAM_PLOT_FIELDS = {
-//		"protonsL", "protonsH", "electrons38"
-//	};
-//	private static final float[] EPAM_PLOT_SCALES = {
-//		5, 200, 1f/3f
-//	};
-//    private static final int[] EPAM_PLOT_COLS = {
-//    	0xffff0000, 0xffffa000, 0xff00ff00
-//    };
+	// Electron, Proton, and Alpha Monitor; hourly Averaged Real-time
+	// Differential Electron and Proton Flux.
+	//     electrons38     ~600
+    //     electrons175    ~31
+    //     protons47       ~8000
+    //     protons115      ~400
+    //     protons310      ~20
+    //     protons761      ~1
+    //     protons1060     ~0.4
+    //     protonsL        ~1000
+    //     protonsH        ~1000
+	private static final String[] FIELDS_EPAM = {
+		"statuse", "electrons38", "electrons175",
+		"statusp", "protons47", "protons115", "protons310", "protons761",
+		"protons1060", "anisotropy",
+        // Synthetic fields at the end so they don't screw up the parser.
+        "protonsL", "protonsM", "protonsH",
+        "electronsL", "electronsH",
+	};
+	private static final WebBasedData SRC_EPAM =
+		new WebBasedData("hourly_epam", URL_ACE_BASE, "_ace_epam_1h.txt",
+						 3600000, true, FIELDS_EPAM) {
+        @Override
+        protected void process(ContentValues rec) {
+            // Make up protons summaries.  Scale to ~1000.
+            float pro1 = rec.getAsFloat("protons47") / 8f;
+            pro1 /= 1f;
+            float pro2 = rec.getAsFloat("protons115") * 2.5f +
+                         rec.getAsFloat("protons310") * 50f;
+            pro2 /= 2f;
+            float pro3 = rec.getAsFloat("protons761") * 1000f +
+                         rec.getAsFloat("protons1060") * 2500f;
+            pro3 /= 2f;
+            rec.put("protonsL", pro1);
+            rec.put("protonsM", pro2);
+            rec.put("protonsH", pro3);
+            
+            // Make up electrons summaries.  Scale to ~1000.
+            float elec1 = rec.getAsFloat("electrons38") * 1.66f;
+            float elec2 = rec.getAsFloat("electrons175") * 33.33f;
+            rec.put("electronsL", elec1);
+            rec.put("electronsH", elec2);
+        }
+    };
+	private static final String[] EPAM1_PLOT_FIELDS = {
+		"protonsL", "protonsM", "protonsH"
+	};
+    private static final int[] EPAM1_PLOT_COLS = {
+    	0xffffff00, 0xff00d0ff, 0xfff00000
+    };
+    private static final String[] EPAM2_PLOT_FIELDS = {
+        "electronsL", "electronsH"
+    };
+    private static final int[] EPAM2_PLOT_COLS = {
+        0xff00d0ff, 0xfff00000
+    };
 
 	// Daily solar data such as sunspot numbers.
 	private static final String URL_DSD =
@@ -780,48 +776,25 @@ class SolarView
 				int oflares = rec.getAsInteger("flareso1") +
 							  rec.getAsInteger("flareso2") +
 							  rec.getAsInteger("flareso3");
+				xflares *= 10;
+                oflares *= 10;
 				rec.put("xflares", xflares);
 				rec.put("oflares", oflares);
 				rec.put("flares", xflares + oflares);
 		}
 	};
-    private static final String[] DSD1_PLOT_FIELDS = {
-        "xraybg"
-    };
-    private static final float[] DSD1_PLOT_SCALES = {
-        1f,
-    };
-    private static final float DSD1_PLOT_TIMESCALE = 6;
-    private static final int[] DSD1_PLOT_COLS = { 
-        0xff0000ff
-    };
-
-    private static final String[] DSD2_PLOT_FIELDS = {
-        "rflux"
-    };
-    private static final float[] DSD2_PLOT_SCALES = {
-        1f,
-    };
-    private static final float DSD2_PLOT_TIMESCALE = 6;
-    private static final int[] DSD2_PLOT_COLS = { 
-        0xff00ffff,
-    };
-
-	private static final String[] DSD3_PLOT_FIELDS = {
-		"nsunspot", "flares"
+	private static final String[] DSD_PLOT_FIELDS = {
+		"nsunspot", "oflares", "xflares"
 	};
-	private static final float[] DSD3_PLOT_SCALES = {
-		1f, 1f / 2f,
-	};
-	private static final float DSD3_PLOT_TIMESCALE = 6;
-	private static final int[] DSD3_PLOT_COLS = { 
-		0xffff0000, 0xffffa000,
+	private static final float DSD_PLOT_TIMESCALE = 6;
+	private static final int[] DSD_PLOT_COLS = { 
+		0xffff0000, 0xff00ffff, 0xfff000ff,
 	};
 
 
 	// Our data sources.
 	private static final WebBasedData[] ALL_SOURCES = {
-		/* SRC_SWEPAM, SRC_EPAM, */ SRC_DSD
+		/* SRC_SWEPAM, */ SRC_EPAM, SRC_DSD
 	};
 	
 	// Grid and plot colours.

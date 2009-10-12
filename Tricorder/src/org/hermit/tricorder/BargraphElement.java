@@ -149,7 +149,7 @@ class BargraphElement
 	 * Set the given value as the new value for the displayed data.
 	 * Update the display accordingly.
 	 * 
-	 * @param	values				The new value.
+	 * @param	value				The new value.
 	 */
 	public void setValue(float value) {
 		magBar.setValue(value);

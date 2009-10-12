@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
@@ -58,6 +59,16 @@ abstract class DataView
 	void setSimulateMode(boolean fakeIt) {
 	}
 	
+
+    /**
+     * Called when sensor values have changed.  The length and contents
+     * of the values array vary depending on which sensor is being monitored.
+     *
+     * @param   sensor          The ID of the sensor being monitored.
+     * @param   values          The new values for the sensor.
+     */
+    public void onSensorData(int sensor, float[] values) { }
+
 
 	// ******************************************************************** //
 	// State Management.

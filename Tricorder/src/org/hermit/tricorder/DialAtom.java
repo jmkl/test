@@ -191,7 +191,7 @@ class DialAtom
 	 * Set the given value as the new value for the displayed data.
 	 * Update the display accordingly.
 	 * 
-	 * @param	values				The new value.  Should be an angle
+	 * @param	value				The new value.  Should be an angle
 	 * 								in degrees.
 	 */
 	public void setValue(float value) {

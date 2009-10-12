@@ -30,8 +30,6 @@ import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
@@ -620,17 +618,6 @@ public class Tricorder
             pinger.start(strength);
         }
     }
-
-
-    private Handler soundHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            Bundle data = msg.getData();
-            int which = data.getInt("which");
-            float rvol = data.getFloat("rvol");
-            makeSound(which, rvol);
-        }
-    };
 
 
     /**

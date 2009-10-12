@@ -26,7 +26,6 @@ import org.hermit.android.net.WebBasedData;
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 
@@ -96,6 +95,7 @@ class MagnitudeElement
 		surfaceHolder = sh;
 
 		numPlots = num;
+		dataUnit = unit;
 		baseDataRange = range;
 		dataRange = range;
 		
@@ -121,6 +121,7 @@ class MagnitudeElement
 	 * Set the data fields to display.  Calling this allows the user
 	 * to then call setValue(ContentValues values).
 	 * 
+     * @param   source          Data source for this element.
 	 * @param	fields			Data fields to display when the user
 	 * 							calls setValue(ContentValues values).
 	 */
@@ -151,7 +152,6 @@ class MagnitudeElement
 	@Override
 	protected void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
-		chartBounds = bounds;
 		
 		// First position the header bar.
 		int headHeight = headerBar.getPreferredHeight();
@@ -227,18 +227,6 @@ class MagnitudeElement
 
 	
 	/**
-	 * Set scale factors on the individual values we're displaying.  This
-	 * can be used on a multi-valued plot to bring the values into the
-	 * same range.
-	 * 
-	 * @param	scale			Scale factors for each of the data values.
-	 */
-	public void setDataScale(float[] scale) {
-		dataScales = scale;
-	}
-	
-	
-	/**
 	 * Set a scale factor on the time scale.
 	 * 
 	 * @param	scale			Scale factor for the time scale.  Each sample
@@ -311,8 +299,8 @@ class MagnitudeElement
 	 * @param	value				The new value.
 	 */
 	public void setValue(float value) {
-		if (dataScales != null)
-			value *= dataScales[0];
+	    if (value / dataUnit > dataRange)
+	        setDataRange(value / dataUnit);
 		magBar.setValue(value);
 		chartPlot.setValue(value);
 	}
@@ -325,12 +313,12 @@ class MagnitudeElement
 	 * @param	values				The new values.
 	 */
 	public void setValue(float[] values) {
-		if (dataScales != null)
-			for (int i = 0; i < values.length && i < dataScales.length; ++i)
-				currentValue[i] = values[i] * dataScales[i];
-		else
-			for (int i = 0; i < values.length; ++i)
-				currentValue[i] = values[i];
+	    for (int i = 0; i < values.length; ++i) {
+	        final float value = values[i];
+	        if (value / dataUnit > dataRange)
+	            setDataRange(value / dataUnit);
+	        currentValue[i] = value;
+	    }
 		
 		magBar.setValue(currentValue);
 		chartPlot.setValue(currentValue);
@@ -384,90 +372,8 @@ class MagnitudeElement
 
 
 	// ******************************************************************** //
-	// Input.
-	// ******************************************************************** //
-
-    /**
-     * Handle touch screen motion events.
-     * 
-     * @param	event			The motion event.
-     * @return					True if the event was handled, false otherwise.
-     */
-	public boolean handleTouchEvent(MotionEvent event) {
-		final int y = (int) event.getY();
-		final int action = event.getAction();
-
-		if (action == MotionEvent.ACTION_DOWN) {
-			chartZooming = true;
-			chartZoomY = y;
-			zoomStart();
-		} else if (chartZooming && action == MotionEvent.ACTION_MOVE) {
-			zoomTo(chartBounds.bottom - chartBounds.top, chartZoomY, y);
-		} else if (chartZooming && action == MotionEvent.ACTION_UP) {
-			zoomTo(chartBounds.bottom - chartBounds.top, chartZoomY, y);
-			zoomEnd(true);
-			chartZooming = false;
-		} else if (chartZooming && action == MotionEvent.ACTION_CANCEL) {
-			// Back to initial zoom state.
-			zoomEnd(false);
-			chartZooming = false;
-		}
-
-		event.recycle();
-		return true;
-	}
-
-	
-	boolean isZooming() {
-		return chartZooming;
-	}
-
-
-	// ******************************************************************** //
 	// View Drawing.
 	// ******************************************************************** //
-
-	/**
-	 * Start a user zoom on the chart.
-	 */
-	private void zoomStart() {
-		zoomStartRange = dataRange;
-	}
-	
-
-	/**
-	 * Handle a user zoom on the chart.
-	 * 
-	 * @param	height		Height of the zoom range.
-	 * @param	startY		The Y position where the user started the zoom.
-	 * @param	zoomY		The Y position we just zoomed to.
-	 */
-	private void zoomTo(int height, int startY, int zoomY) {
-		float mag = ((float) zoomY - (float) startY) / height;
-		dataRange = zoomStartRange + zoomStartRange * mag;
-		if (dataRange < 1)
-			dataRange = 1;
-		else if (dataRange > baseDataRange * 5)
-			dataRange = baseDataRange * 5;
-	
-		magBar.setDataRange(dataRange);
-		chartPlot.setDataRange(dataRange);
-	}
-	
-
-	/**
-	 * Finish a user zoom on the chart.
-	 * 
-	 * @param	save			If true, commit the zoom, else cancel it.
-	 */
-	private void zoomEnd(boolean save) {
-		if (!save) {
-			dataRange = zoomStartRange;
-			magBar.setDataRange(dataRange);
-			chartPlot.setDataRange(dataRange);
-		}
-	}
-	
 	
 	/**
 	 * This method is called to ask the element to draw itself.
@@ -507,6 +413,9 @@ class MagnitudeElement
 	// The number of values plotted on this gauge.
 	private int numPlots;
 	
+	// Data unit size.
+	private float dataUnit;
+
 	// Basic and current range of displayed data.
 	public final float baseDataRange;
 	private float dataRange;
@@ -516,9 +425,6 @@ class MagnitudeElement
 	// by dataFields.
 	private String[] dataFields = null;
 	
-	// Scale factors for each of the data values.  If null, no scaling.
-	private float[] dataScales = null;
-
 	// The header bar for the graph.
 	private HeaderBarElement headerBar;
 
@@ -527,9 +433,6 @@ class MagnitudeElement
 
 	// The graph plot.
 	private ChartAtom chartPlot;
-	
-	// Our current bounds.
-	private Rect chartBounds;
 
 	// When using a data source, the timestamp of the latest value we have.
 	private long latestRecord = 0;
@@ -539,14 +442,6 @@ class MagnitudeElement
 	
 	// Temp. values array.
 	private float[] tempValue = null;
-	
-	// Track whether the user is zooming the chart, and the start
-	// position of the zoom.
-	private boolean chartZooming = false;
-	private int chartZoomY;
-	
-	// If we're zooming, the plotRange the zoom started at.
-	private float zoomStartRange;
 
 }
 

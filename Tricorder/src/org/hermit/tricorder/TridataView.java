@@ -22,7 +22,9 @@ import org.hermit.tricorder.Tricorder.Sound;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.hardware.SensorListener;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -36,7 +38,7 @@ import android.view.SurfaceHolder;
  */
 class TridataView
 	extends DataView
-	implements SensorListener
+	implements SensorEventListener
 {
 
 	// ******************************************************************** //
@@ -50,7 +52,7 @@ class TridataView
      * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	sman			The SensorManager to get data from.
 	 * @param	sensor			The ID of the sensor to read:
-	 * 							SensorManager.SENSOR_XXX.
+	 * 							Sensor.TYPE_XXX.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -125,7 +127,6 @@ class TridataView
 			layoutLandscape(bounds);
 		
 		plotBounds = plotView.getBounds();
-		chartBounds = chartView.getBounds();
 		numBounds = numView.getBounds();
 	}
 
@@ -279,8 +280,10 @@ class TridataView
 	 */
 	@Override
 	public void start() {
-        sensorManager.registerListener(this, sensorId,
-				   					   SensorManager.SENSOR_DELAY_GAME);
+	    Sensor sensor = sensorManager.getDefaultSensor(sensorId);
+	    if (sensor != null)
+	        sensorManager.registerListener(this, sensor,
+				   					       SensorManager.SENSOR_DELAY_GAME);
 	}
 	
 
@@ -298,84 +301,95 @@ class TridataView
 	// ******************************************************************** //
 	// Data Management.
 	// ******************************************************************** //
-	
+
+    /**
+     * Called when the accuracy of a sensor has changed.
+     * 
+     * @param   sensor          The sensor being monitored.
+     * @param   accuracy        The new accuracy of this sensor.
+     */
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // Don't need anything here.
+    }
+
+
+    /**
+     * Called when sensor values have changed.
+     *
+	 * @param	event			The sensor event.
+     */
+	public void onSensorChanged(SensorEvent event) {
+	    onSensorData(event.sensor.getType(), event.values);
+	}
+
+
     /**
      * Called when sensor values have changed.  The length and contents
      * of the values array vary depending on which sensor is being monitored.
      *
-	 * @param	sensor			The ID of the sensor being monitored.
-	 * @param	values			The new values for the sensor.
+     * @param   sensorId        The ID of the sensor being monitored.
+     * @param   values          The new values for the sensor.
      */
-	public void onSensorChanged(int sensor, float[] values) {
-		if (values.length < 3)
-			return;
+    @Override
+    public void onSensorData(int sensorId, float[] values) {
+        if (values.length < 3)
+            return;
 
-		synchronized (surfaceHolder) {
-			// If we're in relative mode, subtract the baseline values.
-			if (relativeMode) {
-				// First time through, set the baseline values.
-				if (relativeValues == null) {
-					relativeValues = new float[3];
-					relativeValues[0] = values[0];
-					relativeValues[1] = values[1];
-					relativeValues[2] = values[2];
-				}
+        synchronized (surfaceHolder) {
+            // If we're in relative mode, subtract the baseline values.
+            if (relativeMode) {
+                // First time through, set the baseline values.
+                if (relativeValues == null) {
+                    relativeValues = new float[3];
+                    relativeValues[0] = values[0];
+                    relativeValues[1] = values[1];
+                    relativeValues[2] = values[2];
+                }
 
-				processedValues[0] = values[0] - relativeValues[0];
-				processedValues[1] = values[1] - relativeValues[1];
-				processedValues[2] = values[2] - relativeValues[2];
-			} else {
-				processedValues[0] = values[0];
-				processedValues[1] = values[1];
-				processedValues[2] = values[2];
-			}
+                processedValues[0] = values[0] - relativeValues[0];
+                processedValues[1] = values[1] - relativeValues[1];
+                processedValues[2] = values[2] - relativeValues[2];
+            } else {
+                processedValues[0] = values[0];
+                processedValues[1] = values[1];
+                processedValues[2] = values[2];
+            }
 
-			// TODO: on the G1 phone, it looks like the X and Y values
-			// point to magnetic south, while Z points north.  Invert X
-			// and Y to fix this.  Sigh.
-			if (sensorId == SensorManager.SENSOR_MAGNETIC_FIELD) {
-				processedValues[0] *= -1;
-				processedValues[1] *= -1;
-			}
+            // TODO: on the G1 phone, it looks like the X and Y values
+            // point to magnetic south, while Z points north.  Invert X
+            // and Y to fix this.  Sigh.
+            if (sensorId == Sensor.TYPE_MAGNETIC_FIELD) {
+                processedValues[0] *= -1;
+                processedValues[1] *= -1;
+            }
 
-			final float x = processedValues[0];
-			final float y = processedValues[1];
-			final float z = processedValues[2];
-			float m = 0.0f;
-			float az = 0.0f;
-			float alt = 0.0f;
+            final float x = processedValues[0];
+            final float y = processedValues[1];
+            final float z = processedValues[2];
+            float m = 0.0f;
+            float az = 0.0f;
+            float alt = 0.0f;
 
-			// Calculate the magnitude.
-			m = (float) Math.sqrt(x*x + y*y + z*z);
+            // Calculate the magnitude.
+            m = (float) Math.sqrt(x*x + y*y + z*z);
 
-			// Calculate the azimuth and altitude.
-			az = (float) Math.toDegrees(Math.atan2(y, x));
-			az = 90 - az;
-			if (az < 0)
-				az += 360;
+            // Calculate the azimuth and altitude.
+            az = (float) Math.toDegrees(Math.atan2(y, x));
+            az = 90 - az;
+            if (az < 0)
+                az += 360;
 
-			// sin alt = z / mag
-			alt = m == 0 ? 0  : (float) Math.toDegrees(Math.asin(z / m));
+            // sin alt = z / mag
+            alt = m == 0 ? 0  : (float) Math.toDegrees(Math.asin(z / m));
 
-			plotView.setValues(processedValues, m, az, alt);
-			chartView.setValue(m);
-			numView.setValues(processedValues, m, az, alt);
-			xyzView.setValue(processedValues);
-		}
-	}
+            plotView.setValues(processedValues, m, az, alt);
+            chartView.setValue(m);
+            numView.setValues(processedValues, m, az, alt);
+            xyzView.setValue(processedValues);
+        }
+    }
 
 
-	/**
-	 * Called when the accuracy of a sensor has changed.
-	 * 
-	 * @param	sensor			The ID of the sensor being monitored.
-	 * @param	accuracy		The new accuracy of this sensor.
-	 */
-	public void onAccuracyChanged(int sensor, int accuracy) {
-		// Don't need anything here.
-	}
-
-	
 	// ******************************************************************** //
 	// Input.
 	// ******************************************************************** //
@@ -404,13 +418,7 @@ class TridataView
 					showXyz = !showXyz;
 					appContext.postSound(Sound.CHIRP_LOW);
 					done = true;
-				} else if (chartBounds.contains(x, y))
-					done = chartView.handleTouchEvent(event);
-			} else if (chartView.isZooming()) {
-				done = chartView.handleTouchEvent(event);
-				dataRange = chartView.getDataRange();
-				plotView.setDataRange(dataRange);
-				xyzView.setDataRange(dataRange);
+				}
 			}
 		}
 
@@ -473,7 +481,7 @@ class TridataView
 	// The sensor manager, which we use to interface to all sensors.
     private SensorManager sensorManager;
     
-	// The ID of the sensor to read: SensorManager.SENSOR_XXX.
+	// The ID of the sensor to read: Sensor.TYPE_XXX.
     private int sensorId;
     
     // The unit and range of the data.  baseDataRange is the specified range
@@ -506,7 +514,6 @@ class TridataView
     private AxisElement plotView;
     private Rect plotBounds;
     private MagnitudeElement chartView;
-    private Rect chartBounds;
 	private Num3DElement numView;
     private Rect numBounds;
     private MagnitudeElement xyzView;

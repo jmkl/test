@@ -55,9 +55,9 @@ class NavButton
 
 
 	/**
-	 * Get the view definition this button is assigned to.
+	 * Set the view definition this button is assigned to.
 	 * 
-	 * @return			The view definition this button is assigned to.
+	 * @param  vdef		The view definition this button is assigned to.
 	 */
 	void setViewDef(ViewDefinition vdef) {
 		setViewDef(vdef, vdef.labelId);
@@ -65,9 +65,10 @@ class NavButton
 	
 
 	/**
-	 * Get the view definition this button is assigned to.
+	 * Set the view definition this button is assigned to.
 	 * 
-	 * @return			The view definition this button is assigned to.
+     * @param  vdef     The view definition this button is assigned to.
+     * @param  text     Text to display in this button.
 	 */
 	void setViewDef(ViewDefinition vdef, int text) {
 		viewDefinition = vdef;

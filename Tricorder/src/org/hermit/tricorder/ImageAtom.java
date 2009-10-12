@@ -32,7 +32,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 
@@ -135,11 +134,8 @@ class ImageAtom
 	/**
 	 * This method is invoked when a file is loaded by the file cache.
 	 * 
-	 * @param	name			The name of the file.
-	 * @param	url				The URL of the file that was loaded.
-	 * @param	path			The path of the local copy of the file.
-	 * @param	date			The last modified time of the file, as
-	 * 							reported by the server, in ms UTC.
+	 * @param	o   			The cached file that was loaded.
+	 * @param	arg				The URL of the file that was loaded.
 	 */
 	public void update(Observable o, Object arg) {
 		if (!(o instanceof CachedFile) || !(arg instanceof URL))
@@ -169,8 +165,6 @@ class ImageAtom
 	 * @param	path			The path of the local copy of the file.
 	 */
 	private void imageLoaded(URL url, File path) {
-		Log.i(TAG, "ImageAtom: loaded " + path.getPath());
-	
 		// If we don't have a size yet, forget it.
 		if (imageWidth == 0 || imageHeight == 0)
 			return;

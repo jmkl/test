@@ -64,7 +64,7 @@ class BargraphAtom
 	 * @param	range			How many units big to make the graph.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
-	 * @param	vertical		The orientation for this gauge.
+	 * @param	orient		    The orientation for this gauge.
 	 */
 	public BargraphAtom(Tricorder context, SurfaceHolder sh,
 							float unit, float range,
@@ -156,7 +156,7 @@ class BargraphAtom
 	 * Set the given value as the new value for the displayed data.
 	 * Update the display accordingly.
 	 * 
-	 * @param	values				The new value.
+	 * @param	value				The new value.
 	 */
 	public void setValue(float value) {
 		// Save the values.  Note we're synced at the View level.

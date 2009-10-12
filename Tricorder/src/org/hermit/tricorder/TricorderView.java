@@ -22,6 +22,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -115,7 +116,7 @@ class TricorderView
     		case GRA:
     			float gravUnit = SensorManager.STANDARD_GRAVITY;
     	    	vdef.view = new TridataView(context, sh, sm,
-    	    								SensorManager.SENSOR_ACCELEROMETER,
+    	    								Sensor.TYPE_ACCELEROMETER,
     	    								gravUnit, 2.2f,
     	    							    0xffccccff, 0xffff9e63,
     	    							    0xff50d050, 0xffff9e63);
@@ -123,7 +124,7 @@ class TricorderView
     		case MAG:
     	        float magUnit = SensorManager.MAGNETIC_FIELD_EARTH_MAX;
     	        vdef.view = new TridataView(context, sh, sm,
-											SensorManager.SENSOR_MAGNETIC_FIELD,
+											Sensor.TYPE_MAGNETIC_FIELD,
 											magUnit, 2.2f,
 					    					0xff6666ff, 0xffffcc00,
 					    					0xffcc6666, 0xffffcc00);

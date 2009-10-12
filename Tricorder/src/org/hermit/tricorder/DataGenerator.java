@@ -18,9 +18,8 @@
 
 package org.hermit.tricorder;
 
-import java.util.Random;
 
-import android.hardware.SensorListener;
+import java.util.Random;
 
 
 /**
@@ -34,7 +33,17 @@ public class DataGenerator
 	// Constructor.
 	// ******************************************************************** //
 
-	public DataGenerator(SensorListener client,
+    /**
+     * Instantiate a data generator.
+     * 
+     * @param   client          Client which wants the faked data.
+     * @param   sensor          Sensor ID to simulate.
+     * @param   dim             Number of axes (dimensions) the sensor has.
+     * @param   unit            Data unit size.
+     * @param   range           Range of data to generate, in multiples of
+     *                          unit.
+     */
+	public DataGenerator(DataView client,
 						 int sensor, int dim, float unit, float range)
 	{
 		clientListener = client;
@@ -55,6 +64,9 @@ public class DataGenerator
 	// Common Utilities.
 	// ******************************************************************** //
 
+	/**
+	 * Generate a set of data from this simulated sensor.
+	 */
 	public final void generateValues() {
 		for (int i = 0; i < sensorDim; ++i) {
 			// Calculate where the current value is in the range 0 .. max, as a
@@ -74,9 +86,9 @@ public class DataGenerator
 			currentValues[i] += random.nextFloat() * currentRate[i];
 		}
 		
-		clientListener.onSensorChanged(sensorId, currentValues);
+		clientListener.onSensorData(sensorId, currentValues);
 	}
-	
+
 
 	// ******************************************************************** //
 	// Class Data.
@@ -91,7 +103,7 @@ public class DataGenerator
 	// ******************************************************************** //
 	
 	// Listener to pass the data to.
-	private SensorListener clientListener;
+	private DataView clientListener;
 
 	// The ID of the sensor we're faking.
 	private final int sensorId;

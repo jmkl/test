@@ -277,7 +277,7 @@ class ChartAtom
 	 * Update the display accordingly.  This method should only be used
 	 * if there is a single plotted value.
 	 * 
-	 * @param	values				The new value.
+	 * @param	value			The new value.
 	 */
 	public void setValue(float value) {
 		currentValue[0] = value;

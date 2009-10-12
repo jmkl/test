@@ -66,7 +66,7 @@ class GaugeAtom
 	 * @param	range			How many units big to make the graph.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
-	 * @param	vertical		The orientation for this gauge.
+	 * @param	orient   		The orientation for this gauge.
 	 * @param	centered		If true, the zero value is in the center;
 	 * 							else at the left or bottom.
 	 */
@@ -91,7 +91,7 @@ class GaugeAtom
 	 * @param	range			How many units big to make the graph.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCols		Colours for the graph plots.
-	 * @param	vertical		The orientation for this gauge.
+	 * @param	orient   		The orientation for this gauge.
 	 * @param	centered		If true, the zero value is in the center;
 	 * 							else at the left or bottom.
 	 */
@@ -263,7 +263,7 @@ class GaugeAtom
 	 * Set the given value as the new value for the displayed data.
 	 * Update the display accordingly.
 	 * 
-	 * @param	values				The new value.
+	 * @param	value				The new value.
 	 */
 	public void setValue(float value) {
 		currentValue[0] = value;
