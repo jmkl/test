@@ -199,9 +199,9 @@ for more details.\n</string>
     <string name="lab_wifi">WiFi</string>
     <string name="lab_gps_power">GPS Pwr</string>
     <string name="lab_wifi_power">WiFi Pwr</string>
-    <string name="lab_solar_wind">Wind P,V,T</string>
-    <string name="lab_solar_part">Particles</string>
-    <string name="lab_solar_spots">Sunspots,RF</string>
+    <string name="lab_solar_prot">Protons</string>
+    <string name="lab_solar_elec">Electrons</string>
+    <string name="lab_solar_spots">Spots,Flares</string>
     <string name="lab_alt_mode">Mode Alt</string>
     <string name="lab_blank">         </string>
 
