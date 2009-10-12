@@ -73,20 +73,37 @@ public class BoardView
 	// ******************************************************************** //
 	// Configuration Constants.
 	// ******************************************************************** //
-	
+
 	/**
-	 * Maximum major dimension of the board.  The "long" dimension of the
-	 * board can't be more than this.  This must match up with the dimensions
-	 * given in enum Skill below.
+	 * This enum defines the supported screen layouts.  We choose either
+	 * SMALL, MEDIUM, or LARGE based on the physical screen size.  Then,
+	 * sizes[skill][0] is the major grid size for that skill, and
+	 * sizes[skill][1] is the minor grid size for that skill.
 	 */
-	private static final int BOARD_MAJOR = 9;
-	
-	/**
-	 * Maximum minor dimension of the board.  The "short" dimension of the
-	 * board can't be more than this.  This must match up with the dimensions
-	 * given in enum Skill below.
-	 */
-	private static final int BOARD_MINOR = 6;
+	private enum Screen {
+	    SMALL(9, 6, 9, 6, 5, 6, 5, 4),
+	    MEDIUM(15, 9, 13, 7, 9, 7, 5, 5),
+	    LARGE(17, 10, 15, 8, 11, 8, 7, 6);
+	    
+	    Screen(int ml, int ms, int el, int es, int nl, int ns, int vl, int vs) {
+	        major = ml;
+	        minor = ms;
+	        sizes[Skill.INSANE.ordinal()][0] = ml;
+            sizes[Skill.INSANE.ordinal()][1] = ms;
+            sizes[Skill.MASTER.ordinal()][0] = ml;
+            sizes[Skill.MASTER.ordinal()][1] = ms;
+            sizes[Skill.EXPERT.ordinal()][0] = el;
+            sizes[Skill.EXPERT.ordinal()][1] = es;
+            sizes[Skill.NORMAL.ordinal()][0] = nl;
+            sizes[Skill.NORMAL.ordinal()][1] = ns;
+            sizes[Skill.NOVICE.ordinal()][0] = vl;
+            sizes[Skill.NOVICE.ordinal()][1] = vs;
+	    }
+	    
+	    private final int major;
+	    private final int minor;
+	    private final int[][] sizes = new int[Skill.values().length][2];
+	}
 
 	/**
 	 * The minimum cell size in pixels.
@@ -123,31 +140,27 @@ public class BoardView
 	 *     Insane:  6x9 wrapped blind
 	 */
 	enum Skill {
-		//     Name                   id                 dims  brch  wrap blind
-		NOVICE(R.string.skill_novice, R.id.skill_novice, 4, 5,    2, false,  9),
-		NORMAL(R.string.skill_normal, R.id.skill_normal, 6, 5,    2, false,  9),
-		EXPERT(R.string.skill_expert, R.id.skill_expert, 6, 9,    2, false,  9),
-		MASTER(R.string.skill_master, R.id.skill_master, 6, 9,    3, true,   9),
-		INSANE(R.string.skill_insane, R.id.skill_insane, 6, 9,    3, true,   3);
+		//     Name                   id                 brch  wrap  blind
+		NOVICE(R.string.skill_novice, R.id.skill_novice,    2, false,   9),
+		NORMAL(R.string.skill_normal, R.id.skill_normal,    2, false,   9),
+		EXPERT(R.string.skill_expert, R.id.skill_expert,    2, false,   9),
+		MASTER(R.string.skill_master, R.id.skill_master,    3, true,    9),
+		INSANE(R.string.skill_insane, R.id.skill_insane,    3, true,    3);
 
-		private Skill(int lab, int i, int mn, int mj, int br, boolean w, int bd) {
+		private Skill(int lab, int i, int br, boolean w, int bd) {
 			label = lab;
 			id = i;
-			minDim = mn;
-			majDim = mj;
 			branches = br;
 			wrapped = w;
 			blind = bd;
 		}
 
-		public int label;	  	  // Res. ID of the label for this skill level.
-		public int id;	  	  	  // Numeric ID for this skill level.
-		public int minDim;        // Shorter dimension of the playable board.
-		public int majDim;        // Longer dimension of the playable board.
-		public int branches;      // Max branches off each square; at least 2.
-		public boolean wrapped;   // If true, network wraps around the edges.
-		public int blind;         // Squares with this many or more connections
-		                          // are blind.
+		public final int label;	  	  // Res. ID of the label for this skill.
+		public final int id;	  	  // Numeric ID for this skill level.
+		public final int branches;    // Max branches off each square; at least 2.
+		public final boolean wrapped; // If true, network wraps around the edges.
+		public final int blind;       // Squares with this many or more
+		                              // connections are blind.
 	}
 
 
@@ -166,7 +179,7 @@ public class BoardView
         
         // Find out the device's screen dimensions and calculate the
         // size and shape of the cell matrix.
-    	findMatrix(BOARD_MAJOR, BOARD_MINOR);
+    	findMatrix();
         
         // Create all the cells in the calculated board.  In appSize()
     	// we will take care of positioning them.  Set the cell grid and root
@@ -198,26 +211,31 @@ public class BoardView
 
     /**
      * Find the size of board that can fit in the window.
-     * 
-     * @param	width			Width of the window, in pixels.
-     * @param	height			Height of the window, in pixels.
-     * @param	desiredCells			Number of cells we'd like to have.
      */
-    private void findMatrix(int maj, int min) {
+    private void findMatrix() {
     	WindowManager wm =
     		(WindowManager) parentApp.getSystemService(Context.WINDOW_SERVICE);
     	Display disp = wm.getDefaultDisplay();
     	int width = disp.getWidth();
     	int height = disp.getHeight();
-        Log.v(TAG, "findMatrix: screen=" + width + "x" + height);
+    	int min = width < height ? width : height;
 
+        if (min <= 400)
+            screenConfig = Screen.SMALL;
+        else if (min <= 500)
+            screenConfig = Screen.MEDIUM;
+        else
+            screenConfig = Screen.LARGE;
+            
         if (width > height) {
-        	gridWidth = maj;
-        	gridHeight = min;
+        	gridWidth = screenConfig.major;
+        	gridHeight = screenConfig.minor;
         } else {
-        	gridWidth = min;
-        	gridHeight = maj;
+        	gridWidth = screenConfig.minor;
+        	gridHeight = screenConfig.major;
         }
+        Log.v(TAG, "findMatrix: screen=" + width + "x" + height +
+                    " -> " + screenConfig);
     }
 
 
@@ -377,11 +395,11 @@ public class BoardView
     	// Save the width and height of the playing board for this skill
     	// level, and the board placement within the overall cell grid.
     	if (gridWidth > gridHeight) {
-    		boardWidth = sk.majDim;
-    		boardHeight = sk.minDim;
+    		boardWidth = screenConfig.sizes[sk.ordinal()][0];
+    		boardHeight = screenConfig.sizes[sk.ordinal()][1];
     	} else {
-    		boardWidth = sk.minDim;
-    		boardHeight = sk.majDim;
+    		boardWidth = screenConfig.sizes[sk.ordinal()][1];
+    		boardHeight = screenConfig.sizes[sk.ordinal()][0];
     	}
         boardStartX = (gridWidth - boardWidth) / 2;
         boardEndX = boardStartX + boardWidth;
@@ -1308,6 +1326,9 @@ public class BoardView
     // The parent application.
     private NetScramble parentApp;
 
+    // Screen configuration which matches the physical screen size.
+    private Screen screenConfig = null;
+    
     // Width and height of the playing board, in cells.  This is tailored
 	// to suit the screen size and orientation.  It should be invariant on
 	// any given device except that it will rotate 90 degrees when the
