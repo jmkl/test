@@ -26,7 +26,6 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import android.content.Context;
-import android.util.Log;
 
 
 /**
@@ -117,7 +116,6 @@ public class FileFetcher
     			throw new FetchException("timed out");
 
 			// OK, it worked.  Move the temp. file over the real file.
-    		Log.i(TAG, "Loaded, rename " + tempPath + " -> " + filePath);
 			filePath.delete();
 			tempPath.renameTo(filePath);
 			
@@ -126,7 +124,6 @@ public class FileFetcher
     			throw new FetchException("timed out");
 
 			// Notify the client that we're done.
-    		Log.i(TAG, "Notify client loaded " + filePath.toString());
 			dataClient.onWebData(url, filePath, date);
 		}
 		finally {

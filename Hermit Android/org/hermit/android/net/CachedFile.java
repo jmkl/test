@@ -248,8 +248,6 @@ public class CachedFile
      * @param	url			The URL of the file to invalidate.
      */
     public synchronized void invalidate(URL url) {
-		Log.i(TAG, "Invalidate " + url);
-		
     	// Get our local record.
     	Entry entry = targetFiles.get(url);
     	if (entry == null)
@@ -295,14 +293,12 @@ public class CachedFile
 		boolean checking = false;
 		for (Entry entry : targetFiles.values()) {
 			if (entry.path == null || now - entry.date > REFRESH_INTERVAL) {
-				Log.i(TAG, "Kick off " + entry.url);
 				FileFetcher ff =
 					new FileFetcher(context, entry.url, entry.name,
 									this, FETCH_TIMEOUT, entry.date);
 				WebFetcher.queue(ff);
 				checking = true;
-			} else
-				Log.i(TAG, "Already got " + entry.url);
+			}
 		}
 
 		if (checking)
@@ -346,7 +342,6 @@ public class CachedFile
 		    Entry file = targetFiles.get(url);
 		    file.path = path;
 		    file.date = date;
-		    Log.i(TAG, "Into path " + file.path.toString());
 		}
 
 		// Inform the clients that we have data.  Note that if one client

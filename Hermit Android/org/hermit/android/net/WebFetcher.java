@@ -27,6 +27,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import android.os.Process;
 import android.util.Log;
 
 
@@ -263,15 +264,15 @@ public abstract class WebFetcher
 			Log.i(TAG, "R: finished all " + current);
 			dataClient.onWebDone();
 		} catch (IOException e) {
-			Log.i(TAG, "R: IOException: " + current);
+			Log.e(TAG, "R: IOException: " + current);
 			String msg = e.getClass().getName() + ": " + e.getMessage();
 			dataClient.onWebError(msg);
 		} catch (FetchException e) {
-			Log.i(TAG, "R: FetchException: " + current);
+			Log.e(TAG, "R: FetchException: " + current);
 			String msg = e.getClass().getName() + ": " + e.getMessage();
 			dataClient.onWebError(msg);
 		} catch (InterruptedException e) {
-            Log.i(TAG, "R: InterruptedException: " + current);
+            Log.e(TAG, "R: InterruptedException: " + current);
             String msg = "Interrupted";
             dataClient.onWebError(msg);
         } finally {
@@ -401,9 +402,11 @@ public abstract class WebFetcher
     	Runner() {
     		start();
     	}
-    	
+
     	@Override
 		public void run() {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+
     		while (true) {
 	    		if (isInterrupted())
 	    			break;
@@ -415,10 +418,8 @@ public abstract class WebFetcher
     			synchronized (fetchQueue) {
     				job = fetchQueue.poll();
     				if (job == null) {
-    					Log.i(TAG, "Q: wait for job");
     					try {
 							fetchQueue.wait();
-	    					Log.i(TAG, "Q: wait finished");
 						} catch (InterruptedException e) { }
 			    		if (isInterrupted())
 			    			break;
@@ -429,7 +430,6 @@ public abstract class WebFetcher
 	    			break;
     			
     			// Kick off the job.
-				Log.i(TAG, "Q: start: " + job.dataUrls[0].getPath());
     			job.start();
     			
     			// Now wait for it to finish, but only up to the timeout.
@@ -440,11 +440,8 @@ public abstract class WebFetcher
 	    			break;
     			
     			// If it didn't finish, kill it.
-    			if (job.isAlive()) {
-    				Log.i(TAG, "Q: job timeout, kill: " + job.dataUrls[0].getPath());
+    			if (job.isAlive())
     				job.interrupt();
-    			} else
-    				Log.i(TAG, "Q: done: " + job.dataUrls[0].getPath());
     		}
     	}
     }

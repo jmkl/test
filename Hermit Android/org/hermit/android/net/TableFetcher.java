@@ -26,7 +26,6 @@ import java.net.URLConnection;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import org.hermit.android.net.WebFetcher.FetchException;
 
 import android.content.ContentValues;
 
@@ -37,7 +36,7 @@ import android.content.ContentValues;
  * in a ContentValues object.
  */
 public class TableFetcher
-extends WebFetcher
+    extends WebFetcher
 {
 
 	// ******************************************************************** //
@@ -123,8 +122,6 @@ extends WebFetcher
         dateCal.clear();
         
         dateFields = new int[6];
-    	dbgLine = new char[256];
-    	dbgIndex = 0;
 	}
 
 	
@@ -152,8 +149,6 @@ extends WebFetcher
 		int stat;
 		int count = 0;
 		while ((stat = parse(readc, rec)) >= 0) {
-//			rec.put("debug", new String(dbgLine, 0, dbgIndex));
-			
 	   		// If we were killed, bomb out.
     		if (isInterrupted())
     			throw new FetchException("timed out");
@@ -164,7 +159,7 @@ extends WebFetcher
 			if (++count % 20 == 0) {
                 // Just don't hog the CPU.
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     throw new FetchException("interrupted");
                 }
@@ -192,8 +187,6 @@ extends WebFetcher
 	 * 						if got data, which is now in values.
 	 */
 	private int parse(BufferedReader readc, ContentValues values) throws IOException {
-    	dbgIndex = 0;
-
     	// Get the date and time (UTC).  Note that for long dates we
 		// need to skip 2 extra fields.
 		int nDate = longDates ? 6 : 3;
@@ -215,7 +208,6 @@ extends WebFetcher
 			dateCal.set(Calendar.MINUTE, 0);
 		}
 		long time = dateCal.getTimeInMillis();
-		
 
 		// If this record is too old, forget it.
 		if (time < newerThanDate)
@@ -253,7 +245,6 @@ extends WebFetcher
 		int val = 0;
 		int sign = 1;
 		while ((c = readc.read()) >= 0) {
-			dbgLine[dbgIndex++] = (char) c;
 			// Look for a comment.  Skip to the newline.
 			if (first && (c == ':' || c == '#')) {
 				while ((c = readc.read()) >= 0)
@@ -283,7 +274,7 @@ extends WebFetcher
 					sign = 1;
 				}
 				val = val * 10 + (c - '0');
-			} else if (c == ' ' || c == '\t' || true) {
+			} else {
 				if (inNum) {
 					inNum = false;
 					results[index++] = val * sign;
@@ -293,7 +284,11 @@ extends WebFetcher
 			}
 		}
 		
-		return -1;
+        if (inNum) {
+            inNum = false;
+            results[index++] = val * sign;
+        }
+        return index;
 	}
 
 
@@ -322,7 +317,6 @@ extends WebFetcher
 		
 		int c;
 		while ((c = readc.read()) >= 0) {
-			dbgLine[dbgIndex++] = (char) c;
 			if (c == '\n' || c == '\r') {
 				if (state != State.SPACE) {
 					if (index < fieldNames.length) {
@@ -427,9 +421,6 @@ extends WebFetcher
 	
 	// Int array used for date processing.
 	private int[] dateFields;
-	
-	private char[] dbgLine;
-	private int dbgIndex;
 	
 }
 

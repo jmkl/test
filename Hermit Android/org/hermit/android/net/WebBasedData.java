@@ -113,8 +113,6 @@ public class WebBasedData
      * @param	db			The database.
 	 */
     public void setDatabase(SQLiteDatabase db) {
-        Log.i(TAG, "WBD: set database");
-        
         long date = 0;
         synchronized (this) {
             database = db;
@@ -123,8 +121,6 @@ public class WebBasedData
 
 		// If we have any records, inform the client that we have data.
 		if (date != 0) {
-	        Log.i(TAG, "WBD: set database: have data to " + latestDate);
-	        
 			setChanged();
 			notifyObservers(latestDate);
 		}
@@ -375,16 +371,7 @@ public class WebBasedData
 		synchronized(this) {
 			// Trim off any old unwanted values.
 			long earliest = System.currentTimeMillis() - MAX_SAMPLES * dataInterval;
-			int d = database.delete(sourceName, "date<" + earliest, null);
-
-			// See how many records we have for debugging.
-//			Cursor c = database.query(sourceName, new String[] { "date" },
-//			null, null, null, null, null);
-//			int r = c.getCount();
-//			c.close();
-//			Log.i(TAG, "WBD " + sourceName + ": deleted " + d +
-//			" old recs; remaining " + r + " recs.");
-			Log.i(TAG, "WBD " + sourceName + ": web done: deleted " + d + " old recs.");
+			database.delete(sourceName, "date<" + earliest, null);
 		}
 
 		// Inform the client that we have data.
