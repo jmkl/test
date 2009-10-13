@@ -156,7 +156,7 @@ class Axis2DAtom
 			return;
 
 		// Draw scale lines on the 2-axis plot.
-		canvas.drawRect(crossX - unitScale , crossY - unitScale,
+		canvas.drawRect(crossX - unitScale, crossY - unitScale,
 					    crossX + unitScale, crossY + unitScale, paint);
 
 		// Draw our axes, second so they're on top.
@@ -172,12 +172,15 @@ class Axis2DAtom
 			paint.setColor(plotColour);
 			paint.setStyle(Paint.Style.FILL_AND_STROKE);
 			paint.setStrokeWidth(DATA_WIDTH);
-			canvas.drawRect(crossX, crossY,
-					crossX + x, crossY - y, paint);
+			final float l = Math.min(crossX, crossX + x);
+            final float r = Math.max(crossX, crossX + x);
+            final float t = Math.min(crossY, crossY - y);
+            final float b = Math.max(crossY, crossY - y);
+			canvas.drawRect(l, t, r, b, paint);
 			canvas.drawLine(crossX + x - 6, crossY - y,
-					crossX + x + 6, crossY - y, paint);
+					        crossX + x + 6, crossY - y, paint);
 			canvas.drawLine(crossX + x, crossY - y - 6,
-					crossX + x, crossY - y + 6, paint);
+					        crossX + x, crossY - y + 6, paint);
 		}
 	}
 

@@ -507,9 +507,9 @@ public class Tricorder
     	}
     	Log.i(TAG, "Prefs: soundMode " + soundMode);
 
-    	wifiPing = true;
+    	wifiPing = false;
     	try {
-    		wifiPing = prefs.getBoolean("wifiPing", true);
+    		wifiPing = prefs.getBoolean("wifiPing", false);
     	} catch (Exception e) {
     		Log.i(TAG, "Pref: bad wifiPing");
     	}

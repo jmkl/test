@@ -355,14 +355,6 @@ class TridataView
                 processedValues[2] = values[2];
             }
 
-            // TODO: on the G1 phone, it looks like the X and Y values
-            // point to magnetic south, while Z points north.  Invert X
-            // and Y to fix this.  Sigh.
-            if (sensorId == Sensor.TYPE_MAGNETIC_FIELD) {
-                processedValues[0] *= -1;
-                processedValues[1] *= -1;
-            }
-
             final float x = processedValues[0];
             final float y = processedValues[1];
             final float z = processedValues[2];
