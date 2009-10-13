@@ -424,13 +424,15 @@ class TricorderView
     		
     		// And re-draw the view.
     		canvas = surfaceHolder.lockCanvas(null);
+    		if (canvas == null)
+    		    return;
     		synchronized (surfaceHolder) {
     			canvas.drawColor(Tricorder.COL_BG);
     			view.draw(canvas, now);
     		}
     		
     		// If we're tracking performance, draw in the FPS.
-    		if (false) {
+    		if (SHOW_FPS) {
     			++fpsFrameCount;
     			if (now - fpsLastTime >= 1000) {
     				fpsLastCount = fpsFrameCount;
@@ -491,6 +493,9 @@ class TricorderView
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "tricorder";
+	
+	// Set to true to display the FPS counter.
+	private static final boolean SHOW_FPS = false;
 
 	
 	// ******************************************************************** //
