@@ -382,6 +382,11 @@ public class BoardView
 
         // Figure out the active connections.
         updateConnections();
+        
+        // Invalidate all the cells.
+        for (int x = 0; x < gridWidth; x++)
+            for (int y = 0; y < gridHeight; y++)
+                cellMatrix[x][y].invalidate();
     }
 
 

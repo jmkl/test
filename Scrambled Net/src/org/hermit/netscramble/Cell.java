@@ -642,7 +642,7 @@ class Cell
 	/**
 	 * Set this cell's state to be invalid, forcing a redraw.
 	 */
-	private void invalidate() {
+	void invalidate() {
 	    stateValid = false;
 	}
 	
