@@ -608,7 +608,7 @@ public class Tricorder
     /**
      * Post a sound to be played on the main app thread.
      * 
-     * @param   which           ID of the sound to play.
+     * @param   strength        Signal strength as a percentage.
      */
     void postPing(final int strength) {
         if (wifiPing) {
@@ -643,7 +643,8 @@ public class Tricorder
         float vol = 1.0f;
         if (soundMode == SoundMode.QUIET)
             vol = 0.3f;
-        vol *= rvol;
+        if (rvol < 1f)
+            vol *= rvol;
         soundPool.play(soundId, vol, vol, 1, 0, 1f);
     }
 	
@@ -662,7 +663,9 @@ public class Tricorder
 			if (!running) return;
 			postSound(Sound.PING);
 			if (str != 0) try {
-				sleep(2000 - (str * 20) + 50);
+			    int del = 2000 - (str * 20) + 50;
+			    if (del > 10)
+			        sleep(del);
 				if (!running) return;
 				postSound(Sound.PING, (float) str / 100f);
 			} catch (InterruptedException e) { }

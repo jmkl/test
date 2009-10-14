@@ -278,8 +278,13 @@ class GeoElement
 		pos[0][0] = formatAngle(l.getLatitude(), 'N', 'S');
 		pos[1][0] = formatAngle(l.getLongitude(), 'E', 'W');
 		
-		pos[0][1] = getRes(R.string.lab_alt);
-		pos[0][2] = String.format("%6.1fm", l.getAltitude());
+        if (l.hasAltitude()) {
+            pos[0][1] = getRes(R.string.lab_alt);
+            pos[0][2] = String.format("%6.1fm", l.getAltitude());
+        } else {
+            pos[0][1] = "";
+	        pos[0][2] = "";
+		}
 		pos[1][1] = getRes(R.string.lab_acc);
 		pos[1][2] = String.format("%6.1fm", l.getAccuracy());
 			

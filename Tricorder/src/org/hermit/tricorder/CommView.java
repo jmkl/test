@@ -683,7 +683,7 @@ class CommView
 		// strongest signal.
 		if (viewRunning) {
 		    int strength = (int) ((float) strongest / 41f * 100f);
-		    appContext.postPing(strength);
+		    appContext.postPing(strength > 100 ? 100 : strength);
 		}
 	}
 	
