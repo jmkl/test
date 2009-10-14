@@ -382,7 +382,6 @@ class GeoElement
     // ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "tricorder";
 	
 	// Padding between separate sections.

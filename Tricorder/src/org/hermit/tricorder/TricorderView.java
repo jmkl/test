@@ -491,7 +491,6 @@ class TricorderView
     // ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "tricorder";
 	
 	// Set to true to display the FPS counter.

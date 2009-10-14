@@ -680,7 +680,6 @@ public class Tricorder
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "tricorder";
 
 	// Request codes used to identify requests to sub-activities.
