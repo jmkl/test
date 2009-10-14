@@ -318,7 +318,8 @@ class SolarView
 		// Calling getWritableDatabase() gets the helper to open (and maybe
 		// create / update) the DB, and it also tells all our sources
 		// about it.
-		databaseHelper.getWritableDatabase();
+	    if (database == null)
+	        database = databaseHelper.getWritableDatabase();
 	}
 	
 
@@ -812,6 +813,9 @@ class SolarView
 	// Database open/close helper.
 	private DbHelper databaseHelper = null;
 	
+	// The actual database, if open.
+	private SQLiteDatabase database = null;
+
 	// Image atom where we display the Sun's image, and its caption and
 	// data display.
 	private ImageAtom sunImage;

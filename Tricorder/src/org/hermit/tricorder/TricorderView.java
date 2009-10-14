@@ -93,7 +93,7 @@ class TricorderView
 		
 		createGui(context, surfaceHolder);
 
-		// Make sure we get key events.  TODO: check for touch mode stuff.
+		// Make sure we get key events.
         setFocusable(true);
         setFocusableInTouchMode(true);
 	}
