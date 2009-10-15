@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <string name="app_name">Cluster Analyser</string>
+    
+    <!--  Algorithm names. -->
+    <string name="alg_kmeans">K-Means</string>
+    <string name="alg_fuzzy">Fuzzy C-Means</string>
+    
+    <string name="no_data_msg">Generate data before running a test</string>
+      
+    <string name="no_algo_msg">No algorithm specified: using Dalvik-Converge</string>
+    
+    <string name="unknown_algo_msg">Unrecognised algorithm specified: using Dalvik-Converge</string>
+    
+</resources>

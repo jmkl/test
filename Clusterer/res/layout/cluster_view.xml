@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent">
+
+	<org.hermit.clusterer.ClusterWidget
+		android:id="@+id/cluster_view"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent" />
+
+	<LinearLayout android:id="@+id/control_panel"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:orientation="horizontal"
+		android:padding="10px" >
+
+		<Button android:id="@+id/but_generate"
+			android:text="Gen"
+			android:layout_width="1px"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" />
+
+		<Button android:id="@+id/but_step"
+			android:text="Step"
+			android:layout_width="1px"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" />
+
+		<Button android:id="@+id/but_solve"
+			android:text="Solve"
+			android:layout_width="1px"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" />
+
+		<Button android:id="@+id/but_reset"
+			android:text="Rst"
+			android:layout_width="1px"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" />
+
+	</LinearLayout>
+
+</RelativeLayout>
+
