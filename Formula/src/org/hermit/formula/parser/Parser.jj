@@ -1,0 +1,648 @@
+
+/*
+ * Specification of the Formula input grammar.
+ *
+ * Example:
+ 
+input "Radius" int radius;
+input "RPM" float rpm;
+
+output "Gravity" "%4.1fg" grav;
+output "Rim Vel" "%5.1fg" velocity;
+
+main() {
+	float circum = 2 * radius * PI;
+	grav = circum * rpm / 5;
+	velocity = grav * 4 / 3;
+}
+
+ */
+
+
+// ************************************************************************ //
+// Parser Class Specification.
+// ************************************************************************ //
+	
+PARSER_BEGIN(FormulaParser)
+
+package org.hermit.formula.parser;
+
+public class FormulaParser {}
+
+PARSER_END(FormulaParser)
+
+
+// ************************************************************************ //
+// Tokens.
+// ************************************************************************ //
+
+
+/* Skip whitespace */
+SKIP : { " " | "\t" | "\n" | "\r" }
+
+
+/* Symbols */
+TOKEN: {
+  < COMMA: "," >
+| < SEMICOL: ";" >
+| < OPAREN: "(" >
+| < CPAREN: ")" >
+| < OBRACE: "{" >
+| < CBRACE: "}" >
+| < LT: "<" >
+| < LE: "<=" >
+| < GT: ">" >
+| < GE: ">=" >
+| < EQ: "==" >
+| < NE: "!=" >
+| < ASSIGN: "=" >
+| < QUERY: "?" >
+| < COLON: ":" >
+| < LSHIFT: "<<" >
+| < RSHIFT: ">>" >
+| < MUL: "*" | "×" >
+| < DIV: "/" | "÷" >
+| < MOD: "%" >
+| < ADD: "+" >
+| < SUB: "-" >
+| < INCR: "++" >
+| < DECR: "--" >
+| < PREINCR: "+<+" >   // Not actually used, we just need the token.
+| < PREDECR: "-<-" >   // Not actually used, we just need the token.
+| < POSTINCR: "+>+" >  // Not actually used, we just need the token.
+| < POSTDECR: "->-" >  // Not actually used, we just need the token.
+| < NOT: "~" >
+| < ARROW: "->" >
+}
+
+
+/* Reserved words */
+TOKEN: {
+  < INPUT: "input">
+| < OUTPUT: "output">
+| < LOCAL: "local">
+| < INT: "int">
+| < FLOAT: "float">
+| < IF: "if">
+| < ELSE: "else">
+| < WHILE: "while">
+| < BREAK: "break">
+| < RETURN: "return">
+}
+
+
+/* Literals */
+TOKEN: {
+  < FLOAT_LITERAL:
+        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)?
+      | "." (["0"-"9"])+ (<EXPONENT>)?
+      | (["0"-"9"])+ (<EXPONENT>)?
+  >
+|
+  < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+|
+  < STRING_LITERAL:
+      "\""
+      (   (~["\"","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )*
+      "\""
+  >
+}
+
+
+/* Identifiers */
+TOKEN :
+{
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|
+  < #LETTER:
+      [
+       "\u0024",
+       "\u0041"-"\u005a",
+       "\u005f",
+       "\u0061"-"\u007a",
+       "\u00c0"-"\u00d6",
+       "\u00d8"-"\u00f6",
+       "\u00f8"-"\u00ff",
+       "\u0100"-"\u1fff",
+       "\u3040"-"\u318f",
+       "\u3300"-"\u337f",
+       "\u3400"-"\u3d2d",
+       "\u4e00"-"\u9fff",
+       "\uf900"-"\ufaff"
+      ]
+  >
+|
+  < #DIGIT:
+      [
+       "\u0030"-"\u0039",
+       "\u0660"-"\u0669",
+       "\u06f0"-"\u06f9",
+       "\u0966"-"\u096f",
+       "\u09e6"-"\u09ef",
+       "\u0a66"-"\u0a6f",
+       "\u0ae6"-"\u0aef",
+       "\u0b66"-"\u0b6f",
+       "\u0be7"-"\u0bef",
+       "\u0c66"-"\u0c6f",
+       "\u0ce6"-"\u0cef",
+       "\u0d66"-"\u0d6f",
+       "\u0e50"-"\u0e59",
+       "\u0ed0"-"\u0ed9",
+       "\u1040"-"\u1049"
+      ]
+  >
+}
+
+
+// ************************************************************************ //
+// Grammar -- Initial Nonterminal.
+// ************************************************************************ //
+
+ProgramNode Program():
+{
+	ProgramNode prog = new ProgramNode();
+	InputNode i;
+	OutputNode o;
+	FuncNode f;
+}
+{
+	(
+		i=Input()
+			{ prog.addInput(i); }
+	|
+		o=Output()
+			{ prog.addOutput(o); }
+	|
+		f=Func()
+			{ prog.addFunc(f); }
+	)+
+		{ return prog; }
+}
+
+
+// ************************************************************************ //
+// Input and Output Declarations.
+// ************************************************************************ //
+
+InputNode Input():
+{
+	String prompt, name;
+	int type;
+}
+{
+	// input "Radius" int radius;
+	<INPUT> prompt=StringLiteral() type=Type() name=Identifier() <SEMICOL>
+  		{ return new InputNode(prompt, type, name); }
+}
+
+
+OutputNode Output():
+{
+	String label, format, name;
+}
+{
+	// output "Gravity" "%4.1fg" grav;
+	<OUTPUT> label=StringLiteral() format=StringLiteral() name=Identifier() <SEMICOL>
+  		{ return new OutputNode(label, format, name); }
+}
+
+
+int Type():
+{
+	Token t;
+}
+{
+	(
+		t=<INT>
+	|
+		t=<FLOAT>
+	)
+  		{ return t.kind; }
+}
+
+
+// ************************************************************************ //
+// Function Declarations.
+// ************************************************************************ //
+
+FuncNode Func():
+{
+	String name;
+	NameList params;
+	FormulaNode stmts;
+}
+{
+	name=Identifier() <OPAREN> params=FormalParams() <CPAREN>
+						<OBRACE> stmts=Statements() <CBRACE>
+  		{ return new FuncNode(name, params, stmts); }
+}
+
+
+NameList FormalParams():
+{
+	NameList params = new NameList();
+	String name;
+}
+{
+	(
+		name=Identifier()
+			{ params.add(name); }
+		(
+			<COMMA> name=Identifier()
+				{ params.add(name); }
+		)*
+	)?
+		{ return params; }
+}
+
+
+// ************************************************************************ //
+// Statements.
+// ************************************************************************ //
+
+FormulaNode Statements():
+{
+	FormulaNode stmts = new FormulaNode(OBRACE);
+	FormulaNode stmt;
+}
+{
+	(
+		stmt=Statement()
+			{ stmts.addChild(stmt); }
+	)*
+  		{ return stmts; }
+}
+
+
+FormulaNode Statement():
+{
+	FormulaNode stmt;
+}
+{
+	(
+		stmt=LocalStatement()
+	|
+		LOOKAHEAD(2)
+		stmt=AssignStatement()
+	|
+		LOOKAHEAD(2)
+		stmt=ExprStatement()
+	|
+		stmt=IfStatement()
+	|
+		stmt=WhileStatement()
+	|
+		stmt=BreakStatement()
+	|
+		stmt=ReturnStatement()
+	|
+		<OBRACE> stmt=Statements() <CBRACE>
+	)
+  		{ return stmt; }
+}
+
+
+FormulaNode LocalStatement():
+{
+	FormulaNode inits;
+}
+{
+	<LOCAL> inits=Initializers() <SEMICOL>
+  		{ return inits; }
+}
+
+
+FormulaNode Initializers():
+{
+	FormulaNode inits = new FormulaNode(LOCAL);
+	FormulaNode init;
+}
+{
+	(
+		init=Initializer()
+			{ inits.addChild(init); }
+		(
+			<COMMA> init=Initializer()
+				{ inits.addChild(init); }
+		)*
+	)?
+		{ return inits; }
+}
+
+
+FormulaNode Initializer():
+{
+	String name;
+	FormulaNode expr = null;
+}
+{
+	name=Identifier() ( <ASSIGN> expr=Expression() )?
+  		{
+  			FormulaNode res = new FormulaNode(CPAREN, name);
+  			if (expr != null)
+  				res.addChild(expr);
+  			return res;
+  		}
+}
+
+
+FormulaNode ExprStatement():
+{
+	FormulaNode expr;
+}
+{
+	expr=Expression() <SEMICOL>
+  		{ return new FormulaNode(SEMICOL, expr); }
+}
+
+
+FormulaNode AssignStatement():
+{
+	FormulaNode lval, expr;
+}
+{
+	lval=LValue() <ASSIGN> expr=Expression() <SEMICOL>
+  		{ return new FormulaNode(ASSIGN, lval, expr); }
+}
+
+
+FormulaNode IfStatement() :
+{
+	FormulaNode expr, s1, s2 = null;
+}
+{
+	 <IF> <OPAREN> expr=Expression() <CPAREN>
+	 s1=Statement()
+	 [ LOOKAHEAD(1) <ELSE> s2=Statement() ]
+  		{ return new FormulaNode(IF, expr, s1, s2); }
+}
+
+
+FormulaNode WhileStatement() :
+{
+	FormulaNode expr, s1;
+}
+{
+	 <WHILE> <OPAREN> expr=Expression() <CPAREN>
+	 s1=Statement()
+  		{ return new FormulaNode(WHILE, expr, s1); }
+}
+
+
+FormulaNode BreakStatement() :
+{
+}
+{
+	<BREAK> <SEMICOL>
+ 		{ return new FormulaNode(BREAK); }
+}
+
+
+FormulaNode ReturnStatement() :
+{
+	FormulaNode expr;
+}
+{
+	LOOKAHEAD(2)
+	<RETURN> expr=Expression() <SEMICOL>
+ 		{ return new FormulaNode(RETURN, expr); }
+|
+	LOOKAHEAD(2)
+	<RETURN> <SEMICOL>
+ 		{ return new FormulaNode(RETURN); }
+}
+
+
+// ************************************************************************ //
+// Expressions.
+// ************************************************************************ //
+
+FormulaNode Expressions():
+{
+	FormulaNode exprs = new FormulaNode(COMMA);
+	FormulaNode expr;
+}
+{
+	(
+		expr=Expression()
+			{ exprs.addChild(expr); }
+		(
+			<COMMA> expr=Expression()
+				{ exprs.addChild(expr); }
+		)*
+	)?
+  		{ return exprs; }
+}
+
+
+FormulaNode Expression():
+{
+	FormulaNode e;
+}
+{
+	e=ConditionalExpression()
+  		{ return e; }
+}
+
+
+FormulaNode ConditionalExpression():
+{
+	FormulaNode e, l, r;
+}
+{
+	e=EqualityExpression() [
+		<QUERY> l=Expression() <COLON> r=ConditionalExpression()
+	  		{ e = new FormulaNode(QUERY, e, l, r); }
+	]
+  		{ return e; }
+}
+
+
+FormulaNode EqualityExpression() :
+{
+	FormulaNode l, r;
+	Token t = null;
+}
+{
+	l=RelationalExpression() (
+		( t=<EQ> | t=<NE> ) r=RelationalExpression()
+			{ l = new FormulaNode(t.kind, l, r); }
+	)*
+  		{ return l; }
+}
+
+
+FormulaNode RelationalExpression() :
+{
+	FormulaNode l, r;
+	Token t = null;
+}
+{
+	l=AdditiveExpression() (
+		( t=<LT> | t=<LE> | t=<GT> | t=<GE> ) r=AdditiveExpression()
+			{ l = new FormulaNode(t.kind, l, r); }
+	)*
+  		{ return l; }
+}
+
+
+FormulaNode AdditiveExpression():
+{
+	FormulaNode l, r;
+	Token t = null;
+}
+{
+	l=ShiftExpression() (
+		( t=<ADD> | t=<SUB> ) r=ShiftExpression()
+			{ l = new FormulaNode(t.kind, l, r); }
+	)*
+  		{ return l; }
+}
+
+
+FormulaNode ShiftExpression():
+{
+	FormulaNode l, r;
+	Token t = null;
+}
+{
+	l=MultExpression() (
+		( t=<LSHIFT> | t=<RSHIFT> ) r=MultExpression()
+			{ l = new FormulaNode(t.kind, l, r); }
+	)*
+  		{ return l; }
+}
+
+
+FormulaNode MultExpression():
+{
+	FormulaNode l, r;
+	Token t = null;
+}
+{
+	l=UnaryExpression() (
+		( t=<MUL> | t=<DIV> | t=<MOD> ) r=UnaryExpression()
+			{ l = new FormulaNode(t.kind, l, r); }
+	)*
+  		{ return l; }
+}
+
+
+FormulaNode UnaryExpression():
+{
+	FormulaNode e;
+	Token t = null;
+}
+{
+	(
+		( t=<ADD> | t=<SUB> | t=<NOT> ) e=UnaryExpression()
+  			{ return new FormulaNode(t.kind, e); }
+	|
+		e=PrimaryExpression()
+  			{ return e; }
+  	)
+}
+
+
+FormulaNode PrimaryExpression():
+{
+	String var;
+	double fval;
+	String name;
+	FormulaNode e, params;
+}
+{
+	LOOKAHEAD(2)
+	name=Identifier() <OPAREN> params=Expressions() <CPAREN>
+  		{
+  			e = new FormulaNode(OPAREN, name);
+  			e.addChild(params);
+  			return e;
+  		}
+|
+	<INCR> e=LValue()
+  		{ return new FormulaNode(PREINCR, e); }
+|
+	<DECR> e=LValue()
+  		{ return new FormulaNode(PREDECR, e); }
+|
+	LOOKAHEAD(2)
+	e=LValue() <INCR>
+  		{ return new FormulaNode(POSTINCR, e); }
+|
+	LOOKAHEAD(2)
+	e=LValue() <DECR>
+  		{ return new FormulaNode(POSTDECR, e); }
+|
+	LOOKAHEAD(2)
+	var=Identifier()
+  		{ return new FormulaNode(IDENTIFIER, var); }
+|
+	fval=FloatLiteral()
+  		{ return new FormulaNode(FLOAT_LITERAL, fval); }
+|
+	<OPAREN> e=Expression() <CPAREN>
+  		{ return e; }
+}
+
+
+FormulaNode LValue():
+{
+	String var;
+}
+{
+	var=Identifier()
+  		{ return new FormulaNode(IDENTIFIER, var); }
+}
+
+
+// ************************************************************************ //
+// Literals.
+// ************************************************************************ //
+
+double FloatLiteral():
+{
+	Token t;
+}
+{
+	t=<FLOAT_LITERAL>
+  		{
+  			// Convert to double.  This really shouldn't fail, because
+  			// the text must match the FLOAT_LITERAL pattern.
+  			return Double.parseDouble(t.image);
+ 		}
+}
+
+
+String StringLiteral():
+{
+	Token t;
+}
+{
+	t=<STRING_LITERAL>
+  		{
+  			// Strip off the quotes.
+  			String l = t.image;
+  			return l.substring(1, l.length() - 1);
+ 		}
+}
+
+
+String Identifier():
+{
+	Token t;
+}
+{
+	t=<IDENTIFIER>
+  		{
+  			return t.image;
+ 		}
+}
+
