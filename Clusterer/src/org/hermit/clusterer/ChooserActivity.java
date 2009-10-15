@@ -34,6 +34,7 @@ import android.widget.Button;
  * pick which algorithm to use.
  */
 public class ChooserActivity extends Activity {
+    
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {

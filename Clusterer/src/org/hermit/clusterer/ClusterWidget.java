@@ -282,7 +282,6 @@ public class ClusterWidget
     // ******************************************************************** //
 
     // Debugging tag.
-    @SuppressWarnings("unused")
     private static final String TAG = "Cluster";
     
     // The colours to use for the clusters.
