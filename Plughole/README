@@ -1,0 +1,17 @@
+This is Plughole, a bouncing-ball accelerometer game by Ian Cameron
+Smith (headstay); released under GPL.  See "COPYING" for license information.
+
+Includes MTRandom by David Beaumont, released under LGPL.  See
+"COPYING-MTRandom" for license information.
+
+Tilt the device to roll your ball around the maze.  Avoid lava traps and make
+it to the exit before the clock runs out. 
+
+For full information, please see the project home page:
+
+	http://code.google.com/p/plughole/
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.

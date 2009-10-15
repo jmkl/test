@@ -1,0 +1,25 @@
+Images for Plughole
+===================
+
+These are the masters for the Plughole images.
+
+Sizes
+=====
+
+The scaled images must fit into the game grid.  The game grid is 24 x 36, and of course will be scaled to screen size.  On various displays the cell sizes work out as follows:
+
+		Screen		Board		Cell
+	Kogan	320	240	320	213	8.89
+	G1	480	320	480	320	13.33
+	VGA	640	480	640	426	17.78
+	WVGA	800	480	720	480	20
+
+The sizes in cells of the various on-screen objects are stated in LevelData.java.  Note that these are overall pixmap sizes, for for e.g. holes, the actual hole size is less.
+
+To make bitmaps scale nicely, make them 32 pixels per cell.  So for a ball 2 cells across, make the image 64 pixels across.
+
+Curerent Sizes
+==============
+
+Ball		64
+Hole		96 overall; bottom is 68.

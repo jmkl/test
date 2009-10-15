@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+	<string name="app_name">Plughole</string>
+	<string name="app_desc">An accelerometer ball rolling game.</string>
+	
+        
+    <string name="help_text"><b>Plughole</b>\n\
+\n\
+Select between the available data views using the buttons on the left.\n\
+\n\
+<b>GRAV</b> shows the local gravitational field, showing the individual
+components on an X/Y plot and a vertical gauge for the Z axis.  Additionally
+an altitude gauge shows the angle above or below the tricorder\'s horizontal
+plane.  Below this the absolute magnitude of the gravitational field
+is graphed, and the raw numeric data is displayed.\n\
+\n\
+<b>MAG</b> shows the local magnetic field, in the same format.\n\
+\n\
+<b>ENV</b> shows some environmental sensor readouts: light level, object
+proximity, and temperature.\n\
+\n\
+<b>GEO</b> shows geographic information.
+Availability of this information depends on the appropriate services
+being enabled.\n\
+\n\
+<b>EMS</b> scans the electromagnetic spectrum for
+radio signals (as supported by hardware).  Detected signals are shown
+as strength bars.\n\
+\n\
+Note that the availability and accuracy of the
+information presented depends
+on the underlying hardware.  In particular the magnetic field data is known
+to be unreliable on some currently available devices.
+</string>
+
+       
+    <string name="about_text"><b>Plughole</b> by Ian Cameron Smith
+(headstay).\n\
+\n\
+For information and source code see the project home page.\n\
+\n\
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.\n\
+\n\
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
+for more details.\n</string>
+
+    
+    <!-- URLs. -->
+    <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
+    <string name="url_homepage">http://code.google.com/p/plughole/</string>
+
+
+    <!-- Menu strings. -->
+    <string name="menu_restart">Restart</string>
+    <string name="menu_goto">Go to level</string>
+    <string name="menu_prefs">Settings</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+    <string name="menu_exit">Exit</string>
+
+    <!-- Preferences strings. -->
+    <string name="prefs_title">Settings</string>
+    <string name="prefs_general">General</string>
+    <string name="prefs_sound">Sound level</string>
+    <string name="prefs_sound_summary">Set your desired sound level</string>
+    <string name="prefs_sound_title">Sound Level</string>
+    <string name="prefs_vibe">Vibrate</string>
+    <string name="prefs_vibe_summary">Use vibrator feedback</string>
+    <string name="prefs_tilt">Device Tilt Control</string>
+    <string name="prefs_recline">Set horizontal </string>
+    <string name="prefs_recline_summary">Set \"horizontal\" to match your reclined state</string>
+    <string name="prefs_recline_title">Recline Angle</string>
+    <string name="prefs_debug">Debug</string>
+    <string name="prefs_perf">Show performance</string>
+    <string name="prefs_perf_summary">Display FPS and physics time</string>
+    <string name="prefs_ulevel">User Levels</string>
+    <string name="prefs_ulevel_summary">Load levels from directory \"plughole\" on the SD card</string>
+
+    <!-- On-screen messages. -->
+    <string name="mode_ready">Plughole\nTap Screen To Play</string>
+	<string name="mode_pause">Paused\nTap Screen To Resume</string>
+	<string name="mode_lose">Game Over\nTap Screen To Play</string>
+	<string name="mode_win">Success!\n\nTap Screen to Continue</string> 
+	<string name="message_stopped">Stopped</string>
+	<string name="message_lava">You fell into lava!</string> 
+	<string name="message_fell_off">You fell off the table!</string> 
+    
+    <!-- Button strings. -->
+    <string name="button_ok">OK</string>
+    <string name="button_close">Close</string>
+    <string name="button_license">Show license</string>
+    <string name="button_homepage">Home page</string>
+        
+    <!-- Titles. -->
+    <string name="title_level_error">Level Definition Error</string> 
+    
+    <!-- Level names. -->
+    <string name="level1">A Good Start</string>
+    <string name="level2">Look Out, Lava!</string>
+
+</resources>
+

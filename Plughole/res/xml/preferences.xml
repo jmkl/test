@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/prefs_general">
+                           
+        <ListPreference
+                android:key="soundMode"
+                android:title="@string/prefs_sound"
+                android:summary="@string/prefs_sound_summary"
+                android:entries="@array/prefs_sound_entries"
+                android:entryValues="@array/prefs_sound_values"
+                android:dialogTitle="@string/prefs_sound_title" />
+                        
+        <CheckBoxPreference
+                android:key="vibeEnable"
+                android:title="@string/prefs_vibe"
+                android:summary="@string/prefs_vibe_summary" />
+                
+    </PreferenceCategory>
+ 
+    <PreferenceCategory android:title="@string/prefs_tilt">
+                           
+        <ListPreference
+                android:key="reclineMode"
+                android:title="@string/prefs_recline"
+                android:summary="@string/prefs_recline_summary"
+                android:entries="@array/prefs_recline_entries"
+                android:entryValues="@array/prefs_recline_values"
+                android:dialogTitle="@string/prefs_recline_title" />
+            
+    </PreferenceCategory>
+ 
+    <PreferenceCategory android:title="@string/prefs_debug">
+                         
+        <CheckBoxPreference
+                android:key="showPerf"
+                android:title="@string/prefs_perf"
+                android:summary="@string/prefs_perf_summary" />
+                         
+        <CheckBoxPreference
+                android:key="userLevels"
+                android:title="@string/prefs_ulevel"
+                android:summary="@string/prefs_ulevel_summary" />
+            
+    </PreferenceCategory>
+    
+</PreferenceScreen>
+

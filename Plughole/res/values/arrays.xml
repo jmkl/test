@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    
+    <!-- Entry names for the sound preferences menu. -->
+    <string-array name="prefs_sound_entries">
+        <item>No sound</item>
+        <item>Quiet sound</item>
+        <item>Full sound</item>  
+    </string-array>
+
+    <!-- Values for the sound preferences menu. -->
+    <string-array name="prefs_sound_values">
+        <item>NONE</item>
+        <item>QUIET</item>
+        <item>FULL</item>  
+    </string-array>
+       
+    <!-- Entry names for the recline preferences menu. -->
+    <string-array name="prefs_recline_entries">
+        <item>Level</item>
+        <item>Recline 30°</item>
+        <item>Recline 60°</item>  
+        <item>Recline 90°</item>  
+    </string-array>
+
+    <!-- Values for the recline preferences menu. -->
+    <string-array name="prefs_recline_values">
+        <item>0</item>
+        <item>30</item>
+        <item>60</item>  
+        <item>90</item>  
+    </string-array>
+    
+</resources>
+
