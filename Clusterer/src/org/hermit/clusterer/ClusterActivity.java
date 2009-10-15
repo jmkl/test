@@ -36,7 +36,7 @@ import android.widget.Toast;
 
 
 /**
- * Clustering test viewer.  This class implments a simple view which
+ * Clustering test viewer.  This class implements a simple view which
  * displays the results of a clustering test as it runs.
  */
 public class ClusterActivity
@@ -88,7 +88,7 @@ public class ClusterActivity
                 seeControls();
             }
         });
-        Button solveButton = (Button) findViewById(R.id.but_solve);
+        solveButton = (Button) findViewById(R.id.but_solve);
         solveButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -99,7 +99,10 @@ public class ClusterActivity
                     return;
                 }
 
-                messageHandler.post(testSolve);
+                if (!solveRunning)
+                    messageHandler.post(testSolve);
+                else
+                    stopTest();
                 seeControls();
             }
         });
@@ -198,6 +201,7 @@ public class ClusterActivity
      */
     private Runnable testSetup = new Runnable() {
         public void run() {
+            stopTest();
             screenRegion = new Region(0, 0, clusterWidget.getWidth(),
                                             clusterWidget.getHeight());
             
@@ -215,6 +219,7 @@ public class ClusterActivity
      */
     private Runnable testStep = new Runnable() {
         public void run() {
+            stopTest();
             clusterTest.step();
             clusterWidget.set(clusterTest);
         }
@@ -226,12 +231,20 @@ public class ClusterActivity
      */
     private Runnable testSolve = new Runnable() {
         public void run() {
+            stopTest();
+
+            solveRunning = true;
+            solveButton.setText(R.string.but_stop);
             boolean converged = clusterTest.step();
             clusterWidget.set(clusterTest);
 
             // If we converged, that's it.
             if (!converged && clusterTest.getIterations() < MAX_LOOP_COUNT)
                 messageHandler.postDelayed(testSolve, 500);
+            else {
+                solveRunning = false;
+                solveButton.setText(R.string.but_solve);
+            }
         }
     };
 
@@ -241,10 +254,23 @@ public class ClusterActivity
      */
     private Runnable testReset = new Runnable() {
         public void run() {
+            stopTest();
             clusterTest.reset();
             clusterWidget.set(clusterTest);
         }
     };
+
+
+    /**
+     * Stop the current solve process, if one is running.
+     */
+    private void stopTest() {
+        if (solveRunning) {
+            messageHandler.removeCallbacks(testSolve);
+            solveRunning = false;
+            solveButton.setText(R.string.but_solve);
+        }
+    }
 
 
     // ******************************************************************** //
@@ -278,6 +304,12 @@ public class ClusterActivity
     
     // The region of the 2D real plane which is mapped to the screen.
     private Region screenRegion = null;
+    
+    // The "Solve" / "Stop" button.
+    private Button solveButton = null;
+
+    // Are we running a solution?
+    private boolean solveRunning = false;
 
 }
 

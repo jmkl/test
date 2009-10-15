@@ -16,25 +16,25 @@
 		android:padding="10px" >
 
 		<Button android:id="@+id/but_generate"
-			android:text="Gen"
+			android:text="@string/but_generate"
 			android:layout_width="1px"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" />
 
 		<Button android:id="@+id/but_step"
-			android:text="Step"
+			android:text="@string/but_step"
 			android:layout_width="1px"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" />
 
 		<Button android:id="@+id/but_solve"
-			android:text="Solve"
+			android:text="@string/but_solve"
 			android:layout_width="1px"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" />
 
 		<Button android:id="@+id/but_reset"
-			android:text="Rst"
+			android:text="@string/but_reset"
 			android:layout_width="1px"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" />

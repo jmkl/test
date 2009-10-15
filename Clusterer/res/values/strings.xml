@@ -3,15 +3,22 @@
 <resources>
 
     <string name="app_name">Cluster Analyser</string>
+        
+    <!-- Buttons. -->
+    <string name="but_generate">Gen</string>
+    <string name="but_step">Step</string>
+    <string name="but_solve">Solve</string>
+    <string name="but_stop">Stop</string>
+    <string name="but_reset">Reset</string>
     
-    <!--  Algorithm names. -->
+    <!-- Algorithm names. -->
     <string name="alg_kmeans">K-Means</string>
     <string name="alg_fuzzy">Fuzzy C-Means</string>
     
+     <!-- Error and notice messages. -->
     <string name="no_data_msg">Generate data before running a test</string>
-      
-    <string name="no_algo_msg">No algorithm specified: using Dalvik-Converge</string>
-    
-    <string name="unknown_algo_msg">Unrecognised algorithm specified: using Dalvik-Converge</string>
+    <string name="no_algo_msg">No algorithm specified: using K-Means</string>
+    <string name="unknown_algo_msg">Unrecognized algorithm specified: using K-Means</string>
     
 </resources>
+

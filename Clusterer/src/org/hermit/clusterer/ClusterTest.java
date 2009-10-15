@@ -38,7 +38,7 @@ import android.widget.Toast;
 
 
 /**
- * Clustering test viewer.  This class implments a simple view which
+ * Clustering test viewer.  This class implements a simple view which
  * displays the results of a clustering test as it runs.
  */
 public class ClusterTest
