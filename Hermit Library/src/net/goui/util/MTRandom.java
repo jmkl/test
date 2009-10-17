@@ -30,9 +30,6 @@ package net.goui.util;
 import java.util.Random;
 
 /**
- * @version 1.0
- * @author David Beaumont, Copyright 2005
- * <p>
  * A Java implementation of the MT19937 (Mersenne Twister) pseudo
  * random number generator algorithm based upon the original C code
  * by Makoto Matsumoto and Takuji Nishimura (see
@@ -80,6 +77,8 @@ import java.util.Random;
  * </rdf:RDF>
  * -->
  * 
+ * @version 1.0
+ * @author David Beaumont, Copyright 2005
  */
 public class MTRandom extends Random {
 
