@@ -166,8 +166,7 @@ public class Observation
 	/**
 	 * Create an observation for a given Julian day.
 	 * 
-	 * @param	jd			The date to set as a Julian date relative
-	 *						to the astronomical epoch of 4713 BC UTC.
+	 * @param	i			The Instant of time for this observation.
 	 */
 	public Observation(Instant i) {
 		this(i, new Position(0, 0));
@@ -177,8 +176,8 @@ public class Observation
     /**
      * Create an observation for a given Julian day.
      * 
-     * @param   jd          The date to set as a Julian date relative
-     *                      to the astronomical epoch of 4713 BC UTC.
+     * @param   i           The Instant of time for this observation.
+     * @param   pos         The observer's geographical position.
      */
     public Observation(Instant i, Position pos) {
         observationTime = i;
@@ -209,6 +208,7 @@ public class Observation
      * 
      * @param   time        Java-style time in milliseconds since 1 Jan,
      *                      1970.
+     * @param   pos         The observer's geographical position.
      */
     public Observation(long time, Position pos) {
         this(new Instant(time), pos);

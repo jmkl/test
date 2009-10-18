@@ -77,6 +77,7 @@ public class Angle
 	 * Create a Angle from an angle given in degrees.
 	 * 
 	 * @param	degrees		Source angle in degrees.
+     * @return              The corresponding Angle.
 	 */
 	public static Angle fromDegrees(double degrees) {
 		return new Angle(toRadians(degrees));
@@ -89,9 +90,10 @@ public class Angle
 	 * 
 	 * <p>If any of the parameters is negative, the result is negative.
 	 * 
-	 * @param	h		Whole degrees.
+	 * @param	d		Whole degrees.
 	 * @param	m		Minutes.
 	 * @param	s		Seconds.
+	 * @return          The corresponding Angle.
 	 */
 	public static Angle fromDegrees(int d, int m, double s) {
 		boolean neg = d < 0 || m < 0 || s < 0;
@@ -110,6 +112,7 @@ public class Angle
 	 * @param	rh		Hours of right ascension.
 	 * @param	rm		Minutes of right ascension.
 	 * @param	rs		Seconds of right ascension.
+     * @return          The corresponding Angle.
 	 */
 	public static Angle fromRightAscension(int rh, int rm, double rs) {
 		boolean neg = rh < 0 || rm < 0 || rs < 0;
@@ -334,8 +337,6 @@ public class Angle
 	 * Format an angle for user display in degrees and minutes.
 	 *
 	 * @param	angle		The angle to format.
-	 * @param	posSign		Sign to use for positive values; none if null.
-	 * @param	negSign		Sign to use for negative values; none if null.
 	 * @return				The formatted angle.
 	 */
 	public static String formatDegMinSec(double angle) {

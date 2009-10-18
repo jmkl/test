@@ -38,7 +38,7 @@ import static java.lang.Math.toRadians;
 
 
 /**
- * This interface defines global constants.
+ * Definitions of useful global constants related to astronomical calculations.
  */
 public interface AstroConstants
 {
@@ -56,7 +56,7 @@ public interface AstroConstants
 
 	
 	/**
-	 * Number of seconds in a day.
+	 * The number of seconds in a day.
 	 */
 	public static final double SECS_PER_DAY = 60 * 60 * 24;
 

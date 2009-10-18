@@ -51,15 +51,20 @@ import org.hermit.geo.Position;
 
 
 /**
- * This class represents a celestial body.  Derived classes represent
- * specific bodies or types of body.
+ * A celestial body in astronomical calculations; this class calculates
+ * and caches all parameters relating to a specific body.  Derived
+ * classes represent specific bodies or types of body.
  * 
- * <p>The public enum Name identifies a particular body.  It also contains
+ * <p>The public enum {@link Name} identifies a particular body.  It also contains
  * all the orbital elements and other static info for each body.
  * 
- * <p>The core of class Body is a database of all the data we have calculated
- * for this body.  Fields in the database are identified by enum Field;
- * clients ask for a particular field by calling get(Field).  All field
+ * <p>Applications do not create instances of Body; they are obtained by
+ * calling {@link Observation#getSun()}, {@link Observation#getMoon()} and
+ * {@link Observation#getPlanet(Body.Name which)}.
+ * 
+ * <p>The core of this class is a database of all the data we have calculated
+ * for this body.  Fields in the database are identified by enum {@link Field};
+ * clients ask for a particular field by calling {@link #get(Field)}.  All field
  * values are doubles.  Each member of Field has a pointer to the
  * calculation method which calculates the value of that field (and
  * maybe others); if a value is requested which is not in the database,
@@ -67,7 +72,8 @@ import org.hermit.geo.Position;
  * acts as a cache of computed data for the body.
  * 
  * <p>The cache must be invalidated, by calling invalidate(), if any of the
- * circumstances of the current observation (such as time) changes.
+ * circumstances of the current observation (such as time) changes.  This
+ * is generally done by the controlling {@link Observation} automatically.
  * 
  * <p>Since there may be multiple Observations in existence at one time,
  * there may well be multiple versions of each Body floating around, since
@@ -324,14 +330,15 @@ public abstract class Body
     // ******************************************************************** //
 
 	/**
-	 * Create a Body.
+	 * Create a Body.  This method is only called from subclasses, and
+	 * then only by {@link Observation}.
 	 * 
 	 * @param	o			The Observation this Body belongs to.  This
 	 * 						contains all global configuration, like the
 	 * 						current time.
 	 * @param	which		Which body this is.
 	 */
-	public Body(Observation o, Name which) {
+	protected Body(Observation o, Name which) {
 		observation = o;
 		whichBody = which;
 		

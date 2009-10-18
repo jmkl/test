@@ -37,7 +37,7 @@ import static java.lang.Math.floor;
 
 
 /**
- * This class represents a particular moment in time.  This class provides
+ * A representation of a particular moment in time, with
  * methods to convert between the numerous time systems used in astronomy.
  *
  * @author	Ian Cameron Smith
@@ -53,8 +53,9 @@ public class Instant
 	/**
 	 * Create an instant from a Julian day number in UT.
 	 * 
-	 * @param	jd			The date to set as a Julian day number relative
-	 *						to the astronomical epoch of 4713 BC UT.
+	 * @param	jd			The date to set as a fractional Julian day
+	 *                      number relative to the astronomical epoch
+	 *                      of 4713 BC UT.
 	 */
 	public Instant(double jd) {
 		julianDateUt = jd;
@@ -79,7 +80,8 @@ public class Instant
 	/**
 	 * Create an instant from a date / time in UT.
 	 * 
-	 * @param	y			Year number; BC years in astronomical form.
+	 * @param	y			Year number; BC years are in astronomical form,
+	 *                      so 1 BC = 0, 2 BC = -1, ...
 	 * @param	m			Month number; January = 1.
 	 * @param	d			Day of the month, including the fraction of
 	 * 						the day; e.g. 0.25 = 6 a.m.
@@ -496,7 +498,7 @@ public class Instant
 	/**
 	 * Format a decimal time as a string in hours and minutes.
 	 * 
-	 * @param	hv			The time to format, as decimal hours.
+	 * @param	hv			The time to format, as fractional hours.
 	 * @return				The angle formatted in hours and minutes.
 	 */
 	public static String timeAsHm(Double hv) {
@@ -541,7 +543,7 @@ public class Instant
 	// ******************************************************************** //
 
 	/**
-	 * Calculate an estimate of the value of ΔT, i.e. TD - UT in seconds,
+	 * Calculate an estimate of the value of ΔT, ie TD - UT in seconds,
 	 * for a given moment in time.
 	 * 
 	 * This method gives a reasonably good value over the period
