@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res/org.hermit.watchaids"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<ScrollView android:layout_width="fill_parent"
+		android:layout_height="fill_parent" android:layout_weight="1">
+
+		<LinearLayout android:orientation="vertical"
+			android:layout_width="fill_parent" android:layout_height="fill_parent">
+
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_A" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_B" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_C" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_D" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_E" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_F" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_G" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_H" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_I" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_J" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_K" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_L" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_M" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_N" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_O" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_P" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_Q" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_R" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_S" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_T" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_U" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_V" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_W" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_X" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_Y" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_Z" />
+				
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_0" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_1" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_2" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_3" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_4" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_5" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_6" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_7" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_8" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_9" />
+				
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_SUB1" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_SUB2" />
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_SUB3" />
+				
+			<org.hermit.watchaids.FlagWidget
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				app:name="FLAG_CODE" />
+		</LinearLayout>
+
+	</ScrollView>
+
+</LinearLayout>
+

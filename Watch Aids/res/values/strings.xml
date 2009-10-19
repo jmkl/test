@@ -1,5 +1,184 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
-    <string name="hello">Hello World, WatchAids!</string>
+    
     <string name="app_name">Watch Aids</string>
+    <string name="description">Handy reference information for sailors.</string>
+
+    <string name="eula_title">NOT FOR NAVIGATION</string>
+    
+    <string name="eula_text">Watch Aids is intended to be used as a fun
+application to keep you company on night watches.  The information it
+displays (position, astronomical data, etc.) is intended to be interesting,
+but not reliable to the standards required for navigation or any situation
+in which adverse consequences may result from errors.\n\
+\n\
+This program is free software, and is distributed by its creator free
+of charge.  A free copy, and the source code, can be obtained on the
+project home page; see the About screen.\n\
+\n\
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
+for more details.\n</string>
+
+
+    <string name="help_text"><b>Watch Aids</b>\n\
+\n\
+On Watch displays a selection of useful information for a sailing
+watchkeeper, and sounds chimes and alerts to keep you on your toes.
+It also lets you know about interesting astronomical phenomena to look
+out for on those long night watches.\n\
+\n\
+You\'ll see a link to the project
+home page at the bottom of this screen; check it out for more info on
+On Watch.  On Watch is an open project, so if you want to join in and
+make contributions, you can.  See the project page for information.\n\
+</string>
+
+
+    <string name="about_title">About</string>
+    <string name="about_text"><b>Watch Aids</b> by Ian Cameron Smith
+(headstay).\n\
+\n\
+For information and source code see the project home page.\n\
+\n\
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.\n\
+\n\
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
+for more details.\n</string>
+
+
+    <!-- Menu Strings. -->
+    <string name="menu_prefs">Settings</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+    <string name="menu_eula">Disclaimer</string>
+    <string name="menu_exit">Exit</string>
+    
+    <string name="menu_move_up">Move Up</string>
+    <string name="menu_move_down">Move Down</string>
+    <string name="menu_delete">Delete</string>
+    
+    <!-- URLs. -->
+    <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
+    <string name="url_homepage">http://code.google.com/p/tricorder/</string>
+    <string name="url_manual">http://code.google.com/p/tricorder/wiki/UserManual</string>
+
+    <!-- Flag Names.  -->
+    <string name="flag_a">A</string>
+    <string name="flag_b">B</string>
+    <string name="flag_c">C</string>
+    <string name="flag_d">D</string>
+    <string name="flag_e">E</string>
+    <string name="flag_f">F</string>
+    <string name="flag_g">G</string>
+    <string name="flag_h">H</string>
+    <string name="flag_i">I</string>
+    <string name="flag_j">J</string>
+    <string name="flag_k">K</string>
+    <string name="flag_l">L</string>
+    <string name="flag_m">M</string>
+    <string name="flag_n">N</string>
+    <string name="flag_o">O</string>
+    <string name="flag_p">P</string>
+    <string name="flag_q">Q</string>
+    <string name="flag_r">R</string>
+    <string name="flag_s">S</string>
+    <string name="flag_t">T</string>
+    <string name="flag_u">U</string>
+    <string name="flag_v">V</string>
+    <string name="flag_w">W</string>
+    <string name="flag_x">X</string>
+    <string name="flag_y">Y</string>
+    <string name="flag_z">Z</string>
+    <string name="flag_0">0</string>
+    <string name="flag_1">1</string>
+    <string name="flag_2">2</string>
+    <string name="flag_3">3</string>
+    <string name="flag_4">4</string>
+    <string name="flag_5">5</string>
+    <string name="flag_6">6</string>
+    <string name="flag_7">7</string>
+    <string name="flag_8">8</string>
+    <string name="flag_9">9</string>
+    <string name="flag_s1">First sub</string>
+    <string name="flag_s2">Second sub</string>
+    <string name="flag_s3">Third sub</string>
+    <string name="flag_code">Code</string>
+
+    <!-- Morse Code.  -->
+    <string name="morse_a">· —</string>
+    <string name="morse_b">— · · ·</string>
+    <string name="morse_c">— · — ·</string>
+    <string name="morse_d">— · ·</string>
+    <string name="morse_e">·</string>
+    <string name="morse_f">· · — ·</string>
+    <string name="morse_g">— — ·</string>
+    <string name="morse_h">· · · ·</string>
+    <string name="morse_i">· ·</string>
+    <string name="morse_j">· — — —</string>
+    <string name="morse_k">— · —</string>
+    <string name="morse_l">· — · ·</string>
+    <string name="morse_m">— —</string>
+    <string name="morse_n">— ·</string>
+    <string name="morse_o">	— — —</string>
+    <string name="morse_p">· — — ·</string>
+    <string name="morse_q">— — · —</string>
+    <string name="morse_r">· — ·</string>
+    <string name="morse_s">· · ·</string>
+    <string name="morse_t">—</string>
+    <string name="morse_u">· · —</string>
+    <string name="morse_v">· · · —</string>
+    <string name="morse_w">· — —</string>
+    <string name="morse_x">— · · —</string>
+    <string name="morse_y">— · — —</string>
+    <string name="morse_z">— — · ·</string>
+    <string name="morse_0">— — — — —</string>
+    <string name="morse_1">· — — — —</string>
+    <string name="morse_2">· · — — —</string>
+    <string name="morse_3">· · · — —</string>
+    <string name="morse_4">· · · · —</string>
+    <string name="morse_5">· · · · ·</string>
+    <string name="morse_6">— · · · ·</string>
+    <string name="morse_7">— — · · ·</string>
+    <string name="morse_8">— — — · ·</string>
+    <string name="morse_9">— — — — ·</string>
+
+    <!-- Code Single-Letter Meanings.  -->
+    <string name="code_a">Diver below / undergoing a speed trial</string>
+    <string name="code_b">I am taking on or discharging explosives</string>
+    <string name="code_c">(affirmative)</string>
+    <string name="code_d">keep clear of me, manoevering with difficulty</string>
+    <string name="code_e">I am altering my course to starboard</string>
+    <string name="code_f">I am disabled, communicate with me</string>
+    <string name="code_g">I require a pilot</string>
+    <string name="code_h">I have a pilot on board</string>
+    <string name="code_i">I am altering my course to port</string>
+    <string name="code_j">I am going to send a message by semaphore</string>
+    <string name="code_k">stop your vessel instantly</string>
+    <string name="code_l">stop, I have something important to communicate</string>
+    <string name="code_m">I have a doctor on board</string>
+    <string name="code_n">no (negative)</string>
+    <string name="code_o">man overboard</string>
+    <string name="code_p">all aboard / your lights are out</string>
+    <string name="code_q">I request free practique</string>
+    <string name="code_r">the way is off my ship. You may feel you way past me</string>
+    <string name="code_s">my engines are going full speed astern</string>
+    <string name="code_t">do not pass ahead of me</string>
+    <string name="code_u">you are standing into danger</string>
+    <string name="code_v">I require assistance (not distress)</string>
+    <string name="code_w">I require medical assistance</string>
+    <string name="code_x">stop and watch my signals</string>
+    <string name="code_y">I am carrying mails</string>
+    <string name="code_z">to be used to address or call shore stations</string>
+
 </resources>
+

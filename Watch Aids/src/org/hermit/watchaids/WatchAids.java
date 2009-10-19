@@ -1,3 +1,4 @@
+
 package org.hermit.watchaids;
 
 import android.app.Activity;
@@ -8,7 +9,7 @@ public class WatchAids extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.flag_grid);
     }
 }
 
