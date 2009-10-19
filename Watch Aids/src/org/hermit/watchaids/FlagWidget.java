@@ -20,6 +20,7 @@ package org.hermit.watchaids;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -198,6 +199,7 @@ public class FlagWidget
 		ImageView flagView = new ImageView(context);
 		flagView.setImageResource(flag.imgId);
 		lp = new LinearLayout.LayoutParams(WC, WC);
+		lp.setMargins(0, 0, 6, 0);
 		addView(flagView, lp);
 		
 		View textView = createText(context, flag);
@@ -225,6 +227,7 @@ public class FlagWidget
   
         if (flag.textId != 0) {
             TextView letterView = new TextView(context);
+            letterView.setTextColor(Color.WHITE);
             letterView.setText(flag.textId);
             lp = new LinearLayout.LayoutParams(FP, WC);
             layout.addView(letterView, lp);
@@ -248,11 +251,13 @@ public class FlagWidget
         final int FP = LinearLayout.LayoutParams.FILL_PARENT;
         
         TextView nameView = new TextView(context);
+        nameView.setTextColor(Color.WHITE);
         nameView.setText(flag.nameId);
         lp = new LinearLayout.LayoutParams(FP, WC, 1);
         layout.addView(nameView, lp);
         
         TextView morseView = new TextView(context);
+        morseView.setTextColor(Color.WHITE);
         morseView.setTypeface(Typeface.DEFAULT_BOLD);
         if (flag.morseId != 0)
             morseView.setText(flag.morseId);

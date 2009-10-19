@@ -9,7 +9,9 @@
 		android:layout_height="fill_parent" android:layout_weight="1">
 
 		<LinearLayout android:orientation="vertical"
-			android:layout_width="fill_parent" android:layout_height="fill_parent">
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:background="#500050" >
 
 			<org.hermit.watchaids.FlagWidget
 				android:layout_width="fill_parent" android:layout_height="wrap_content"

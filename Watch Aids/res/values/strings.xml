@@ -112,7 +112,7 @@ for more details.\n</string>
     <string name="flag_s1">First sub</string>
     <string name="flag_s2">Second sub</string>
     <string name="flag_s3">Third sub</string>
-    <string name="flag_code">Code</string>
+    <string name="flag_code">Code / answer</string>
 
     <!-- Morse Code.  -->
     <string name="morse_a">· —</string>
@@ -153,32 +153,32 @@ for more details.\n</string>
     <string name="morse_9">— — — — ·</string>
 
     <!-- Code Single-Letter Meanings.  -->
-    <string name="code_a">Diver below / undergoing a speed trial</string>
-    <string name="code_b">I am taking on or discharging explosives</string>
-    <string name="code_c">(affirmative)</string>
-    <string name="code_d">keep clear of me, manoevering with difficulty</string>
+    <string name="code_a">I have a diver down</string>
+    <string name="code_b">Dangerous goods on board</string>
+    <string name="code_c">Yes (affirmative)</string>
+    <string name="code_d">Keep clear, maneuvering with difficulty</string>
     <string name="code_e">I am altering my course to starboard</string>
     <string name="code_f">I am disabled, communicate with me</string>
-    <string name="code_g">I require a pilot</string>
+    <string name="code_g">I require a pilot / hauling nets</string>
     <string name="code_h">I have a pilot on board</string>
     <string name="code_i">I am altering my course to port</string>
-    <string name="code_j">I am going to send a message by semaphore</string>
-    <string name="code_k">stop your vessel instantly</string>
-    <string name="code_l">stop, I have something important to communicate</string>
-    <string name="code_m">I have a doctor on board</string>
-    <string name="code_n">no (negative)</string>
-    <string name="code_o">man overboard</string>
-    <string name="code_p">all aboard / your lights are out</string>
-    <string name="code_q">I request free practique</string>
-    <string name="code_r">the way is off my ship. You may feel you way past me</string>
-    <string name="code_s">my engines are going full speed astern</string>
-    <string name="code_t">do not pass ahead of me</string>
-    <string name="code_u">you are standing into danger</string>
-    <string name="code_v">I require assistance (not distress)</string>
+    <string name="code_j">On fire / leaking dangerous cargo</string>
+    <string name="code_k">I wish to communicate with you</string>
+    <string name="code_l">Stop your vessel instantly</string>
+    <string name="code_m">My vessel is stopped and making no way</string>
+    <string name="code_n">No (negative)</string>
+    <string name="code_o">Crew overboard</string>
+    <string name="code_p">All aboard / my nets are snagged</string>
+    <string name="code_q">Healthy, I request free pratique</string>
+    <string name="code_r"></string>
+    <string name="code_s">I am operating astern propulsion</string>
+    <string name="code_t">Keep clear, pair trawling</string>
+    <string name="code_u">You are running into danger</string>
+    <string name="code_v">I require assistance</string>
     <string name="code_w">I require medical assistance</string>
-    <string name="code_x">stop and watch my signals</string>
-    <string name="code_y">I am carrying mails</string>
-    <string name="code_z">to be used to address or call shore stations</string>
+    <string name="code_x">Stop and watch my signals</string>
+    <string name="code_y">I am dragging my anchor</string>
+    <string name="code_z">I require a tug / shooting nets</string>
 
 </resources>
 
