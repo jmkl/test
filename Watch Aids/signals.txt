@@ -1,0 +1,1850 @@
+Procedural signals for repetition.
+
+AA                Repeat all after…
+AB                Repeat all before…
+BN                Repeat all between… and…
+CQ        Call for unknown station(s) or general call to all stations.
+CS        What is the name or identity signal of your vessel (or station)?
+DE                From…
+NO                Negative—“No” or “The signiﬁcance of the previous group should be read in the negative”.
+OK                Acknowledging a correct repetition or “It is correct”.
+RQ        Interrogative or “the signiﬁcance of the previous group should be read as a question”.
+WA                Repeat word or group after…
+WB                Repeat word or group before…
+
+ABANDON
+
+AC                 I am abandoning my vessel.
+AD                 I am abandoning my vessel which has suffered a nuclear accident and is a possible source of radiation danger.
+AE                 I must abandon my vessel.
+AE 1            I (or crew of vessel indicated) wish to abandon my (or their) vessel, but have not the means.
+AE 2            I shall abandon my vessel unless you will remain by me, ready to assist.
+AF                 I do not intend to abandon my vessel.
+AF 1            Do you intend to abandon your vessel?
+AG                 You should abandon your vessel as quickly as possible.
+AH                 You should not abandon your vessel.
+AI                 Vessel (indicated by position and/or name or identity signal if necessary) will have to be abandoned.
+
+ACCIDENT—DOCTOR—INJURED/SICK
+
+Accident
+
+AJ                 I have had a serious nuclear accident and you should approach with caution.
+AK                 I have had a nuclear accident on board.
+
+Doctor
+
+AL         I have a doctor on board.
+AM         Have you a doctor?
+AN         I need a doctor.
+AN 1      I need a doctor; I have severe burns.
+AN 2      I need a doctor; I have radiation casualties.
+
+Injured/Sick
+
+AO         Number of injured and/or dead not yet known.
+AO 1      How many injured?
+AO 2      How many dead?
+AP         I have… (number) casualties.
+AQ         I have injured/sick person (or number of persons indicated) to be taken off urgently.
+AT         You should send injured/sick persons to me.
+
+AIRCRAFT-HELICOPTER
+
+Alight-Landing
+
+AU        I am forced to alight near you (or in position indicated).
+AV        I am alighting (in position indicated if necessary) to pick up crew of vessel/aircraft
+AW        Aircraft should endeavor to alight where ﬂag is waved or light is shown.
+AX        You should train your searchlight nearly vertical on a cloud, intermittently if possible, and, if my aircraft is seen, deﬂect the beam upwind and on the water to facilitate my landing.
+AX 1      Shall I train my searchlight nearly vertical on a cloud, intermittently if possible, and, if your aircraft is seen, deﬂect the beam upwind and on the water to facilitate your landing?
+AY        I will alight on your deck; (you should steer course… speed… knots).
+AZ        I cannot alight but I can lift crew.
+AZ 1      I cannot alight but I can lift injured/sick person.
+BA        You cannot alight on the deck.
+BA 1      You cannot alight on the deck; can you lift crew?
+BA 2      You cannot alight on the deck; can you lift injured/sick person?
+BB        You may alight on my deck.
+BB 1      You may alight on my deck; I am ready to receive you forward.
+BB 2      You may alight on my deck; I am ready to receive you amidship.
+BB 3      You may alight on my deck; I am ready to receive you aft.
+BB 4      You may alight on my deck but I am not yet ready to receive you.
+
+Communications
+
+BC        I have established communications with the aircraft in distress on 2182 kHz.
+BC 1      Can you communicate with the aircraft?
+BD        I have established communications with the aircraft in distress on… kHz.
+BE        I have established communications with the aircraft in distress on… MHz.
+
+Ditched-Disabled-Afloat
+
+BF        Aircraft is ditched in position indicated and requires immediate assistance.
+BG        Aircraft is still aﬂoat.
+
+Flying
+
+BH                 I sighted an aircraft at time indicated in lat… long… ﬂying on course…
+BH 1            Aircraft was ﬂying at high altitude.
+BH 2            Aircraft was ﬂying at low altitude.
+BI                 I am ﬂying to likely position of vessel in distress.
+BI 1            I am ﬂying at low altitude near the vessel.
+BJ                 I am circling over the area of accident.
+BJ 1            An aircraft is circling over the area of accident.
+BK                 You are overhead.
+BK 1            Am I overhead?
+BL                 I am having engine trouble but am continuing ﬂight.
+
+Parachute
+
+BM                 You should parachute object to windward. Mark it by smoke or light signal.
+BM 1            I am going to parachute object to windward, marking it by smoke or light signal.
+BM 2            I am going to parachute equipment.
+BM 3            Inﬂatable raft will be dropped to windward by parachute.
+BO                 We are going to jump by parachute.
+
+Search—Assistance
+
+BP                 Aircraft is coming to participate in search. Expected to arrive over the area of accident at time indicated.
+
+Speed
+
+BQ                 The speed of my aircraft in relation to the surface of the earth is… (knots or kilometers per hour).
+BQ 1      What is the speed of your aircraft in relation to the surface of the earth?
+
+Helicopter
+
+BR        I require a helicopter urgently.
+BR 1      I require a helicopter urgently to pick up persons.
+BR 2      I require a helicopter urgently with a doctor.
+BR 3      I require a helicopter urgently to pick up injured/sick person.
+BR 4      I require a helicopter urgently with inﬂatable raft.
+BS        You should send a helicopter/boat with stretcher.
+BT        Helicopter is coming to you now (or at time indicated).
+BT 1      Helicopter is coming to you now (or at time indicated) to pick up persons.
+BT 2      Helicopter is coming to you now (or at time indicated) with a doctor.
+BT 3      Helicopter is coming to you now (or at time indicated) to pick up injured/sick person.
+BT 4      Helicopter is coming to you now (or at time indicated) with inﬂatable raft.
+BU        A helicopter/boat is coming to take injured/sick.
+BV        I cannot send a helicopter.
+BW        The magnetic course for you to steer towards me (or vessel or position indicated) is… (at time indicated).
+BX        The magnetic course for the helicopter to regain its base is…
+BY        Will you indicate the magnetic course for me to steer towards you (or vessel or position indicated)?
+BZ        Your magnetic bearing from me (or from vessel or position indicated) is… (at time indicated).
+CA        What is my magnetic bearing from you (or from vessel or position indicated)?
+
+ASSISTANCE
+
+Required
+
+CB        I require immediate assistance.
+CB 1      I require immediate assistance; I have a dangerous list.
+CB 2      I require immediate assistance; I have damaged steering gear.
+CB 3      I require immediate assistance; I have a serious disturbance on board.
+CB 4      I require immediate assistance; I am aground.
+CB 5      I require immediate assistance; I am drifting.
+CB 6      I require immediate assistance; I am on ﬁre.
+CB 7      I require immediate assistance; I have sprung a leak.
+CB 8      I require immediate assistance; propeller shaft is broken.
+CC         I am (or vessel indicated is) in distress in lat… long… (or bearing… from place indicated, distance…) and require immediate assistance (Complements Table 2, Chapter 2, Section 10, Page 104 if required).
+CD         I require assistance in the nature of… (Complements Table 2, Chapter 2, Section 10, Page 104).
+CE         I will attempt to obtain for you the assistance required.
+CF         Signals from vessel/aircraft requesting assistance are coming from bearing…from me (lat… long… if necessary).
+CG         Stand by to assist me (or vessel indicated).
+CG 1      I will stand by to assist you (or vessel indicated).
+CH         Vessel indicated is reported as requiring assistance in lat… long… (or bearing… from place indicated, distance…).
+CH 1      Lightvessel (or lighthouse) indicated requires assistance.
+CH 2      Space ship is down in lat… long… and requires immediate assistance.
+CI         Vessel aground in lat… long… requires assistance.
+CJ         Do you require assistance?
+CJ 1      Do you require immediate assistance?
+CJ 2      Do you require any further assistance?
+CJ 3      What assistance do you require?
+CJ 4      Can you proceed without assistance?
+
+Not Required—Declined
+
+CK         Assistance is not (or is no longer) required by me (or vessel indicated).
+CL         I offered assistance but it was declined.
+
+Given—Not Given
+
+CM         One or more vessels are assisting the vessel in distress.
+CM 1      Vessel/aircraft reported in distress is receiving assistance.
+CN         You should give all possible assistance.
+CN 1      You should give immediate assistance to pick up survivors.
+CN 2      You should send survival craft to assist vessel indicated.
+CO         Assistance cannot be given to you (or vessel/aircraft indicated).
+CO 1      I cannot give the assistance required.
+
+Proceeding to Assistance
+
+CP         I am (or vessel indicated is) proceeding to your assistance.
+CP 1      SAR aircraft is coming to your assistance.
+CR         I am proceeding to the assistance of vessel (lat… long…).
+CT         I (or vessel indicated) expect to reach you at time indicated.
+CU         Assistance will come at time indicated.
+CU 1      I can assist you.
+CV         I am unable to give assistance.
+CV 1      Will you go to the assistance of vessel indicated (in lat… long…)?
+CV 2      May I assist you?
+CV 3      Can you assist me (or vessel indicated)?
+CV 4      Can you assist?
+
+BOATS—RAFTS
+
+CW                 Boat/raft is on board.
+CW 1            Boat/raft is safe.
+CW 2            Boat/raft is in sight.
+CW 3            Boat/raft is adrift.
+CW 4            Boat/raft is aground.
+CW 5            Boat/raft is alongside.
+CW 6            Boat/raft is damaged.
+CW 7            Boat/raft has sunk.
+CW 8            Boat/raft has capsized.
+CX                 Boats cannot be used.
+CX 1            Boats cannot be used because of prevailing weather conditions.
+CX 2            Boats cannot be used on the starboard side because of list.
+CX 3            Boats cannot be used on the port side because of list.
+CX 4            Boats cannot be used to disembark people.
+CX 5            Boats cannot be used to get alongside.
+CX 6            Boats cannot be used to reach you.
+CX 7            I cannot send a boat.
+CY                 Boat(s) is(are) coming to you.
+CY 1            Boat/raft is making for the shore.
+CY 2            Boat/raft has reached the shore.
+CZ                 You should make a lee for the boat(s)/raft(s).
+CZ 1            You should discharge oil to smooth sea.
+DA                 Boat(s)/raft(s) should approach vessel as near as possible to take off persons.
+DB                 Veer a boat or raft on a line.
+DC                 Boat should endeavor to land where ﬂag is waved or light is shown.
+DD                 Boats are not allowed to come alongside.
+DD 1            Boats are not allowed to land (after time indicated).
+
+Available
+
+DF                 I have… (number) serviceable boats.
+DG                 I have a motor boat [or… (number) motor boats].
+DH                 I have no boat/raft.
+DH 1            I have no motor boat.
+DH 2            Have you any boats with radiotelegraph installation or portable radio equipment?
+DH 3            How many serviceable motor boats have you?
+DH 4            How many serviceable boats have you?
+
+Required
+
+DI                 I require boats for… (number) persons.
+DJ                 Do you require a boat?
+
+Send
+
+DK                 You should send all available boats/rafts.
+DK 1            You should send back my boat.
+DK 2            Can you send a boat?
+DL         I can send a boat.
+DL 1      I am sending a boat.
+
+Search
+
+DM         You should search for the boat(s)/raft(s).
+DN         I have found the boat/raft.
+DN 1      Have you seen or heard anything of the boat/raft?
+DO         Look out for boat/raft in bearing… distance… from me (or from position indicated).
+DP         There is a boat/raft in bearing… distance… from me (or from position indicated).
+DQ         An empty boat/raft has been sighted in lat… long… (or bearing… from place indicated, distance…).
+
+DISABLED—DRIFTING—SINKING
+
+Disabled
+
+DR         Have you sighted disabled vessel/aircraft in approximate lat… long…?
+DS         I sighted disabled aircraft in lat… long… at time indicated.
+DT         I sighted disabled vessel in lat… long… at time indicated.
+DT 1      I sighted disabled vessel in lat… long… at time indicated, apparently without a radio.
+
+Drifting
+
+DU         I am drifting at… (number) knots, towards… degrees.
+DV         I am drifting.
+DV 1      I am adrift.
+DW         Vessel (name or identity signal) is drifting near lat… long….
+
+Sinking
+
+DX         I am sinking (lat… long… if necessary).
+DY         Vessel (name or identity signal) has sunk in lat… long…
+DY 1      Did you see vessel sink?
+DY 2      Where did vessel sink?
+DY 3      Is it conﬁrmed that vessel (name or identity signal) has sunk?
+DY 4      What is the depth of water where vessel sunk?
+
+DISTRESS
+
+Vessel/Aircraft in Distress
+
+DZ         Vessel (or aircraft) indicated appears to be in distress.
+DZ 1      Is vessel (or aircraft) indicated in distress?
+DZ 2      What is the name (or identity signal) of vessel in distress?
+EA         Have you sighted or heard of a vessel in distress? (Approximate position lat… long… or bearing… from place indicated, distance…).
+EA 1      Have you any news of vessel/aircraft reported missing or in distress in this area?
+I am (or vessel indicated is) in distress in lat… long… (or bearing… from place indicated, distance…) and require immediate assistance (Complements Table 2, Chapter 2, Section 10, Page
+EB         There is a vessel (or aircraft) in distress in lat… long… (or bearing… distance… from me, or Complements Table 3, Chapter 2, Section 10, Page 104).
+EC         A vessel which has suffered a nuclear accident is in distress in lat… long…
+
+Distress Signal
+
+ED        Your distress signals are understood.
+ED 1      Your distress signals are understood; the nearest life-saving station is being informed.
+EF         SOS/MAYDAY has been cancelled.
+EF 1      Has the SOS/MAYDAY been cancelled?
+EG                  Did you hear SOS/MAYDAY given at time indicated?
+EG 1            Will you listen on 2182 kHz for signals of emergency position-indicating radiobeacons?
+EG 2            I am listening on 2182 kHz for signals of emergency position-indicating radiobeacons.
+EG 3            Have you received the signal of an emergency position-indicating radiobeacon on 2182 kHz?
+EG 4            I have received the signal of an emergency position-indicating radiobeacon on 2182 kHz.
+EG 5            Will you listen on… MHz for signals of emergency position-indicating radiobeacons?
+EG 6            I am listening on… MHz for signals of emergency position-indicating radiobeacons.
+EG 7            Have you received the signal of an emergency position-indicating radiobeacon on… MHz?
+EG 8            I have received the signal of an emergency position-indicating radiobeacon on… MHz.
+EJ                  I have received distress signal transmitted by coast station indicated.
+EJ 1            Have you received distress signal transmitted by coast station indicated?
+EK                  I have sighted distress signal in lat… long…
+EK 1            An explosion was seen or heard (position or direction and time to be indicated).
+EK 2            Have you heard or seen distress signal from survival craft?
+
+Position of Distress
+
+EL                  Repeat the distress position.
+EL 1            What is the position of vessel in distress?
+EM                  Are there other vessels/aircraft in the vicinity of vessel/aircraft in distress?
+
+Contact or Locate
+
+EN        You should try to contact vessel/aircraft in distress.
+EO        I am unable to locate vessel/aircraft in distress because of poor visibility.
+EP        I have lost sight of you.
+EQ        I expect to be at the position of vessel/aircraft in distress at time indicated.
+EQ 1      Indicate estimated time of your arrival at position of vessel/aircraft in distress.
+
+POSITION
+
+ER        You should indicate your position at time indicated.
+ET        My position at time indicated was lat… long…
+EU        My present position is lat… long… (or bearing… from place indicated, distance…).
+EU 1      What is your present position?
+EV        My present position, course, and speed are lat… long… ,… , knots…
+EV 1      What are your present position, course, and speed?
+EW        My position is ascertained by dead reckoning.
+EW 1      My position is ascertained by visual bearings.
+EW 2      My position is ascertained by astronomical observations.
+EW 3      My position is ascertained by radiobeacons.
+EW 4      My position is ascertained by radar.
+EW 5      My position is ascertained by electronic position-ﬁxing system.
+EX        My position is doubtful.
+EY        I am conﬁdent as to my position.
+EY 1      Are you conﬁdent as to your position?
+EZ         Your position according to bearings taken by radio direction ﬁnder stations which I control is lat… long… (at time indicated).
+EZ 1      Will you give me my position according to bearings taken by radio direction ﬁnder stations which you control?
+FA         Will you give me my position?
+FB         Will vessels in my immediate vicinity (or in the vicinity of lat… long…) please indicate position, course, and speed.
+
+Position of Distress
+
+FC         You should indicate your position by visual or sound signals.
+FC 1      You should indicate your position by rockets or ﬂares.
+FC 2      You should indicate your position by visual signals.
+FC 3      You should indicate your position by sound signals.
+FC 4      You should indicate your position by searchlight.
+FC 5      You should indicate your position by smoke signal.
+FD         My position is indicated by visual or sound signals.
+FD 1      My position is indicated by rockets or ﬂares.
+FD 2      My position is indicated by visual signals.
+FD 3      My position is indicated by sound signals.
+FD 4      My position is indicated by searchlight.
+FD 5      My position is indicated by smoke signal.
+
+SEARCH AND RESCUE
+
+Proceeding to Assistance
+
+FE        I am proceeding to the position of accident at full speed. Expect to arrive at time indicated.
+FE 1      Are you proceeding to the position of accident? If so, when do you expect to arrive?
+
+Position of Distress or Accident
+
+FF        I have intercepted SOS/MAYDAY from vessel (name or identity signal) (or aircraft) in position lat… long… at time indicated.
+FF 1      I have intercepted SOS/MAYDAY from vessel (name or identity signal) (or aircraft) in position lat… long… at time indicated; I have heard nothing since.
+FG        Position given with SOS/MAYDAY from vessel (or aircraft) was lat… long… (or bearing… from place indicated, distance…).
+FG 1      What was position given with SOS/MAYDAY from vessel (or aircraft)?
+FH        Position given with SOS/MAYDAY is wrong. The correct position is lat… long…
+FI        Position given with SOS/MAYDAY by vessel is wrong. I have her bearing by radio direction ﬁnder and can exchange bearings with any other vessel.
+FJ        Position of accident (or survival craft) is marked.
+FJ 1      Position of accident (or survival craft) is marked by ﬂame or smoke ﬂoat.
+FJ 2      Position of accident (or survival craft) is marked by sea marker.
+FJ 3      Position of accident (or survival craft) is marked by sea marker dye.
+FJ 4        Position of accident (or survival craft) is marked by radiobeacon.
+FJ 5        Position of accident (or survival craft) is marked by wreckage.
+FK           Is position of accident (or survival craft) marked?
+
+Information—Instructions
+
+FL           You should steer course… (or follow me) to reach position of accident.
+FM           Visual contact with vessel is not continuous.
+FN           I have lost all contact with vessel.
+FO           I will keep close to you.
+FO 1        I will keep close to you during the night.
+FP           Estimated set and drift of survival craft is… degrees and… knots.
+FP 1        What is the estimated set and drift of survival craft?
+FQ           You should transmit your identiﬁcation and series of long dashes or your carrier frequency to home vessel (or aircraft) to your position.
+FQ 1        Shall I home vessel (or aircraft) to my position?
+
+Search
+
+FR           I am (or vessel indicated is) in charge of coordinating search.
+FR  1      Carry out search pattern… starting at… hours. Initial course… search speed… knots.
+FR  2      Carry out radar search, ships proceeding in loose line abreast at intervals between ships…miles. Initial course… search speed… knots.
+FR  3      Vessel indicated (call sign or identity signal) is allocated track number…
+FR  4      Vessel(s) indicated adjust interval between ships to… miles.
+FR  5      Adjust track spacing to… miles.
+FR  6      Search speed will now be… knots.
+FR  7      Alter course as necessary to next leg of track now (or at time indicated).
+FS           Please take charge of search in sector stretching between bearings… and… from vessel in distress.
+FT               Please take charge of search in sector between lat… and… , and long… and…
+FU               The search area of the aircraft is between lat… and… , and long… and…
+FV               Search by aircraft/helicopter will be discontinued because of unfavorable conditions.
+FW               You should search in the vicinity of lat… long…
+FX               Shall I search in the vicinity of lat… long…?
+FY               I am in the search area.
+FY 1             Are you in the search area?
+FZ               You should continue search according to instructions and until further notice.
+FZ 1             I am continuing to search.
+FZ 2             Are you continuing to search?
+FZ 3             Do you want me to continue to search?
+GA               I cannot continue to search.
+GB               You should stop search and return to base or continue your voyage.
+
+Results of Search
+
+GC               Report results of search.
+GC 1             Results of search negative. I am continuing to search.
+GC 2             I have searched area of accident but have found no trace of derelict or survivors.
+GC 3             I have noted patches of oil at likely position of accident.
+GD               Vessel/aircraft missing or being looked for has not been heard of since.
+GD 1             Have you anything to report on vessels/aircraft missing or being looked for?
+GD 2             Have you seen wreckage (or derelict)?
+GE               Vessel/aircraft has been located at lat… long…
+GF               I have found vessel/aircraft in distress in lat… long…
+GG               Vessel/aircraft was last reported at time indicated in lat… long… steering course…
+GH               I have sighted survival craft in lat… long… (or bearing… distance… from me).
+GI         Survival craft are believed to be in the vicinity of lat… long…
+GJ         Wreckage is reported in lat… long…
+GJ 1       Wreckage is reported in lat… long… No survivors appear to be in the vicinity.
+GK         Aircraft wreckage is found in lat… long…
+GL         I have located (or found) wreckage from the vessel/aircraft in distress (position to be indicated if necessary by lat… and long… or by bearing… from speciﬁed place and distance…).
+
+Rescue
+
+GM         I cannot save my vessel.
+GM 1       I cannot save my vessel; keep as close as possible.
+GN         You should take off persons.
+GN 1       I wish some persons taken off. Skeleton crew will remain on board.
+GN 2       I will take off persons.
+GN 3       Can you take off persons?
+GO         I cannot take off persons.
+GP         You should proceed to the rescue of vessel (or ditched aircraft) in lat… long…
+GQ         I cannot proceed to the rescue owing to weather. You should do all you can.
+GR         Vessel coming to your rescue (or to the rescue of vessel or aircraft indicated) is steering course… , speed… knots.
+GR 1       You should indicate course and speed of vessel coming to my rescue (or to the rescue of vessel or aircraft indicated).
+GS         I will attempt rescue with whip and breeches buoy.
+GT        I will endeavor to connect with line throwing apparatus.
+GT 1       Look out for rocket line.
+GU         It is not safe to ﬁre a rocket.
+GV         You should endeavor to send me a line.
+GV 1       Have you a line throwing apparatus?
+GV 2       Can you connect with line throwing apparatus?
+GV 3       I have not a line throwing apparatus.
+GW         Man overboard. Please take action to pick him up (position to be indicated if necessary).
+
+Results of Rescue
+
+GX                Report results of rescue.
+GX 1           What have you (or rescue vessel/aircraft) picked up?
+GY                I (or rescue vessel/aircraft) have picked up wreckage.
+GZ                All persons saved.
+GZ 1           All persons lost.
+HA                I (or rescue vessel/aircraft) have rescued… (number) injured persons.
+HB                I (or rescue vessel/aircraft) have rescued… (number) survivors.
+HC                I (or rescue vessel/aircraft) have picked up… (number) bodies.
+HD                Can I transfer rescued persons to you?
+
+SURVIVORS
+
+HF                I have located survivors in water, lat…long…(or bearing…from place indicated, distance…).
+HG                I have located survivors in survival craft lat… long… (or bearing… from place indicated, distance…).
+HJ                I have located survivors on drifting ice, lat… long…
+HK                I have located bodies in lat… long… (or bearing… from place indicated, distance…).
+HL                Survivors not yet located.
+HL 1           I am still looking for survivors.
+HL 2           Have you located survivors? If so, in what position?
+HM                Survivors are in bad condition. Medical assistance is urgently required.
+HM 1           Survivors are in bad condition.
+HM 2           Survivors are in good condition.
+HM 3           Condition of survivors not ascertained.
+HM 4           What is condition of survivors?
+HN                You should proceed to lat… long… to pick up survivors.
+HO                Pick up survivors from drifting ice, lat… long…
+HO 1     Pick up survivors from sinking vessel/aircraft.
+HP         Survivors have not yet been picked up.
+HP 1     Have survivors been picked up?
+HQ         Transfer survivors to my vessel (or vessel indicated).
+HQ 1     Have you any survivors on board?
+HR         You should try to obtain from survivors all possible information.
+HT         You should indicate position of survivors by throwing pyrotechnic signals.
+
+COLLISION
+
+HV         Have you been in collision?
+HW         I have (or vessel indicated has) collided with surface craft.
+HW 1      I have (or vessel indicated has) collided with light vessel.
+HW 2      I have (or vessel indicated has) collided with submarine.
+HW 3      I have (or vessel indicated has) collided with unknown vessel.
+HW 4      I have (or vessel indicated has) collided with underwater object.
+HW 5      I have (or vessel indicated has) collided with navigation buoy.
+HW 6      I have (or vessel indicated has) collided with iceberg.
+HW 7      I have (or vessel indicated has) collided with ﬂoating ice.
+HX         Have you received any damage in collision?
+HX 1      I have received serious damage above the waterline.
+HX 2      I have received serious damage below the waterline.
+HX 3      I have received minor damage above the waterline.
+HX 4      I have received minor damage below the waterline.
+HY         The vessel (name or identity signal) with which I have been in collision has sunk.
+HY 1      The vessel (name or identity signal) with which I have been in collision has resumed her voyage.
+HY 2      I do not know what has happened to the vessel with which I collided.
+HY 3      Has the vessel with which you have been in collision resumed her voyage?
+HY 4      What is the name (or identity signal) of the vessel with which you collided?
+HY 5      What is the name (or identity signal) of vessel which collided with me? My name (or identity signal) is…
+HY 6      Where is the vessel with which you collided?
+HZ         There has been a collision between vessels indicated (names or identity signals).
+
+DAMAGES—REPAIRS
+
+IA         I have received damage to stem.
+IA 1      I have received damage to stern frame.
+IA 2      I have received damage to side plate above water.
+IA 3      I have received damage to side plate below water.
+IA 4      I have received damage to bottom plate.
+IA 5      I have received damage to boilerroom.
+IA 6      I have received damage to engineroom.
+IA 7      I have received damage to hatchways.
+IA 8      I have received damage to steering gear.
+IA 9      I have received damage to propellers.
+IB         What damage have you received?
+IB 1      My vessel is seriously damaged.
+IB 2      I have minor damage.
+IB 3      I have not received any damage.
+IB 4      The extent of the damage is still unknown.
+IC         Can damage be repaired at sea?
+IC 1      Can damage be repaired at sea without assistance?
+IC 2      How long will it take you to repair damage?
+ID         Damage can be repaired at sea.
+ID 1      Damage can be repaired at sea without assistance.
+ID 2      Damage has been repaired.
+IF         Damage cannot be repaired at sea.
+IF 1      Damage cannot be repaired at sea without assistance.
+IG         Damage can be repaired in… (number) hours.
+IJ         I will try to proceed by my own means but I request you to keep in contact with me by… (Complements Table 1, Chapter 2, Section 10, Page 104).
+IK         I can proceed at… (number) knots.
+IL                 I can only proceed at slow speed.
+IL 1            I can only proceed with one engine.
+IL 2            I am unable to proceed under my own power.
+IL 3            Are you in a condition to proceed?
+IM                 I request to be escorted until further notice.
+
+DIVER—UNDERWATER OPERATIONS
+
+IN                 I require a diver.
+IN 1            I require a diver to clear propeller.
+IN 2            I require a diver to examine bottom.
+IN 3            I require a diver to place collision mat.
+IN 4            I require a diver to clear my anchor.
+IO                 I have no diver.
+IP                 A diver will be sent as soon as possible (or at time indicated).
+IQ                 Diver has been attacked by diver’s disease and requires decompression chamber treatment.
+IR                I am engaged in submarine survey work (underwater operations). Keep clear of me and go slow.
+
+FIRE—EXPLOSION
+
+Fire
+
+IT                 I am on ﬁre.
+IT 2            Vessel (name or identity signal) is on ﬁre.
+IT 3            Are you on ﬁre?
+IU         Vessel (name or identity signal) on ﬁre is located at lat… long…
+IV         Where is the ﬁre?
+IV 1      I am on ﬁre in the engineroom.
+IV 2      I am on ﬁre in the boilerroom.
+IV 3      I am on ﬁre in hold or cargo.
+IV 4      I am on ﬁre in passenger’s or crew’s quarters.
+IV 5      Oil is on ﬁre.
+IW         Fire is under control.
+IX         Fire is gaining.
+IX 1      I cannot get the ﬁre under control without assistance.
+IX 2      Fire has not been extinguished.
+IY         I can get the ﬁre under control without assistance.
+IY 1      Can you get the ﬁre under control without assistance?
+IZ         Fire has been extinguished.
+IZ 1      I am ﬂooding compartment to extinguish ﬁre.
+IZ 2      Is ﬁre extinguished?
+JA         I require ﬁreﬁghting appliances.
+JA 1      I require foam ﬁre extinguishers.
+JA 2      I require CO2 ﬁre extinguishers.
+JA 3      I require tetrachloride ﬁre extinguishers.
+JA 4      I require material for foam ﬁre extinguishers.
+JA 5      I require material for CO2 ﬁre extinguishers.
+JA 6      I require material for carbon tetrachloride ﬁre extinguishers.
+JA 7      I require water pumps.
+
+Explosion
+
+JB         There is danger of explosion.
+JC         There is no danger of explosion.
+JC 1      Is there any danger of explosion?
+JD         Explosion has occurred in boiler.
+JD 1      Explosion has occurred in tank.
+JD 2      Explosion has occurred in cargo.
+JD 3      Further explosions are possible.
+JD 4      There is danger of toxic effects.
+JE         Have you any casualties owing to explosion?
+
+GROUNDING—BEACHING—REFLOATING
+
+Grounding
+
+JF         I am (or vessel indicated is) aground in lat… long… (also the following complements, if necessary):
+0         On rocky bottom.
+1         On soft bottom.
+2         Forward.
+3         Amidship.
+4         Aft.
+5         At high water forward.
+6         At high water amidship.
+7         At high water aft.
+8         Full length of vessel.
+9         Full length of vessel at high water.
+JG         I am aground; I am in dangerous situation.
+JH         I am aground; I am not in danger.
+JI         Are you aground?
+JI 1      What was your draft when you went aground?
+JI 2     On what kind of ground have you gone aground?
+JI 3     At what state of tide did you go aground?
+JI 4     What part of your vessel is aground?
+JJ         My maximum draft when I went aground was… (number) feet or meters.
+JK         The tide was high water when the vessel went aground.
+JK 1     The tide was half water when the vessel went aground.
+JK 2     The tide was low water when the vessel went aground.
+JL         You are running the risk of going aground.
+JL 1     You are running the risk of going aground; do not approach me from the starboard side.
+JL 2     You are running the risk of going aground; do not approach me from the port side.
+JL 3     You are running the risk of going aground; do not approach me from forward.
+JL 4     You are running the risk of going aground; do not approach me from aft.
+JM         You are running the risk of going aground at low water.
+
+Beaching
+
+JN         You should beach the vessel in lat… long…
+JN 1     You should beach the vessel where ﬂag is waved or light is shown.
+JN 2     I must beach the vessel.
+
+Refloating
+
+JO         I am aﬂoat.
+JO 1     I am aﬂoat forward.
+JO 2     I am aﬂoat aft.
+JO 3     I may be got aﬂoat if prompt assistance is given.
+JO 4     Are you (or vessel indicated) still aﬂoat?
+JO 5     When do you expect to be aﬂoat?
+JP         I am jettisoning to reﬂoat (the following complements should be used if required):
+1        Cargo.
+2        Bunkers.
+3        Everything movable forward.
+4          Everything movable aft.
+JQ         I cannot reﬂoat without jettisoning (the following complements should be used if required):
+1          Cargo.
+2          Bunkers.
+3          Everything movable forward.
+4          Everything movable aft.
+JR         I expect (or vessel indicated expects) to reﬂoat.
+JR 1       I expect (or vessel indicated expects) to reﬂoat at time indicated.
+JR 2       I expect (or vessel indicated expects) to reﬂoat in daylight.
+JR 3       I expect (or vessel indicated expects) to reﬂoat when tide rises.
+JR 4       I expect (or vessel indicated expects) to reﬂoat when visibility improves.
+JR 5       I expect (or vessel indicated expects) to reﬂoat when weather moderates.
+JR 6       I expect (or vessel indicated expects) to reﬂoat when draft is lightened.
+JR 7       I expect (or vessel indicated expects) to reﬂoat when tugs arrive.
+JS         Is it likely that you (or vessel indicated) will reﬂoat?
+JS 1       Is it likely that you (or vessel indicated) will reﬂoat at time indicated?
+JS 2       Is it likely that you (or vessel indicated) will reﬂoat in daylight?
+JS 3       Is it likely that you (or vessel indicated) will reﬂoat when tide rises?
+JS 4       Is it likely that you (or vessel indicated) will reﬂoat when visibility improves?
+JS 5       Is it likely that you (or vessel indicated) will reﬂoat when weather moderates?
+JS 6       Is it likely that you (or vessel indicated) will reﬂoat when draft is lightened?
+JS 7       Is it likely that you (or vessel indicated) will reﬂoat when tugs arrive?
+JT         I can reﬂoat if an anchor is laid out for me.
+JT 1       I may reﬂoat without assistance.
+JT 2       Will you assist me to reﬂoat?
+JU         I cannot be reﬂoated by any means now available.
+JV         Will you escort me to lat… long… after reﬂoating?
+
+LEAK
+
+JW         I have sprung a leak.
+JW 1      Leak is dangerous.
+JW 2      Leak is causing dangerous heel.
+JW 3      Leak is beyond the capacity of my pumps.
+JX         Leak is gaining rapidly.
+JX 1      I cannot stop the leak.
+JY         Leak can be controlled, if it does not get any worse.
+JY 1      I require additional pumping facilities to control the leak.
+JY 2      Leak is under control.
+JY 3      Leak has been stopped.
+JZ         Have you sprung a leak?
+JZ 1      Can you stop the leak?
+JZ 2      Is the leak dangerous?
+KA         I urgently require a collision mat.
+KA 1      I have placed the collision mat. I can proceed without assistance.
+KA 2      Can you place the collision mat?
+KB         I have… (number) feet or meters of water in the hold.
+KC         My hold(s) is (are) ﬂooded.
+KC 1      How many compartments are ﬂooded?
+KD         There are… (number) compartments ﬂooded.
+KE         The watertight bulkheads are standing up well to the pressure of the water.
+KE 1      I need timber to support bulkheads.
+
+TOWING—TUGS
+
+Tug
+
+KF         I require a tug (or… (number) tugs).
+KG        Do you require a tug(s)?
+KG 1      I do not require tug(s).
+KH        Tug(s) is (are) coming to you. Expect to arrive at time indicated.
+KH 1      Tug with pilot is coming to you.
+KH 2      You should wait for tugs.
+KI        There are no tugs available.
+KI 1      Tugs cannot proceed out.
+
+Towing—Taking in Tow
+
+KJ        I am towing a submerged object.
+KJ 1      I am towing a ﬂoat.
+KJ 2      I am towing a target.
+KK        Towing is impossible under present weather conditions.
+KK 1      Towing is very difﬁcult.
+KK 2      I cannot connect at present but will attempt when conditions improve.
+KK 3      I cannot connect tonight. I will try in daylight.
+KK 4      Can you assist with your engines?
+KL        I am obliged to stop towing temporarily.
+KL 1      You should stop towing temporarily.
+KM        I can take you (or vessel indicated) in tow.
+KM 1      Shall I take you in tow?
+KN        I cannot take you (or vessel indicated) in tow.
+KN 1      I cannot take you (or vessel indicated) in tow but I will report you and ask for immediate assistance.
+KN 2      I cannot take you (or vessel indicated) in tow but can take off persons.
+KO        You should endeavor to take vessel (name or identity signal) in tow.
+KO 1      You should report whether you have taken vessel (name or identity signal) in tow.
+KO 2      Can you take me (or vessel indicated) in tow?
+KP        You should tow me to the nearest port or anchorage (or place indicated).
+KP 1      I will tow you to the nearest port or anchorage (or place indicated).
+KP 2      I must get shelter or anchorage as soon as possible.
+KQ         Prepare to be taken in tow.
+KQ 1      I am ready to be taken in tow.
+KQ 2      Prepare to tow me (or vessel indicated).
+KQ 3      I am ready to tow you.
+KQ 4      Prepare to resume towing.
+KQ 5      I am ready to resume towing.
+KR         All is ready for towing.
+KR 1      I am commencing to tow.
+KR 2      You should commence towing.
+KR 3      Is all ready for towing?
+
+Towing Line—Cable—Hawser
+
+KS         You should send a line over.
+KS 1      I have taken the line.
+KT         You should send me a towing hawser.
+KT 1      I am sending towing hawser.
+KU         I cannot send towing hawser.
+KU 1      I have no, or no other, hawser.
+KU 2      I have no wire hawser.
+KU 3      Have you a hawser?
+KV         I intend to use my towing hawser/cable.
+KV 1      I intend to use your towing hawser/cable.
+KW         You should have towing hawser/cable ready.
+KW 1      Towing hawser/cable is ready.
+KW 2      You should have another hawser ready.
+KW 3      You should have spare towing hawser/cable ready.
+KW 4      Spare towing hawser/cable is ready.
+KW 5      You should have wire hawser ready.
+KW 6     Wire hawser is ready.
+KX        You should be ready to receive the towing hawser.
+KX 1     I am ready to receive the towing hawser.
+KX 2     You should come closer to receive towing hawser.
+KX 3     I am coming closer to receive towing hawser.
+KX 4     I have received towing hawser.
+KY        Length of tow is… (number) fathoms.
+KZ        You should shorten the towing hawser (or shorten distance between vessels).
+KZ 1     I am shortening towing hawser (or I am shortening distance between vessels).
+KZ 2     You should haul in the hawser.
+KZ 3     I am hauling in the hawser.
+KZ 4     You should haul in the slack.
+KZ 5     I am hauling in the slack.
+LA        Towing hawser/cable has parted.
+LA 1     Towing hawser/cable is in danger of parting.
+LA 2     Towing hawser/cable is damaged.
+LA 3     You should reinforce the hawsers.
+LA 4     I am reinforcing the hawsers.
+
+Make Fast—Veer
+
+LB        You should make towing hawser fast to your chain cable.
+LB 1     Towing hawser is fast to chain cable.
+LB 2     You should make towing hawser fast to wire.
+LB 3     Towing hawser is fast to wire.
+LB 4     My towing hawser is fast.
+LB 5     Is your towing hawser fast?
+LC        You should make fast astern and steer me.
+LD        You should veer your hawser/cable… (number) fathoms.
+LE        I am about to veer my hawser/cable.
+LE 1      I am veering my hawser/cable.
+LE 2      I have veered my hawser/cable.
+LE 3      I shall veer cable attached to hawser.
+LE 4      How much cable should I veer?
+LF         You should stop veering your hawser/cable.
+LF 1      I cannot veer any more hawser/cable.
+
+Cast Off
+
+LG         You should prepare to cast off towing hawser(s).
+LG 1      I am preparing to cast off towing hawser(s).
+LG 2      I am ready to cast off towing hawser(s).
+LG 3      You should cast off starboard towing hawser.
+LG 4      I have cast off starboard towing hawser.
+LG 5      You should cast off port towing hawser.
+LG 6      I have cast off port towing hawser.
+LG 7      You should cast off hawser(s).
+LG 8      I must cast off towing hawser(s).
+
+Engine Maneuvers
+
+LH        Maximum speed in tow is… (number) knots.
+LI        I am increasing speed.
+LI 1      Increase speed.
+LJ        I am reducing speed.
+LJ 1      Reduce speed.
+
+AIDS TO NAVIGATION
+
+Buoys—Beacons
+
+LK         Buoy (or beacon) has been established in lat… long…
+LL         Buoy (or beacon) in lat… long… has been removed.
+LM         Radiobeacon indicated is out of action.
+
+Lights—Lightvessels
+
+LN         Light (name follows) has been extinguished.
+LN 1     All lights are out along this coast (or the coast of…).
+LO         I am not in my correct position (to be used by a lightvessel).
+LO 1     Lightvessel (name follows) is out of position.
+LO 2     Lightvessel (name follows) has been removed from her station.
+
+BAR
+
+LP         There is not less than… (number) feet or meters of water over the bar.
+LQ         There will be… (number) feet or meters of water over the bar at time indicated.
+LR         Bar is not dangerous.
+LR 1     What is the depth of water over the bar?
+LR 2     Can I cross the bar?
+LS         Bar is dangerous.
+
+BEARINGS
+
+LT         Your bearing from me [or from… (name or identity signal)] is… (at time indicated).
+LU         The bearing of… (name or identity signal) from… (name or identity signal) is… (at time indicated).
+LV         Let me know my bearings from you. I will ﬂash searchlight.
+LV 1      What is my bearing from you [or from… (name or identity signal)]?
+LV 2      What is the bearing of… (name or identity signal) from… (name or identity signal)?
+LW        I receive your transmission on bearing…
+LW 1      Can you take bearings from my radio signals?
+
+CANAL—CHANNEL—FAIRWAY
+
+Canal
+
+LX        The canal is clear.
+LX 1      The canal will be clear at time indicated.
+LX 2      You can enter the canal at time indicated.
+LX 3      Is the canal clear?
+LX 4      When can I enter the canal?
+LY        The canal is not clear.
+LZ        The channel/fairway is navigable.
+LZ 1      I intend to pass through the channel/fairway.
+LZ 2      Is the channel/fairway navigable?
+LZ 3      What is the state of the channel/fairway?
+LZ 4      What is the least depth of water in the channel/fairway?
+MA        The least depth of water in the channel/fairway is… (number feet or meters).
+MB        You should keep in the center of the channel/fairway.
+MB 1      You should keep on the starboard side of the channel/fairway.
+MB 2      You should keep on the port side of the channel/fairway.
+MB 3      You should leave the channel/fairway free.
+MC         There is an uncharted obstruction in the channel/fairway. You should proceed with caution.
+MC 1      The channel/fairway is not navigable.
+MC 2      The (—) lane of the trafﬁc separation scheme is not navigable. (The direction of the trafﬁc ﬂow is to be indicated.)
+
+COURSE
+
+MD         My course is.…
+MD 1      What is your course?
+ME         The course to place (name follows) is…
+ME 1      What is the course to place (name follows)?
+MF         Course to reach me is…
+MF 1      What is the course to reach you?
+MG         You should steer course…
+MG 1      What course should I steer?
+MH        You should alter course to… (at time indicated).
+MI        I am altering course to…
+
+DANGERS TO NAVIGATION—WARNINGS
+
+Derelict—Wreck—Shoal
+
+MJ        Derelict dangerous to navigation reported in lat… long… (or Complements Table 3, Chapter 2, Section 10, Page 104).
+MK        I have seen derelict (in lat… long… at time indicated).
+MK 1      Have you seen derelict (or wreckage)?
+ML        Derelict is drifting near lat… long… (or bearing… from place indicated, distance…).
+ML 1      Hull of derelict is awash.
+ML 2      Hull of derelict is well out of the water.
+MM        There is a wreck in lat… long…
+MM 1      Wreck is buoyed.
+MM 2      Wreck is awash.
+MN        Wreck (in lat… long…) is not buoyed.
+MO        I have struck a shoal or submerged object (lat… long…).
+MP        I am in shallow water. Please direct me how to navigate.
+
+Radiation Danger
+
+MQ        There is risk of contamination due to excessive release of radioactive material in this area (or in area around lat… long… ). Keep radio watch. Relay the message to vessels in your vicinity.
+MQ 1      The radioactive material is airborne.
+MQ 2      The radioactive material is waterborne.
+MR        There is no, or no more, risk of contamination due to excessive release of radioactive material in this area (or in area around lat… long…).
+MR 1       Is there risk of contamination due to excessive release of radioactive material in this area (or in area around lat… long…)?
+MS         My vessel is a dangerous source of radiation.
+MS 1       My vessel is a dangerous source of radiation; you may approach from my starboard side.
+MS 2       My vessel is a dangerous source of radiation; you may approach from my port side.
+MS 3       My vessel is a dangerous source of radiation; you may approach from forward.
+MS 4       My vessel is a dangerous source of radiation; you may approach from aft.
+MT         My vessel is a dangerous source of radiation. You may approach from… (Complements Table 3, Chapter 2, Section 10, Page 104).
+MU         My vessel is a dangerous source of radiation. Do not approach within… (number) cables.
+MV         My vessel is releasing radioactive material and presents a hazard.
+MW         My vessel is releasing radioactive material and presents a hazard. Do not approach within… (number) cables.
+MX         The radioactive material is airborne. Do not approach from leeward.
+
+Warnings
+
+MY         It is dangerous to stop.
+MY 1       It is dangerous to remain in present position.
+MY 2       It is dangerous to proceed on present course.
+MY 3       It is dangerous to proceed until weather permits.
+MY 4       It is dangerous to alter course to starboard.
+MY 5       It is dangerous to alter course to port.
+MY 6       It is dangerous to approach close to my vessel.
+MY 7       It is dangerous to let go an anchor or use bottom trawl.
+MY 8       It is dangerous to jettison inﬂammable oil.
+MZ        Navigation is dangerous in the area around lat… long…
+MZ 1     I consider you are carrying out a dangerous navigational practice and I intend to report you.
+NA        Navigation is closed.
+NA 1     Navigation is possible only with tug assistance.
+NA 2     Navigation is possible only with pilot assistance.
+NA 3     Navigation is prohibited within 500m of this platform.
+NA 4     Navigation is prohibited within 500m of the platform bearing (—) from me.
+NA 5     You have been detected navigating within a 500m Safety Zone (about the platform bearing (—) from me) and will be reported.
+NA 6     Anchors with buoys extend up to one mile from this vessel/rig. You should keep clear.
+NB        There is ﬁshing gear in the direction you are heading (or in direction indicated—Complements Table 3, Chapter 2, Section 10, Page 104).
+NC        I am in distress and require immediate assistance.
+ND        Tsunami (phenomenal wave) is expected. You should take appropriate precautions.
+NE        You should proceed with great caution.
+NE 1     You should proceed with great caution; the coast is dangerous.
+NE 2     You should proceed with great caution; submarines are exercising in this area.
+NE 3     You should proceed with great caution; there is a boom across.
+NE 4     You should proceed with great caution; keep clear of ﬁring range.
+NE 5     You should proceed with great caution; hostile vessel sighted (in lat… long…).
+NE 6     You should proceed with great caution; hostile submarine sighted (in lat… long…).
+NE 7      You should proceed with great caution; hostile aircraft sighted (in lat… long…).
+NF 1      You are running into danger; there is a radiation hazard.
+NG         You are in a dangerous position.
+NG 1      You are in a dangerous position; there is a radiation hazard.
+NH         You are clear of all danger.
+NH 1      Are you clear of all danger?
+NI         I have (or vessel indicated has) a list of… (number) degrees to starboard.
+NJ         I have (or vessel indicated has) a list of… (number) degrees to port.
+
+DEPTH—DRAFT
+
+Depth
+
+NK         There is not sufﬁcient depth of water.
+NL         There is sufﬁcient depth of water.
+NL 1      Is there sufﬁcient depth of water?
+NM         You should report the depth around your vessel.
+NN         I am in… (number feet or meters) of water.
+NP                 The depth of water at the bow is… (number feet or meters).
+NQ                 The depth of water at the stern is… (number feet or meters).
+NR                 The depth of water along the starboard side is… (number feet or meters).
+NS                 The depth of water along the port side is… (number feet or meters).
+
+Draft
+
+NT                 What is your draft?
+NT 1            What is your light draft?
+NT 2            What is your ballast draft?
+NT 3            What is your loaded draft?
+NT 4            What is your summer draft?
+NT 5            What is your winter draft?
+NT 6            What is your maximum draft?
+NT 7            What is your least draft?
+NT 8            What is your draft forward?
+NT 9            What is your draft aft?
+NU                 My draft is… (number feet or meters).
+NV                 My light draft is… (number feet or meters).
+NW                 My ballast draft is… (number feet or meters).
+NX                 My loaded draft is… (number feet or meters).
+NY                 My summer draft is… (number feet or meters).
+NZ                 My winter draft is… (number feet or meters).
+OA                 My maximum draft is… (number feet or meters).
+OB                 My least draft is… (number feet or meters).
+OC                 My draft forward is… (number feet or meters).
+OD                 My draft aft is… (number feet or meters).
+OE                 Your draft must not exceed… (number feet or meters).
+OF                 I could lighten to… (number feet or meters) draft.
+OG                 To what draft could you lighten?
+
+ELECTRONIC NAVIGATION
+
+Radar
+
+OH                 You should switch on your radar and keep radar watch.
+OH 1            The restrictions on the use of radar are lifted.
+OH 2            Does my radar cause interference?
+OI                 I have no radar.
+OI 1            Are you equipped with radar?
+OI 2            Is your radar in operation?
+OJ                 I have located you on my radar bearing… , distance… miles.
+OJ 1            I cannot locate you on my radar.
+OJ 2            You should alter your course, if possible, appreciably to starboard to facilitate location by radar.
+OJ 3            You should alter your course, if possible, appreciably to port to facilitate location by radar.
+OJ 4            Can you locate me by radar?
+OL                 Is radar pilotage being effected in this port (or port indicated)?
+OM                 Bearing and distance by radar of vessel (or object) indicated, is bearing… , distance… miles.
+OM 1            What is the bearing and distance by radar of vessel (or object) indicated?
+ON                 I have an echo on my radar on bearing… , distance… miles.
+
+Radio Direction Finder
+
+OO                 My radio direction ﬁnder is inoperative.
+OP        I have requested… (name or identity signal) to send two dashes of ten seconds each or the carrier of his transmitter followed by his call sign.
+OP 1      Will you request… (name or identity signal) to send two dashes of ten seconds each or the carrier of his transmitter followed by his call sign?
+OP 2      Will you send two dashes of ten seconds each, or the carrier of your transmitter, followed by your call sign?
+OQ        I am calibrating radio direction ﬁnder or adjusting compasses.
+
+MINES—MINESWEEPING
+
+OR        I have struck a mine.
+OS        There is danger from mines in this area (or area indicated).
+OS 1      You should keep a lookout for mines.
+OS 2      You are out of the dangerous zone.
+OS 3      Am I out of the dangerous zone?
+OS 4      Are you out of the dangerous zone?
+OS 5      Is there any danger from mines in this area (or area indicated)?
+OT        Mine has been sighted in lat… long… (or in direction indicated—Complements Table 3, Chapter 2, Section 10, Page 104).
+OU        Mine(s) has (have) been reported in the vicinity (or in approximate position lat… , long…).
+OV        Mine(s) is (are) believed to be bearing… from me, distance… miles.
+OW        There is a mineﬁeld ahead of you. You should stop your vessel and wait for instructions.
+OW 1      There is a mineﬁeld along the coast. You should not approach too close.
+OX        The approximate direction of the mineﬁeld is bearing… from me.
+OY        Port is mined.
+OY 1             Entrance is mined.
+OY 2             Fairway is mined.
+OY 3             Are there mines in the port entrance or fairway?
+OZ                 The width of the swept channel is… (number feet or meters).
+PA                 I will indicate the swept channel. You should follow in my wake.
+PA 1             You should keep carefully to the swept channel.
+PA 2             The swept channel is marked by buoys.
+PA 3             I do not see the buoys marking the swept channel.
+PA 4             Do you know the swept channel?
+PB                You should keep clear of me; I am engaged in minesweeping operations.
+PB 1             You should keep clear of me; I am exploding a ﬂoating mine.
+PC                 I have destroyed the drifting mine(s).
+PC 1             I cannot destroy the drifting mine(s).
+
+NAVIGATION LIGHTS—SEARCHLIGHT
+
+PD                 Your navigation light(s) is (are) not visible.
+PD 1             My navigation lights are not functioning.
+PE                 You should extinguish all the lights except the navigation lights.
+PG                 I do not see any light.
+PG 1             You should hoist a light.
+PG 2             I am dazzled by your searchlight. Extinguish it or lift it.
+
+NAVIGATING AND STEERING INSTRUCTIONS
+
+PH        You should steer as indicated.
+PH 1      You should steer towards me.
+PH 2      I am steering towards you.
+PH 3      You should steer more to starboard.
+PH 4      I am steering more to starboard.
+PH 5      You should steer more to port.
+PH 6      I am steering more to port.
+PI        You should maintain your present course.
+PI 1      I am maintaining my present course.
+PI 2      Shall I maintain my present course?
+PJ        I cannot maintain my present course.
+PK        I cannot steer without assistance.
+PL        You should steer directly for the buoy (or object indicated).
+PL 1      You should keep buoy (or object indicated) on your starboard side.
+PL 2      You should keep buoy (or object indicated) on your port side.
+PL 3      You can pass the buoy (or object indicated) on either side.
+PM        You should follow in my wake (or wake of vessel indicated).
+PM 1      You should go ahead and lead the course.
+PN        You should keep to leeward of me (or vessel indicated).
+PN 1      You should keep to windward of me (or vessel indicated).
+PN 2      You should keep on my starboard side (or starboard side of vessel indicated).
+PN 3      You should keep on my port side (or port side of vessel indicated).
+PO        You should pass ahead of me (or vessel indicated).
+PO 1      I will pass ahead of you (or vessel indicated).
+PO 2      You should pass astern of me (or vessel indicated).
+PO 3      I will pass astern of you (or vessel indicated).
+PO 4      You should pass to leeward of me (or vessel indicated).
+PO 5     I will pass to leeward of you (or vessel indicated).
+PO 6     You should pass to windward of me (or vessel indicated).
+PO 7     I will pass to windward of you (or vessel indicated).
+PO 8     You should come under my stern.
+PP         Keep well clear of me.
+PP 1     Do not overtake me.
+PP 2     Do not pass ahead of me.
+PP 3     Do not pass astern of me.
+PP 4     Do not pass on my starboard side.
+PP 5     Do not pass on my port side.
+PP 6     Do not pass too close to me.
+PP 7     You should give way to me.
+PQ         You should keep closer in to the coast.
+PQ 1     You should keep further away from the coast.
+PQ 2     You should follow the coast at a safe distance.
+PQ 3     How far out from the coast?
+PR         You should keep closer to me (or vessel indicated).
+PR 1     You should come as near as possible.
+PR 2     You should keep within visual signal distance from me (or vessel indicated).
+PR 3     You should come within hailing distance from me (or vessel indicated).
+PS         You should not come any closer.
+PS 1     You should keep away from me (or vessel indicated).
+
+TIDE
+
+PT         What is the state of the tide?
+PT 1     The tide is rising.
+PT 2     The tide is falling.
+PT 3     The tide is slack.
+PU         The tide begins to rise at time indicated.
+PU 1     When does the tide begin to rise?
+PV        The tide begins to fall at time indicated.
+PV 1     When does the tide begin to fall?
+PW        What is the rise and fall of the tide?
+PW 1     What is the set and drift of the tide?
+PW 2     What is the depth at high and low water here (or in place indicated)?
+PX        The rise and fall of the tide is… (number feet or meters).
+PY        The set of the tide is… degrees.
+PZ        The drift of the tide is… knots.
+QA        The depth at high water here (or in place indicated) is… (number feet or meters).
+QB        The depth at low water here (or in place indicated) is… (number feet or meters).
+QC        You should wait until high water.
+QC 1     You should wait until low water.
+
+AHEAD—ASTERN
+
+Ahead—Headway
+
+QD         I am going ahead.
+QD 1      My engines are going ahead.
+QD 2      I will keep going ahead.
+QD 3      I will go ahead.
+QD 4      I will go ahead dead slow.
+QE         I have headway.
+QF         I cannot go ahead.
+QG         You should go ahead.
+QG 1      You should go slow ahead.
+QG 2      You should go full speed ahead.
+QG 3      You should keep going ahead.
+QG 4      You should keep your engines going ahead.
+QH         You should not go ahead any more.
+
+Astern—Sternway
+
+QI         I am going astern.
+QI 2      I will keep going astern.
+QI 3      I will go astern.
+QI 4      I will go astern dead slow.
+QJ         I have sternway.
+QK         I cannot go astern.
+QL         You should go astern.
+QL 1      You should go slow astern.
+QL 2      You should go full speed astern.
+QL 3      You should keep going astern.
+QL 4      You should keep your engines going astern.
+QM         You should not go astern any more.
+
+ALONGSIDE
+
+QN        You should come alongside my starboard side.
+QN 1      You should come alongside my port side.
+QN 2      You should drop an anchor before coming alongside.
+QO        You should not come alongside.
+QP        I will come alongside.
+QP 1      I will try to come alongside.
+QR        I cannot come alongside.
+QR 1      Can I come alongside?
+
+TO ANCHOR—ANCHOR(S)—ANCHORAGE
+
+To Anchor
+
+QS        You should anchor at time indicated.
+QS 1      You should anchor (position to be indicated if necessary).
+QS 2      You should anchor to await tug.
+QS 3      You should anchor with both anchors.
+QS 4      You should anchor as convenient.
+QS 5      Are you going to anchor?
+QT        You should not anchor. You are going to foul my anchor.
+QU        Anchoring is prohibited.
+QV        I am anchoring in position indicated.
+QV 1      I have anchored with both anchors.
+QW        I shall not anchor.
+QW 1      I cannot anchor.
+QX        I request permission to anchor.
+QX 1      You have permission to anchor.
+QY        I wish to anchor at once.
+QY 1      Where shall I anchor?
+
+Anchor(s)
+
+QZ         You should have your anchors ready for letting go.
+QZ 1      You should let go another anchor.
+RA         My anchor is foul.
+RA 1      I have picked up telegraph cable with my anchor.
+RB 1      You appear to be dragging your anchor.
+RB 2      Where you have anchored (or intend to anchor) you are likely to drag.
+RC         I am (or vessel indicated is) breaking adrift.
+RC 1      I have broken adrift.
+RD         You should weigh (cut or slip) anchor immediately.
+RD 1      You should weigh anchor at time indicated.
+RD 2      I am unable to weigh my anchor.
+
+Anchorage
+
+RE         You should change your anchorage/berth. It is not safe.
+RF         Will you lead me into a safe anchorage?
+RG         You should send a boat to where I am to anchor or moor.
+RG 1      At what time shall I come into anchorage?
+RH         There is no good holding ground in my area (or around lat… long…).
+RI         There is good holding ground in my area (or around lat… long…).
+RI 1      Is there good holding ground in your area (or around lat… long…)?
+
+ENGINES—PROPELLER
+
+Engines
+
+RJ          You should keep your engines ready.
+RJ 1       You should have your engines ready as quickly as possible.
+RJ 2       You should report when your engines are ready.
+RJ 3       You should leave when your engines are ready.
+RJ 4       At what time will your engines be ready?
+RK          My engines will be ready at time indicated.
+RK 1       My engines are ready.
+RL          You should stop your engines immediately.
+RL 1       You should stop your engines.
+RM          My engines are stopped.
+RM 1       I am stopping my engines.
+RM 2       I am obliged to stop my engines.
+RN          My engines are out of action.
+
+Propeller
+
+RO          Propeller shaft is broken.
+RO 1       My propeller is fouled by hawser or rope.
+RO 2       I have lost my propeller.
+
+LANDING—BOARDING
+
+Landing
+
+RP         Landing here is highly dangerous.
+RP 1      Landing here is highly dangerous. A more favorable location for landing is at position indicated.
+RR         This is the best place to land.
+RR 1           Lights will be shown or ﬂag waved at the best landing place.
+
+Boarding
+
+RS                 No one is allowed on board.
+
+MANEUVERS
+
+RT 1            What maneuvers do you intend to carry out?
+RU 1            I am carrying out maneuvering trials.
+
+PROCEED—UNDERWAY
+
+Proceed
+
+RV                 You should proceed (to place indicated if necessary).
+RV 1            You should proceed to destination.
+RV 2            You should proceed into port.
+RV 3            You should proceed to sea.
+RW                 You should proceed to anchorage in position indicated (lat… long…).
+RX                 You should proceed at time indicated.
+RY                 You should proceed at slow speed when passing me (or vessels making this signal).
+RZ         You should not proceed (to place indicated if necessary).
+RZ 1      You should not proceed out of harbor/anchorage.
+SA         I can proceed at time indicated.
+SB         I am proceeding to the position of accident.
+
+Underway
+
+SC         I am underway.
+SC 1      I am ready to get underway.
+SC 2      I shall get underway as soon as the weather permits.
+SD         I am not ready to get underway.
+SF         Are you (or vessel indicated) underway?
+SF 1      Are you ready to get underway?
+SF 2      At what time will you be underway?
+
+SPEED
+
+SG         My present speed is… (number) knots.
+SJ         My maximum speed is… (number) knots.
+SL         What is your present speed?
+SL 1      What is your maximum speed?
+SM         I am undergoing speed trials.
+
+STOP—HEAVE TO
+
+SN         You should stop immediately. Do not scuttle. Do not lower boats. Do not use the wireless. If you disobey I shall open ﬁre on you.
+SO 1     You should stop. Head offshore.
+SO 2     You should remain where you are.
+SP         Take the way off your vessel.
+SQ         You should stop or heave to.
+SQ 1     You should stop or heave to, otherwise I shall open ﬁre on you.
+SQ 2     You should stop or heave to; I am going to send a boat.
+SQ 3     You should stop or heave to; I am going to board you.
+
+CARGO—BALLAST
+
+ST         What is your cargo?
+SU         My cargo is agricultural products.
+SU 1      My cargo is coal.
+SU 2      My cargo is dairy products.
+SU 3      My cargo is fruit products.
+SU 4      My cargo is heavy equipment/machinery.
+SU 5      My cargo is livestock.
+SU 6      My cargo is lumber.
+SU 7      My cargo is oil/petroleum products.
+SU 8      I have a general cargo.
+SV         I am not seaworthy due to shifting of cargo or ballast.
+SX         You should not discharge oil or oily mixture.
+SY         The discharge of oil or oily mixture in this area is prohibited within… (number) miles from the nearest land.
+
+CREW—PERSONS ON BOARD
+
+SZ         Total number of persons on board is…
+TA         I have left… (number) men on board.
+TB         … (number) persons have died.
+TC         … (number) persons are sick.
+
+FISHERY
+
+TD                  I am a ﬁsh catch carrier boat.
+TD 1            I am a mother ship for ﬁshing vessel(s).
+TD 2            Are you a ﬁshing vessel?
+TE                  I am bottom trawling.
+TE 1            I am trawling with a ﬂoating trawl.
+TE 2            I am long-line ﬁshing.
+TE 3            I am ﬁshing with towing lines.
+TE 4            I am engaged in two-boat ﬁshing operation.
+TE 5            I am drifting on my nets.
+TE 6            In what type of ﬁshing are you engaged?
+TF                  I am shooting purse seine.
+TF 1            I am shooting drift nets.
+TF 2            I am shooting seine net.
+TF 3            I am shooting trawl.
+TF 4            I am shooting long lines.
+TG                  I am hauling purse seine.
+TG 1            I am hauling drift nets.
+TG 2            I am hauling seine net.
+TG 3            I am hauling trawl.
+TG 4            I am hauling long lines.
+TH                  You should navigate with caution. Small ﬁshing boats are within… (number) miles of me.
+TI                  You should navigate with caution. You are drifting towards my set of nets.
+TJ                  You should navigate with caution. There are nets with a buoy in this area.
+TK                  Is there ﬁshing gear set up on my course?
+TL                  My gear is close to the surface in a direction… (Complements Table 3, Chapter 2, Section 10, Page 104) for a distance of… miles.
+TM         My gear is well below the surface in a direction… (Complements Table 3, Chapter 2, Section 10, Page 104) for a distance of… miles.
+TN         In what direction, distance, and depth does your ﬁshing gear extend?
+TO         I have a mine in my sweep (or net).
+TP         Fishing gear has fouled my propeller.
+TQ         You have caught my ﬁshing gear.
+TQ 1      It is necessary to haul in ﬁshing gear for disentangling.
+TQ 2      I am clearing the ﬁshing gear.
+TQ 3      You should take measures to recover the ﬁshing gear.
+TS         You should take the following action with your warps:
+TS 1      Veer the port (stern) warp.
+TS 2      Veer the starboard (fore) warp.
+TS 3      Veer both warps.
+TS 4      Stop veering.
+TS 5      Haul the port (stern) warp.
+TS 6      Haul the starboard (fore) warp.
+TS 7      Haul both warps.
+TS 8      Stop hauling.
+TS 9      You may haul your warps; the trawl is clear.
+TU         I have to cut the warps. The trawls are entangled.
+TU 1      Give me your warp. I shall transfer your ﬁshing gear on it.
+TU 2      Your warps are under mine.
+TU 3      Both my warps have parted.
+TU 4      My starboard (fore) warp has parted.
+TU 5      My port (stern) warp has parted.
+TV         Fishing in this area is prohibited.
+TV 1      Trawling in this area is dangerous because there is an obstruction.
+TW         Attention. You are in the vicinity of prohibited ﬁshery limits.
+TX         A ﬁshery protection (or ﬁshery assistance) vessel is in lat… long…
+TY         I request assistance from ﬁshery protection (or ﬁshery assistance) vessel.
+TZ         Can you offer assistance? (Complements Table 2, Chapter 2, Section 10, Page 104).
+
+PILOT
+
+UA            Pilot will arrive at time indicated.
+UB            You should heave to or anchor until pilot arrives.
+UC            Is a pilot available in this place (or place indicated)?
+UE            Where can I get a pilot (for destination indicated if necessary)?
+UF            You should follow pilot boat (or vessel indicated).
+UG            You should steer in my wake.
+UH            Can you lead me into port?
+UI            Sea is too rough; pilot boat cannot get off to you.
+UJ            Make a starboard lee for the pilot boat.
+UJ 1          Make a port lee for the pilot boat.
+UK            Pilot boat is most likely on bearing… from you.
+UK 1          Have you seen the pilot boat?
+
+PORT—HARBOR
+
+UL            All vessels should proceed to sea as soon as possible owing to danger in port.
+UM            The harbor (or port indicated) is closed to trafﬁc.
+UN            You may enter the harbor immediately (or at time indicated).
+UN 1          May I enter harbor?
+UN 2          May I leave harbor?
+UO            You must not enter harbor.
+UP            Permission to enter harbor is urgently requested. I have an emergency case.
+UQ           You should wait outside the harbor (or river mouth).
+UQ 1       You should wait outside the harbor until daylight.
+UR           My estimated time of arrival (at place indicated) is (time indicated).
+UR 1       What is your estimated time of arrival (at place indicated)?
+
+MISCELLANEOUS
+
+US           Nothing can be done until time indicated.
+US 1       Nothing can be done until daylight.
+US 2       Nothing can be done until tide has risen.
+US 3       Nothing can be done until visibility improves.
+US 4       Nothing can be done until weather moderates.
+US 5       Nothing can be done until draft is lightened.
+US 6       Nothing can be done until tugs have arrived.
+UT           Where are you bound for?
+UT 1       Where are you coming from?
+UU           I am bound for…
+UV           I am coming from…
+UV  1     I am conducting innocent passage in the territorial sea.
+UV  2     Your course leads into an area of the territorial sea in which the right of innocent passage is temporarily suspended.
+UV  3     You should leave the area of the territorial sea in which the right of innocent passage is temporarily suspended.
+UV  4     You are violating the conditions of innocent passage through the territorial sea (as indicated in the table of complements below). Request you comply with the conditions of innocent passage through the territorial sea.
+UV  5     I am not violating the conditions of innocent passage through the territorial sea (as indicated in the table of complements below).
+UV  6     I have ceased violating the conditions of innocent passage through the territorial sea (as indicated in the table of complements below).
+UV  7     Having disregarded our request for compliance with the conditions of innocent passage through the territorial sea, you are required to leave the territorial sea immediately.
+UV  8         I am conducting transit passage through an international Strait.
+UV  9         I am exercising freedom of navigation.
+Conditions of innocent passage… (Complements 0-9 corresponding to the following table):
+0   By threatening or using force against our/your sovereignty, territorial integrity, or political independence.
+1   By exercising or practicing with weapons.
+2   By engaging in acts aimed at collecting information to the prejudice of our/your defense or security.
+3   By engaging in acts of propaganda aimed at affecting our/your defense or security.
+4   By engaging in the launching, landing or taking on board of aircraft or a military device.
+5   By engaging in the loading or unloading of a commodity, currency or person contrary to the customs, ﬁscal, immigration or sanitary laws or regulations of our/your country.
+6   By engaging in willful and serious pollution.
+7   By engaging in ﬁshing activities.
+8   By engaging in research or survey activities.
+9   By engaging in acts aimed at interfering with our/your systems of communication or other facilities or installations.
+UW               I wish you a pleasant voyage.
+UW 1           Thank you very much for your cooperation. I wish you a pleasant voyage.
+UW 2           Welcome!
+UW 3           Welcome Home!
+UX               No information available.
+
+Exercises
+
+UY               I am carrying out exercises. Please keep clear of me.
+
+Bunkers
+
+UZ               I have bunkers for… (number) hours.
+VB               Have you sufﬁcient bunkers to reach port?
+VC               Where is the nearest place at which fuel oil is available?
+VC 1           Where is the nearest place at which diesel oil is available?
+VC 2     Where is the nearest place at which coal is available?
+VD         Bunkers are available at place indicated (or lat… long…).
+
+Fumigation
+
+VE         I am fumigating my vessel.
+
+Identification
+
+VF         You should hoist your identity signal.
+
+CLOUDS
+
+VG        The coverage of low clouds is… (number of octants or eighths of sky covered).
+VH        The estimated height of base of low clouds in hundreds of meters is…
+VI        What is the coverage of low clouds in octants (eighths of sky covered)?
+VI 1      What is the estimated height of base of low clouds in hundreds of meters?
+
+GALE—STORM—TROPICAL STORM
+
+Gale
+
+VJ        Gale (wind force Beaufort 8-9) is expected from direction indicated (Complements Table 3, Chapter 2, Section 10, Page 104).
+
+Storm
+
+VK        Storm (wind force Beaufort 10 or above) is expected from direction indicated (Complements Table 3, Chapter 2, Section 10, Page 104).
+
+Tropical Storm
+
+VL        Tropical storm (cyclone, hurricane, typhoon) is approaching. You should take appropriate precautions.
+VM        Tropical storm is centered at… (time indicated) in lat… long… on course… , speed… knots.
+VN        Have you latest information of the tropical storm (near lat… long… if necessary)?
+
+ICE—ICEBERGS
+
+Ice
+
+VO        Have you encountered ice?
+VP        What is the character of ice, its development, and the effects on navigation?
+VQ        Character of ice:
+VQ 0      No ice.
+VQ 1      New ice (ice crystals, slush or sludge, pancake ice or ice rind).
+VQ 2      Young fast ice (5-15 cms thick or rotten fast ice).
+VQ 3      Open drift ice (not more than 5/8 of the water surface is covered by ice ﬂoes).
+VQ 4      A compressed accumulation of sludge (a compressed mass of sludge or pancake ice, the ice cannot spread).
+VQ 5      Winter fast ice (more than 15 cms in thickness).
+VQ 6      Close drift ice (the area is covered by ice ﬂoes to a greater extent than 5/8).
+VQ 7      Very close drift ice on open sea.
+VQ 8      Pressure ice or big, vast, heavy ice ﬂoes.
+VQ 9      Shore lead along the coast.
+VR         Ice development:
+VR 0      No change.
+VR 1      Ice situation has improved.
+VR 2      Ice situation has deteriorated.
+VR 3      Ice has been broken up.
+VR 4      Ice has opened or drifted away.
+VR 5      New ice has been formed and/or the thickness of the ice has increased.
+VR 6      Ice has been frozen together.
+VR 7      Ice has drifted into the area or has been squeezed together.
+VR 8      Warning of pressure ridges.
+VR 9      Warning of hummocking or ice screwing.
+VS         Effects of the ice on navigation:
+VS 0      Unobstructed.
+VS 1      Unobstructed for power-driven vessels built of iron or steel, dangerous for wooden vessels without ice protection.
+VS 2      Difﬁcult for low-powered vessels without the assistance of an icebreaker, dangerous for vessels of weak construction.
+VS 3      Possible without icebreaker only for high-powered vessels of strong construction.
+VS 4      Icebreaker assistance available in case of need.
+VS 5      Proceed in channel without the assistance of icebreaker.
+VS 6             Possible only with the assistance of an icebreaker.
+VS 7             Icebreaker can give assistance only to ships strengthened for navigation in ice.
+VS 8             Temporarily closed for navigation.
+VS 9             Navigation has ceased.
+VT                Danger of ice accretion on superstructure (for example, black frost).
+VT 1             I am experiencing heavy icing on superstructure.
+VU                I have seen iceﬁeld in lat… long…
+VV                Ice patrol ship is not on station.
+VV 1             Ice patrol ship is on station.
+
+Icebergs
+
+VW                I have seen icebergs in lat… long…
+VX                I have encountered one or more icebergs or growlers (with or without position and time).
+VY                One or more icebergs or growlers have been reported (with or without position and time).
+VZ                Navigation is dangerous in the area around lat… long… owing to iceberg(s).
+VZ 1             Navigation is dangerous in the area around lat… long… owing to ﬂoating ice.
+VZ 2             Navigation is dangerous in the area around lat… long… owing to pack ice.
+
+ICEBREAKER
+
+WC                 I am (or vessel indicated is) fast on ice and require(s) icebreaker assistance.
+WC 1             Icebreaker is being sent to your assistance.
+WD                 Icebreaker is not available.
+WD 1             Icebreaker cannot render assistance at present.
+WE                  Navigation channel is being kept open by icebreaker.
+WF                  I can give icebreaker support only up to lat… long…
+WG                  Open channel or open area is in the direction in which aircraft is ﬂying.
+WH                  I can only assist if you will make all efforts to follow.
+WI                  At what time will you follow at full speed?
+WJ                  The convoy will start at time indicated from here (or from lat… long…).
+WK                  You (or vessel indicated) will be number… in convoy.
+WL                  Icebreaker is stopping work during darkness.
+WM                 Icebreaker support is now commencing. Use special icebreaker support signals and keep continuous watch for sound, visual, or radiotelephony signals.
+WN                  Icebreaker is stopping work for… (number) hours or until more favorable conditions arise.
+WO                  Icebreaker support is ﬁnished. Proceed to your destination.
+
+ATMOSPHERIC PRESSURE—TEMPERATURE
+
+Atmospheric Pressure
+
+WP                 Barometer is steady.
+WP 1            Barometer is falling rapidly.
+WP 2            Barometer is rising rapidly.
+WQ                 The barometer has fallen… (number) millibars during the past three hours.
+WR                 The barometer has risen… (number) millibars during the past three hours.
+WS                 Corrected atmospheric pressure at sea level is… (number) millibars.
+WS 1            State corrected atmospheric pressure at sea level in millibars.
+WT                 Very deep depression is approaching from direction indicated (Complements Table 3, Chapter 2, Section 10, Page 104).
+WU                 There are indications of an intense depression forming in lat… long…
+
+Temperature
+
+WV                 The air temperature is sub-zero (centigrade).
+WV 1        The air temperature is expected to be sub-zero (centigrade).
+
+SEA—SWELL
+
+Sea
+
+WW          What are the sea conditions in your area (or around lat… long…)?
+WX          The true direction of the sea in tens of degrees is… (number following indicates tens of degrees).
+WY          The state of the sea is… (Complements 0-9 corresponding to the following table which measures wave height):
+0 Calm (glassy)                                               0m           0 ft
+1 Calm (rippled)                                              0-0.1m       0-1/3 ft
+2 Smooth (wavelets)                                           0.1-0.5m     1/3-1 2/ 3 ft
+3 Slight                                                      0.5-1.2 m    1 2/3-4 ft
+4 Moderate                                                    1.25-2.5m    4-8 ft
+5 Rough                                                        2.5-4m      8-13 ft
+6 Very rough                                                  4-6m         13-20 ft
+7 High                                                        6-9m         20-30 ft
+8 Very high                                                   9-14m        30-45 ft
+9 Phenomenal                                                  over 14m     over 45 ft
+WZ          What are the forecast sea conditions in my area (or area around lat… long…)?
+XA          The true direction of the sea in tens of degrees is expected to be… (number following indicates tens of degrees).
+XB          The state of the sea is expected to be… (Complements 0-9 as in the table above).
+
+Swell
+
+XC          What are the swell conditions in your area (or area around lat… long…)?
+XD          The true direction of the swell in tens of degrees is… (number following indicates tens of degrees).
+XE          The state of the swell is… (Complements 0-9 corresponding to the following table):
+0 No swell...................weak—approximate height <2 m (6 ft.)
+1 short or middle.........weak—approximate height <2 m (6 ft.)
+2 Long..........................weak—approximate height <2 m (6 ft.)
+3 Short.........................moderate—approximate height 2-4 m (6-12 ft.)
+4 Middle......................moderate—approximate height 2-4 m (6-12 ft.)
+5 Long.........................moderate—approximate height 2-4 m (6-12 ft.)
+6 Short.........................high—approximate height > 4 m (12 ft.)
+7 Middle......................high—approximate height > 4 m (12 ft.)
+8 Long.........................high—approximate height > 4 m (12 ft.)
+9 Confused
+XF         What are the forecast swell conditions in my area (or area around lat… long…)?
+XG         The true direction of the swell in tens of degrees is expected to be… (number following indicates tens of degrees).
+XH         The state of the swell is expected to be… (Complements 0-9 as in the table above).
+
+VISIBILITY—FOG
+
+XI         Indicate visibility.
+XJ         Visibility is… (number) tenths of nautical miles.
+XK         Visibility is variable between… and… (maximum and minimum in tenths of nautical miles).
+XL         Visibility is decreasing.
+XL 1      Visibility is increasing.
+XL 2      Visibility is variable.
+XM         What is the forecast visibility in my area (or area around lat… long…)?
+XN         Visibility is expected to be… (number) tenths of nautical miles.
+XO         Visibility is expected to decrease.
+XO 1      Visibility is expected to increase.
+XO 2      Visibility is expected to be variable.
+XP         I am (or vessel indicated is) stopped in thick fog.
+XP 1      I am entering zone of restricted visibility.
+
+WEATHER—WEATHER FORECAST
+
+XQ             What weather are you experiencing?
+XR             Weather is good.
+XR 1           Weather is bad.
+XR 2           Weather is moderating.
+XR 3           Weather is deteriorating.
+XS             Weather report is not available.
+XT             Weather expected is bad.
+XT 1           Weather expected is good.
+XT 2           No change is expected in the weather.
+XT 3           What weather is expected?
+XU             You should wait until the weather moderates.
+XU 1           I will wait until the weather moderates.
+XV             Please give weather forecast for my area (or area around lat… long…) in MAFOR Code.
+
+WIND
+
+XW             What is the true direction and force of wind in your area (or area around lat… long…)?
+XX             True direction of wind is… (Complements Table 3, Chapter 2, Section 10, Page 104).
+XY             Wind force is Beaufort Scale… (numerals 0-12).
+XZ             What is the wind doing?
+XZ 1           The wind is backing.
+XZ 2           The wind is veering.
+XZ 3           The wind is increasing.
+XZ 4           The wind is squally.
+XZ 5           The wind is steady in force.
+XZ 6           The wind is moderating.
+YA             What wind direction and force is expected in my area (or area around lat… long…)?
+YB         True direction of wind is expected to be… (Complements Table 3, Chapter 2, Section 10, Page 104).
+YC         Wind force expected is Beaufort Scale… (numerals 0-12).
+YD         What is the wind expected to do?
+YD 1     The wind is expected to back.
+YD 2     The wind is expected to veer.
+YD 3     The wind is expected to increase.
+YD 4     The wind is expected to become squally.
+YD 5     The wind is expected to remain steady in force.
+YD 6     The wind is expected to moderate.
+
+ROUTING OF SHIPS
+
+YG   You appear not to be complying with the trafﬁc separation scheme.
+
+COMMUNICATIONS
+
+ACKNOWLEDGE—ANSWER
+
+YH                 I have received the following from… (name or identity signal of vessel or station).
+YI                 I have received the safety signal sent by… (name or identity signal).
+YJ                 Have you received the safety signal sent by… (name or identity signal)?
+YK                 I am unable to answer your question.
+
+CALLING
+
+YL                 I will call you again at… hours (on… kHz or MHz).
+YM                 Who is calling me?
+
+CANCEL
+
+YN                 Cancel my last signal/message.
+
+COMMUNICATE
+
+YO                 I am going to communicate by… (Complements Table 1, Chapter 2, Section 10, Page 104).
+YP                 I wish to communicate with vessel or coast station (identity signal) by… (Complements Table 1, Chapter 2, Section 10, Page 104).
+YQ                 I wish to communicate by… (Complements Table 1, Chapter 2, Section 10, Page 104) with vessel bearing… from me.
+YR                 Can you communicate by… (Complements Table 1, Chapter 2, Section 10, Page 104)?
+YS                 I am unable to communicate… (Complements Table 1, Chapter 2, Section 10, Page 104).
+YT                 I cannot read your… (Complements Table 1, Chapter 2, Section 10, Page 104).
+YU               I am going to communicate with your station by means of the International Code of Signals.  The abbreviation INTERCO may also be used.
+YV               The groups which follow are from the International Code of Signals.  The abbreviation INTERCO may also be used.
+YV 1            The groups which follow are from the local code.
+YW                I wish to communicate by radiotelegraphy on frequency indicated.
+YX                I wish to communicate by radiotelephony on frequency indicated.
+YY                I wish to communicate by VHF radiotelephony on channel indicated.
+YZ                The words which follow are in plain language.
+ZA                I wish to communicate with you in… (language indicated by following complements).
+ZA 0            Dutch
+ZA 1            English
+ZA 2            French
+ZA 3            German
+ZA 4            Greek
+ZA 5            Italian
+ZA 6            Japanese
+ZA 7            Norwegian
+ZA 8            Russian
+ZA 9            Spanish
+ZB                I can communicate with you in language indicated (complements as above).
+ZC                Can you communicate with me in language indicated (complements as above)?
+ZD                Please communicate the following to all shipping in the vicinity.
+ZD 1            Please report me to Coast Guard New York.
+ZD 2            Please report me to Lloyd’s London.
+ZD 3            Please report me to Minmorﬂot Moscow.
+ZD 4            Please report me to MSA Tokyo.
+ZE                You should come within visual signal distance.
+
+EXERCISE
+
+ZF         I wish to exercise signals with you by… (Complements Table 1, Chapter 2, Section 10, Page 104).
+ZG         It is not convenient to exercise signals.
+ZH         Exercise had been completed.
+
+RECEPTION—TRANSMISSION
+
+ZI         I can receive but not transmit by… (Complements Table 1, Chapter 2, Section 10, Page 104).
+ZJ         I can transmit but not receive by… (Complements Table 1, Chapter 2, Section 10, Page 104).
+ZK         I cannot distinguish your signal. Please repeat it by… (Complements Table 1, Chapter 2, Section 10, Page 104).
+ZL         Your signal has been received but not understood.
+ZM         You should send (or speak) more slowly.
+ZM 1       Shall I send (or speak) more slowly?
+ZN         You should send each word or group twice.
+ZO         You should stop sending.
+ZO 1       Shall I stop sending?
+
+REPEAT
+
+ZP         My last signal was incorrect. I will repeat it correctly.
+ZQ         Your signal appears incorrectly coded. You should check and repeat the whole.
+ZR         Repeat the signal now being made to me by vessel (or coast station)… (name or identity signal).
+
+INTERNATIONAL HEALTH REGULATIONS
+
+PRATIQUE MESSAGES
+
+QQ        I require health clearance. (See Pratique Messages in Chapter 2, Section 9, Page 103.)
+ZS                 My vessel is “healthy” and I request free pratique
+ZT                 My Maritime Declaration of Health has negative answers to the six Health Questions.
+ZU                 My Maritime Declaration of Health has a positive answer to Health Question(s)… (Health Questions are indicated by complements 1-6).
+ZV                 I believe I have been in an infected area during the last thirty days.
+ZW                 I require Port Medical Ofﬁcer.
+ZW 1             Port Medical Ofﬁcer will be available at (time indicated).
+ZX                 You should make the appropriate pratique signal.
+ZY                 You have pratique.
+ZZ                 You should proceed to anchorage for health clearance (at place indicated).
+ZZ 1             Where is the anchorage for health clearance?
+
+SECTION 10: TABLES OF COMPLEMENTS
+Table 1
+1. Morse signaling by hand flags or arms
+2. Loud hailer (megaphone)
+3. Morse signaling lamp
+4. Sound signals
+Table 2
+0. Water
+1. Provisions
+2. Fuel
+3. Pumping equipment
+4. Firefighting appliances
+5. Medical assistance
+6. Towing
+7. Survival craft
+8. Vessel to stand by
+9. Icebreaker
+Table 3
+0. Direction unknown (or calm)
+1. Northeast
+2. East
+3. Southeast
+4. South
+5. Southwest
+6. West
+7. Northwest
+8. North
+9. All directions (or confused or variable)
