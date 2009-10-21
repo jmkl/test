@@ -287,7 +287,6 @@ DZ 1      Is vessel (or aircraft) indicated in distress?
 DZ 2      What is the name (or identity signal) of vessel in distress?
 EA         Have you sighted or heard of a vessel in distress? (Approximate position lat… long… or bearing… from place indicated, distance…).
 EA 1      Have you any news of vessel/aircraft reported missing or in distress in this area?
-I am (or vessel indicated is) in distress in lat… long… (or bearing… from place indicated, distance…) and require immediate assistance (Complements Table 2, Chapter 2, Section 10, Page
 EB         There is a vessel (or aircraft) in distress in lat… long… (or bearing… distance… from me, or Complements Table 3, Chapter 2, Section 10, Page 104).
 EC         A vessel which has suffered a nuclear accident is in distress in lat… long…
 
@@ -577,6 +576,7 @@ FIRE—EXPLOSION
 Fire
 
 IT                 I am on ﬁre.
+IT 1            I am on ﬁre and have dangerous cargo on board; keep well clear of me 
 IT 2            Vessel (name or identity signal) is on ﬁre.
 IT 3            Are you on ﬁre?
 IU         Vessel (name or identity signal) on ﬁre is located at lat… long…
@@ -1189,6 +1189,7 @@ QH         You should not go ahead any more.
 Astern—Sternway
 
 QI         I am going astern.
+QI 1      My engines are going astern
 QI 2      I will keep going astern.
 QI 3      I will go astern.
 QI 4      I will go astern dead slow.
@@ -1239,6 +1240,7 @@ QZ         You should have your anchors ready for letting go.
 QZ 1      You should let go another anchor.
 RA         My anchor is foul.
 RA 1      I have picked up telegraph cable with my anchor.
+RB        I am dragging my anchor 
 RB 1      You appear to be dragging your anchor.
 RB 2      Where you have anchored (or intend to anchor) you are likely to drag.
 RC         I am (or vessel indicated is) breaking adrift.
@@ -1296,7 +1298,9 @@ RS                 No one is allowed on board.
 
 MANEUVERS
 
+RT              Stop carrying out your intentions and watch for my signals
 RT 1            What maneuvers do you intend to carry out?
+RU              Keep clear of me; I am maneuvering with difﬁculty
 RU 1            I am carrying out maneuvering trials.
 
 PROCEED—UNDERWAY
@@ -1336,9 +1340,11 @@ SM         I am undergoing speed trials.
 STOP—HEAVE TO
 
 SN         You should stop immediately. Do not scuttle. Do not lower boats. Do not use the wireless. If you disobey I shall open ﬁre on you.
+SO         You should stop your vessel instantly
 SO 1     You should stop. Head offshore.
 SO 2     You should remain where you are.
 SP         Take the way off your vessel.
+SP 1       My vessel is stopped and making no way through the water
 SQ         You should stop or heave to.
 SQ 1     You should stop or heave to, otherwise I shall open ﬁre on you.
 SQ 2     You should stop or heave to; I am going to send a boat.
@@ -1357,6 +1363,7 @@ SU 6      My cargo is lumber.
 SU 7      My cargo is oil/petroleum products.
 SU 8      I have a general cargo.
 SV         I am not seaworthy due to shifting of cargo or ballast.
+SW         I am taking in, or discharging, or carrying dangerous goods
 SX         You should not discharge oil or oily mixture.
 SY         The discharge of oil or oily mixture in this area is prohibited within… (number) miles from the nearest land.
 
@@ -1821,11 +1828,13 @@ ZZ                 You should proceed to anchorage for health clearance (at plac
 ZZ 1             Where is the anchorage for health clearance?
 
 SECTION 10: TABLES OF COMPLEMENTS
+
 Table 1
 1. Morse signaling by hand flags or arms
 2. Loud hailer (megaphone)
 3. Morse signaling lamp
 4. Sound signals
+
 Table 2
 0. Water
 1. Provisions
@@ -1837,6 +1846,7 @@ Table 2
 7. Survival craft
 8. Vessel to stand by
 9. Icebreaker
+
 Table 3
 0. Direction unknown (or calm)
 1. Northeast
