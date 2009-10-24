@@ -110,13 +110,15 @@ public class WebBasedData
 	/**
 	 * Set the database we use for storing our data.
      * 
-     * @param	db			The database.
+     * @param	db			The database.  Will be null if the database
+     *                      is being closed.
 	 */
     public void setDatabase(SQLiteDatabase db) {
         long date = 0;
         synchronized (this) {
             database = db;
-            date = findLatestDate();
+            if (database != null)
+                date = findLatestDate();
         }
 
 		// If we have any records, inform the client that we have data.
@@ -342,6 +344,9 @@ public class WebBasedData
 	 */
 	@Override
 	public void onWebData(URL url, Object obj, long fileDate) {
+	    if (database == null)
+	        return;
+	    
 		if (!(obj instanceof ContentValues)) {
 			onWebError("Loaded object for " + url + " not a ContentValues!");
 			return;
@@ -369,9 +374,11 @@ public class WebBasedData
 	@Override
 	public void onWebDone() {
 		synchronized(this) {
-			// Trim off any old unwanted values.
-			long earliest = System.currentTimeMillis() - MAX_SAMPLES * dataInterval;
-			database.delete(sourceName, "date<" + earliest, null);
+	        if (database != null) {
+	            // Trim off any old unwanted values.
+	            long earliest = System.currentTimeMillis() - MAX_SAMPLES * dataInterval;
+	            database.delete(sourceName, "date<" + earliest, null);
+	        }
 		}
 
 		// Inform the client that we have data.

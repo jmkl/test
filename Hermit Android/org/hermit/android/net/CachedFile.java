@@ -149,15 +149,17 @@ public class CachedFile
 	/**
 	 * Set the database we use for storing our data.
      * 
-     * @param	db			The database.
+     * @param	db			The database.  Will be null if the database is
+     *                      being closed.
 	 */
     public void setDatabase(SQLiteDatabase db) {
         synchronized (this) {
             database = db;
 
-            // Now we have a database, make sure all the URLs are in it.
-            for (Entry file : targetFiles.values())
-                syncDatabase(file);
+            // If we have a database, make sure all the URLs are in it.
+            if (database != null)
+                for (Entry file : targetFiles.values())
+                    syncDatabase(file);
         }
     }
 
@@ -258,10 +260,12 @@ public class CachedFile
     	entry.date = 0;
     	
     	// Write the change to the database.
-		ContentValues vals = new ContentValues();
-		vals.put("url", url.toString());
-		vals.put("name", entry.name);
-		database.replace(sourceName, "path", vals);
+    	if (database != null) {
+    	    ContentValues vals = new ContentValues();
+    	    vals.put("url", url.toString());
+    	    vals.put("name", entry.name);
+    	    database.replace(sourceName, "path", vals);
+    	}
 	}
     
     
@@ -322,6 +326,9 @@ public class CachedFile
 	 */
 	@Override
 	public void onWebData(URL url, Object obj, long date) {
+	    if (database == null)
+	        return;
+	    
 		if (!(obj instanceof File)) {
 			onWebError("Loaded object for " + url + " not a File!");
 			return;

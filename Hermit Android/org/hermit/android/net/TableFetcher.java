@@ -296,8 +296,8 @@ public class TableFetcher
 	 * Parse some float values from a data file.
 	 * 
 	 * @param	readc			The BufferedReader to read from.
-	 * @param	count			The number of ints to read.
-	 * @param	results			Array to place the results in.
+	 * @param	values			The values map to place the results in.
+	 * @param	results			Names of the fields to save in values.
 	 * @return					-1 on EOF; 0 on EOL; 1 if got a float and EOL;
 	 * 							2 if just got a float.
 	 * @throws IOException 
