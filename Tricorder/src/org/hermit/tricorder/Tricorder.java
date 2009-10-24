@@ -27,6 +27,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
@@ -503,7 +504,7 @@ public class Tricorder
     		String smode = prefs.getString("soundMode", null);
     		soundMode = SoundMode.valueOf(smode);
     	} catch (Exception e) {
-    		Log.i(TAG, "Pref: bad soundMode");
+    		Log.e(TAG, "Pref: bad soundMode");
     	}
     	Log.i(TAG, "Prefs: soundMode " + soundMode);
 
@@ -511,15 +512,26 @@ public class Tricorder
     	try {
     		wifiPing = prefs.getBoolean("wifiPing", false);
     	} catch (Exception e) {
-    		Log.i(TAG, "Pref: bad wifiPing");
+    		Log.e(TAG, "Pref: bad wifiPing");
     	}
     	Log.i(TAG, "Prefs: wifiPing " + wifiPing);
-    	
+
+        // Get the desired orientation.
+        int orientMode = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        try {
+            String omode = prefs.getString("orientMode", null);
+            orientMode = Integer.valueOf(omode);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad orientMode");
+        }
+        Log.i(TAG, "Prefs: orientMode " + orientMode);
+        setRequestedOrientation(orientMode);
+        
     	boolean fakeMissingData = false;
     	try {
     		fakeMissingData = prefs.getBoolean("fakeMissingData", false);
     	} catch (Exception e) {
-    		Log.i(TAG, "Pref: bad fakeMissingData");
+    		Log.e(TAG, "Pref: bad fakeMissingData");
     	}
     	Log.i(TAG, "Prefs: fakeMissingData " + fakeMissingData);
     	mainView.setSimulateMode(fakeMissingData);

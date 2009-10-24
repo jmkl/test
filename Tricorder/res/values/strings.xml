@@ -155,6 +155,10 @@ for more details.\n</string>
     <string name="prefs_sound_title">Sound Level</string>
     <string name="prefs_ping">WiFi ping</string>
     <string name="prefs_ping_summary">Indicate WiFi signals by audible ping</string>
+    <string name="prefs_cat_display">Display Settings</string>
+    <string name="prefs_orient">Screen orientation</string>
+    <string name="prefs_orient_summary">Set your desired screen rotation behaviour</string>
+    <string name="prefs_orient_title">Screen Orientation</string>
     <string name="prefs_cat_data">Data Settings</string>
     <string name="prefs_fake">Simulate missing</string>
     <string name="prefs_fake_summary">Use simulated data for missing sensors</string>
