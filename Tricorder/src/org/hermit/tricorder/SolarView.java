@@ -390,6 +390,7 @@ class SolarView
 
 		// ... with the database closed.
 		databaseHelper.close();
+		database = null;
 	}
 
 
@@ -592,6 +593,16 @@ class SolarView
     		for (WebBasedData s : ALL_SOURCES)
     			s.setDatabase(db);
     		FILES_SOHO.setDatabase(db);
+        }
+
+        @Override
+        public void close() {
+            // Make sure we don't try to use the closed database.
+            for (WebBasedData s : ALL_SOURCES)
+                s.setDatabase(null);
+            FILES_SOHO.setDatabase(null);
+            
+            super.close();
         }
     }
     
