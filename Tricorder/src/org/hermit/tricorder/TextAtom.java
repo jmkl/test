@@ -184,7 +184,7 @@ class TextAtom
 	int getPreferredHeight() {
 		return textHeight;
 	}
-	
+
 
 	/**
 	 * Position the text based on the current template and geometry.

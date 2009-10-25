@@ -19,6 +19,8 @@
 package org.hermit.tricorder;
 
 
+import org.hermit.tricorder.Tricorder.Sound;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -30,6 +32,7 @@ import android.location.LocationProvider;
 import android.location.GpsStatus;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 
@@ -40,6 +43,37 @@ class GeoView
 	extends DataView
 	implements LocationListener, GpsStatus.Listener
 {
+
+    // ******************************************************************** //
+    // Local Constants and Classes.
+    // ******************************************************************** //
+
+    /**
+     * Number of GPS satellites we can handle.
+     */
+    static final int NUM_SATS = 32;
+    
+    /**
+     * Cached info on a satellite's status.
+     */
+    static final class GpsInfo {
+        // Time at which this status was retrieved.  If 0, not valid.
+        long time = 0;
+        
+        float azimuth;
+        float elev;
+        float snr;
+        boolean hasAl;
+        boolean hasEph;
+        boolean used;
+        
+        // Time at which this satellite was last used in a fix.
+        long usedTime = 0;
+        
+        // Colour to plot it with, based on status.
+        int colour;
+    }
+    
 
 	// ******************************************************************** //
 	// Constructor.
@@ -56,6 +90,12 @@ class GeoView
 		
 		appContext = context;
 		surfaceHolder = sh;
+		
+		// Set up the satellite data cache.
+		satCache = new GpsInfo[NUM_SATS];
+		for (int i = 0; i < NUM_SATS; ++i) {
+		    satCache[i] = new GpsInfo();
+		}
 
 		// Get the information providers we need.
         locationManager =
@@ -128,7 +168,8 @@ class GeoView
         gpsElement.setGeometry(new Rect(sx, y, ex, y + gpsHeight));
         y += gpsHeight + pad;
         
-        satElement.setGeometry(new Rect(sx, y, ex, bounds.bottom));
+        satBounds = new Rect(sx, y, ex, bounds.bottom);
+        satElement.setGeometry(satBounds);
     }
 
 
@@ -207,6 +248,8 @@ class GeoView
 	public void tick(long time) {
 		netElement.tick(time);
 		gpsElement.tick(time);
+		if (satCache != null)
+		    satElement.setValues(satCache);
 	}
 	
 	
@@ -321,8 +364,6 @@ class GeoView
 				netElement.setStatus(msg);
 			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
 				gpsElement.setStatus(msg);
-				if (status != LocationProvider.AVAILABLE)
-		            satElement.clearValues();
 			}
 		}
 	}
@@ -339,12 +380,103 @@ class GeoView
         case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
             gpsStatus = locationManager.getGpsStatus(gpsStatus);
             Iterable<GpsSatellite> sats = gpsStatus.getSatellites();
-            satElement.setValues(sats);
+            long time = System.currentTimeMillis();
+            for (GpsSatellite sat : sats) {
+                int prn = sat.getPrn();
+                if (prn >= NUM_SATS)
+                    continue;
+                
+                GpsInfo ginfo = satCache[prn];
+                ginfo.time = time;
+                ginfo.azimuth = sat.getAzimuth();
+                ginfo.elev = sat.getElevation();
+                ginfo.snr = sat.getSnr();
+                ginfo.hasAl = sat.hasAlmanac();
+                ginfo.hasEph = sat.hasEphemeris();
+                ginfo.used = sat.usedInFix();
+            }
+            
+//            GpsInfo g7 = satCache[7];
+//            g7.time = time;
+//            g7.azimuth = 340;
+//            g7.elev = 30;
+//            g7.snr = 40;
+//            g7.hasAl = true;
+//            g7.hasEph = true;
+//            g7.used = true;
+//            GpsInfo g14 = satCache[14];
+//            g14.time = time;
+//            g14.azimuth = 75;
+//            g14.elev = 45;
+//            g14.snr = 30;
+//            g14.hasAl = true;
+//            g14.hasEph = true;
+//            g14.used = false;
+//            GpsInfo g21 = satCache[21];
+//            g21.time = time;
+//            g21.azimuth = 205;
+//            g21.elev = 60;
+//            g21.snr = 30;
+//            g21.hasAl = true;
+//            g21.hasEph = false;
+//            g21.used = false;
+
+            for (int prn = 0; prn < NUM_SATS; ++prn) {
+                GpsInfo ginfo = satCache[prn];
+                if (time - ginfo.time > DATA_CACHE_TIME) {
+                    ginfo.time = 0;
+                    ginfo.usedTime = 0;
+                } else {
+                    if (ginfo.used)
+                        ginfo.usedTime = time;
+                    else if (time - ginfo.usedTime <= DATA_CACHE_TIME)
+                        ginfo.used = true;
+                    else
+                        ginfo.usedTime = 0;
+                    int colour = ginfo.used ? 0 : ginfo.hasEph ? 1 : ginfo.hasAl ? 2 : 3;
+                    ginfo.colour = COLOUR_PLOT[colour];
+                }
+            }
+           
+            satElement.setValues(satCache);
             break;
         case GpsStatus.GPS_EVENT_STARTED:
         case GpsStatus.GPS_EVENT_STOPPED:
+        case GpsStatus.GPS_EVENT_FIRST_FIX:
             break;
         }
+    }
+
+
+    // ******************************************************************** //
+    // Input.
+    // ******************************************************************** //
+
+    /**
+     * Handle touch screen motion events.
+     * 
+     * @param   event           The motion event.
+     * @return                  True if the event was handled, false otherwise.
+     */
+    @Override
+    public boolean handleTouchEvent(MotionEvent event) {
+        final int x = (int) event.getX();
+        final int y = (int) event.getY();
+        final int action = event.getAction();
+        boolean done = false;
+
+        synchronized (surfaceHolder) {
+            if (action == MotionEvent.ACTION_DOWN) {
+                if (satBounds != null && satBounds.contains(x, y)) {
+                    satElement.toggleMode();
+                    appContext.postSound(Sound.CHIRP_LOW);
+                    done = true;
+                }
+            }
+        }
+
+        event.recycle();
+        return done;
     }
 
 
@@ -385,7 +517,15 @@ class GeoView
 	// Heading bar background and text colours.
 	private static final int HEAD_BG_COL = 0xffc0a000;
 	private static final int HEAD_TEXT_COL = 0xff000000;
+	
+	// Colours to represent sat status by.
+    private static final int[] COLOUR_PLOT = {
+        0xff00ffff, 0xff00ff00, 0xffffff00, 0xffff9000,
+    };
 
+    // Time in ms for which cached satellite data is valid.
+    private static final int DATA_CACHE_TIME = 10 * 1000;
+    
 	
 	// ******************************************************************** //
 	// Private Data.
@@ -405,11 +545,15 @@ class GeoView
 	private GeoElement netElement;
 	private GeoElement gpsElement;
 	
-	// Display pane for satellite status.
+	// Display pane for satellite status.  It's current bounds.
     private SatelliteElement satElement;
+    private Rect satBounds;
 	
 	// Latest GPS status.  If null, we haven't got one yet.
 	private GpsStatus gpsStatus = null;
+	
+	// Cached satellite info.
+	private GpsInfo[] satCache;
 
 }
 

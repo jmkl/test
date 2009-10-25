@@ -57,8 +57,9 @@ class MiniBarElement
 		
 		// Create the label.
         labelText = new String[][]{ { text } };
-    	barLabel = new TextAtom(context, sh, labelText[0], 1);
-    	barLabel.setTextSize(context.getBaseTextSize() - 6);
+        String[] template = new String[] { text };
+    	barLabel = new TextAtom(context, sh, template, 1);
+    	barLabel.setTextSize(context.getTinyTextSize());
     	barLabel.setTextColor(plotCol);
     	
     	// The magnitude gauge bar.

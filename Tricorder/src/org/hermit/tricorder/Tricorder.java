@@ -357,6 +357,26 @@ public class Tricorder
     	return baseTextSize;
     }
 
+
+    /**
+     * Get the size for mini text based on this screen's size.
+     * 
+     * @return              Mini text size for the app.
+     */
+    float getMiniTextSize() {
+        return baseTextSize - 6;
+    }
+
+
+    /**
+     * Get the size for tiny text based on this screen's size.
+     * 
+     * @return              Tiny text size for the app.
+     */
+    float getTinyTextSize() {
+        return baseTextSize - 7;
+    }
+
     
     /**
      * Get the calculated sidebar width.

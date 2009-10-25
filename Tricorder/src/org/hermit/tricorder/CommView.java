@@ -92,7 +92,7 @@ class CommView
 		// Create the label.
 		String[] wsfields = { getRes(R.string.msgPoweringOff) };
     	wifiStatus = new TextAtom(context, sh, wsfields, 1);
-    	wifiStatus.setTextSize(context.getBaseTextSize() - 5);
+    	wifiStatus.setTextSize(context.getMiniTextSize());
     	wifiStatus.setTextColor(COLOUR_PLOT);
     	wifiStatus.setText(0, 0, "?");
 

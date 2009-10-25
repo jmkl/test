@@ -420,7 +420,7 @@ class GeoElement
 		{  10, 0xff00ffff },
 		{  30, 0xff00ff00 },
 		{ 120, 0xffffff00 },
-		{ 600, 0xffffd000 },
+		{ 600, 0xffff9000 },
 		{  -1, COL_OLD_DATA },
 	};
 

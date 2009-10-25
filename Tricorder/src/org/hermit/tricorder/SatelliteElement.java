@@ -20,7 +20,6 @@ package org.hermit.tricorder;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.location.GpsSatellite;
 import android.view.SurfaceHolder;
 
 
@@ -31,7 +30,7 @@ class SatelliteElement
 	extends Element
 {
 
-	// ******************************************************************** //
+    // ******************************************************************** //
 	// Constructor.
 	// ******************************************************************** //
 
@@ -52,6 +51,9 @@ class SatelliteElement
     	headerBar = new HeaderBarElement(context, sh, new String[] { "", "" });
     	headerBar.setBarColor(headBgCol);
         headerBar.setTextColor(headTextCol);
+        
+        // Create the sky diagram.
+        skyMap = new SkyMapAtom(context, sh, COLOUR_GRID, 0xffff0000);
         
         // Create the list of GPS bargraphs, displaying ASU.  We'll assume
         // a WiFi ASU range from 0 to 41.
@@ -102,6 +104,9 @@ class SatelliteElement
         sideBar.setGeometry(new Rect(ex - bar, y, ex, bounds.bottom));
         ex -= bar + pad;
         
+        // Position the sky map.
+        skyMap.setGeometry(new Rect(sx, y, ex, bounds.bottom));
+        
         // Divide the remaining space in two.
         int colWidth = (ex - sx - pad) / 2;
         int sc = sx;
@@ -122,6 +127,14 @@ class SatelliteElement
             cy += bh + appContext.getInnerGap();
         }
 	}
+
+
+    /**
+     * Toggle the mode of the satellite view.
+     */
+    void toggleMode() {
+        barsMode = !barsMode;
+    }
 
 
 	/**
@@ -162,29 +175,28 @@ class SatelliteElement
 	 * 
 	 * @param	sats			The new satellite data.
 	 */
-	public void setValues(Iterable<GpsSatellite> sats) {
+	public void setValues(GeoView.GpsInfo[] sats) {
+	    // Set the sky map.
+	    skyMap.setValues(sats);
+	    
+	    // Set all the signal bars.
         numSats = 0;
-        for (GpsSatellite sat : sats) {
+        for (int prn = 0; prn < sats.length; ++prn) {
             if (numSats >= numBars)
                 break;
-            
-//            float azimuth = sat.getAzimuth();
-//            float elev = sat.getElevation();
-            int prn = sat.getPrn();
-            float snr = sat.getSnr();
-            boolean hasAl = sat.hasAlmanac();
-            boolean hasEph = sat.hasEphemeris();
-            boolean used = sat.usedInFix();
+            GeoView.GpsInfo ginfo = sats[prn];
+            if (ginfo.time == 0)
+                continue;
             
             MiniBarElement bar = gpsBars[numSats];
             bar.setLabel("" + prn);
-            int colour = used ? 0 : hasEph ? 1 : hasAl ? 2 : 3;
-            bar.setDataColors(COLOUR_GRID, COLOUR_PLOT[colour]);
+            bar.setDataColors(gridColour, ginfo.colour);
 
-            bar.setValue(snr);
+            bar.setValue(ginfo.snr);
             ++numSats;
         }
         
+        // Clear the bars for missing sats.
         for (int i = numSats; i < numBars; ++i) {
             MiniBarElement bar = gpsBars[i];
             bar.setLabel("");
@@ -214,7 +226,7 @@ class SatelliteElement
 	 * This method is called to ask the element to draw itself.
 	 * 
 	 * @param	canvas		Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	now			Current system time in ms.
 	 */
 	@Override
 	protected void draw(Canvas canvas, long now) {
@@ -222,14 +234,19 @@ class SatelliteElement
 		
 		headerBar.draw(canvas, now);
 
-        // Draw the GPS satellite bars, as many as we have.
-		for (int g = 0; g < numBars; ++g)
-		    gpsBars[g].draw(canvas, now);
+		// In normal mode, draw the sky map.  In bars mode, draw the
+		// GPS satellite signal bars, as many as we have.
+		if (!barsMode) {
+		    skyMap.draw(canvas, now);
+		} else {
+		    for (int g = 0; g < numBars; ++g)
+		        gpsBars[g].draw(canvas, now);
+		}
         
         sideBar.draw(canvas, now);
 	}
 	
-
+    
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
@@ -243,9 +260,6 @@ class SatelliteElement
 
     // Bargraph grid and plot colours.
     private static final int COLOUR_GRID = 0xffc0a000;
-    private static final int[] COLOUR_PLOT = {
-        0xff00ff00, 0xffffff00, 0xffffd000, 0xffff0000,
-    };
 
 	
 	// ******************************************************************** //
@@ -254,7 +268,14 @@ class SatelliteElement
 
 	// The header bar for the graph.
 	private HeaderBarElement headerBar;
-    
+
+	// Current display mode -- true to display signal bars, false for
+	// the sky diagram mode.
+	private boolean barsMode = false;
+	
+	// Sky diagram displaying satellite locations.
+    private SkyMapAtom skyMap;
+
     // Bargraph displays for GPS signals.
     private MiniBarElement[] gpsBars;
 	
