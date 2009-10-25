@@ -49,16 +49,15 @@ class AxisElement
 	 * @param	plotCol			Colour for the graph plot.
 	 * @param	fields			Strings representing the columns to display
 	 *							in the header bar.
-	 * @param	rows			The number of rows to display.
 	 */
 	public AxisElement(Tricorder context, SurfaceHolder sh,
 					   float unit, float range,
-	   				   int gridCol, int plotCol, String[] fields, int rows)
+	   				   int gridCol, int plotCol, String[] fields)
 	{
 		super(context, sh, gridCol, plotCol);
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, sh, fields, rows);
+    	headerBar = new HeaderBarElement(context, sh, fields);
     	headerBar.setBarColor(gridCol);
     	
     	xGauge = new GaugeAtom(context, sh, unit, range,

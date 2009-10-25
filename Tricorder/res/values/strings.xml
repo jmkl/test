@@ -186,6 +186,7 @@ for more details.\n</string>
     <string name="title_xyz_rel">Relative X, Y, Z</string>
     <string name="title_network">Cellular</string>
     <string name="title_gps">GPS</string>
+    <string name="title_sats">Satellites</string>
 
     <string name="lab_x">X</string>
     <string name="lab_y">Y</string>

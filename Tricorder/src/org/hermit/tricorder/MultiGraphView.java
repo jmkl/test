@@ -100,7 +100,7 @@ class MultiGraphView
         	def.view = new MagnitudeElement(context, sh,
         								    def.dataUnit, def.dataRange,
         								    def.gridColour, def.plotColour,
-        								    tfields, 1);
+        								    tfields);
         	
         	String[][] labStr = {
             		{ getRes(def.labelId), getRes(R.string.msgNoData) }
@@ -129,17 +129,18 @@ class MultiGraphView
 	protected void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
+		int pad = getContext().getInterPadding();
 		int h = bounds.bottom - bounds.top;
-		int graphHeight = (h - getContext().getInterPadding() * 2) / 3;
+		int graphHeight = (h - pad * 2) / 3;
 
-		int sx = bounds.left + getContext().getInterPadding();
+		int sx = bounds.left + pad;
 		int ex = bounds.right;
 		int y = bounds.top;
 
 		// Lay out the graphs.
         for (GraphDefinition def : GraphDefinition.values()) {
         	def.view.setGeometry(new Rect(sx, y, ex, y + graphHeight));
-        	y += graphHeight + getContext().getInterPadding();
+        	y += graphHeight + pad;
         }
 	}
 

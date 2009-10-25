@@ -56,15 +56,38 @@ class MagnitudeElement
 	 * @param	plotCol			Colour for the graph plot.
 	 * @param	fields			Strings representing the columns to display
 	 *							in the header bar.
-	 * @param	rows			The number of rows to display.
 	 */
 	public MagnitudeElement(Tricorder context, SurfaceHolder sh,
 							float unit, float range,
 							int gridCol, int plotCol,
-							String[] fields, int rows)
+							String[] fields)
 	{
 		this(context, sh, 1, unit, range,
-						gridCol, new int[] { plotCol }, fields, rows, false);
+						gridCol, new int[] { plotCol }, fields, false);
+    }
+
+
+    /**
+     * Set up this view.
+     * 
+     * @param   context         Parent application context.
+     * @param   sh              SurfaceHolder we're drawing in.
+     * @param   num             The number of values plotted on this graph.
+     * @param   unit            The size of a unit of measure (for example,
+     *                          1g of acceleration).
+     * @param   range           How many units big to make the graph.
+     * @param   gridCol         Colour for the graph grid.
+     * @param   plotCols        Colours for the graph plots.
+     * @param   fields          Strings representing the columns to display
+     *                          in the header bar.
+     */
+    public MagnitudeElement(Tricorder context, SurfaceHolder sh,
+                            int num, float unit, float range,
+                            int gridCol, int[] plotCols,
+                            String[] fields)
+    {
+        this(context, sh, num, unit, range,
+                gridCol, plotCols, fields, false);
 	}
 
 
@@ -81,14 +104,13 @@ class MagnitudeElement
 	 * @param	plotCols		Colours for the graph plots.
 	 * @param	fields			Strings representing the columns to display
 	 *							in the header bar.
-	 * @param	rows			The number of rows to display.
 	 * @param	centered		If true, the zero value is in the centre;
 	 * 							else at the left or bottom.
 	 */
 	public MagnitudeElement(Tricorder context, SurfaceHolder sh,
 						    int num, float unit, float range,
 							int gridCol, int[] plotCols,
-							String[] fields, int rows, boolean centered)
+							String[] fields, boolean centered)
 	{
 		super(context, sh, gridCol, plotCols[0]);
 		
@@ -103,7 +125,7 @@ class MagnitudeElement
 		tempValue = new float[numPlots];
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, sh, fields, rows);
+    	headerBar = new HeaderBarElement(context, sh, fields);
     	headerBar.setBarColor(gridCol);
     	
     	// The magnitude gauge bar.

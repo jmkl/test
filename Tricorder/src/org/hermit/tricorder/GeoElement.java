@@ -61,7 +61,7 @@ class GeoElement
 			getRes(R.string.lab_speed), "999.9m/s",
 		};
 		
-		headerBar = new HeaderBarElement(context, sh, hFields, 1);
+		headerBar = new HeaderBarElement(context, sh, hFields);
 		headerBar.setBarColor(gridCol);
  
 		posFields = new TextAtom(context, sh, bFields, 2);
@@ -127,6 +127,28 @@ class GeoElement
 		rightBar.setGeometry(lbrect);
 	}
 
+
+    /**
+     * Get the minimum height needed to fit all the text.
+     * 
+     * @return          The minimum height needed to fit all the text.
+     *                  Returns zero if setTextFields() hasn't been called.
+     */
+    @Override
+    int getPreferredWidth() {
+        int bar = appContext.getSidebarWidth();
+        int w = headerBar.getPreferredWidth();
+        int p = posFields.getPreferredWidth() + bar + INT_PADDING;
+        if (p > w)
+            w = p;
+        if (courseFields != null) {
+            int c = courseFields.getPreferredWidth() + bar + INT_PADDING;
+            if (c > w)
+                w = c;
+        }
+        return w;
+    }
+    
 
 	/**
 	 * Get the minimum height needed to fit all the text.

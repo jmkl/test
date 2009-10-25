@@ -38,19 +38,6 @@ class HeaderBarElement
 	// ******************************************************************** //
 	
 	/**
-	 * Set up this view.
-	 * 
-	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
-	 */
-	HeaderBarElement(Tricorder context, SurfaceHolder sh) {
-		super(context, sh);
-		
-		init();
-	}
-
-	
-	/**
 	 * Set up this view, and configure the text fields to be displayed in
 	 * this element.  This is equivalent to calling setTextFields()
 	 * after the basic constructor.
@@ -65,10 +52,9 @@ class HeaderBarElement
 	 * 						Each one should be a sample piece of text
 	 * 						which will be measured to determine the
 	 * 						required space for each column.
-	 * @param	rows		The number of rows to display.
 	 */
-	HeaderBarElement(Tricorder context, SurfaceHolder sh, String[] fields, int rows) {
-		super(context, sh, fields, rows);
+	HeaderBarElement(Tricorder context, SurfaceHolder sh, String[] fields) {
+		super(context, sh, fields, 1);
 		
 		init();
 	}

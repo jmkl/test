@@ -22,10 +22,12 @@ package org.hermit.tricorder;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.location.GpsSatellite;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.location.GpsStatus;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -36,7 +38,7 @@ import android.view.SurfaceHolder;
  */
 class GeoView
 	extends DataView
-	implements LocationListener
+	implements LocationListener, GpsStatus.Listener
 {
 
 	// ******************************************************************** //
@@ -72,6 +74,13 @@ class GeoView
         		{ getRes(R.string.title_gps), "", getRes(R.string.msgNoData) }
         	};
        	gpsElement.setText(gpsStr);
+       	
+       	satElement = new SatelliteElement(context, sh,
+       	                                  HEAD_BG_COL, HEAD_TEXT_COL);
+        String[][] satStr = {
+                { getRes(R.string.title_sats), "", getRes(R.string.msgNoData) }
+            };
+        satElement.setText(satStr);
 	}
 
 	   
@@ -90,22 +99,73 @@ class GeoView
 	@Override
 	protected void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
-		
-		// Lay out the displays.
-		int sx = bounds.left + appContext.getInterPadding();
-		int ex = bounds.right;
-		int y = bounds.top;
-		
-		int netHeight = netElement.getPreferredHeight();
-		netElement.setGeometry(new Rect(sx, y, ex, y + netHeight));
-        y += netHeight + appContext.getInterPadding();
-		
-		int gpsHeight = gpsElement.getPreferredHeight();
-		gpsElement.setGeometry(new Rect(sx, y, ex, y + gpsHeight));
-        y += gpsHeight;
+
+        if (bounds.right - bounds.left < bounds.bottom - bounds.top)
+            layoutPortrait(bounds);
+        else
+            layoutLandscape(bounds);
 	}
 
-	
+
+    /**
+     * Lay out in portrait mode.
+     * 
+     * @param   bounds      The bounding rect of this element within
+     *                      its parent View.
+     */
+    private void layoutPortrait(Rect bounds) {
+        // Lay out the displays.
+        int pad = appContext.getInterPadding();
+        int sx = bounds.left + pad;
+        int ex = bounds.right;
+        int y = bounds.top;
+        
+        int netHeight = netElement.getPreferredHeight();
+        netElement.setGeometry(new Rect(sx, y, ex, y + netHeight));
+        y += netHeight + pad;
+        
+        int gpsHeight = gpsElement.getPreferredHeight();
+        gpsElement.setGeometry(new Rect(sx, y, ex, y + gpsHeight));
+        y += gpsHeight + pad;
+        
+        satElement.setGeometry(new Rect(sx, y, ex, bounds.bottom));
+    }
+
+
+    /**
+     * Lay out in landscape mode.
+     * 
+     * @param   bounds      The bounding rect of this element within
+     *                      its parent View.
+     */
+    private void layoutLandscape(Rect bounds) {
+        // Lay out the displays.
+        int pad = appContext.getInterPadding();
+        int sx = bounds.left + pad;
+        int ex = bounds.right;
+        
+        int cw = (ex - sx - pad) / 2;
+        if (cw < gpsElement.getPreferredWidth())
+            cw = gpsElement.getPreferredWidth();
+        int csx = sx;
+        int cex = csx + cw;
+        int y = bounds.top;
+        
+        int netHeight = netElement.getPreferredHeight();
+        netElement.setGeometry(new Rect(csx, y, cex, y + netHeight));
+        y += netHeight + pad;
+        
+        int gpsHeight = gpsElement.getPreferredHeight();
+        gpsElement.setGeometry(new Rect(csx, y, cex, y + gpsHeight));
+
+        csx = cex + pad;
+        cex = ex;
+        y = bounds.top;
+        
+        satElement.setGeometry(new Rect(csx, y, cex, bounds.bottom));
+    }
+
+
 	// ******************************************************************** //
 	// Data Management.
 	// ******************************************************************** //
@@ -122,7 +182,12 @@ class GeoView
         	LocationProvider prov = locationManager.getProvider(name);
         	if (prov != null) {
         		locationManager.requestLocationUpdates(name, 60000, 0f, this);
-
+        		
+        		// For the GPS, also add a GPS status listener to get
+        		// additional satellite and fix info.
+        		if (name.equals(LocationManager.GPS_PROVIDER))
+        		    locationManager.addGpsStatusListener(this);
+        		
         		// Prime the pump with the last known location.
         		Location prime = locationManager.getLastKnownLocation(name);
         		if (prime != null)
@@ -174,7 +239,7 @@ class GeoView
 	 * Called when the location has changed.  There are no restrictions
 	 * on the use of the supplied Location object.
 	 * 
-	 * @param	loc			The new location, as a Location object.
+	 * @param	loc			   The new location, as a Location object.
 	 */
 	public void onLocationChanged(Location loc) {
 		synchronized (surfaceHolder) {
@@ -191,8 +256,8 @@ class GeoView
 	 * If requestLocationUpdates is called on an already disabled provider,
 	 * this method is called immediately.
 	 * 
-	 * @param	provider			The name of the location provider
-	 * 								associated with this update.
+	 * @param	provider		The name of the location provider
+	 * 							associated with this update.
 	 */
 	public void onProviderDisabled(String provider) {
 		Log.i(TAG, "Provider disabled: " + provider);
@@ -201,6 +266,7 @@ class GeoView
 				netElement.setStatus(getRes(R.string.msgDisabled));
 			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
 				gpsElement.setStatus(getRes(R.string.msgDisabled));
+                satElement.clearValues();
 			}
 		}
 	}
@@ -209,8 +275,8 @@ class GeoView
 	/**
 	 * Called when the provider is enabled by the user.
 	 * 
-	 * @param	provider			The name of the location provider
-	 * 								associated with this update.
+	 * @param	provider		The name of the location provider
+	 * 							associated with this update.
 	 */
 	public void onProviderEnabled(String provider) {
 		Log.i(TAG, "Provider enabled: " + provider);
@@ -219,6 +285,7 @@ class GeoView
 				netElement.setStatus(null);
 			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
 				gpsElement.setStatus(null);
+                satElement.clearValues();
 			}
 		}
 	}
@@ -229,18 +296,18 @@ class GeoView
 	 * when a provider is unable to fetch a location or if the provider
 	 * has recently become available after a period of unavailability.
 	 * 
-	 * @param	provider			The name of the location provider
-	 * 								associated with this update.
-	 * @param	status				OUT_OF_SERVICE if the provider is out of
-	 * 								service, and this is not expected to
-	 * 								change in the near future;
-	 * 								TEMPORARILY_UNAVAILABLE if the provider
-	 * 								is temporarily unavailable but is expected
-	 * 								to be available shortly; and AVAILABLE if
-	 * 								the provider is currently available.
-	 * @param	extras				An optional Bundle which will contain
-	 * 								provider specific status variables.
-	 * 								Common key/value pairs:
+	 * @param	provider		The name of the location provider
+	 * 							associated with this update.
+	 * @param	status			OUT_OF_SERVICE if the provider is out of
+	 * 							service, and this is not expected to
+	 * 							change in the near future;
+	 * 							TEMPORARILY_UNAVAILABLE if the provider
+	 * 							is temporarily unavailable but is expected
+	 * 							to be available shortly; and AVAILABLE if
+	 * 							the provider is currently available.
+	 * @param	extras			An optional Bundle which will contain
+	 * 							provider specific status variables.
+	 * 							Common key/value pairs:
 	 * 								  satellites - the number of satellites
 	 * 											   used to derive the fix.
 	 */
@@ -252,10 +319,33 @@ class GeoView
 				msg = getRes(R.string.msgOffline);
 			if (provider.equals(LocationManager.NETWORK_PROVIDER))
 				netElement.setStatus(msg);
-			else if (provider.equals(LocationManager.GPS_PROVIDER))
+			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
 				gpsElement.setStatus(msg);
+				if (status != LocationProvider.AVAILABLE)
+		            satElement.clearValues();
+			}
 		}
 	}
+
+	
+    /**
+     * Called to report changes in the GPS status.
+     * 
+     * @param   event           Event number describing what has changed.
+     */
+    @Override
+    public void onGpsStatusChanged(int event) {
+        switch (event) {
+        case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+            gpsStatus = locationManager.getGpsStatus(gpsStatus);
+            Iterable<GpsSatellite> sats = gpsStatus.getSatellites();
+            satElement.setValues(sats);
+            break;
+        case GpsStatus.GPS_EVENT_STARTED:
+        case GpsStatus.GPS_EVENT_STOPPED:
+            break;
+        }
+    }
 
 
 	// ******************************************************************** //
@@ -275,6 +365,7 @@ class GeoView
 		// Draw the data views.
 		netElement.draw(canvas, now);
 		gpsElement.draw(canvas, now);
+		satElement.draw(canvas, now);
 	}
 
 	
@@ -294,7 +385,7 @@ class GeoView
 	// Heading bar background and text colours.
 	private static final int HEAD_BG_COL = 0xffc0a000;
 	private static final int HEAD_TEXT_COL = 0xff000000;
-	
+
 	
 	// ******************************************************************** //
 	// Private Data.
@@ -314,5 +405,11 @@ class GeoView
 	private GeoElement netElement;
 	private GeoElement gpsElement;
 	
+	// Display pane for satellite status.
+    private SatelliteElement satElement;
+	
+	// Latest GPS status.  If null, we haven't got one yet.
+	private GpsStatus gpsStatus = null;
+
 }
 

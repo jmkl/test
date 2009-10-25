@@ -91,7 +91,7 @@ class SolarView
 		swindGraph = new MagnitudeElement(context, sh,
 		                                  EPAM1_PLOT_FIELDS.length, 400, 5,
 										  COLOUR_GRID, EPAM1_PLOT_COLS,
-										  tfields1, 1, false);       	
+										  tfields1);       	
 		swindGraph.setDataSource(SRC_EPAM, EPAM1_PLOT_FIELDS);
 		swindGraph.setText(0, 0, getRes(R.string.lab_solar_prot));
 		swindGraph.setText(0, 1, getRes(R.string.msgNoData));
@@ -100,7 +100,7 @@ class SolarView
 		epamGraph = new MagnitudeElement(context, sh,
 		                                 EPAM2_PLOT_FIELDS.length, 400, 5,
 										 COLOUR_GRID, EPAM2_PLOT_COLS,
-										 tfields1, 1, false);       	
+										 tfields1);       	
 		epamGraph.setDataSource(SRC_EPAM, EPAM2_PLOT_FIELDS);
 		epamGraph.setText(0, 0, getRes(R.string.lab_solar_elec));
 		epamGraph.setText(0, 1, getRes(R.string.msgNoData));
@@ -109,7 +109,7 @@ class SolarView
 		solGraph = new MagnitudeElement(context, sh,
 		                                DSD_PLOT_FIELDS.length, 10, 2,
 										COLOUR_GRID, DSD_PLOT_COLS,
-										tfields2, 1, false);
+										tfields2);
 		solGraph.setTimeScale(DSD_PLOT_TIMESCALE);
 		solGraph.setDataSource(SRC_DSD, DSD_PLOT_FIELDS);
 		solGraph.setText(0, 0, getRes(R.string.lab_solar_spots));

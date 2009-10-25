@@ -87,20 +87,20 @@ class TridataView
 
         // Add the gravity 3-axis plot.
         plotView = new AxisElement(context, sh, unit, range,
-				 				   gridCol1, plotCol1, new String[] { "" }, 1);
+				 				   gridCol1, plotCol1, new String[] { "" });
 
         // Add the gravity magnitude chart.
         chartView = new MagnitudeElement(context, sh, unit, range,
         								 gridCol1, plotCol1,
-        								 new String[] { "" }, 1);
+        								 new String[] { "" });
 
         // Add the numeric display.
         numView = new Num3DElement(context, sh, gridCol1, plotCol1);
         
         xyzView = new MagnitudeElement(context, sh, 3, unit, range,
 				 					   gridCol1, XYZ_PLOT_COLS,
-				 					   new String[] { "" }, 1, true);
-        
+				 					   new String[] { "" }, true);
+
         setRelativeMode(false);
 	}
 

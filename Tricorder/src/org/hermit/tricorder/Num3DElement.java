@@ -52,7 +52,7 @@ class Num3DElement
 		
 		// Create the header bar.
     	headerBar = new HeaderBarElement(context, sh,
-    								     new String[] { "" }, 1);
+    								     new String[] { "" });
     	headerBar.setBarColor(gridCol);
     	
     	// Create the left-side bar.
@@ -89,7 +89,7 @@ class Num3DElement
 		y += headHeight + appContext.getInnerGap();
 
 		int bar = appContext.getSidebarWidth();
-		int ex = bounds.right - bar - INT_PADDING;
+		int ex = bounds.right - bar - getContext().getInterPadding();
 		int dataHeight = dataDisplay.getPreferredHeight();
 		dataDisplay.setGeometry(new Rect(bounds.left, y, ex, y + dataHeight));
 		
@@ -106,7 +106,7 @@ class Num3DElement
 	 */
 	@Override
 	int getPreferredWidth() {
-		return getContext().getSidebarWidth() + INT_PADDING +
+		return getContext().getSidebarWidth() + getContext().getInterPadding() +
 											dataDisplay.getPreferredWidth();
 	}
 	
@@ -211,14 +211,6 @@ class Num3DElement
 	}
 	
 
-    // ******************************************************************** //
-    // Class Data.
-    // ******************************************************************** //
-	
-	// Padding between separate sections.
-	private static final int INT_PADDING = 8;
-
-	
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //

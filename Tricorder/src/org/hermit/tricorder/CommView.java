@@ -78,14 +78,14 @@ class CommView
 		
         // Create the section header bars.
 		String[] cfields = { getRes(R.string.lab_cell) , "", "999 days 23h" };
-		cellHead = new HeaderBarElement(context, sh, cfields, 1);
+		cellHead = new HeaderBarElement(context, sh, cfields);
 		cellHead.setBarColor(0xffdfb682);
 		cellHead.setText(0, 0, getRes(R.string.lab_cell));
 		String[] wfields = {
 			getRes(R.string.lab_wifi), "xx", "999 days 23h"
 
 		};
-		wifiHead = new HeaderBarElement(context, sh, wfields, 1);
+		wifiHead = new HeaderBarElement(context, sh, wfields);
 		wifiHead.setBarColor(0xffdfb682);
 		wifiHead.setText(0, 0, getRes(R.string.lab_wifi));
 		
@@ -148,6 +148,9 @@ class CommView
 	protected void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
+        int bar = appContext.getSidebarWidth();
+		int pad = appContext.getInterPadding();
+		
 		int sx = bounds.left + appContext.getInterPadding();
 		int y = bounds.top;
 		
@@ -157,9 +160,8 @@ class CommView
     	y += cheadHeight + appContext.getInnerGap();
 
 		// Provisionally position the right side bar.
-    	int bar = appContext.getSidebarWidth();
 		Rect rbrect = new Rect(bounds.right - bar, y, bounds.right, -1);
-		int ex = bounds.right - bar - INT_PADDING;
+		int ex = bounds.right - bar - pad;
 		
 		// Lay out the cellular graph.
     	int graphHeight = cellBar.getPreferredHeight();
@@ -184,7 +186,7 @@ class CommView
     	y += wheadHeight + appContext.getInnerGap();
 
 		rbrect = new Rect(bounds.right - bar, y, bounds.right, -1);
-		ex = bounds.right - bar - INT_PADDING;
+		ex = bounds.right - bar - pad;
 		
 		// Place the WiFi status field.
 		int wsHeight = wifiStatus.getPreferredHeight();
@@ -783,9 +785,6 @@ class CommView
 	@SuppressWarnings("unused")
 	private static final String TAG = "tricorder";
 		
-	// Padding between separate sections.
-	private static final int INT_PADDING = 8;
-
 	// The maximum number of WiFi signals we will show.
 	private static final int MAX_WIFI = 6;
 	private static final int MAX_CELL = 2;

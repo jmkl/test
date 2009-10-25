@@ -24,12 +24,12 @@ import android.view.SurfaceHolder;
 
 
 /**
- * A view which displays a magnitude as a horizontal filled bar.
+ * A view which displays a magnitude as a mini bar display with no
+ * header text.
  * 
- * This could be used, for example, to show the light level or
- * absolute magnetic field strength value.
+ * This could be used, for example, to show a GPS satellite signal bar.
  */
-class BargraphElement
+class MiniBarElement
 	extends Element
 {
 
@@ -47,21 +47,19 @@ class BargraphElement
 	 * @param	range			How many units big to make the graph.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
-	 * @param	fields			Strings representing the columns to display
-	 *							in the header bar.
-	 * @param	rows			The number of rows of text to display.
+     * @param   text            Initial text for the label.
 	 */
-	public BargraphElement(Tricorder context, SurfaceHolder sh,
+	public MiniBarElement(Tricorder context, SurfaceHolder sh,
 							float unit, float range,
-							int gridCol, int plotCol,
-							String[] fields, int rows)
+							int gridCol, int plotCol, String text)
 	{
 		super(context, sh, gridCol, plotCol);
 		
 		// Create the label.
-    	headerBar = new TextAtom(context, sh, fields, rows);
-    	headerBar.setTextSize(context.getBaseTextSize() - 5);
-    	headerBar.setTextColor(plotCol);
+        labelText = new String[][]{ { text } };
+    	barLabel = new TextAtom(context, sh, labelText[0], 1);
+    	barLabel.setTextSize(context.getBaseTextSize() - 6);
+    	barLabel.setTextColor(plotCol);
     	
     	// The magnitude gauge bar.
     	magBar = new BargraphAtom(context, sh,
@@ -87,16 +85,17 @@ class BargraphElement
 	protected void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
-		int y = bounds.top;
+		int x = bounds.left;
 		
-		// First position the header bar.
-		int headHeight = headerBar.getPreferredHeight();
-		headerBar.setGeometry(new Rect(bounds.left, y,
-									   bounds.right, y + headHeight));
-		y += headHeight + PADDING;
+		// First position the label.
+		int labelWidth = barLabel.getPreferredWidth();
+		barLabel.setGeometry(new Rect(x, bounds.top,
+									  x + labelWidth, bounds.bottom));
+		x += labelWidth + PADDING;
 		
 		// Position the magnitude bar.
-		magBar.setGeometry(new Rect(bounds.left, y,
+		int bh = magBar.getPreferredHeight();
+		magBar.setGeometry(new Rect(x, bounds.bottom - bh,
 									bounds.right, bounds.bottom));
 	}
 
@@ -109,8 +108,7 @@ class BargraphElement
 	 */
 	@Override
 	int getPreferredHeight() {
-		return headerBar.getPreferredHeight() +
-						magBar.getPreferredHeight() + PADDING;
+		return barLabel.getPreferredHeight() - 4;
 	}
 	
 
@@ -126,7 +124,7 @@ class BargraphElement
 	 */
 	@Override
 	void setDataColors(int grid, int plot) {
-		headerBar.setDataColors(grid, plot);
+		barLabel.setDataColors(grid, plot);
 		magBar.setDataColors(grid, plot);
 	}
 	
@@ -140,8 +138,9 @@ class BargraphElement
 	 * 
 	 * @param	text			The new text field values.
 	 */
-	protected void setText(String[][] text) {
-		headerBar.setText(text);
+	protected void setLabel(String text) {
+	    labelText[0][0] = text;
+		barLabel.setText(labelText);
 	}
 
 
@@ -178,7 +177,7 @@ class BargraphElement
 	protected void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
-		headerBar.draw(canvas, now);
+		barLabel.draw(canvas, now);
 		magBar.draw(canvas, now);
 	}
 	
@@ -200,10 +199,13 @@ class BargraphElement
 	// ******************************************************************** //
 
 	// The header bar for the graph.
-	private TextAtom headerBar;
+	private TextAtom barLabel;
 
 	// The magnitude gauge bar.
 	private BargraphAtom magBar;
+	
+	// Current label value.
+	private String[][] labelText;
 	
 }
 
