@@ -86,7 +86,7 @@ class ChartAtom
 		
 		scrollingChart = true;
 		
-		// Reset the stored data buffer.  It gets st up in setGeometry().
+		// Reset the stored data buffer.  It gets set up in setGeometry().
 		currentValue = null;
 		dataLength = 0;
 		dataBuffer = null;
@@ -243,9 +243,12 @@ class ChartAtom
 	/**
 	 * Set the data range of this gauge.
 	 * 
-	 * @param	range			How many units big to make the gauge.
+     * @param   unit        The size of a unit of measure (for example,
+     *                      1g of acceleration).
+	 * @param	range		How many units big to make the gauge.
 	 */
-	public void setDataRange(float range) {
+	public void setDataRange(float unit, float range) {
+        unitSize = unit;
 		plotRange = range;
 
 		// Re-calculate the scaling factors.
@@ -280,6 +283,9 @@ class ChartAtom
 	 * @param	value			The new value.
 	 */
 	public void setValue(float value) {
+	    if (currentValue == null)
+	        return;
+	    
 		currentValue[0] = value;
 		haveValue = true;
 		
@@ -296,6 +302,9 @@ class ChartAtom
 	 * @param	values				The new values.
 	 */
 	public void setValue(float[] values) {
+        if (currentValue == null)
+            return;
+        
 		for (int p = 0; p < numPlots; ++p)
 			currentValue[p] = values[p];
 		haveValue = true;
@@ -356,10 +365,10 @@ class ChartAtom
 	 */
 	@Override
 	protected void drawBody(Canvas canvas, Paint paint) {
-		// If the graph is too small, stop now.
-		if (unitScale < 1)
+		// If we aren't set up yet or the graph is too small, stop now.
+		if (currentValue == null || unitScale < 1)
 			return;
-		
+
 		// Add the values right now, if we're auto-scrolling.
 		if (scrollingChart)
 			addToChart(currentValue);

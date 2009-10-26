@@ -281,13 +281,15 @@ class AxisElement
 	/**
 	 * Set the data range of this chart.
 	 * 
-	 * @param	range			How many units big to make the graph.
+     * @param   unit        The size of a unit of measure (for example,
+     *                      1g of acceleration).
+	 * @param	range		How many units big to make the graph.
 	 */
-	public void setDataRange(float range) {
-		xGauge.setDataRange(range);
-		yGauge.setDataRange(range);
-		zGauge.setDataRange(range);
-		xyAxes.setDataRange(range);
+	public void setDataRange(float unit, float range) {
+		xGauge.setDataRange(unit, range);
+		yGauge.setDataRange(unit, range);
+		zGauge.setDataRange(unit, range);
+		xyAxes.setDataRange(unit, range);
 	}
 
 

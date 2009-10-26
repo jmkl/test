@@ -117,10 +117,11 @@ class MagnitudeElement
 		surfaceHolder = sh;
 
 		numPlots = num;
+		//		baseDataUnit = unit;
+		//		baseDataRange = range;
 		dataUnit = unit;
-		baseDataRange = range;
 		dataRange = range;
-		
+
 		currentValue = new float[numPlots];
 		tempValue = new float[numPlots];
 		
@@ -275,9 +276,13 @@ class MagnitudeElement
 	 * @param	range			How many units big to make the graph.
 	 */
 	public void setDataRange(float range) {
-		dataRange = range;
-		magBar.setDataRange(range);
-		chartPlot.setDataRange(range);
+        dataRange = range;
+	    while (dataRange > 10) {
+	        dataRange /= 10f;
+	        dataUnit *= 10f;
+	    }
+		magBar.setDataRange(dataUnit, dataRange);
+		chartPlot.setDataRange(dataUnit, dataRange);
 	}
 
 
@@ -435,11 +440,12 @@ class MagnitudeElement
 	// The number of values plotted on this gauge.
 	private int numPlots;
 	
-	// Data unit size.
+	// Basic and current data unit size.
+//	private final float baseDataUnit;
 	private float dataUnit;
 
 	// Basic and current range of displayed data.
-	public final float baseDataRange;
+//	private final float baseDataRange;
 	private float dataRange;
 
 	// If this is set, the user can call setValue(ContentValues values);

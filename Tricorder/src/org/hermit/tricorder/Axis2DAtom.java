@@ -95,9 +95,12 @@ class Axis2DAtom
 	/**
 	 * Set the data range of this gauge.
 	 * 
-	 * @param	range			How many units big to make the gauge.
+     * @param   unit        The size of a unit of measure (for example,
+     *                      1g of acceleration).
+	 * @param	range		How many units big to make the gauge.
 	 */
-	public void setDataRange(float range) {
+	public void setDataRange(float unit, float range) {
+        unitSize = unit;
 		plotRange = range;
 
 		// Calculate the scaling factors.
