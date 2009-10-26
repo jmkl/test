@@ -326,7 +326,9 @@ class MagnitudeElement
 	 * @param	value				The new value.
 	 */
 	public void setValue(float value) {
-	    if (value / dataUnit > dataRange)
+	    if (Float.isInfinite(value))
+	        value = dataUnit;
+	    else if (value / dataUnit > dataRange)
 	        setDataRange(value / dataUnit);
 		magBar.setValue(value);
 		chartPlot.setValue(value);
@@ -341,8 +343,10 @@ class MagnitudeElement
 	 */
 	public void setValue(float[] values) {
 	    for (int i = 0; i < values.length; ++i) {
-	        final float value = values[i];
-	        if (value / dataUnit > dataRange)
+	        float value = values[i];
+	        if (Float.isInfinite(value))
+	            value = dataUnit;
+	        else if (value / dataUnit > dataRange)
 	            setDataRange(value / dataUnit);
 	        currentValue[i] = value;
 	    }

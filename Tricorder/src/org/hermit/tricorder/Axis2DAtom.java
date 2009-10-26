@@ -118,7 +118,7 @@ class Axis2DAtom
 	 */
 	public void setValues(float[] values, float mag) {
 		for (int i = 0; i < 3; ++i)
-			currentValues[i] = values[i];
+			currentValues[i] = Float.isInfinite(values[i]) ? unitSize : values[i];
 		haveValue = true;
 	}
 
