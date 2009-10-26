@@ -203,7 +203,8 @@ class GeoView
         cex = ex;
         y = bounds.top;
         
-        satElement.setGeometry(new Rect(csx, y, cex, bounds.bottom));
+        satBounds = new Rect(csx, y, cex, bounds.bottom);
+        satElement.setGeometry(satBounds);
     }
 
 

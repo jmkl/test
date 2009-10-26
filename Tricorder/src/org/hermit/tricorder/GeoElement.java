@@ -18,6 +18,8 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.utils.Angle;
+
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.location.Location;
@@ -76,6 +78,7 @@ class GeoElement
 
 		posData = new String[2][3];
 		courseData = new String[1][5];
+		angleBuilder = new StringBuilder(12);
 	}
 
 	   
@@ -297,18 +300,20 @@ class GeoElement
 		if (l == null)
 			return;
 
-		pos[0][0] = formatAngle(l.getLatitude(), 'N', 'S');
-		pos[1][0] = formatAngle(l.getLongitude(), 'E', 'W');
-		
-        if (l.hasAltitude()) {
-            pos[0][1] = getRes(R.string.lab_alt);
-            pos[0][2] = String.format("%6.1fm", l.getAltitude());
+		Angle.formatDegMin(l.getLatitude(), 'N', 'S', angleBuilder);
+		pos[0][0] = angleBuilder.toString();
+		Angle.formatDegMin(l.getLongitude(), 'E', 'W', angleBuilder);
+		pos[1][0] = angleBuilder.toString();
+
+		if (l.hasAltitude()) {
+		    pos[0][1] = getRes(R.string.lab_alt);
+		    pos[0][2] = format61(l.getAltitude(), "m");
         } else {
             pos[0][1] = "";
 	        pos[0][2] = "";
 		}
 		pos[1][1] = getRes(R.string.lab_acc);
-		pos[1][2] = String.format("%6.1fm", l.getAccuracy());
+		pos[1][2] = format61(l.getAccuracy(), "m");
 			
 		if (course != null) {
 			course[0][0] = getRes(R.string.lab_head);
@@ -355,28 +360,25 @@ class GeoElement
 		return "" + days + " days";
 	}
 	
-	
-	/**
-	 * Format a latitude or longitude angle as a string.
-	 * 
-	 * @param ll		Angle to format.
-	 * @param pos		Sign character to use if positive.
-	 * @param neg		Sign character to use if negative.
-	 * @return			The formatted angle.
-	 */
-	private String formatAngle(double ll, char pos, char neg) {
-		char pref = pos;
-		if (ll < 0) {
-			pref = neg;
-			ll = -ll;
-		}
-		
-		String ls = String.format("%c%3d° %6.3f'",
-								  pref, (int) ll, ll * 60.0 % 60.0);
-		return ls;
-	}
-	
-	
+
+    /**
+     * Format a float to a field width of 6, with 1
+     * decimals.  MUCH faster than String.format.
+     */
+    private static final String format61(double val, String suff) {
+        int before = (int) val;
+        int after = (int) ((val - before) * 10);
+        
+        String b = "" + before;
+        String a = "" + after;
+        StringBuilder res = new StringBuilder("    .0" + suff);
+        int bs = 4 - b.length();
+        res.replace((bs < 0 ? 0 : bs), 4, b);
+        res.replace(6 - a.length(), 6, a);
+        return res.toString();
+    }
+
+    
 	// ******************************************************************** //
 	// View Drawing.
 	// ******************************************************************** //
@@ -441,6 +443,7 @@ class GeoElement
 	// Arrays where the formatted data fields are stored.
 	private String[][] posData;
 	private String[][] courseData;
+	private StringBuilder angleBuilder;
 	
 	// The most recent location we got.  null if none yet.
 	private Location currentLocation = null;

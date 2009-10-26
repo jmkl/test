@@ -57,8 +57,8 @@ class SatelliteElement
         
         // Create the list of GPS bargraphs, displaying ASU.  We'll assume
         // a WiFi ASU range from 0 to 41.
-        gpsBars = new MiniBarElement[MAX_GPS];
-        for (int g = 0; g < MAX_GPS; ++g) {
+        gpsBars = new MiniBarElement[GeoView.NUM_SATS];
+        for (int g = 0; g < GeoView.NUM_SATS; ++g) {
             gpsBars[g] = new MiniBarElement(context, sh, 5f, 8.2f,
                                             headBgCol, headTextCol,
                                             "00");
@@ -107,23 +107,21 @@ class SatelliteElement
         // Position the sky map.
         skyMap.setGeometry(new Rect(sx, y, ex, bounds.bottom));
         
-        // Divide the remaining space in two.
-        int colWidth = (ex - sx - pad) / 2;
+        // Divide the remaining space in three.
+        int bh = gpsBars[0].getPreferredHeight();
+        int colWidth = (ex - sx - pad * 2) / 3;
         int sc = sx;
         int ec = sc + colWidth;
         int cy = y;
         
         // Place all the GPS signal bars.
-        for (numBars = 0; numBars < MAX_GPS; ++numBars) {
-            int bh = gpsBars[numBars].getPreferredHeight();
-            if (cy + bh > bounds.bottom) {
+        for (int b = 0; b < gpsBars.length; ++b) {
+            if (b > 0 && b % 11 == 0) {
                 sc += colWidth + pad;
                 ec = sc + colWidth;
-                if (ec > ex)
-                    break;
                 cy = y;
             }
-            gpsBars[numBars].setGeometry(new Rect(sc, cy, ec, cy + bh));
+            gpsBars[b].setGeometry(new Rect(sc, cy, ec, cy + bh));
             cy += bh + appContext.getInnerGap();
         }
 	}
@@ -180,27 +178,17 @@ class SatelliteElement
 	    skyMap.setValues(sats);
 	    
 	    // Set all the signal bars.
-        numSats = 0;
-        for (int prn = 0; prn < sats.length; ++prn) {
-            if (numSats >= numBars)
-                break;
+        for (int prn = 0; prn < sats.length && prn < gpsBars.length; ++prn) {
             GeoView.GpsInfo ginfo = sats[prn];
-            if (ginfo.time == 0)
-                continue;
-            
-            MiniBarElement bar = gpsBars[numSats];
-            bar.setLabel("" + prn);
-            bar.setDataColors(gridColour, ginfo.colour);
-
-            bar.setValue(ginfo.snr);
-            ++numSats;
-        }
-        
-        // Clear the bars for missing sats.
-        for (int i = numSats; i < numBars; ++i) {
-            MiniBarElement bar = gpsBars[i];
-            bar.setLabel("");
-            bar.clearValue();
+            MiniBarElement bar = gpsBars[prn];
+            if (ginfo.time == 0) {
+                bar.setLabel("");
+                bar.clearValue();
+            } else {
+                bar.setLabel("" + prn);
+                bar.setDataColors(gridColour, ginfo.colour);
+                bar.setValue(ginfo.snr);
+            }
         }
 	}
 
@@ -209,9 +197,8 @@ class SatelliteElement
 	 * Clear the satellite status data; i.e. go back to a "no data" state.
 	 */
 	public void clearValues() {
-        numSats = 0;
-        for (int i = numSats; i < numBars; ++i) {
-            MiniBarElement bar = gpsBars[i];
+        for (int prn = 0; prn < gpsBars.length; ++prn) {
+            MiniBarElement bar = gpsBars[prn];
             bar.setLabel("");
             bar.clearValue();
         }
@@ -239,7 +226,7 @@ class SatelliteElement
 		if (!barsMode) {
 		    skyMap.draw(canvas, now);
 		} else {
-		    for (int g = 0; g < numBars; ++g)
+		    for (int g = 0; g < gpsBars.length; ++g)
 		        gpsBars[g].draw(canvas, now);
 		}
         
@@ -254,9 +241,6 @@ class SatelliteElement
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "tricorder";
-
-    // The maximum number of GPS signals we will show.
-    private static final int MAX_GPS = 26;
 
     // Bargraph grid and plot colours.
     private static final int COLOUR_GRID = 0xffc0a000;
@@ -279,14 +263,8 @@ class SatelliteElement
     // Bargraph displays for GPS signals.
     private MiniBarElement[] gpsBars;
 	
-	// The number of bars we actually fit into the display.
-    private int numBars = 0;
-    
     // Side bar element.
     private Element sideBar;
-
-    // Number of satellites for which we have status info.
-    private int numSats = 0;
 
 }
 
