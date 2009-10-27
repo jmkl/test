@@ -37,40 +37,49 @@ class TextAtom
 	// Constructor.
 	// ******************************************************************** //
 	
-	/**
-	 * Set up this view.
-	 * 
-	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
-	 */
-	TextAtom(Tricorder context, SurfaceHolder sh) {
-		super(context, sh);
-		textSize = context.getBaseTextSize();
-	}
+    /**
+     * Set up this view, and configure the text fields to be displayed in
+     * this element.  This is equivalent to calling setTextFields()
+     * after the basic constructor.
+     * 
+     * We support display of a single field, or a rectangular table
+     * of fields.  The caller must call
+     * {@link #setTextFields(String[] template, int rows)} to set the
+     * table format.
+     * 
+     * @param   context     Parent application context.
+     * @param   sh          SurfaceHolder we're drawing in.
+     */
+    TextAtom(Tricorder context, SurfaceHolder sh) {
+        super(context, sh);
+        textSize = context.getBaseTextSize();
+    }
 
-	
-	/**
-	 * Set up this view, and configure the text fields to be displayed in
-	 * this element.  This is equivalent to calling setTextFields()
-	 * after the basic constructor.
-	 * 
-	 * We support display of a single field, or a rectangular table
-	 * of fields.  The fields are specified by passing in sample text
-	 * values to be measured; we then allocate the space automatically.
-	 * 
-	 * @param	context		Parent application context.
-     * @param	sh			SurfaceHolder we're drawing in.
-	 * @param	fields		Strings representing the columns to display.
-	 * 						Each one should be a sample piece of text
-	 * 						which will be measured to determine the
-	 * 						required space for each column.
-	 * @param	rows		The number of rows to display.
-	 */
-	TextAtom(Tricorder context, SurfaceHolder sh, String[] fields, int rows) {
-		super(context, sh);
-		textSize = context.getBaseTextSize();
-		setTextFields(fields, rows);
-	}
+
+    /**
+     * Set up this view, and configure the text fields to be displayed in
+     * this element.  This is equivalent to calling setTextFields()
+     * after the basic constructor.
+     * 
+     * We support display of a single field, or a rectangular table
+     * of fields.  The fields are specified by passing in sample text
+     * values to be measured; we then allocate the space automatically.
+     * 
+     * @param   context     Parent application context.
+     * @param   sh          SurfaceHolder we're drawing in.
+     * @param   template    Strings representing the columns to display.
+     *                      Each one should be a sample piece of text
+     *                      which will be measured to determine the
+     *                      required space for each column.  Must be provided.
+     * @param   rows        Number of rows of text to display.
+     */
+    TextAtom(Tricorder context, SurfaceHolder sh, String[] template, int rows) {
+        super(context, sh);
+        textSize = context.getBaseTextSize();
+        
+        // Set up the text fields.
+        setTextFields(template, rows);
+    }
 
 
 	/**
@@ -141,24 +150,43 @@ class TextAtom
 	 * 
 	 * This must be called before setText() can be called.
 	 * 
-	 * @param	fields			Strings representing the columns to display.
-	 * 							Each one should be a sample piece of text
-	 * 							which will be measured to determine the
-	 * 							required space for each column.
-	 * @param	rows			The number of rows to display.
+	 * @param	template	Strings representing the columns to display.
+	 * 						Each one should be a sample piece of text
+	 * 						which will be measured to determine the
+	 * 						required space for each column.
+     * @param   rows        Number of rows of text to display.
 	 */
-	protected void setTextFields(String[] fields, int rows) {
-		fieldTemplate = fields;
-		numRows = rows;
-		
-		// Make the values array.
-		textValues = new String[rows][fields.length];
-		
+	protected void setTextFields(String[] template, int rows) {
+		fieldTemplate = template;
+        numRows = rows;
+
+        // Make the field buffers based on the template.
+        char[][][] buffers = new char[numRows][][];
+        for (int r = 0; r < numRows; ++r) {
+            int cols = template.length;
+            buffers[r] = new char[cols][];
+            for (int c = 0; c < cols; ++c)
+                buffers[r][c] = new char[template[c].length()];
+        }
+        fieldBuffers = buffers;
+
 		// Position our text based on the template.  If setGeometry()
 		// hasn't been called yet, then the positions will not be final,
 		// but getTextWidth() and getTextHeight() will return sensible
 		// values.
 		positionText();
+	}
+	
+	
+	/**
+	 * Get the text buffers for the field values.  The caller can change
+	 * a field's content by writing to the appropriate member of the
+	 * array, as in "buffer[row][col][0] = 'X';".
+	 * 
+	 * @return             Text buffers for the field values.
+	 */
+	public char[][][] getBuffer() {
+	    return fieldBuffers;
 	}
 	
 	
@@ -288,32 +316,6 @@ class TextAtom
 	
 
 	// ******************************************************************** //
-	// Data Management.
-	// ******************************************************************** //
-
-	/**
-	 * Set the text values displayed in this view.
-	 * 
-	 * @param	text			The new text field values.
-	 */
-	protected void setText(String[][] text) {
-		textValues = text;
-	}
-
-
-	/**
-	 * Set a specific text value displayed in this view.
-	 * 
-	 * @param	row				Row of the field to change.
-	 * @param	col				Column of the field to change.
-	 * @param	text			The new text field value.
-	 */
-	protected void setText(int row, int col, String text) {
-		textValues[row][col] = text;
-	}
-
-
-	// ******************************************************************** //
 	// View Drawing.
 	// ******************************************************************** //
 	
@@ -329,19 +331,17 @@ class TextAtom
 		paint.setColor(plotColour);
 		paint.setTextSize(textSize);
 
-		final String[][] tv = textValues;
+		final char[][][] tv = fieldBuffers;
 		
 		// If we have any text to show, draw it.
 		if (tv != null) {
 			for (int row = 0; row < rowsY.length && row < tv.length; ++row) {
-				String[] fields = tv[row];
+			    char[][] fields = tv[row];
 				int y = rowsY[row];
 				for (int col = 0; col < colsX.length && col < fields.length; ++col) {
-					String field = fields[col];
-					if (field == null)
-						field = "";
+				    char[] field = fields[col];
 					int x = colsX[col];
-					canvas.drawText(field, 0, field.length(), x, y, paint);
+					canvas.drawText(field, 0, field.length, x, y, paint);
 				}
 			}
 		}
@@ -371,6 +371,9 @@ class TextAtom
 	private String[] fieldTemplate = null;
 	private int numRows = 0;
 	
+	// Buffers where the values of the fields will be stored.
+    private char[][][] fieldBuffers;
+
 	// Horizontal positions of the text columns, and vertical positions
 	// of the rows.  These are the actual text base positions.  These
 	// will be null if we have no defined text fields.
@@ -382,9 +385,6 @@ class TextAtom
 	private int textWidth = 0;
 	private int textHeight = 0;
 	
-	// Current values of the displayed text fields.
-	private String[][] textValues = null;
-
 	// Current text size.
 	private float textSize;
 

@@ -159,6 +159,6 @@ class HeaderBar
 
 	// Current color for the bar.
 	private int barColor;
-		
+
 }
 

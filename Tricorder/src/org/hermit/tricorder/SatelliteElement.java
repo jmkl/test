@@ -147,16 +147,6 @@ class SatelliteElement
 
 
 	/**
-	 * Set the text values displayed in the header bar.
-	 * 
-	 * @param	text			The new text field values.
-	 */
-	protected void setText(String[][] text) {
-		headerBar.setText(text);
-	}
-
-
-	/**
 	 * Set a specific text value displayed in the header bar.
 	 * 
 	 * @param	row				Row of the field to change.

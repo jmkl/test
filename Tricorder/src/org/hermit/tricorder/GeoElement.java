@@ -18,7 +18,8 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.utils.Angle;
+import org.hermit.utils.CharFormatter;
+import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -67,18 +68,18 @@ class GeoElement
 		headerBar.setBarColor(gridCol);
  
 		posFields = new TextAtom(context, sh, bFields, 2);
-		if (course)
+        posBuffers = posFields.getBuffer();
+		if (course) {
 			courseFields = new TextAtom(context, sh, cFields, 1);
-		else
+	        courseBuffers = courseFields.getBuffer();
+		} else {
 			courseFields = null;
-    	
+            courseBuffers = null;
+		}
+
     	// Create the left-side bar.
     	rightBar = new Element(context, sh);
     	rightBar.setBackgroundColor(gridCol);
-
-		posData = new String[2][3];
-		courseData = new String[1][5];
-		angleBuilder = new StringBuilder(12);
 	}
 
 	   
@@ -192,14 +193,16 @@ class GeoElement
 	// Data Management.
 	// ******************************************************************** //
 
-	/**
-	 * Set the text values displayed in this view's header.
-	 * 
-	 * @param	text			The new text field values.
-	 */
-	protected void setText(String[][] text) {
-		headerBar.setText(text);
-	}
+    /**
+     * Set a specific text value displayed in this view's header bar.
+     * 
+     * @param   row             Row of the field to change.
+     * @param   col             Column of the field to change.
+     * @param   text            The new text field value.
+     */
+    protected void setText(int row, int col, String text) {
+        headerBar.setText(row, col, text);
+    }
 
 
 	/**
@@ -258,13 +261,10 @@ class GeoElement
 		else
 			headerBar.setText(0, 2, elapsed(age));
 
-		formatLocation(loc, posData, courseData);
-		posFields.setText(posData);
+		formatLocation(loc, posBuffers, courseBuffers);
 		posFields.setTextColor(dcol);
-		if (courseFields != null) {
-			courseFields.setText(courseData);
+		if (courseFields != null)
 			courseFields.setTextColor(dcol);
-		}
 	}
 	
 	
@@ -295,38 +295,44 @@ class GeoElement
 	 * @param course		Array to format the course data into; null
 	 * 						if not needed.
 	 */
-	private void formatLocation(Location l, String[][] pos, String[][] course)
+	private void formatLocation(Location l, char[][][] pos, char[][][] course)
 	{
 		if (l == null)
 			return;
 
-		Angle.formatDegMin(l.getLatitude(), 'N', 'S', angleBuilder);
-		pos[0][0] = angleBuilder.toString();
-		Angle.formatDegMin(l.getLongitude(), 'E', 'W', angleBuilder);
-		pos[1][0] = angleBuilder.toString();
+		try {
+		CharFormatter.formatDegMin(pos[0][0], 0, l.getLatitude(), 'N', 'S', false);
+        CharFormatter.formatDegMin(pos[1][0], 0, l.getLongitude(), 'E', 'W', false);
 
 		if (l.hasAltitude()) {
-		    pos[0][1] = getRes(R.string.lab_alt);
-		    pos[0][2] = format61(l.getAltitude(), "m");
+		    CharFormatter.formatString(pos[0][1], 0, getRes(R.string.lab_alt), -1);
+		    CharFormatter.formatFloat(pos[0][2], 0, l.getAltitude(), 6, 1);
+		    pos[0][2][6] = 'm';
         } else {
-            pos[0][1] = "";
-	        pos[0][2] = "";
+            CharFormatter.blank(pos[0][1], 0, -1);
+            CharFormatter.blank(pos[0][2], 0, -1);
 		}
-		pos[1][1] = getRes(R.string.lab_acc);
-		pos[1][2] = format61(l.getAccuracy(), "m");
+        CharFormatter.formatString(pos[1][1], 0, getRes(R.string.lab_acc), -1);
+        CharFormatter.formatFloat(pos[1][2], 0, l.getAccuracy(), 6, 1);
+        pos[1][2][6] = 'm';
 			
 		if (course != null) {
-			course[0][0] = getRes(R.string.lab_head);
-			if (l.hasBearing())
-				course[0][1] = String.format("%3d°", (int) l.getBearing());
-			else
-				course[0][1] = "";
-			course[0][2] = "";
-			course[0][3] = getRes(R.string.lab_speed);
-			if (l.hasSpeed())
-				course[0][4] = String.format("%5.1fm/s", l.getSpeed());
-			else
-				course[0][4] = "";
+	        CharFormatter.formatString(course[0][0], 0, getRes(R.string.lab_head), -1);
+			if (l.hasBearing()) {
+	            CharFormatter.formatInt(course[0][1], 0, (int) l.getBearing(), 3, true);
+	            course[0][1][3] = '°';
+			} else
+	            CharFormatter.blank(course[0][1], 0, -1);
+            CharFormatter.blank(course[0][2], 0, -1);
+            CharFormatter.formatString(course[0][3], 0, getRes(R.string.lab_speed), -1);
+			if (l.hasSpeed()) {
+			    CharFormatter.formatFloat(course[0][4], 0, l.getSpeed(), 5, 1);
+			    CharFormatter.formatString(course[0][4], 5, "m/s", -1);
+			} else
+			    CharFormatter.blank(course[0][4], 0, -1);
+		}
+		} catch (OverflowException e) {
+		    Log.e(TAG, "Error formatting location: " + e.getMessage());
 		}
 	}
 
@@ -361,24 +367,6 @@ class GeoElement
 	}
 	
 
-    /**
-     * Format a float to a field width of 6, with 1
-     * decimals.  MUCH faster than String.format.
-     */
-    private static final String format61(double val, String suff) {
-        int before = (int) val;
-        int after = (int) ((val - before) * 10);
-        
-        String b = "" + before;
-        String a = "" + after;
-        StringBuilder res = new StringBuilder("    .0" + suff);
-        int bs = 4 - b.length();
-        res.replace((bs < 0 ? 0 : bs), 4, b);
-        res.replace(6 - a.length(), 6, a);
-        return res.toString();
-    }
-
-    
 	// ******************************************************************** //
 	// View Drawing.
 	// ******************************************************************** //
@@ -439,12 +427,11 @@ class GeoElement
 
 	// The left-side bar (just a solid colour bar).
 	private Element rightBar;
-	
-	// Arrays where the formatted data fields are stored.
-	private String[][] posData;
-	private String[][] courseData;
-	private StringBuilder angleBuilder;
-	
+
+    // Text field buffers for the data display.
+    private char[][][] posBuffers;
+    private char[][][] courseBuffers;
+   
 	// The most recent location we got.  null if none yet.
 	private Location currentLocation = null;
 

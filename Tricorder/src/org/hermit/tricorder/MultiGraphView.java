@@ -102,10 +102,8 @@ class MultiGraphView
         								    def.gridColour, def.plotColour,
         								    tfields);
         	
-        	String[][] labStr = {
-            		{ getRes(def.labelId), getRes(R.string.msgNoData) }
-            	};
-        	def.view.setText(labStr);
+        	def.view.setText(0, 0, getRes(def.labelId));
+            def.view.setText(0, 1, getRes(R.string.msgNoData));
             
             // Get the sensor, if we have it.
         	def.sensor = sensorManager.getDefaultSensor(def.sensorId);

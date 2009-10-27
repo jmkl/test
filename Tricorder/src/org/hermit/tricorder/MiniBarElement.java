@@ -18,6 +18,8 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.utils.CharFormatter;
+
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.view.SurfaceHolder;
@@ -56,11 +58,11 @@ class MiniBarElement
 		super(context, sh, gridCol, plotCol);
 		
 		// Create the label.
-        labelText = new String[][]{ { text } };
         String[] template = new String[] { text };
     	barLabel = new TextAtom(context, sh, template, 1);
     	barLabel.setTextSize(context.getTinyTextSize());
     	barLabel.setTextColor(plotCol);
+    	fieldBuffers = barLabel.getBuffer();
     	
     	// The magnitude gauge bar.
     	magBar = new BargraphAtom(context, sh,
@@ -140,8 +142,7 @@ class MiniBarElement
 	 * @param	text			The new text field values.
 	 */
 	protected void setLabel(String text) {
-	    labelText[0][0] = text;
-		barLabel.setText(labelText);
+	    CharFormatter.formatString(fieldBuffers[0][0], 0, text, -1);
 	}
 
 
@@ -205,8 +206,8 @@ class MiniBarElement
 	// The magnitude gauge bar.
 	private BargraphAtom magBar;
 	
-	// Current label value.
-	private String[][] labelText;
-	
+    // Text field buffers for the label display.
+    private char[][][] fieldBuffers;
+    
 }
 

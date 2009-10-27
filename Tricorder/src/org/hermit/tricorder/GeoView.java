@@ -103,24 +103,15 @@ class GeoView
 
 		netElement = new GeoElement(context, sh,
 									HEAD_BG_COL, HEAD_TEXT_COL, false);
-       	String[][] netStr = {
-        		{ getRes(R.string.title_network), "", getRes(R.string.msgNoData) }
-        	};
-       	netElement.setText(netStr);
+       	netElement.setText(0, 0, getRes(R.string.title_network));
 		
 		gpsElement = new GeoElement(context, sh,
 									HEAD_BG_COL, HEAD_TEXT_COL, true);
-       	String[][] gpsStr = {
-        		{ getRes(R.string.title_gps), "", getRes(R.string.msgNoData) }
-        	};
-       	gpsElement.setText(gpsStr);
+       	gpsElement.setText(0, 0, getRes(R.string.title_gps));
        	
        	satElement = new SatelliteElement(context, sh,
        	                                  HEAD_BG_COL, HEAD_TEXT_COL);
-        String[][] satStr = {
-                { getRes(R.string.title_sats), "", getRes(R.string.msgNoData) }
-            };
-        satElement.setText(satStr);
+        satElement.setText(0, 0, getRes(R.string.title_sats));
 	}
 
 	   

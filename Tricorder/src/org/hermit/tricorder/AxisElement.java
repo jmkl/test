@@ -76,20 +76,15 @@ class AxisElement
     	// Size of the gauge labels.
     	final float labSize = context.getBaseTextSize() - 7;
 
-    	String[][] zText = new String[][] {
-    			{ getRes(R.string.lab_z) }
-    	};
-    	zLabel = new TextAtom(context, sh, zText[0], 1);
+    	String[] zTemplate = new String[] { getRes(R.string.lab_z) };
+    	zLabel = new TextAtom(context, sh, zTemplate, 1);
     	zLabel.setTextColor(gridCol);
     	zLabel.setTextSize(labSize);
-    	zLabel.setText(zText);
-    	String[][] altText = new String[][] {
-    			{ getRes(R.string.lab_alt) }
-    	};
-    	altLabel = new TextAtom(context, sh, altText[0], 1);
+    	
+    	String[] altTemplate = new String[] { getRes(R.string.lab_alt) };
+    	altLabel = new TextAtom(context, sh, altTemplate, 1);
     	altLabel.setTextColor(gridCol);
     	altLabel.setTextSize(labSize);
-    	altLabel.setText(altText);
 	
     	ell = new EllAtom(context, sh, context.getSidebarWidth());
     	ell.setBarColor(gridCol);

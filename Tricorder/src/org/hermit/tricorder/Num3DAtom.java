@@ -18,6 +18,10 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.utils.CharFormatter;
+import org.hermit.utils.CharFormatter.OverflowException;
+
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 
@@ -48,21 +52,20 @@ class Num3DAtom
 		
 		setTextColor(plotCol);
 		
-		// Set up the text values array and all the static labels.
-		textValues = new String[3][4];
-		textValues[0][0] = getRes(R.string.lab_x);
-		textValues[1][0] = getRes(R.string.lab_y);
-		textValues[2][0] = getRes(R.string.lab_z);
-		textValues[0][2] = getRes(R.string.lab_azi);
-		textValues[1][2] = getRes(R.string.lab_alt);
-		textValues[2][2] = getRes(R.string.lab_mag);
-		
 		// Define the display format.
 		final String[] fields = {
-				textValues[0][0], "88888888",
-				textValues[2][2], "88888888",
+		        getRes(R.string.lab_x), "88888888",
+		        getRes(R.string.lab_mag), "88888888",
 		};
 		setTextFields(fields, 3);
+		
+		fieldBuffers = getBuffer();
+		CharFormatter.formatString(fieldBuffers[0][0], 0, getRes(R.string.lab_x), 1);
+        CharFormatter.formatString(fieldBuffers[1][0], 0, getRes(R.string.lab_y), 1);
+        CharFormatter.formatString(fieldBuffers[2][0], 0, getRes(R.string.lab_z), 1);
+        CharFormatter.formatString(fieldBuffers[0][2], 0, getRes(R.string.lab_azi), 3);
+        CharFormatter.formatString(fieldBuffers[1][2], 0, getRes(R.string.lab_alt), 3);
+        CharFormatter.formatString(fieldBuffers[2][2], 0, getRes(R.string.lab_mag), 3);
 	}
 
 	
@@ -84,15 +87,18 @@ class Num3DAtom
 		float yv = values[1];
 		float zv = values[2];
 		
-		textValues[0][1] = format(xv);
-		textValues[1][1] = format(yv);
-		textValues[2][1] = format(zv);
-		
-		textValues[0][3] = format(az);
-		textValues[1][3] = format(alt);
-		textValues[2][3] = format(mag);
-		
-		setText(textValues);
+		try {
+		    CharFormatter.formatFloat(fieldBuffers[0][1], 0, xv, -1, 3);
+		    CharFormatter.formatFloat(fieldBuffers[1][1], 0, yv, -1, 3);
+		    CharFormatter.formatFloat(fieldBuffers[2][1], 0, zv, -1, 3);
+
+		    CharFormatter.formatFloat(fieldBuffers[0][3], 0, az, -1, 3);
+		    CharFormatter.formatFloat(fieldBuffers[1][3], 0, alt, -1, 3);
+		    CharFormatter.formatFloat(fieldBuffers[2][3], 0, mag, -1, 3);
+		}
+		catch (OverflowException e) {
+		    Log.e(TAG, "field overflow: " + e.getMessage());
+        }
 	}
 	
 
@@ -100,44 +106,30 @@ class Num3DAtom
 	 * Clear the current value; i.e. go back to a "no data" state.
 	 */
 	public void clearValues() {
-		textValues[0][1] = "";
-		textValues[1][1] = "";
-		textValues[2][1] = "";
-		
-		textValues[0][3] = "";
-		textValues[1][3] = "";
-		textValues[2][3] = "";
-		
-		setText(textValues);
+	    CharFormatter.blank(fieldBuffers[0][1], 0, -1);
+        CharFormatter.blank(fieldBuffers[1][1], 0, -1);
+        CharFormatter.blank(fieldBuffers[2][1], 0, -1);
+        CharFormatter.blank(fieldBuffers[0][3], 0, -1);
+        CharFormatter.blank(fieldBuffers[1][3], 0, -1);
+        CharFormatter.blank(fieldBuffers[2][3], 0, -1);
 	}
 
 
-	/**
-	 * Format a float to a field width of 8, including sign, with 3
-	 * decimals.  MUCH faster than String.format.
-	 */
-	private static final String format(float val) {
-		int s = val < 0 ? -1 : 1;
-		val *= s;
-		int before = (int) val;
-		int after = (int) ((val - before) * 1000);
-		
-		String b = (s < 0 ? "-" : " ") + before;
-		String a = "" + after;
-		StringBuilder res = new StringBuilder("    .000");
-		int bs = 4 - b.length();
-		res.replace((bs < 0 ? 0 : bs), 4, b);
-		res.replace(8 - a.length(), 8, a);
-		return res.toString();
-	}
+    // ******************************************************************** //
+    // Class Data.
+    // ******************************************************************** //
 
-	
+    // Debugging tag.
+    @SuppressWarnings("unused")
+    private static final String TAG = "tricorder";
+    
+    
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
 
-	// Values of all the text fields.
-	private String[][] textValues;
+    // Text field buffers for the data display.
+    private char[][][] fieldBuffers;
 	
 }
 

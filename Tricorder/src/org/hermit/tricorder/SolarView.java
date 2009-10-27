@@ -30,6 +30,7 @@ import org.hermit.android.net.CachedFile;
 import org.hermit.android.net.WebBasedData;
 import org.hermit.android.net.WebFetcher;
 import org.hermit.tricorder.Tricorder.Sound;
+import org.hermit.utils.CharFormatter;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -80,10 +81,13 @@ class SolarView
 		sunCaption = new TextAtom(context, sh, fields, 3);
 		sunCaption.setTextSize(context.getBaseTextSize() - 5);
 		sunCaption.setTextColor(0xffffff00);
+		sunCaptionBuf = sunCaption.getBuffer();
+		
 		sunData = new TextAtom(context, sh, fields, 3);
 		sunData.setTextSize(context.getBaseTextSize() - 5);
 		sunData.setTextColor(COLOUR_PLOT);
-
+		sunDataBuf = sunData.getBuffer();
+		
 		// Big solar image display, for alternate mode.
 		sunBigImage = new ImageAtom(context, sh, FILES_SOHO, SUN_URLS);
 
@@ -126,7 +130,7 @@ class SolarView
 		
 		setDisplayedSunImage(0);
 	}
-
+	
 
     // ******************************************************************** //
 	// Geometry Management.
@@ -434,10 +438,13 @@ class SolarView
 			ContentValues data = s.lastRecord();
 			if (data != null) {
 				synchronized (surfaceHolder) {
-					sunData.setText(0, 0, "Spots: " + data.getAsInteger("nsunspot") +
-					                "(" + data.getAsInteger("asunspot") + ")");
-					sunData.setText(1, 0, "Flares: " + data.getAsInteger("flares"));
-					sunData.setText(2, 0, "RF Flux: " + data.getAsInteger("rflux"));
+				    String spots = "Spots: " + data.getAsInteger("nsunspot") +
+                                    "(" + data.getAsInteger("asunspot") + ")";
+				    String flares = "Flares: " + data.getAsInteger("flares");
+				    String rf = "RF Flux: " + data.getAsInteger("rflux");
+				    CharFormatter.formatString(sunDataBuf[0][0], 0, spots, -1);
+                    CharFormatter.formatString(sunDataBuf[1][0], 0, flares, -1);
+                    CharFormatter.formatString(sunDataBuf[2][0], 0, rf, -1);
 					
 					int ndays = solGraph.getDataLength();
 					String now = formatDate(latest);
@@ -464,7 +471,7 @@ class SolarView
 					String dstr = formatDate(entry.date);
 					SUN_CAPTIONS[i][2] = dstr;
 					if (i == currentSunImage)
-						sunCaption.setText(2, 0, dstr);
+					    CharFormatter.formatString(sunCaptionBuf[2][0], 0, dstr, -1);
 					break;
 				}
 			}
@@ -492,9 +499,9 @@ class SolarView
 		sunImage.setDisplayedImage(index);
 		sunBigImage.setDisplayedImage(index);
 		String[] text = SUN_CAPTIONS[index];
-		sunCaption.setText(0, 0, text[0]);
-		sunCaption.setText(1, 0, text[1]);
-		sunCaption.setText(2, 0, text[2]);
+        CharFormatter.formatString(sunCaptionBuf[0][0], 0, text[0], -1);
+        CharFormatter.formatString(sunCaptionBuf[1][0], 0, text[1], -1);
+        CharFormatter.formatString(sunCaptionBuf[2][0], 0, text[2], -1);
 		
 		currentSunImage = index;
 	}
@@ -519,8 +526,8 @@ class SolarView
 
 		synchronized (surfaceHolder) {
 			if (action == MotionEvent.ACTION_DOWN) {
-				if ((!altMode && imageBounds.contains(x, y)) ||
-								(altMode && imageBigBounds.contains(x, y))) {
+				if ((!altMode && imageBounds != null && imageBounds.contains(x, y)) ||
+								(altMode && imageBigBounds != null && imageBigBounds.contains(x, y))) {
 					int i = (currentSunImage + 1) % SUN_URLS.length;
 					setDisplayedSunImage(i);
 					appContext.postSound(Sound.CHIRP_LOW);
@@ -834,6 +841,10 @@ class SolarView
 	private TextAtom sunCaption;
 	private TextAtom sunData;
 	
+	// Text field buffers for the Sun captions and the Sun data display.
+    private char[][][] sunCaptionBuf;
+    private char[][][] sunDataBuf;
+
 	// Positions of the caption and data in both modes.
     private Rect sunCaptionStd;
     private Rect sunCaptionAlt;

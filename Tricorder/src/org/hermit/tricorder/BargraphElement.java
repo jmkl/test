@@ -18,8 +18,12 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.utils.CharFormatter;
+import org.hermit.utils.CharFormatter.OverflowException;
+
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 
@@ -62,6 +66,7 @@ class BargraphElement
     	headerBar = new TextAtom(context, sh, fields, rows);
     	headerBar.setTextSize(context.getBaseTextSize() - 5);
     	headerBar.setTextColor(plotCol);
+    	fieldBuffers = headerBar.getBuffer();
     	
     	// The magnitude gauge bar.
     	magBar = new BargraphAtom(context, sh,
@@ -135,21 +140,91 @@ class BargraphElement
 	// Data Management.
 	// ******************************************************************** //
 
+    /**
+     * Get the text buffers for the field values.  The caller can change
+     * a field's content by writing to the appropriate member of the
+     * array, as in "buffer[row][col][0] = 'X';".
+     * 
+     * @return             Text buffers for the field values.
+     */
+    public char[][][] getBuffer() {
+        return headerBar.getBuffer();
+    }
+    
+    
 	/**
-	 * Set the text values displayed in this view.
+	 * Set the displayed frequency value.
 	 * 
-	 * @param	text			The new text field values.
+	 * @param	freq			The new frequency value.
 	 */
-	protected void setText(String[][] text) {
-		headerBar.setText(text);
+	protected void setFreq(float freq) {
+        try {
+            CharFormatter.formatFloat(fieldBuffers[0][0], 0, freq, 5, 3, false);
+        } catch (OverflowException e) {
+            Log.e(TAG, "Freq field too small");
+        }
 	}
 
+    
+    /**
+     * Set the displayed cell ID value.
+     * 
+     * @param   cid             The new cell ID value.
+     */
+    protected void setCid(int cid) {
+        try {
+            CharFormatter.formatInt(fieldBuffers[0][0], 0, cid, 9, false);
+        } catch (OverflowException e) {
+            Log.e(TAG, "CID field too small");
+        }
+    }
 
+
+    /**
+     * Clear the displayed cell ID value.
+     */
+    protected void clearCid() {
+        CharFormatter.blank(fieldBuffers[0][0], 0, -1);
+    }
+
+    
+    /**
+     * Set the displayed label.
+     * 
+     * @param   text            The new label.
+     */
+    protected void setLabel(String text) {
+        CharFormatter.formatString(fieldBuffers[0][1], 0, text, -1);
+    }
+
+
+    /**
+     * Set the displayed ASU value.
+     * 
+     * @param   asu             The new ASU value.
+     */
+    protected void setAsu(int asu) {
+        try {
+            CharFormatter.formatInt(fieldBuffers[0][2], 0, asu, 2, false);
+        } catch (OverflowException e) {
+            Log.e(TAG, "ASU field too small");
+        }
+    }
+
+
+    /**
+     * Clear the displayed ASU value.
+     */
+    protected void clearAsu() {
+        CharFormatter.blank(fieldBuffers[0][2], 0, -1);
+    }
+
+    
 	/**
-	 * Set the given value as the new value for the displayed data.
+	 * Set the given value as the new value for the displayed magnitude.
 	 * Update the display accordingly.
 	 * 
-	 * @param	value				The new value.
+	 * @param	value				The new magnitude.
 	 */
 	public void setValue(float value) {
 		magBar.setValue(value);
@@ -204,6 +279,9 @@ class BargraphElement
 
 	// The magnitude gauge bar.
 	private BargraphAtom magBar;
-	
+
+    // Text field buffers for the header display.
+    private char[][][] fieldBuffers;
+    
 }
 

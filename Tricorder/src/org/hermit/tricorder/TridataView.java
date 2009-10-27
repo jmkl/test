@@ -87,19 +87,21 @@ class TridataView
 
         // Add the gravity 3-axis plot.
         plotView = new AxisElement(context, sh, unit, range,
-				 				   gridCol1, plotCol1, new String[] { "" });
+				 				   gridCol1, plotCol1,
+				 				   new String[] { "XXXXXXXXXXXXXXXXXXXX" });
 
         // Add the gravity magnitude chart.
         chartView = new MagnitudeElement(context, sh, unit, range,
         								 gridCol1, plotCol1,
-        								 new String[] { "" });
+        								 new String[] { "XXXXXXXXXXXXXXXXXXXX" });
 
         // Add the numeric display.
-        numView = new Num3DElement(context, sh, gridCol1, plotCol1);
+        numView = new Num3DElement(context, sh, gridCol1, plotCol1,
+                                   new String[] { "XXXXXXXXXXXXXXXXXXXX" });
         
         xyzView = new MagnitudeElement(context, sh, 3, unit, range,
 				 					   gridCol1, XYZ_PLOT_COLS,
-				 					   new String[] { "" }, true);
+				 					   new String[] { "XXXXXXXXXXXXXXXXXXXX" }, true);
 
         setRelativeMode(false);
 	}
@@ -401,11 +403,11 @@ class TridataView
 
 		synchronized (surfaceHolder) {
 			if (action == MotionEvent.ACTION_DOWN) {
-				if (plotBounds.contains(x, y)) {
+				if (plotBounds != null && plotBounds.contains(x, y)) {
 					setRelativeMode(!relativeMode);
 					appContext.postSound(Sound.CHIRP_LOW);
 					done = true;
-				} else if (numBounds.contains(x, y)) {
+				} else if (numBounds != null && numBounds.contains(x, y)) {
 					// Toggle the X/Y/Z display.
 					showXyz = !showXyz;
 					appContext.postSound(Sound.CHIRP_LOW);

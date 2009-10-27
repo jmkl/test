@@ -21,6 +21,7 @@ package org.hermit.tricorder;
 import java.util.List;
 
 import org.hermit.tricorder.Tricorder.Sound;
+import org.hermit.utils.CharFormatter;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -53,7 +54,8 @@ class CommView
 	implements LocationListener
 {
 
-	// ******************************************************************** //
+
+    // ******************************************************************** //
 	// Constructor.
 	// ******************************************************************** //
 
@@ -94,7 +96,8 @@ class CommView
     	wifiStatus = new TextAtom(context, sh, wsfields, 1);
     	wifiStatus.setTextSize(context.getMiniTextSize());
     	wifiStatus.setTextColor(COLOUR_PLOT);
-    	wifiStatus.setText(0, 0, "?");
+    	wifiStatusBuffer = wifiStatus.getBuffer();
+    	CharFormatter.formatString(wifiStatusBuffer[0][0], 0, "?", -1);
 
         // Add the cellular bar graph, displaying ASU.  This snippet from
 		// PhoneStateIntentReceiver.java: 
@@ -106,12 +109,16 @@ class CommView
 		String[] ctext = { "000000000", "T - Mobile X", "00" };
 		cellBar = new BargraphElement(context, sh, 5f, 6.2f,
 									  COLOUR_GRID, COLOUR_PLOT, ctext, 1);
-		cellBar.setText(new String[][] { { getRes(R.string.msgNoData), "" } });
+        cellBar.clearCid();
+        cellBar.setLabel(getRes(R.string.msgNoData));
+        cellBar.clearAsu();
 		cellBars = new BargraphElement[MAX_CELL];
-		for (int w = 0; w < MAX_CELL; ++w) {
-			cellBars[w] = new BargraphElement(context, sh, 5f, 6.2f,
-					  COLOUR_GRID, COLOUR_GRID, ctext, 1);
-			cellBars[w].setText(new String[][] { { getRes(R.string.msgNoData), "" } });
+		for (int c = 0; c < MAX_CELL; ++c) {
+			cellBars[c] = new BargraphElement(context, sh, 5f, 6.2f,
+					                          COLOUR_GRID, COLOUR_GRID, ctext, 1);
+	        cellBars[c].clearCid();
+	        cellBars[c].setLabel(getRes(R.string.msgNoData));
+	        cellBars[c].clearAsu();
 		}
 		
 		// Create the list of WiFi bargraphs, displaying ASU.  We'll assume
@@ -414,32 +421,34 @@ class CommView
 		
 		private void updateHead() {
 			// Update the header widget.
-			String id = "";
-			String label = getRes(R.string.msgNoData);
-			String value = "";
 			switch (cellState) {
 			case ServiceState.STATE_IN_SERVICE:
-				label = cellOp;
-				id = "" + cellId;
-				value = (cellAsu < 10 ? " " : "") + cellAsu;
-				break;
 			case ServiceState.STATE_EMERGENCY_ONLY:
-				label = cellOp + "!";
-				id = "" + cellId;
-				value = (cellAsu < 10 ? " " : "") + cellAsu;
+			    String label = cellOp;
+			    if (cellState == ServiceState.STATE_EMERGENCY_ONLY)
+			        label += "!";
+				
+				cellBar.setCid(cellId);
+				cellBar.setLabel(label);
+				cellBar.setAsu(cellAsu);
 				break;
 			case ServiceState.STATE_OUT_OF_SERVICE:
-				label = getRes(R.string.msgNoSignal);
-				break;
+                cellBar.clearCid();
+                cellBar.setLabel(getRes(R.string.msgNoSignal));
+                cellBar.clearAsu();
+                break;
 			case ServiceState.STATE_POWER_OFF:
-				label = getRes(R.string.msgNoPower);
-				break;
+                cellBar.clearCid();
+                cellBar.setLabel(getRes(R.string.msgNoPower));
+                cellBar.clearAsu();
+                break;
+			default:
+                cellBar.clearCid();
+                cellBar.setLabel(getRes(R.string.msgNoData));
+                cellBar.clearAsu();
+                break;
 			}
 
-        	String[][] labStr = {
-        		{ id, label, value }
-        	};
-        	cellBar.setText(labStr);
         	getNeighbor();
 		}
 		
@@ -604,12 +613,13 @@ class CommView
 	 */
 	private void updateStatus() {
 		if (!wifiRunning)
-			wifiStatus.setText(0, 0, wifiPowerName);
+		    CharFormatter.formatString(wifiStatusBuffer[0][0], 0, wifiPowerName, -1);
 		else
-			wifiStatus.setText(0, 0, wifiConnState);
+	        CharFormatter.formatString(wifiStatusBuffer[0][0], 0, wifiConnState, -1);
 		getScanResults();
 	}
 
+	
 	private void getNeighbor() {
 		
 		synchronized (surfaceHolder) {
@@ -627,13 +637,10 @@ class CommView
 				BargraphElement bar = cellBars[w++];
 
 				final int asu = scan.getRssi()/2;
-				// the documentation mentions a different range of values than actually seen on a G1
-				final String value = (asu < 10 ? " " : "") + asu;
 
-				String[][] labStr = {
-						{ ""+scan.getCid(), "", value }
-				};
-				bar.setText(labStr);
+                bar.setCid(scan.getCid());
+                bar.setLabel("");
+                bar.setAsu(asu);
 
 				bar.setValue(asu);
 			}
@@ -666,13 +673,9 @@ class CommView
 				if (asu > strongest)
 					strongest = asu;
 
-				final String freq = format53(scan.frequency / 1000f);
-				final String value = (asu < 10 ? " " : "") + asu;
-
-				String[][] labStr = {
-						{ freq, scan.SSID, value }
-				};
-				bar.setText(labStr);
+                bar.setFreq(scan.frequency / 1000f);
+                bar.setLabel(scan.SSID);
+                bar.setAsu(asu);
 				bar.setDataColors(COLOUR_GRID,wifiConnection != null && 
 						scan.BSSID.equals(wifiConnection.getBSSID())?
 						COLOUR_PLOT:COLOUR_GRID);
@@ -690,24 +693,6 @@ class CommView
 	}
 	
 
-	/**
-	 * Format a float to a field width of 5, with 3
-	 * decimals.  MUCH faster than String.format.
-	 */
-	private static final String format53(float val) {
-		int before = (int) val;
-		int after = (int) ((val - before) * 1000);
-		
-		String b = "" + before;
-		String a = "" + after;
-		StringBuilder res = new StringBuilder(" .000");
-		int bs = 1 - b.length();
-		res.replace((bs < 0 ? 0 : bs), 1, b);
-		res.replace(5 - a.length(), 5, a);
-		return res.toString();
-	}
-
-	
 	// ******************************************************************** //
 	// View Drawing.
 	// ******************************************************************** //
@@ -825,7 +810,10 @@ class CommView
 	
 	// Text field for displaying the WiFi status.
 	private TextAtom wifiStatus;
-	
+
+    // Buffer where the WiFi status field contents are stored.
+    private char[][][] wifiStatusBuffer;
+
 	// The bargraphs for WiFi.  The number of these changes as we
 	// scan for WiFi signals.
 	private BargraphElement[] wifiBars;

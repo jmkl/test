@@ -40,19 +40,22 @@ class Num3DElement
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
-	 * @param	gridCol			Colour for the framing elements.
-	 * @param	plotCol			Colour for the data display.
+	 * @param	context		Parent application context.
+     * @param	sh			SurfaceHolder we're drawing in.
+	 * @param	gridCol		Colour for the framing elements.
+	 * @param	plotCol		Colour for the data display.
+     * @param   fields      Strings representing the columns to display.
+     *                      Each one should be a sample piece of text
+     *                      which will be measured to determine the
+     *                      required space for each column.
 	 */
 	public Num3DElement(Tricorder context, SurfaceHolder sh,
-						int gridCol, int plotCol)
+						int gridCol, int plotCol, String[] fields)
 	{
 		super(context, sh, gridCol, plotCol);
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, sh,
-    								     new String[] { "" });
+    	headerBar = new HeaderBarElement(context, sh, fields);
     	headerBar.setBarColor(gridCol);
     	
     	// Create the left-side bar.

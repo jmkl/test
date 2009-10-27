@@ -18,6 +18,8 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.utils.CharFormatter;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -55,6 +57,7 @@ class HeaderBarElement
 	 */
 	HeaderBarElement(Tricorder context, SurfaceHolder sh, String[] fields) {
 		super(context, sh, fields, 1);
+		fieldBuffers = getBuffer();
 		
 		init();
 	}
@@ -187,7 +190,19 @@ class HeaderBarElement
 		indicColourB = colour;
 	}
 
-	
+
+    /**
+     * Set a specific text value displayed in this view.
+     * 
+     * @param   row             Row of the field to change.
+     * @param   col             Column of the field to change.
+     * @param   text            The new text field value.
+     */
+    protected void setText(int row, int col, String text) {
+        CharFormatter.formatString(fieldBuffers[row][col], 0, text, -1);
+    }
+
+
 	// ******************************************************************** //
 	// View Drawing.
 	// ******************************************************************** //
@@ -271,6 +286,9 @@ class HeaderBarElement
 	private int indicColourT = 0xffff0000;
 	private boolean showIndicB = false;
 	private int indicColourB = 0xffff0000;
+    
+    // Buffers where the values of the fields will be stored.
+    private char[][][] fieldBuffers;
 
 }
 
