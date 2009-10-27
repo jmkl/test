@@ -68,13 +68,100 @@ public class CharFormatter
 	// ************************************************************************ //
 
     /**
+     * Fill a field of a given width with spaces.
+     * 
+     * @param   buf         Buffer to place the result in.
+     * @param   off         Offset within buf to start writing at.
+     * @param   field       Width of the field to blank.  -1 means use
+     *                      all available space.
+     * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
+     */
+    public static final void blank(char[] buf, int off, int field)
+    {
+        if (field < 0)
+            field = buf.length - off;
+        if (field < 0)
+            field = 0;
+        if (off + field > buf.length)
+            throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
+                                                     "] too small for " +
+                                                     off + "+" + field);
+        
+        for (int i = 0; i < field; ++i)
+            buf[off + i] = ' ';
+    }
+
+
+    /**
+     * Format a string left-aligned into a fixed-width field.  MUCH faster
+     * than String.format.
+     * 
+     * @param   buf         Buffer to place the result in.
+     * @param   off         Offset within buf to start writing at.
+     * @param   val         The value to format.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.
+     * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
+     */
+    public static final void formatString(char[] buf, int off, String val,
+                                          int field)
+    {
+        formatString(buf, off, val, field, false);
+    }
+
+
+    /**
+     * Format a string into a fixed-width field.  MUCH faster
+     * than String.format.
+     * 
+     * @param   buf         Buffer to place the result in.
+     * @param   off         Offset within buf to start writing at.
+     * @param   val         The value to format.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.
+     * @param   right       Iff true, format the text right-aligned; else
+     *                      left-aligned.
+     * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
+     */
+    public static final void formatString(char[] buf, int off, String val,
+                                          int field, boolean right)
+    {
+        if (field < 0)
+            field = buf.length - off;
+        if (field < 0)
+            field = 0;
+        if (off + field > buf.length)
+            throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
+                                                     "] too small for " +
+                                                     off + "+" + field);
+        if (val == null || val.length() == 0) {
+            blank(buf, off, field);
+            return;
+        }
+        
+        int strlen = val.length();
+        int len = val.length() < field ? val.length() : field;
+        int pad = field - len;
+        if (!right)
+            val.getChars(0, len, buf, off);
+        else
+            val.getChars(strlen - len, strlen, buf, off + pad);
+        
+        int pads = !right ? off + len : off;
+        for (int i = 0; i < pad; ++i)
+            buf[pads + i] = ' ';
+    }
+
+
+    /**
      * Format an integer into a fixed-width field.  MUCH faster
      * than String.format.
      * 
      * @param   buf         Buffer to place the result in.
      * @param   off         Offset within buf to start writing at.
      * @param   val         The value to format.
-     * @param   field       Width of the field to format in.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.
      * @param   signed      Iff true, add a sign character, space for
      *                      positive, '-' for negative.  This takes
      *                      up one place in the given field width.
@@ -87,6 +174,10 @@ public class CharFormatter
                                        int field, boolean signed)
         throws OverflowException
     {
+        if (field < 0)
+            field = buf.length - off;
+        if (field < 0)
+            field = 0;
         if (off + field > buf.length)
             throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
                                                      "] too small for " +
@@ -102,13 +193,37 @@ public class CharFormatter
 
 
     /**
+     * Format a floating-point value into a fixed-width field, with sign.
+     * MUCH faster than String.format.
+     * 
+     * @param   buf         Buffer to place the result in.
+     * @param   off         Offset within buf to start writing at.
+     * @param   val         The value to format.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.
+     * @param   frac        Number of digits after the decimal.
+     * @throws  OverflowException  Value too large for field.
+     * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
+     * @throws  IllegalArgumentException        Negative value given and
+     *                                          signed == false.
+     */
+    public static final void formatFloat(char[] buf, int off, double val,
+                                         int field, int frac)
+        throws OverflowException
+    {
+        formatFloat(buf, off, val, field, frac, true);
+    }
+
+
+    /**
      * Format a floating-point value into a fixed-width field.  MUCH faster
      * than String.format.
      * 
      * @param   buf         Buffer to place the result in.
      * @param   off         Offset within buf to start writing at.
      * @param   val         The value to format.
-     * @param   field       Width of the field to format in.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.
      * @param   frac        Number of digits after the decimal.
      * @param   signed      Iff true, add a sign character, space for
      *                      positive, '-' for negative.  This takes
@@ -122,6 +237,10 @@ public class CharFormatter
                                          int field, int frac, boolean signed)
         throws OverflowException
     {
+        if (field < 0)
+            field = buf.length - off;
+        if (field < 0)
+            field = 0;
         if (off + field > buf.length)
             throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
                                                      "] too small for " +
@@ -150,7 +269,8 @@ public class CharFormatter
      * @param   buf         Buffer to place the result in.
      * @param   off         Offset within buf to start writing at.
      * @param   val         The value to format.  Must not be negative.
-     * @param   field       Width of the field to format in.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.
      * @param   schar       Iff not zero, add this sign character.  This takes
      *                      up one place in the given field width.
      * @param   leadZero    Iff true, pad on the left with leading zeros

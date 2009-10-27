@@ -44,6 +44,31 @@ public class FormatterTests
         buf = new char[40];
     }
 
+    private void run(int off, String val, int field, String expect) {
+        String res = null;
+        try {
+            CharFormatter.formatString(buf, off, val, field);
+            res = new String(buf, off, field);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            res = "!OOB!";
+        } catch (IllegalArgumentException e) {
+            res = "!ILL!";
+        }
+        assertEquals(expect, res);
+    }
+
+    private void run(int off, String val, int field, boolean right, String expect) {
+        String res = null;
+        try {
+            CharFormatter.formatString(buf, off, val, field, right);
+            res = new String(buf, off, field);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            res = "!OOB!";
+        } catch (IllegalArgumentException e) {
+            res = "!ILL!";
+        }
+        assertEquals(expect, res);
+    }
 
     private void run(int off, int val, int field, boolean signed, String expect) {
         String res = null;
@@ -79,6 +104,24 @@ public class FormatterTests
     // ******************************************************************** //
     // Integer Tests.
     // ******************************************************************** //
+
+    public void testStringLeftFix() {
+        run(13, null,    7, "       ");
+        run(13, "",      7, "       ");
+        run(13, "ABCDE", 7, "ABCDE  ");
+        run(13, "ABCDE", 7, false, "ABCDE  ");
+        run(13, "ABCDE", 3, "ABC");
+        run(13, "ABCDE", 3, false, "ABC");
+    }
+    
+
+    public void testStringRightFix() {
+        run(13, null,    7, true, "       ");
+        run(13, "",      7, true, "       ");
+        run(13, "ABCDE", 7, true, "  ABCDE");
+        run(13, "ABCDE", 3, true, "CDE");
+    }
+    
 
     public void testPosIntUns() {
         run(13, 173, 7, false, "    173");
