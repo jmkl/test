@@ -172,11 +172,8 @@ class BargraphElement
      * @param   cid             The new cell ID value.
      */
     protected void setCid(int cid) {
-        try {
-            CharFormatter.formatInt(fieldBuffers[0][0], 0, cid, 9, false);
-        } catch (OverflowException e) {
-            Log.e(TAG, "CID field too small");
-        }
+        // We really want this left-aligned, so we'll do it as a string.
+        CharFormatter.formatString(fieldBuffers[0][0], 0, "" + cid, 9);
     }
 
 
@@ -187,14 +184,24 @@ class BargraphElement
         CharFormatter.blank(fieldBuffers[0][0], 0, -1);
     }
 
-    
+
+    /**
+     * Set the displayed flag.
+     * 
+     * @param   flag            The new flag.
+     */
+    protected void setFlag(char flag) {
+        fieldBuffers[0][1][0] = flag;
+    }
+
+
     /**
      * Set the displayed label.
      * 
      * @param   text            The new label.
      */
     protected void setLabel(String text) {
-        CharFormatter.formatString(fieldBuffers[0][1], 0, text, -1);
+        CharFormatter.formatString(fieldBuffers[0][2], 0, text, -1);
     }
 
 
@@ -205,7 +212,7 @@ class BargraphElement
      */
     protected void setAsu(int asu) {
         try {
-            CharFormatter.formatInt(fieldBuffers[0][2], 0, asu, 2, false);
+            CharFormatter.formatInt(fieldBuffers[0][3], 0, asu, 2, false);
         } catch (OverflowException e) {
             Log.e(TAG, "ASU field too small");
         }
@@ -216,7 +223,7 @@ class BargraphElement
      * Clear the displayed ASU value.
      */
     protected void clearAsu() {
-        CharFormatter.blank(fieldBuffers[0][2], 0, -1);
+        CharFormatter.blank(fieldBuffers[0][3], 0, -1);
     }
 
     

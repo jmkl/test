@@ -43,6 +43,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 
@@ -106,7 +107,7 @@ class CommView
 		//     - ASU=31 means "-51 dBm or greater"
 		//     Current signal strength in dBm ranges from -113 - -51dBm
 		// We'll assume an ASU range from 0 to 31.
-		String[] ctext = { "000000000", "T - Mobile X", "00" };
+		String[] ctext = { "000000000", "#", "T - Mobile X", "00" };
 		cellBar = new BargraphElement(context, sh, 5f, 6.2f,
 									  COLOUR_GRID, COLOUR_PLOT, ctext, 1);
         cellBar.clearCid();
@@ -124,7 +125,7 @@ class CommView
 		// Create the list of WiFi bargraphs, displaying ASU.  We'll assume
 		// a WiFi ASU range from 0 to 41.
 		wifiBars = new BargraphElement[MAX_WIFI];
-		String[] wtext = { "2.456", "aw19.alamedawireless.o", "00" };
+		String[] wtext = { "2.456", "#", "aw19.alamedawireless.o", "00" };
 		for (int w = 0; w < MAX_WIFI; ++w) {
 			wifiBars[w] = new BargraphElement(context, sh, 5f, 8.2f,
 											  COLOUR_GRID, COLOUR_PLOT,
@@ -673,7 +674,20 @@ class CommView
 				if (asu > strongest)
 					strongest = asu;
 
-                bar.setFreq(scan.frequency / 1000f);
+				// Decode the encryption mode, and represent it as a char.
+				String crypt = scan.capabilities;
+				char mode = ' ';
+				if (crypt == null || crypt.length() == 0)
+				    ;
+				else if (crypt.startsWith("[WEP"))
+				    mode = '!';
+				else if (crypt.startsWith("[WPA"))
+				    mode = '#';
+				else
+				    mode = '?';
+
+                bar.setFlag(mode);
+				bar.setFreq(scan.frequency / 1000f);
                 bar.setLabel(scan.SSID);
                 bar.setAsu(asu);
 				bar.setDataColors(COLOUR_GRID,wifiConnection != null && 
@@ -681,6 +695,7 @@ class CommView
 						COLOUR_PLOT:COLOUR_GRID);
 
 				bar.setValue(asu);
+				Log.i(TAG, "Net: " + scan.SSID + ": " + scan.capabilities);
 			}
 		}
 
