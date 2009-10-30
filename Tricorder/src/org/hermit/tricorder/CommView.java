@@ -43,7 +43,6 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 
@@ -679,8 +678,10 @@ class CommView
 				char mode = ' ';
 				if (crypt == null || crypt.length() == 0)
 				    ;
+                else if (crypt.startsWith("[IBSS"))
+                    mode = '!';
 				else if (crypt.startsWith("[WEP"))
-				    mode = '!';
+				    mode = '*';
 				else if (crypt.startsWith("[WPA"))
 				    mode = '#';
 				else
@@ -695,7 +696,6 @@ class CommView
 						COLOUR_PLOT:COLOUR_GRID);
 
 				bar.setValue(asu);
-				Log.i(TAG, "Net: " + scan.SSID + ": " + scan.capabilities);
 			}
 		}
 
