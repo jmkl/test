@@ -20,6 +20,7 @@ package org.hermit.tricorder;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.FloatMath;
 import android.view.SurfaceHolder;
@@ -75,12 +76,36 @@ class SkyMapAtom
 		crossX = bounds.left + width / 2;
 		crossY = bounds.top + height / 2;
 		mapRadius = mindim / 2 - MARGIN;
+		
+		// Create the path that draws the grid.
+        gridPath = new Path();
+        gridPath.moveTo(crossX - mapRadius, crossY);
+        gridPath.lineTo(crossX + mapRadius, crossY);
+        gridPath.moveTo(crossX, crossY - mapRadius);
+        gridPath.lineTo(crossX, crossY + mapRadius);
+        gridPath.addCircle(crossX, crossY, mapRadius * 1f / 3f, Path.Direction.CW);
+        gridPath.addCircle(crossX, crossY, mapRadius * 2f / 3f, Path.Direction.CW);
+        gridPath.addCircle(crossX, crossY, mapRadius * 3f / 3f, Path.Direction.CW);
+        gridPath.moveTo(crossX, crossY - mapRadius);
+        gridPath.lineTo(crossX - 5, crossY - mapRadius + 16);
+        gridPath.lineTo(crossX + 5, crossY - mapRadius + 16);
+        gridPath.close();
 	}
 
 
 	// ******************************************************************** //
 	// Data Management.
 	// ******************************************************************** //
+
+    /**
+     * Set the azimuth of the device.
+     * 
+     * @param   azimuth            The new azimuth.
+     */
+    public void setAzimuth(float azimuth) {
+        currentAzimuth = azimuth;
+    }
+
 
     /**
      * Set the given satellite status data.
@@ -103,7 +128,7 @@ class SkyMapAtom
 	// ******************************************************************** //
 	// View Drawing.
 	// ******************************************************************** //
-
+	
 	/**
 	 * Do the subclass-specific parts of drawing for this element.
 	 * 
@@ -113,20 +138,28 @@ class SkyMapAtom
 	 * @param	paint		The Paint which was set up in initializePaint().
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {		
+	protected void drawBody(Canvas canvas, Paint paint) {
+	    // Rotate to the azimuth to draw the grid.
+	    canvas.save();
+	    canvas.rotate(-currentAzimuth, crossX, crossY);
+	    
 		// Draw our axes.
         paint.setColor(gridColour);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(GRID_WIDTH);
-		canvas.drawLine(crossX - mapRadius - MARGIN, crossY,
-						crossX + mapRadius + MARGIN, crossY, paint);
-		canvas.drawLine(crossX, crossY - mapRadius - MARGIN,
-						crossX, crossY + mapRadius + MARGIN, paint);
+        canvas.drawPath(gridPath, paint);
+       
+        paint.setStrokeWidth(0);
+        paint.setTextSize(appContext.getTinyTextSize());
+        float lw = paint.measureText("N");
+        canvas.drawText("N", crossX - lw / 2, crossY - mapRadius - 2, paint);
+        canvas.drawText("S", crossX - lw / 2, crossY + mapRadius + 15, paint);
+        canvas.drawText("E", crossX + mapRadius + 2, crossY + 6, paint);
+        canvas.drawText("W", crossX - mapRadius - 2 - lw, crossY + 6, paint);
 
-		// Draw the range circles.
-        canvas.drawCircle(crossX, crossY, mapRadius * 1f / 3f, paint);
-        canvas.drawCircle(crossX, crossY, mapRadius * 2f / 3f, paint);
-        canvas.drawCircle(crossX, crossY, mapRadius * 3f / 3f, paint);
+        // Done with rotating.  We'll manually rotate the positions of
+        // the satellites, but their text labels will be upright.
+        canvas.restore();
 
 		// Draw the data values if we have them.
 		// REMEMBER THE SCREEN Y-AXIS is NEGATIVE UP.
@@ -134,7 +167,7 @@ class SkyMapAtom
 		    return;
 
 		paint.setStyle(Paint.Style.FILL_AND_STROKE);
-		paint.setStrokeWidth(GRID_WIDTH);
+		paint.setStrokeWidth(0);
 		paint.setTextSize(appContext.getTinyTextSize());
 
 		for (int prn = 0; prn < currentValues.length; ++prn) {
@@ -143,7 +176,7 @@ class SkyMapAtom
                 continue;
 
             // Convert the sat's polar co-ordinates to cartesian.
-		    float azimuth = (float) Math.toRadians(ginfo.azimuth);
+		    float azimuth = (float) Math.toRadians(ginfo.azimuth - currentAzimuth);
 		    if (azimuth > Math.PI)
 		        azimuth  = azimuth - TWOPI;
 		    final float elev = (float) Math.toRadians(ginfo.elev);
@@ -156,11 +189,7 @@ class SkyMapAtom
             paint.setColor(ginfo.colour);
 		    canvas.drawCircle(crossX + y, crossY - x, SAT_RADIUS, paint);
 		    
-	        paint.setStrokeWidth(0);
 		    canvas.drawText("" + prn, crossX + y + 3, crossY - x, paint);
-//		    if (prn % 7 == 0)
-//		    Log.v(TAG, "S" + prn + ": az=" + ginfo.azimuth + " el=" + ginfo.elev +
-//		                        " x=" + x + " y=" + y);
 		}
 	}
 
@@ -178,7 +207,7 @@ class SkyMapAtom
     private static final float TWOPI = (float) (Math.PI * 2f);
 
 	// Margin around the diagram.
-	private static final int MARGIN = 8;
+	private static final int MARGIN = 16;
 
     // Thickness of the grid lines.
     private static final float GRID_WIDTH = 1.5f;
@@ -190,6 +219,12 @@ class SkyMapAtom
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
+
+    // Path used to draw the grid.
+    private Path gridPath = null;
+
+    // The current device azimuth.  Used to rotate the display.
+    private float currentAzimuth = 0f;
 
 	// The current X, Y and Z values, and their absolute magnitude.
 	private GeoView.GpsInfo[] currentValues = null;

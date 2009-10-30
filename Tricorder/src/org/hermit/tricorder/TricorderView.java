@@ -133,7 +133,7 @@ class TricorderView
     	    	vdef.view = new MultiGraphView(context, sh, sm);
     	        break;
     		case GEO:
-    	    	vdef.view = new GeoView(context, sh);
+    	    	vdef.view = new GeoView(context, sh, sm);
     	        break;
     		case COM:
     	    	vdef.view = new CommView(context, sh);

@@ -24,6 +24,11 @@ import org.hermit.tricorder.Tricorder.Sound;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.hardware.GeomagneticField;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.GpsSatellite;
 import android.location.Location;
 import android.location.LocationListener;
@@ -41,7 +46,7 @@ import android.view.SurfaceHolder;
  */
 class GeoView
 	extends DataView
-	implements LocationListener, GpsStatus.Listener
+	implements LocationListener, GpsStatus.Listener, SensorEventListener
 {
 
     // ******************************************************************** //
@@ -84,13 +89,15 @@ class GeoView
 	 * 
 	 * @param	context			Parent application context.
      * @param	sh				SurfaceHolder we're drawing in.
+     * @param   sman            The SensorManager to get data from.
 	 */
-	public GeoView(Tricorder context, SurfaceHolder sh) {
+	public GeoView(Tricorder context, SurfaceHolder sh, SensorManager sman) {
 		super(context, sh);
 		
 		appContext = context;
 		surfaceHolder = sh;
-		
+		sensorManager = sman;
+
 		// Set up the satellite data cache.
 		satCache = new GpsInfo[NUM_SATS];
 		for (int i = 0; i < NUM_SATS; ++i) {
@@ -227,6 +234,18 @@ class GeoView
         			onLocationChanged(prime);
         	}
         }
+        
+        // Get orientation updates.
+        registerSensor(Sensor.TYPE_ACCELEROMETER);
+        registerSensor(Sensor.TYPE_MAGNETIC_FIELD);
+	}
+	
+	
+	private final void registerSensor(int type) {
+        Sensor sensor = sensorManager.getDefaultSensor(type);
+        if (sensor != null)
+            sensorManager.registerListener(this, sensor,
+                                           SensorManager.SENSOR_DELAY_NORMAL);
 	}
 	
 	
@@ -267,9 +286,15 @@ class GeoView
 			if (prov != null)
 				locationManager.removeUpdates(this);
 		}
+		
+        sensorManager.unregisterListener(this);
 	}
 	
-	
+
+    // ******************************************************************** //
+    // Location Management.
+    // ******************************************************************** //
+
 	/**
 	 * Called when the location has changed.  There are no restrictions
 	 * on the use of the supplied Location object.
@@ -278,14 +303,17 @@ class GeoView
 	 */
 	public void onLocationChanged(Location loc) {
 		synchronized (surfaceHolder) {
-			if (loc.getProvider().equals(LocationManager.NETWORK_PROVIDER))
-				netElement.setValue(loc);
-			else if (loc.getProvider().equals(LocationManager.GPS_PROVIDER))
+			if (loc.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+			    netLocation = loc;
+                netElement.setValue(loc);
+			} else if (loc.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+			    gpsLocation = loc;
 				gpsElement.setValue(loc);
+			}
 		}
 	}
-	 
-	
+
+
 	/**
 	 * Called when the provider is disabled by the user.
 	 * If requestLocationUpdates is called on an already disabled provider,
@@ -324,7 +352,7 @@ class GeoView
 			}
 		}
 	}
-	  
+
 
 	/**
 	 * Called when the provider status changes.  This method is called
@@ -441,6 +469,95 @@ class GeoView
 
 
     // ******************************************************************** //
+    // Geomagnetic Data Management.
+    // ******************************************************************** //
+
+    /**
+     * Check the geomagnetic field, if the information we have isn't
+     * up to date.
+     */
+    private void checkGeomag() {
+        // See if we have valid data.
+        long now = System.currentTimeMillis();
+        if (geomagneticField != null && now - geomagneticTime < GEOMAG_CACHE_TIME)
+            return;
+        
+        // Get our best location.  If we don't have one, can't do nothing.
+        final Location loc = gpsLocation != null ? gpsLocation : netLocation;
+        if (loc == null)
+            return;
+
+        // Get the geomag data. 
+        geomagneticField = new GeomagneticField((float) loc.getLatitude(),
+                                                (float) loc.getLongitude(),
+                                                (float) loc.getAltitude(), now);    
+        geomagneticTime = now;
+    }
+  
+
+    // ******************************************************************** //
+    // Sensor Management.
+    // ******************************************************************** //
+
+    /**
+     * Called when the accuracy of a sensor has changed.
+     * 
+     * @param   sensor          The sensor being monitored.
+     * @param   accuracy        The new accuracy of this sensor.
+     */
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // Don't need anything here.
+    }
+
+
+    /**
+     * Called when sensor values have changed.
+     *
+     * @param   event           The sensor event.
+     */
+    public void onSensorChanged(SensorEvent event) {
+        final float[] values = event.values;
+        if (values.length < 3)
+            return;
+        
+        int type = event.sensor.getType();
+        if (type == Sensor.TYPE_ACCELEROMETER) {
+            if (accelValues == null)
+                accelValues = new float[3];
+            accelValues[0] = values[0];
+            accelValues[1] = values[1];
+            accelValues[2] = values[2];
+        } else if (type == Sensor.TYPE_MAGNETIC_FIELD) {
+            if (magValues == null)
+                magValues = new float[3];
+            magValues[0] = values[0];
+            magValues[1] = values[1];
+            magValues[2] = values[2];
+        }
+        checkGeomag();
+        if (accelValues == null || magValues == null || geomagneticField == null)
+            return;
+
+        // Get the device rotation matrix.
+        float[] rotate = new float[9];
+        boolean ok = SensorManager.getRotationMatrix(rotate, null, accelValues, magValues);
+        if (!ok)
+            return;
+
+        // Compute the device's orientation based on the rotation matrix.
+        final float[] orient = new float[3];
+        SensorManager.getOrientation(rotate, orient);
+        final float azimuth = (float) Math.toDegrees(orient[0]);
+
+        // Get the azimuth of device Y from magnetic north.  Compensate for
+        // magnetic declination.
+        final float dec = geomagneticField.getDeclination();
+        satElement.setAzimuth(azimuth + dec);
+        Log.v(TAG, "O: " + azimuth + " Dec: " + dec);
+    }
+
+
+    // ******************************************************************** //
     // Input.
     // ******************************************************************** //
 
@@ -517,6 +634,9 @@ class GeoView
 
     // Time in ms for which cached satellite data is valid.
     private static final int DATA_CACHE_TIME = 10 * 1000;
+
+    // Time in ms for which cached geomagnetic data is valid.
+    private static final int GEOMAG_CACHE_TIME = 2 * 3600 * 1000;
     
 	
 	// ******************************************************************** //
@@ -528,6 +648,9 @@ class GeoView
 	
 	// The surface we're drawing on.
 	private SurfaceHolder surfaceHolder;
+
+    // The sensor manager, which we use to interface to all sensors.
+    private SensorManager sensorManager;
 
     // The location manager, from which we get location updates.
     private LocationManager locationManager;
@@ -546,6 +669,19 @@ class GeoView
 	
 	// Cached satellite info.
 	private GpsInfo[] satCache;
+
+    // The most recent network and GPS locations.
+    private Location netLocation = null;
+    private Location gpsLocation = null;
+
+    // Current geomagnetic data, and the time at which it was fetched.
+    // null if it hasn't been got yet.
+    private GeomagneticField geomagneticField = null;
+    private long geomagneticTime = 0;
+    
+    // The most recent accelerometer and compass data.
+    private float[] accelValues = null;
+    private float[] magValues = null;
 
 }
 

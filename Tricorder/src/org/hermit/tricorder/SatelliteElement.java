@@ -158,6 +158,16 @@ class SatelliteElement
 	}
 
 
+    /**
+     * Set the azimuth of the device.
+     * 
+     * @param   azimuth            The new azimuth.
+     */
+    public void setAzimuth(float azimuth) {
+        skyMap.setAzimuth(azimuth);
+    }
+
+
 	/**
 	 * Set the given satellite status data.
 	 * 
