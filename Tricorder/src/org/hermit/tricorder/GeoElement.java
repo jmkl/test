@@ -57,7 +57,7 @@ class GeoElement
 			getRes(R.string.title_network), "xx", "999 days 23h",
 		};
 		final String[] bFields = {
-			"W122° 59.999'", getRes(R.string.lab_alt), "9999.9m",
+			"W122° 59.999'", getRes(R.string.lab_alt), "-9999.9m",
 		};
 		final String[] cFields = {
 			getRes(R.string.lab_head), "999°", "xx",
@@ -107,8 +107,9 @@ class GeoElement
 									   bounds.right, y + headHeight));
 		y += headHeight + appContext.getInnerGap();
 
-		int bar = appContext.getSidebarWidth();
-		int ex = bounds.right - bar - INT_PADDING;
+        int bar = appContext.getSidebarWidth();
+        int pad = appContext.getInterPadding();
+		int ex = bounds.right - bar - pad;
 
 		// Position the right bar, except we don't know the height yet.
 		// So just make most of a Rect.
@@ -141,12 +142,13 @@ class GeoElement
     @Override
     int getPreferredWidth() {
         int bar = appContext.getSidebarWidth();
+        int pad = appContext.getInterPadding();
         int w = headerBar.getPreferredWidth();
-        int p = posFields.getPreferredWidth() + bar + INT_PADDING;
+        int p = posFields.getPreferredWidth() + bar + pad;
         if (p > w)
             w = p;
         if (courseFields != null) {
-            int c = courseFields.getPreferredWidth() + bar + INT_PADDING;
+            int c = courseFields.getPreferredWidth() + bar + pad;
             if (c > w)
                 w = c;
         }
@@ -301,36 +303,36 @@ class GeoElement
 			return;
 
 		try {
-		CharFormatter.formatDegMin(pos[0][0], 0, l.getLatitude(), 'N', 'S', false);
-        CharFormatter.formatDegMin(pos[1][0], 0, l.getLongitude(), 'E', 'W', false);
+		    CharFormatter.formatDegMin(pos[0][0], 0, l.getLatitude(), 'N', 'S', false);
+		    CharFormatter.formatDegMin(pos[1][0], 0, l.getLongitude(), 'E', 'W', false);
 
-		if (l.hasAltitude()) {
-		    CharFormatter.formatString(pos[0][1], 0, getRes(R.string.lab_alt), -1);
-		    CharFormatter.formatFloat(pos[0][2], 0, l.getAltitude(), 6, 1);
-		    pos[0][2][6] = 'm';
-        } else {
-            CharFormatter.blank(pos[0][1], 0, -1);
-            CharFormatter.blank(pos[0][2], 0, -1);
-		}
-        CharFormatter.formatString(pos[1][1], 0, getRes(R.string.lab_acc), -1);
-        CharFormatter.formatFloat(pos[1][2], 0, l.getAccuracy(), 6, 1);
-        pos[1][2][6] = 'm';
-			
-		if (course != null) {
-	        CharFormatter.formatString(course[0][0], 0, getRes(R.string.lab_head), -1);
-			if (l.hasBearing()) {
-	            CharFormatter.formatInt(course[0][1], 0, (int) l.getBearing(), 3, true);
-	            course[0][1][3] = '°';
-			} else
-	            CharFormatter.blank(course[0][1], 0, -1);
-            CharFormatter.blank(course[0][2], 0, -1);
-            CharFormatter.formatString(course[0][3], 0, getRes(R.string.lab_speed), -1);
-			if (l.hasSpeed()) {
-			    CharFormatter.formatFloat(course[0][4], 0, l.getSpeed(), 5, 1);
-			    CharFormatter.formatString(course[0][4], 5, "m/s", -1);
-			} else
-			    CharFormatter.blank(course[0][4], 0, -1);
-		}
+		    if (l.hasAltitude()) {
+		        CharFormatter.formatString(pos[0][1], 0, getRes(R.string.lab_alt), -1);
+		        CharFormatter.formatFloat(pos[0][2], 0, l.getAltitude(), 7, 1, true);
+		        pos[0][2][7] = 'm';
+		    } else {
+		        CharFormatter.blank(pos[0][1], 0, -1);
+		        CharFormatter.blank(pos[0][2], 0, -1);
+		    }
+		    CharFormatter.formatString(pos[1][1], 0, getRes(R.string.lab_acc), -1);
+		    CharFormatter.formatFloat(pos[1][2], 0, l.getAccuracy(), 7, 1, false);
+		    pos[1][2][7] = 'm';
+
+		    if (course != null) {
+		        CharFormatter.formatString(course[0][0], 0, getRes(R.string.lab_head), -1);
+		        if (l.hasBearing()) {
+		            CharFormatter.formatInt(course[0][1], 0, (int) l.getBearing(), 3, true);
+		            course[0][1][3] = '°';
+		        } else
+		            CharFormatter.blank(course[0][1], 0, -1);
+		        CharFormatter.blank(course[0][2], 0, -1);
+		        CharFormatter.formatString(course[0][3], 0, getRes(R.string.lab_speed), -1);
+		        if (l.hasSpeed()) {
+		            CharFormatter.formatFloat(course[0][4], 0, l.getSpeed(), 5, 1, false);
+		            CharFormatter.formatString(course[0][4], 5, "m/s", -1);
+		        } else
+		            CharFormatter.blank(course[0][4], 0, -1);
+		    }
 		} catch (OverflowException e) {
 		    Log.e(TAG, "Error formatting location: " + e.getMessage());
 		}
@@ -396,9 +398,6 @@ class GeoElement
     // Debugging tag.
 	private static final String TAG = "tricorder";
 	
-	// Padding between separate sections.
-	private static final int INT_PADDING = 8;
-
 	// Colour for data which is officially stale; i.e. cached from a
 	// previous run.
 	private static final int COL_OLD_DATA = 0xffff0000;

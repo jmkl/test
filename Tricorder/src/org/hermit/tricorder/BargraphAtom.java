@@ -108,17 +108,22 @@ class BargraphAtom
 		barBaseY = bounds.top;
 		barEndX = bounds.right;
 		barEndY = bounds.bottom;
+		int margin = BAR_MARGIN;
 		
 		switch (orientation) {
 		case LEFT:
 		case RIGHT:
-			barBaseY += BAR_MARGIN;
-			barEndY -= BAR_MARGIN;
+		    if (barEndY - barBaseY < 10)
+		        --margin;
+			barBaseY += margin;
+			barEndY -= margin;
 			break;
 		case TOP:
 		case BOTTOM:
-			barBaseX += BAR_MARGIN;
-			barEndX -= BAR_MARGIN;
+            if (barEndX - barBaseX < 10)
+                --margin;
+			barBaseX += margin;
+			barEndX -= margin;
 			break;
 		}
 	}
@@ -132,7 +137,7 @@ class BargraphAtom
 	 */
 	@Override
 	int getPreferredWidth() {
-		return vertical ? DEF_PLOT_WIDTH : 0;
+		return DEF_PLOT_WIDTH;
 	}
 	
 	
@@ -144,7 +149,7 @@ class BargraphAtom
 	 */
 	@Override
 	int getPreferredHeight() {
-		return vertical ? 0 : DEF_PLOT_WIDTH;
+		return DEF_PLOT_WIDTH;
 	}
 	
 
@@ -229,8 +234,8 @@ class BargraphAtom
 								bounds.left, bounds.bottom, paint);
 				canvas.drawLine(bounds.right - 1, bounds.top,
 								bounds.right - 1, bounds.bottom, paint);
-				canvas.drawLine(bounds.left, bounds.bottom - off,
-								bounds.right, bounds.bottom - off, paint);
+				canvas.drawLine(bounds.left, bounds.bottom - off - 1,
+								bounds.right, bounds.bottom - off - 1, paint);
 				break;
 			}
 		}

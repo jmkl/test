@@ -48,17 +48,21 @@ class SatelliteElement
 		super(context, sh, headBgCol, headTextCol);
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, sh, new String[] { "", "" });
+        final String[] hFields = {  getRes(R.string.title_sats), "99",  };
+    	headerBar = new HeaderBarElement(context, sh, hFields);
     	headerBar.setBarColor(headBgCol);
         headerBar.setTextColor(headTextCol);
+        headerBar.setText(0, 0, hFields[0]);
         
         // Create the sky diagram.
         skyMap = new SkyMapAtom(context, sh, COLOUR_GRID, 0xffff0000);
         
         // Create the list of GPS bargraphs, displaying ASU.  We'll assume
-        // a WiFi ASU range from 0 to 41.
-        gpsBars = new MiniBarElement[GeoView.NUM_SATS];
-        for (int g = 0; g < GeoView.NUM_SATS; ++g) {
+        // a WiFi ASU range from 0 to 41.  Since satellite numbers are
+        // in the range 1-NUM_SATS, we'll allocate NUM_SATS + 1 so we
+        // can index directly.
+        gpsBars = new MiniBarElement[GeoView.NUM_SATS + 1];
+        for (int g = 1; g <= GeoView.NUM_SATS; ++g) {
             gpsBars[g] = new MiniBarElement(context, sh, 5f, 8.2f,
                                             headBgCol, headTextCol,
                                             "00");
@@ -106,23 +110,24 @@ class SatelliteElement
         
         // Position the sky map.
         skyMap.setGeometry(new Rect(sx, y, ex, bounds.bottom));
-        
-        // Divide the remaining space in three.
-        int bh = gpsBars[0].getPreferredHeight();
-        int colWidth = (ex - sx - pad * 2) / 3;
-        int sc = sx;
-        int ec = sc + colWidth;
-        int cy = y;
-        
+
+        // Calculate the bar widths.  Space them out as nicely as we can.
+        int tw = ex - sx;
+        int bw = tw / 16;
+        sx += (tw - (bw * 16)) / 2;
+
+        // Bar height is easy.  Allow for some padding between rows.
+        int bh = (bounds.bottom - y - pad * 1) / 2;
+
         // Place all the GPS signal bars.
-        for (int b = 0; b < gpsBars.length; ++b) {
-            if (b > 0 && b % 11 == 0) {
-                sc += colWidth + pad;
-                ec = sc + colWidth;
-                cy = y;
+        for (int r = 0; r < 2; ++r) {
+            int x = sx;
+            for (int c = 0; c < 16; ++c) {
+                int b = r * 16 + c + 1;
+                gpsBars[b].setGeometry(new Rect(x, y, x + bw, y + bh));
+                x += bw;
             }
-            gpsBars[b].setGeometry(new Rect(sc, cy, ec, cy + bh));
-            cy += bh + appContext.getInnerGap();
+            y += bh + pad;
         }
 	}
 
@@ -172,13 +177,17 @@ class SatelliteElement
 	 * Set the given satellite status data.
 	 * 
 	 * @param	sats			The new satellite data.
+     * @param   num             Number of sats for which we have info.
 	 */
-	public void setValues(GeoView.GpsInfo[] sats) {
+	public void setValues(GeoView.GpsInfo[] sats, int num) {
+	    // Set the sat count in the header.
+        headerBar.setText(0, 1, num);
+
 	    // Set the sky map.
 	    skyMap.setValues(sats);
 	    
 	    // Set all the signal bars.
-        for (int prn = 0; prn < sats.length && prn < gpsBars.length; ++prn) {
+        for (int prn = 1; prn < sats.length && prn <= GeoView.NUM_SATS; ++prn) {
             GeoView.GpsInfo ginfo = sats[prn];
             MiniBarElement bar = gpsBars[prn];
             if (ginfo.time == 0) {
@@ -197,7 +206,7 @@ class SatelliteElement
 	 * Clear the satellite status data; i.e. go back to a "no data" state.
 	 */
 	public void clearValues() {
-        for (int prn = 0; prn < gpsBars.length; ++prn) {
+        for (int prn = 1; prn <= GeoView.NUM_SATS; ++prn) {
             MiniBarElement bar = gpsBars[prn];
             bar.setLabel("");
             bar.clearValue();
@@ -226,7 +235,7 @@ class SatelliteElement
 		if (!barsMode) {
 		    skyMap.draw(canvas, now);
 		} else {
-		    for (int g = 0; g < gpsBars.length; ++g)
+		    for (int g = 1; g <= GeoView.NUM_SATS; ++g)
 		        gpsBars[g].draw(canvas, now);
 		}
         
@@ -260,7 +269,9 @@ class SatelliteElement
 	// Sky diagram displaying satellite locations.
     private SkyMapAtom skyMap;
 
-    // Bargraph displays for GPS signals.
+    // Bargraph displays for GPS signals.  Since satellite numbers are
+    // in the range 1-NUM_SATS, we'll allocate NUM_SATS + 1 so we
+    // can index directly.
     private MiniBarElement[] gpsBars;
 	
     // Side bar element.

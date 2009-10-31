@@ -54,7 +54,9 @@ class GeoView
     // ******************************************************************** //
 
     /**
-     * Number of GPS satellites we can handle.
+     * Number of GPS satellites we can handle.  Satellites are numbered 1-32;
+     * this is the "PRN number", i.e. a number which identifies the
+     * satellite's PRN, which is a 1023-bit number.
      */
     static final int NUM_SATS = 32;
     
@@ -98,11 +100,12 @@ class GeoView
 		surfaceHolder = sh;
 		sensorManager = sman;
 
-		// Set up the satellite data cache.
-		satCache = new GpsInfo[NUM_SATS];
-		for (int i = 0; i < NUM_SATS; ++i) {
+		// Set up the satellite data cache.  For simplicity, we allocate
+		// NUM_SATS + 1 so we can index by PRN number.
+		satCache = new GpsInfo[NUM_SATS + 1];
+		for (int i = 1; i <= NUM_SATS; ++i)
 		    satCache[i] = new GpsInfo();
-		}
+		numSats = 0;
 
 		// Get the information providers we need.
         locationManager =
@@ -260,7 +263,7 @@ class GeoView
 		netElement.tick(time);
 		gpsElement.tick(time);
 		if (satCache != null)
-		    satElement.setValues(satCache);
+		    satElement.setValues(satCache, numSats);
 	}
 	
 	
@@ -403,7 +406,7 @@ class GeoView
             long time = System.currentTimeMillis();
             for (GpsSatellite sat : sats) {
                 int prn = sat.getPrn();
-                if (prn >= NUM_SATS)
+                if (prn < 1 || prn > NUM_SATS)
                     continue;
                 
                 GpsInfo ginfo = satCache[prn];
@@ -416,32 +419,9 @@ class GeoView
                 ginfo.used = sat.usedInFix();
             }
             
-//            GpsInfo g7 = satCache[7];
-//            g7.time = time;
-//            g7.azimuth = 340;
-//            g7.elev = 30;
-//            g7.snr = 40;
-//            g7.hasAl = true;
-//            g7.hasEph = true;
-//            g7.used = true;
-//            GpsInfo g14 = satCache[14];
-//            g14.time = time;
-//            g14.azimuth = 75;
-//            g14.elev = 45;
-//            g14.snr = 30;
-//            g14.hasAl = true;
-//            g14.hasEph = true;
-//            g14.used = false;
-//            GpsInfo g21 = satCache[21];
-//            g21.time = time;
-//            g21.azimuth = 205;
-//            g21.elev = 60;
-//            g21.snr = 30;
-//            g21.hasAl = true;
-//            g21.hasEph = false;
-//            g21.used = false;
-
-            for (int prn = 0; prn < NUM_SATS; ++prn) {
+            // Post-process the sats.
+            numSats = 0;
+            for (int prn = 1; prn <= NUM_SATS; ++prn) {
                 GpsInfo ginfo = satCache[prn];
                 if (time - ginfo.time > DATA_CACHE_TIME) {
                     ginfo.time = 0;
@@ -455,10 +435,11 @@ class GeoView
                         ginfo.usedTime = 0;
                     int colour = ginfo.used ? 0 : ginfo.hasEph ? 1 : ginfo.hasAl ? 2 : 3;
                     ginfo.colour = COLOUR_PLOT[colour];
+                    ++numSats;
                 }
             }
            
-            satElement.setValues(satCache);
+            satElement.setValues(satCache, numSats);
             break;
         case GpsStatus.GPS_EVENT_STARTED:
         case GpsStatus.GPS_EVENT_STOPPED:
@@ -553,7 +534,6 @@ class GeoView
         // magnetic declination.
         final float dec = geomagneticField.getDeclination();
         satElement.setAzimuth(azimuth + dec);
-        Log.v(TAG, "O: " + azimuth + " Dec: " + dec);
     }
 
 
@@ -667,8 +647,12 @@ class GeoView
 	// Latest GPS status.  If null, we haven't got one yet.
 	private GpsStatus gpsStatus = null;
 	
-	// Cached satellite info.
+	// Cached satellite info.  Indexed by the satellite's PRN number,
+	// which is in the range 1-NUM_SATS.
 	private GpsInfo[] satCache;
+	
+	// Number of satellites for which we have info.
+	private int numSats;
 
     // The most recent network and GPS locations.
     private Location netLocation = null;

@@ -29,14 +29,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Bundle;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
@@ -51,7 +47,6 @@ import android.view.SurfaceHolder;
  */
 class CommView
 	extends DataView
-	implements LocationListener
 {
 
 
@@ -75,8 +70,6 @@ class CommView
         telephonyManager =
         	(TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        locationManager =
-        	(LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 		
         // Create the section header bars.
 		String[] cfields = { getRes(R.string.lab_cell) , "", "999 days 23h" };
@@ -264,8 +257,6 @@ class CommView
         // We already set up WiFi monitoring in appStart().
         
         viewRunning = true;
-
-    	locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, CELL_SCAN_INTERVAL*1000, 0f, this);
     }
 	
 	
@@ -329,8 +320,6 @@ class CommView
         
         // Don't unregister for WiFi results.  These come in so slowly
         // we'll take them when we get them -- as long as the app is running.
-        
-		locationManager.removeUpdates(this);
 	}
 
 	
@@ -621,10 +610,12 @@ class CommView
 
 	
 	private void getNeighbor() {
+	    final List<NeighboringCellInfo> csigs = telephonyManager.getNeighboringCellInfo();
+	    final long ctime = System.currentTimeMillis();
 		
 		synchronized (surfaceHolder) {
-			cellSignals = telephonyManager.getNeighboringCellInfo();
-			cellSignalsTime = System.currentTimeMillis();
+			cellSignals = csigs;
+			cellSignalsTime = ctime;
 			
 			if (cellSignals == null) return;
 			
@@ -653,9 +644,12 @@ class CommView
 	private void getScanResults() {
 		int strongest = 0;
 		
+		final List<ScanResult> wsigs = wifiManager.getScanResults();
+		final long wtime = System.currentTimeMillis();
+		
 		synchronized (surfaceHolder) {
-			wifiSignals = wifiManager.getScanResults();
-			wifiSignalsTime = System.currentTimeMillis();
+			wifiSignals = wsigs;
+			wifiSignalsTime = wtime;
 			
 			if (wifiSignals == null) return;
 			
@@ -791,7 +785,6 @@ class CommView
 	
 	// Minimum interval in seconds between WiFi scans.
 	private static final int WIFI_SCAN_INTERVAL = 3;
-	private static final int CELL_SCAN_INTERVAL = 3;
 	
 	// Grid and plot colours.
 	private static final int COLOUR_GRID = 0xffdfb682;
@@ -814,8 +807,6 @@ class CommView
 	// The WiFi manager, for WiFi state updates.
 	private WifiManager wifiManager;
 	
-	private LocationManager locationManager;
-
 	// The header bars for the cellular and WiFi sections.
 	private HeaderBarElement cellHead;
 	private HeaderBarElement wifiHead;
@@ -867,24 +858,6 @@ class CommView
 	
 	// Flag whether this view is the up-front view.
 	private boolean viewRunning = false;
-
-	@Override
-	public void onLocationChanged(Location location) {
-		getNeighbor();
-	}
-
-	@Override
-	public void onProviderDisabled(String provider) {
-	}
-
-
-	@Override
-	public void onProviderEnabled(String provider) {
-	}
-
-	@Override
-	public void onStatusChanged(String provider, int status, Bundle extras) {
-	}
 
 }
 

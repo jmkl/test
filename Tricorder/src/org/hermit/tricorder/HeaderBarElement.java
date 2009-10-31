@@ -19,6 +19,7 @@
 package org.hermit.tricorder;
 
 import org.hermit.utils.CharFormatter;
+import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -192,7 +193,7 @@ class HeaderBarElement
 
 
     /**
-     * Set a specific text value displayed in this view.
+     * Display a text value in this view.
      * 
      * @param   row             Row of the field to change.
      * @param   col             Column of the field to change.
@@ -200,6 +201,22 @@ class HeaderBarElement
      */
     protected void setText(int row, int col, String text) {
         CharFormatter.formatString(fieldBuffers[row][col], 0, text, -1);
+    }
+
+
+    /**
+     * Display a numeric value in the header.
+     * 
+     * @param   row             Row of the field to change.
+     * @param   col             Column of the field to change.
+     * @param   val             The value to display.
+     */
+    protected void setText(int row, int col, int val) {
+        try {
+            CharFormatter.formatInt(fieldBuffers[row][col], 0, val, -1, false);
+        } catch (OverflowException e) {
+            CharFormatter.formatString(fieldBuffers[row][col], 0, "?", -1);
+        }
     }
 
 

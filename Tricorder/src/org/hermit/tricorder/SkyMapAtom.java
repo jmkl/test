@@ -170,7 +170,7 @@ class SkyMapAtom
 		paint.setStrokeWidth(0);
 		paint.setTextSize(appContext.getTinyTextSize());
 
-		for (int prn = 0; prn < currentValues.length; ++prn) {
+		for (int prn = 1; prn <= GeoView.NUM_SATS; ++prn) {
             GeoView.GpsInfo ginfo = currentValues[prn];
             if (ginfo.time == 0)
                 continue;
@@ -226,7 +226,8 @@ class SkyMapAtom
     // The current device azimuth.  Used to rotate the display.
     private float currentAzimuth = 0f;
 
-	// The current X, Y and Z values, and their absolute magnitude.
+    // Current satellite info.  Indexed by the satellite's PRN number,
+    // which is in the range 1-NUM_SATS.
 	private GeoView.GpsInfo[] currentValues = null;
 
 	// X,Y position of the centre of the display.

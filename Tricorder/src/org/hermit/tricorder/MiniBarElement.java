@@ -68,7 +68,7 @@ class MiniBarElement
     	magBar = new BargraphAtom(context, sh,
     							  unit, range,
     							  gridCol, plotCol,
-				 				  BargraphAtom.Orientation.LEFT);
+				 				  BargraphAtom.Orientation.BOTTOM);
 	}
 
 
@@ -89,17 +89,19 @@ class MiniBarElement
 		super.setGeometry(bounds);
 		
 		int x = bounds.left;
+        int y = bounds.bottom;
+        int w = bounds.right - bounds.left;
+		int cx = x + w / 2;
 		
 		// First position the label.
-		int labelWidth = barLabel.getPreferredWidth();
-		barLabel.setGeometry(new Rect(x, bounds.top,
-									  x + labelWidth, bounds.bottom));
-		x += labelWidth + PADDING;
+		int lw = barLabel.getPreferredWidth();
+        int lh = barLabel.getPreferredHeight() - 4;
+		barLabel.setGeometry(new Rect(cx - lw / 2, y - lh,
+		                              cx + lw / 2, y));
+		y -= lh + PADDING;
 		
 		// Position the magnitude bar.
-		int bh = magBar.getPreferredHeight();
-		magBar.setGeometry(new Rect(x, bounds.bottom - bh,
-									bounds.right, bounds.bottom));
+		magBar.setGeometry(new Rect(cx - 4, bounds.top, cx + 4, y));
 	}
 
 
@@ -110,10 +112,24 @@ class MiniBarElement
 	 * 					Returns zero if we don't know yet.
 	 */
 	@Override
-	int getPreferredHeight() {
-		return barLabel.getPreferredHeight() - 4;
+	int getPreferredWidth() {
+	    int bw = 8;
+	    int lw = barLabel.getPreferredWidth();
+		return bw > lw ? bw : lw;
 	}
 	
+
+    /**
+     * Get the minimum preferred height for this atom.
+     * 
+     * @return          The minimum preferred height for this atom.
+     *                  Returns zero if we don't know yet.
+     */
+    @Override
+    int getPreferredHeight() {
+        return barLabel.getPreferredHeight() - 4 + magBar.getPreferredHeight();
+    }
+    
 
     // ******************************************************************** //
 	// Appearance.
