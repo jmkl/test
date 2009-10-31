@@ -7,7 +7,7 @@
        
     <string name="help_text"><b>Tricorder</b>\n\
 \n\
-Tricorder displays real data from the sensors built into your phone.\n\
+Tricorder displays real data from the sensors built into your device.\n\
 \n\
 This screen displays brief help on Tricorder.  For the full manual,
 press \"manual\" below.\n\
@@ -20,18 +20,17 @@ on the left.\n\
 In the GRAV and MAG views:\n\
 • touch the X/Y axis plot to switch between absolute and relative modes.
 When you enter relative mode, the current values are stored; the plot
-starts displaying changes relative to those values.  So, for example, in
-GRAV, touch to enter relative mode, and then you will see accelerations
-relative to that initial state.\n\
-• slide your finger up and down on the Magnitude graph to zoom the graph.\n\
+starts displaying changes relative to those values.\n\
 • touch the numeric data display to toggle it to an X/Y/Z graph plot; red
 is X, green is Y, and blue is Z.\n\
 \n\
-In the GEO view, touch the \"GPS Pwr\" button at the top-right to turn the
-GPS on and off.\n\
+In the GEO view, touch the satellite display to change its mode.\n\
 \n\
 In the EMS view, touch the \"WiFi Pwr\" button at the top-right to turn the
-GPS on and off.\n\
+WiFi on and off.\n\
+\n\
+In the SOL view, touch the \"Mode Alt\" button at the top-right to display
+different information; tap the Sun image to see different Sun views.\n\
 \n\
 <b>VIEWS</b>\n\
 \n\
@@ -51,21 +50,26 @@ you are in free fall.\n\
 can be used like a compass; keep the altitude at zero to see exactly which
 way the magnetic field is pointing.  The values displayed are in micro-Tesla.\n\
 \n\
-<b>ENV</b> shows some environmental sensor readouts: light level, object
+<b>ENV</b> shows some environmental sensor readouts, if your device
+has the appropriate sensors fitted: light level, object
 proximity, and temperature.  Each graph\'s header shows the current value
 in numeric form.  Light readings are in lux; proximity is measured in metres;
 temperature is in degrees celsius.\n\
 \n\
 Note that the values of these sensors can only be displayed
 if your device actually has the sensors equipped (the G1 phone, sadly,
-does not).  If the sensors are missing, simulated data can be displayed; see
+does not, but other devices do).  If the sensors are missing, simulated data
+can be displayed; see
 the preferences for this option.  A blue indicator in the header for each
 sensor indicates when it is in simulation mode.\n\
 \n\
 <b>GEO</b> shows geographic information from the various providers which
 your device has.  \"Cellular\" displays location from the cellular phone network;
-\"GPS\" is the GPS location, if GPS is enabled.  At the top-right corner you
-will see a \"GPS Pwr\" button which turns the GPS on and off.\n\
+\"GPS\" is the GPS location, if GPS is enabled.  Below these an indication
+of the satellites in view is displayed; tap it to toggle between a sky diagram
+and signal strength bars.  The sky diagram also indicates true north (not
+magnetic north, although the accuracy still depends on your device\'s
+magnetometer, which may not be great).\n\
 \n\
 Locations are shown in latitude and longitude degrees and minutes, with
 fractional minutes.  \"Alt\" is the altitude in metres, and \"Acc\" is the
@@ -88,7 +92,10 @@ will see a \"WiFi Pwr\" button which turns the WiFi on and off.\n\
 \n\
 For cellular, we display the cell ID, the network provider, and the
 signal strength above the strength bar.  For WiFi networks, we display
-the frequency in GHz, network ID, and signal strength.  The WiFi data
+the frequency in GHz, access mode, network ID, and signal
+strength.  The access mode is blank for an open access point;
+\'!\' for an ad-hoc network (beware!); \'*\' for WEP encryption;
+\'#\' for WPA encryption; \'?\' for unknown.  The WiFi data
 is refreshed periodically; the age of the displayed WiFi data is shown
 in the WiFi header bar.\n\
 \n\
@@ -97,13 +104,28 @@ will ping after each WiFi network scan; an echo ping
 indicates the strength of the strongest detected signal.  (No echo means
 no detected WiFi.)\n\
 \n\
+<b>SOL</b> displays information on the state of the Sun and solar wind.
+This information is downloaded from the internet, and it\'s downloaded
+as a very low-priority task so as not to affect your device\'s performance.
+Hence, it may take some time for the information to actually appear.
+At the top-right corner you will see a \"Mode Alt\" button
+to toggle between two different display modes.\n\
+\n\
+The \'Protons\' graph displays low- (blue), medium- (yellow), and high-
+(red) energy protons; the \'Electrons\' graph displays low- (blue) and high-
+(red) energy electrons.  The \'Spots,Flares\' graph displays the numbers
+of sunspots (red), optical flares (blue), and X-ray flares (purple).  The
+Sun image shows images of the Sun in different wavelengths of light; tap it
+to step through the available images.\n\
+\n\
 <b>MENU</b>\n\
 \n\
 The \"menu\" button gets you to the program settings, the
 help screen (this one), and the about box.  In settings, you can set the
 basic sound level to off, quiet, or loud (note that you can also control the
 sound volume using the hardware volume keys).  You can enable WiFi ping;
-see \"EMS\" above.  And you can enable simulation of data for missing
+see \"EMS\" above.  You can set your preferences for how the display
+rotates, or not.  And you can enable simulation of data for missing
 sensors; see \"ENV\" above.\n\
 \n\
 <b>GENERAL</b>\n\
@@ -242,8 +264,8 @@ for more details.\n</string>
     
     <!-- URLs. -->
     <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
-    <string name="url_homepage">http://code.google.com/p/tricorder/</string>
-    <string name="url_manual">http://code.google.com/p/tricorder/wiki/UserManual</string>
+    <string name="url_homepage">http://code.google.com/p/moonblink/wiki/Tricorder</string>
+    <string name="url_manual">http://code.google.com/p/moonblink/wiki/TricorderUserManual</string>
     
 </resources>
 

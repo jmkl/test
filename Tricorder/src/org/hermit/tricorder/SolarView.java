@@ -763,7 +763,7 @@ class SolarView
 		"protonsL", "protonsM", "protonsH"
 	};
     private static final int[] EPAM1_PLOT_COLS = {
-    	0xffffff00, 0xff00d0ff, 0xfff00000
+        0xff00d0ff, 0xff00d0ff, 0xfff00000
     };
     private static final String[] EPAM2_PLOT_FIELDS = {
         "electronsL", "electronsH"
@@ -795,8 +795,6 @@ class SolarView
 				int oflares = rec.getAsInteger("flareso1") +
 							  rec.getAsInteger("flareso2") +
 							  rec.getAsInteger("flareso3");
-				xflares *= 10;
-                oflares *= 10;
 				rec.put("xflares", xflares);
 				rec.put("oflares", oflares);
 				rec.put("flares", xflares + oflares);

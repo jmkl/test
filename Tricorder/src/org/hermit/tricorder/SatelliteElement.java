@@ -111,19 +111,23 @@ class SatelliteElement
         // Position the sky map.
         skyMap.setGeometry(new Rect(sx, y, ex, bounds.bottom));
 
-        // Calculate the bar widths.  Space them out as nicely as we can.
+        // Set the organization based on display size.
         int tw = ex - sx;
-        int bw = tw / 16;
-        sx += (tw - (bw * 16)) / 2;
+        int rows = tw / 16 >= 11 ? 2 : 4;
+        int cols = 32 / rows;
+        
+        // Calculate the bar widths.  Space them out as nicely as we can.
+        int bw = tw / cols;
+        sx += (tw - (bw * cols)) / 2;
 
         // Bar height is easy.  Allow for some padding between rows.
-        int bh = (bounds.bottom - y - pad * 1) / 2;
+        int bh = (bounds.bottom - y - pad * (rows - 1)) / rows;
 
         // Place all the GPS signal bars.
-        for (int r = 0; r < 2; ++r) {
+        for (int r = 0; r < rows; ++r) {
             int x = sx;
-            for (int c = 0; c < 16; ++c) {
-                int b = r * 16 + c + 1;
+            for (int c = 0; c < cols; ++c) {
+                int b = r * cols + c + 1;
                 gpsBars[b].setGeometry(new Rect(x, y, x + bw, y + bh));
                 x += bw;
             }

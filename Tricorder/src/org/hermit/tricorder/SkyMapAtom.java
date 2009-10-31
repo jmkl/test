@@ -73,9 +73,9 @@ class SkyMapAtom
         final int mindim = width < height ? width : height;
 		
 		// Figure out the centre position and radius.
-		crossX = bounds.left + width / 2;
-		crossY = bounds.top + height / 2;
-		mapRadius = mindim / 2 - MARGIN;
+		crossX = bounds.left + width / 2f;
+		crossY = bounds.top + height / 2f;
+		mapRadius = mindim / 2f - MARGIN;
 		
 		// Create the path that draws the grid.
         gridPath = new Path();
@@ -147,6 +147,7 @@ class SkyMapAtom
         paint.setColor(gridColour);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(GRID_WIDTH);
+        paint.setAntiAlias(true);
         canvas.drawPath(gridPath, paint);
        
         paint.setStrokeWidth(0);
@@ -169,7 +170,7 @@ class SkyMapAtom
 		paint.setStyle(Paint.Style.FILL_AND_STROKE);
 		paint.setStrokeWidth(0);
 		paint.setTextSize(appContext.getTinyTextSize());
-
+		
 		for (int prn = 1; prn <= GeoView.NUM_SATS; ++prn) {
             GeoView.GpsInfo ginfo = currentValues[prn];
             if (ginfo.time == 0)
@@ -189,7 +190,7 @@ class SkyMapAtom
             paint.setColor(ginfo.colour);
 		    canvas.drawCircle(crossX + y, crossY - x, SAT_RADIUS, paint);
 		    
-		    canvas.drawText("" + prn, crossX + y + 3, crossY - x, paint);
+		    canvas.drawText("" + prn, crossX + y + 3, crossY - x + 4, paint);
 		}
 	}
 
@@ -231,11 +232,11 @@ class SkyMapAtom
 	private GeoView.GpsInfo[] currentValues = null;
 
 	// X,Y position of the centre of the display.
-	private int crossX;
-	private int crossY;
+	private float crossX;
+	private float crossY;
 	
 	// Radius of the sky map.
-	private int mapRadius;
+	private float mapRadius;
 	
 }
 
