@@ -336,6 +336,9 @@ class ChartAtom
 	 * @param	values				The new values.
 	 */
 	private void addToChart(float[] values) {
+	    if (dataBuffer == null)
+	        return;
+	    
 		// Buffer the value we are about to plot.
 		for (int p = 0; p < numPlots; ++p)
 			dataBuffer[p][dataCursor] = values[p];
