@@ -25,6 +25,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -55,21 +56,24 @@ public class WindMeter
         
         appContext = app;
         
-        int min = AudioRecord.getMinBufferSize(SAMPLE_RATE,
-                AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT); 
-        Log.i(TAG, "Min buf: " + min);
+        audioManager = (AudioManager) appContext.getSystemService(Context.AUDIO_SERVICE);
+
+        audioBufferBytes = AudioRecord.getMinBufferSize(SAMPLE_RATE,
+                                     AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                                     AudioFormat.ENCODING_PCM_16BIT) * 2;
         audioInput = new AudioRecord(MediaRecorder.AudioSource.MIC,
                                      SAMPLE_RATE,
                                      AudioFormat.CHANNEL_CONFIGURATION_MONO,
                                      AudioFormat.ENCODING_PCM_16BIT,
-                                     min);
+                                     audioBufferBytes);
+        audioBufferSamples = audioBufferBytes / 2;
         
-        fourierTransformer = new FourierTransformer(BLOCK_SAMPLES);
+        fourierTransformer = new FourierTransformer(FFT_BLOCK);
         
-        audioBuffer = new short[BUFFER_SAMPLES];
+        audioBuffer = new short[audioBufferSamples];
         audioIndex = 0;
         
-        spectrumData = new float[BLOCK_SAMPLES / 2];
+        spectrumData = new float[FFT_BLOCK / 2];
     }
 
 
@@ -164,24 +168,23 @@ public class WindMeter
      */
     @Override
     protected void doUpdate(long now) {
-        int space = BUFFER_SAMPLES - audioIndex;
-        int rsize = space < BLOCK_SAMPLES ? space : BLOCK_SAMPLES;
-        int nread = audioInput.read(audioBuffer, audioIndex, rsize);
+        // If we have less than an FFT block in the buffer, we'll just add to
+        // it.  Otherwise we'll start at the beginning.
+        if (audioIndex >= FFT_BLOCK)
+            audioIndex = 0;
+        int space = audioBufferSamples - audioIndex;
+
+        int nread = audioInput.read(audioBuffer, audioIndex, space);
+        audioIndex += nread;
         lastReadCount = nread;
 
         // See if we've read a complete block.  If so, FFT it.
-        for (int off = 0; off <= BLOCK_SAMPLES; off += BLOCK_SAMPLES) {
-            if (audioIndex < off + BLOCK_SAMPLES && audioIndex + nread >= off + BLOCK_SAMPLES) {
-                long fftStart = System.currentTimeMillis();
-                fourierTransformer.fftMag(audioBuffer, off, BLOCK_SAMPLES, spectrumData);
-                lastFftTime = System.currentTimeMillis() - fftStart;
-            }
+        if (audioIndex >= FFT_BLOCK) {
+            int pos = audioIndex - FFT_BLOCK;
+            long fftStart = System.currentTimeMillis();
+            fourierTransformer.fftMag(audioBuffer, pos, FFT_BLOCK, spectrumData);
+            lastFftTime = System.currentTimeMillis() - fftStart;
         }
-        
-        // Adjust our buffer pointer.
-        audioIndex += nread;
-        if (audioIndex >= BUFFER_SAMPLES)
-            audioIndex = 0;
     }
 
     
@@ -209,6 +212,14 @@ public class WindMeter
         fingerPaint.setColor(0xffff0000);
         canvas.drawText("Read: " + lastReadCount, 10, 10, fingerPaint);
         canvas.drawText("FFT: " + lastFftTime, 10, 30, fingerPaint);
+        
+        int x = 32;
+        int y = 400;
+        for (int i = 0; i < FFT_BLOCK / 2; ++i) {
+            float bar = y - spectrumData[i] * 256f;
+            canvas.drawRect(x, bar, x + 1, y, fingerPaint);
+            x += 2;
+        }
     }
     
 
@@ -418,14 +429,7 @@ public class WindMeter
     private static final int SAMPLE_RATE = 8000;
 
     // Audio buffer size, in samples.
-    private static final int BLOCK_SAMPLES = 256;
-
-    // Audio buffer size, in bytes (not samples).
-    private static final int BLOCK_BYTES = BLOCK_SAMPLES * 2;
-
-    // The number of samples we buffer.  This is equal to two blocks, so
-    // can be reading one and FFT-ing another.
-    private static final int BUFFER_SAMPLES = BLOCK_SAMPLES * 2;
+    private static final int FFT_BLOCK = 256;
 
 	
 	// ******************************************************************** //
@@ -433,23 +437,28 @@ public class WindMeter
 	// ******************************************************************** //
     
 	// Our application context.
-	private Context appContext;
+	private final Context appContext;
+    
+    // Our audio manager.
+    AudioManager audioManager;
 
     // Our audio input device.
-    private AudioRecord audioInput = null;
+    private final AudioRecord audioInput;
     
     // Fourier Transform calculator we use for calculating the spectrum.
-    private FourierTransformer fourierTransformer = null;
+    private final FourierTransformer fourierTransformer;
     
     // Our audio input buffer, and the index of the next item to go in.
-    private short[] audioBuffer = null;
+    private final int audioBufferBytes;
+    private final int audioBufferSamples;
+    private final short[] audioBuffer;
     private int audioIndex = 0;
     
     // Last audio read size.
     private int lastReadCount = 0;
     
     // Analysed audio spectrum data.
-    private float[] spectrumData = null;
+    private final float[] spectrumData;
     
     // Time in ms that the last FFT took.
     private long lastFftTime = 0;
