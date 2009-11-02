@@ -22,13 +22,16 @@ import org.hermit.android.core.SurfaceRunner;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Paint.Style;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -74,6 +77,8 @@ public class WindMeter
         audioIndex = 0;
         
         spectrumData = new float[FFT_BLOCK / 2];
+        
+        setDebugPerf(true);
     }
 
 
@@ -168,13 +173,18 @@ public class WindMeter
      */
     @Override
     protected void doUpdate(long now) {
+        int block = FFT_BLOCK * DECIMATE;
+        
         // If we have less than an FFT block in the buffer, we'll just add to
         // it.  Otherwise we'll start at the beginning.
         if (audioIndex >= FFT_BLOCK)
             audioIndex = 0;
         int space = audioBufferSamples - audioIndex;
+        if (block > space)
+            block = space;
 
-        int nread = audioInput.read(audioBuffer, audioIndex, space);
+        int nread = audioInput.read(audioBuffer, audioIndex, block);
+        currentPower = calculatePowerDb(audioBuffer, audioIndex, nread);
         audioIndex += nread;
         lastReadCount = nread;
 
@@ -204,22 +214,63 @@ public class WindMeter
      */
     @Override
     protected void doDraw(Canvas canvas, long now) {
-//        canvas.drawBitmap(renderBitmap, 0, 0, null);
+        drawInto(renderCanvas, now);
+        canvas.drawBitmap(renderBitmap, 0, 0, null);
 //        canvas.drawBitmap(gardenImage, 0, 0, null);
-        
+    }
+
+    
+    /**
+     * Draw the current frame of the application into the given canvas.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   now         Current time in ms.  Will be the same as that
+     *                      passed to doUpdate(), if there was a preceeding
+     *                      call to doUpdate().
+     */
+    private void drawInto(Canvas canvas, long now) {
         canvas.drawColor(0xff000000);
         
-        fingerPaint.setColor(0xffff0000);
-        canvas.drawText("Read: " + lastReadCount, 10, 10, fingerPaint);
-        canvas.drawText("FFT: " + lastFftTime, 10, 30, fingerPaint);
-        
-        int x = 32;
-        int y = 400;
-        for (int i = 0; i < FFT_BLOCK / 2; ++i) {
-            float bar = y - spectrumData[i] * 256f;
-            canvas.drawRect(x, bar, x + 1, y, fingerPaint);
-            x += 2;
+        float max = 0f;
+        for (int i = 1; i < FFT_BLOCK / 2; ++i) {
+            if (spectrumData[i] > max)
+                max = spectrumData[i];
         }
+        
+        float scale = (float) Math.sqrt(1f / (max / 50f));
+        
+        float x = 32f;
+        float y = 400f;
+        float w = 256f / (FFT_BLOCK / 2);
+        
+        fingerPaint.setColor(0xffff0000);
+        fingerPaint.setStyle(Style.STROKE);
+        canvas.drawLine(x, y - 256f, x + 256f, y - 256f, fingerPaint);
+       
+        fingerPaint.setStyle(Style.FILL);
+        paintColor[1] = 1f;
+        paintColor[2] = 1f;
+        for (int i = 1; i < FFT_BLOCK / 2; ++i) {
+            paintColor[0] = (float) i / (float) (FFT_BLOCK / 2) * 360f;
+            fingerPaint.setColor(Color.HSVToColor(paintColor));
+            float bar = y - spectrumData[i] * scale * 256f;
+            canvas.drawRect(x, bar, x + w, y, fingerPaint);
+            x += w;
+        }
+        
+        x = 32f;
+        fingerPaint.setColor(0xffffff00);
+        fingerPaint.setStyle(Style.STROKE);
+        canvas.drawRect(x, 420, x + 256f, 440, fingerPaint);
+        fingerPaint.setStyle(Style.FILL);
+        canvas.drawRect(x, 424, x + currentPower * 256f, 436, fingerPaint);
+  
+//        fingerPaint.setColor(0xffff0000);
+//        fingerPaint.setStyle(Style.STROKE);
+//        canvas.drawText("Read: " + lastReadCount, 200, 12, fingerPaint);
+//        canvas.drawText("FFT: " + lastFftTime, 200, 24, fingerPaint);
+//        canvas.drawText(String.format("Max: %8.5f", max), 200, 36, fingerPaint);
+//        canvas.drawText(String.format("VU : %8.5f", currentPower), 200, 48, fingerPaint);
     }
     
 
@@ -263,7 +314,7 @@ public class WindMeter
     
 
 
-    private float calculatePowerDb(short[] sdata, int samples) {
+    private float calculatePowerDb(short[] sdata, int off, int samples) {
         /**
         Calculate power of the signal depending on format.
 
@@ -323,7 +374,7 @@ public class WindMeter
               to calculate power, so 32 bits aren't enough. I chose 64
               bits unsigned int for precision. We could have switched
               to float or double instead... */
-            int thispulse = sdata[i];
+            int thispulse = sdata[off + i];
             /* Note: we calculate max value anyway, to detect clipping */
             a += (thispulse * thispulse);
             b += thispulse;
@@ -431,6 +482,14 @@ public class WindMeter
     // Audio buffer size, in samples.
     private static final int FFT_BLOCK = 256;
 
+    // Amount by which we decimate the input for each FFT.  We read this
+    // many multiples of FFT_BLOCK, but then FFT only the last FFT_BLOCK
+    // samples.
+    private static final int DECIMATE = 3;
+
+    // Gain to apply to the final results before display.
+    private static final float AUDIO_GAIN = 20f;
+
 	
 	// ******************************************************************** //
 	// Private Data.
@@ -457,6 +516,9 @@ public class WindMeter
     // Last audio read size.
     private int lastReadCount = 0;
     
+    // Current signal power level.
+    private float currentPower = 0;
+
     // Analysed audio spectrum data.
     private final float[] spectrumData;
     
@@ -470,6 +532,7 @@ public class WindMeter
 
     // Paint used for drawing the display.
     private Paint fingerPaint = null;
+    float[] paintColor = { 0, 1, 1 };
 
     // Last touch event position.
     float lastX = 0.0f;
