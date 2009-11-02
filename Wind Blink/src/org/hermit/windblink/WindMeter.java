@@ -24,15 +24,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Paint.Style;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.util.FloatMath;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -57,27 +50,13 @@ public class WindMeter
     public WindMeter(Context app) {
         super(app);
         
-        appContext = app;
-        
-        audioManager = (AudioManager) appContext.getSystemService(Context.AUDIO_SERVICE);
-
-        audioBufferBytes = AudioRecord.getMinBufferSize(SAMPLE_RATE,
-                                     AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                                     AudioFormat.ENCODING_PCM_16BIT) * 2;
-        audioInput = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                                     SAMPLE_RATE,
-                                     AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                                     AudioFormat.ENCODING_PCM_16BIT,
-                                     audioBufferBytes);
-        audioBufferSamples = audioBufferBytes / 2;
+        audioReader = new AudioReader();
         
         fourierTransformer = new FourierTransformer(FFT_BLOCK);
         
-        audioBuffer = new short[audioBufferSamples];
-        audioIndex = 0;
-        
         spectrumData = new float[FFT_BLOCK / 2];
         
+        statsCreate(new String[] { "µs FFT" });
         setDebugPerf(true);
     }
 
@@ -107,18 +86,12 @@ public class WindMeter
      */
     @Override
     protected void appSize(int width, int height, Bitmap.Config config) {
-        // Create the basic image of the garden.  Make it the right
-        // size and pixel format for efficiency.
-//        gardenImage = loadImage(R.drawable.sand, width, height);
-//        gardenImageDark = loadImage(R.drawable.sand_dark, width, height);
-        
         // Create the bitmap we actually render to.  Make the Canvas which
         // draws into it -- used for drawing in the finger path.
         renderBitmap = getBitmap();
         renderCanvas = new Canvas(renderBitmap);
 
-        // Make a Paint for drawing in the garden.  This is used to render
-        // the current stroke.
+        // Make a Paint for drawing the meter.
         fingerPaint = new Paint();
         fingerPaint.setAntiAlias(true);
     }
@@ -131,7 +104,12 @@ public class WindMeter
      */
     @Override
     protected void animStart() {
-        audioInput.startRecording();
+        audioReader.startReader(FFT_BLOCK * DECIMATE, new AudioReader.Listener() {
+            @Override
+            public void onReadComplete(short[] buffer) {
+                processAudio(buffer);
+            }
+        });
     }
     
 
@@ -142,7 +120,7 @@ public class WindMeter
      */
     @Override
     protected void animStop() {
-        audioInput.stop();
+        audioReader.stopReader();
     }
     
 
@@ -154,6 +132,21 @@ public class WindMeter
     }
     
 
+    // ******************************************************************** //
+    // Audio Processing.
+    // ******************************************************************** //
+
+    /**
+     * Handle audio input.
+     */
+    private void processAudio(short[] buffer) {
+        synchronized (this) {
+            audioData = buffer;
+            audioProcessed = false;
+        }
+    }
+    
+    
     // ******************************************************************** //
     // Animation Rendering.
     // ******************************************************************** //
@@ -173,31 +166,25 @@ public class WindMeter
      */
     @Override
     protected void doUpdate(long now) {
-        int block = FFT_BLOCK * DECIMATE;
-        
-        // If we have less than an FFT block in the buffer, we'll just add to
-        // it.  Otherwise we'll start at the beginning.
-        if (audioIndex >= FFT_BLOCK)
-            audioIndex = 0;
-        int space = audioBufferSamples - audioIndex;
-        if (block > space)
-            block = space;
+        synchronized (this) {
+            if (audioData != null && !audioProcessed) {
+                final int len = audioData.length;
 
-        int nread = audioInput.read(audioBuffer, audioIndex, block);
-        currentPower = calculatePowerDb(audioBuffer, audioIndex, nread);
-        audioIndex += nread;
-        lastReadCount = nread;
+                currentPower = calculatePowerDb(audioData, 0, len);
 
-        // See if we've read a complete block.  If so, FFT it.
-        if (audioIndex >= FFT_BLOCK) {
-            int pos = audioIndex - FFT_BLOCK;
-            long fftStart = System.currentTimeMillis();
-            fourierTransformer.fftMag(audioBuffer, pos, FFT_BLOCK, spectrumData);
-            lastFftTime = System.currentTimeMillis() - fftStart;
+                if (len >= FFT_BLOCK) {
+                    long fftStart = System.currentTimeMillis();
+                    fourierTransformer.fftData(audioData, len - FFT_BLOCK, FFT_BLOCK);
+                    fourierTransformer.fftMag(spectrumData);
+                    statsTime(0, (System.currentTimeMillis() - fftStart) * 1000);
+                }
+                
+                audioProcessed = true;
+            }
         }
     }
 
-    
+
     /**
      * Draw the current frame of the application.
      * 
@@ -216,7 +203,8 @@ public class WindMeter
     protected void doDraw(Canvas canvas, long now) {
         drawInto(renderCanvas, now);
         canvas.drawBitmap(renderBitmap, 0, 0, null);
-//        canvas.drawBitmap(gardenImage, 0, 0, null);
+        
+//        drawInto(canvas, now);
     }
 
     
@@ -264,55 +252,12 @@ public class WindMeter
         canvas.drawRect(x, 420, x + 256f, 440, fingerPaint);
         fingerPaint.setStyle(Style.FILL);
         canvas.drawRect(x, 424, x + currentPower * 256f, 436, fingerPaint);
-  
-//        fingerPaint.setColor(0xffff0000);
-//        fingerPaint.setStyle(Style.STROKE);
-//        canvas.drawText("Read: " + lastReadCount, 200, 12, fingerPaint);
-//        canvas.drawText("FFT: " + lastFftTime, 200, 24, fingerPaint);
-//        canvas.drawText(String.format("Max: %8.5f", max), 200, 36, fingerPaint);
-//        canvas.drawText(String.format("VU : %8.5f", currentPower), 200, 48, fingerPaint);
     }
     
 
     // ******************************************************************** //
     // Digital Signal Processing.
     // ******************************************************************** //
-
-    /**
-     * Digital filter designed by mkfilter/mkshape/gencode, by A.J. Fisher.
-     * Parameters:
-     *     filtertype   =   Butterworth
-     *     passtype     =   Bandpass
-     *     order        =   2
-     *     samplerate   =   11025
-     *     corner1      =   800
-     *     corner2      =   1200
-     * Command line:
-     *     /www/usr/fisher/helpers/mkfilter
-     *                -Bu -Bp -o 2 -a 7.2562358277e-02 1.0884353741e-01 -l
-     */
-
-    private static final int NZEROS = 4;
-    private static final int NPOLES = 4;
-    private static final float GAIN = 8.965792418e+01f;
-
-    private static float[] xv = new float[NZEROS + 1];
-    private static float[] yv = new float[NPOLES + 1];
-
-    private float filterloop(float next) {
-        xv[0] = xv[1]; xv[1] = xv[2]; xv[2] = xv[3]; xv[3] = xv[4]; 
-        xv[4] = next / GAIN;
-        yv[0] = yv[1]; yv[1] = yv[2]; yv[2] = yv[3]; yv[3] = yv[4]; 
-        yv[4] =   (xv[0] + xv[4]) - 2 * xv[2]
-                     + ( -0.7244344274f * yv[0]) + (  2.6514151770f * yv[1])
-                     + ( -4.1246731962f * yv[2]) + (  3.1184723705f * yv[3]);
-        return yv[4];
-    }
-
-    
-    
-    
-
 
     private float calculatePowerDb(short[] sdata, int off, int samples) {
         /**
@@ -374,10 +319,10 @@ public class WindMeter
               to calculate power, so 32 bits aren't enough. I chose 64
               bits unsigned int for precision. We could have switched
               to float or double instead... */
-            int thispulse = sdata[off + i];
+            final int v = sdata[off + i];
             /* Note: we calculate max value anyway, to detect clipping */
-            a += (thispulse * thispulse);
-            b += thispulse;
+            a += (v * v);
+            b += v;
         }
 
         /* Ok for raw power. Now normalize it. */
@@ -392,9 +337,6 @@ public class WindMeter
         float dBvalue = 1f + 0.1f * (float) Math.log10(floatPower);
         return dBvalue;
     }
-
-
-
     
 
 	// ******************************************************************** //
@@ -476,45 +418,28 @@ public class WindMeter
 	@SuppressWarnings("unused")
 	private static final String TAG = "WindMeter";
 
-    // Audio sample rate, in samples/sec.
-    private static final int SAMPLE_RATE = 8000;
-
     // Audio buffer size, in samples.
     private static final int FFT_BLOCK = 256;
 
     // Amount by which we decimate the input for each FFT.  We read this
     // many multiples of FFT_BLOCK, but then FFT only the last FFT_BLOCK
     // samples.
-    private static final int DECIMATE = 3;
-
-    // Gain to apply to the final results before display.
-    private static final float AUDIO_GAIN = 20f;
+    private static final int DECIMATE = 2;
 
 	
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
     
-	// Our application context.
-	private final Context appContext;
-    
-    // Our audio manager.
-    AudioManager audioManager;
-
     // Our audio input device.
-    private final AudioRecord audioInput;
+    private final AudioReader audioReader;
     
+    // Buffered audio data, and flag whether it has been processed.
+    private short[] audioData;
+    private boolean audioProcessed;
+
     // Fourier Transform calculator we use for calculating the spectrum.
     private final FourierTransformer fourierTransformer;
-    
-    // Our audio input buffer, and the index of the next item to go in.
-    private final int audioBufferBytes;
-    private final int audioBufferSamples;
-    private final short[] audioBuffer;
-    private int audioIndex = 0;
-    
-    // Last audio read size.
-    private int lastReadCount = 0;
     
     // Current signal power level.
     private float currentPower = 0;
@@ -522,9 +447,6 @@ public class WindMeter
     // Analysed audio spectrum data.
     private final float[] spectrumData;
     
-    // Time in ms that the last FFT took.
-    private long lastFftTime = 0;
-
     // Bitmap in which we maintain the current image of the garden,
 	// and the Canvas for drawing into it.
 	private Bitmap renderBitmap = null;

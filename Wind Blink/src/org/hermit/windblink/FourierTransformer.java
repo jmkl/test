@@ -43,11 +43,20 @@ public final class FourierTransformer {
     }
     
     
-    public final float[] fftMag(short[] input, int off, int count, float[] mag) {
+    public final void fftData(short[] input, int off, int count) {
         if (count != n)
             throw new IllegalArgumentException("bad input count in FFT:" +
                                                " constructed for " + n +
                                                "; given " + input.length);
+       
+        for (int i = 0; i < n; i++) {
+            xre[i] = (float) input[i] / 32768f;
+            xim[i] = 0.0f;
+        }
+    }
+    
+    
+    public final float[] fftMag(float[] mag) {
         if (mag.length != n / 2)
             throw new IllegalArgumentException("bad output buffer size in FFT:" +
                                                " must be " + (n / 2) +
@@ -56,10 +65,6 @@ public final class FourierTransformer {
         int n2 = n / 2;
         int nu1 = nu - 1;
         float tr, ti, p, arg, c, s;
-        for (int i = 0; i < n; i++) {
-            xre[i] = (float) input[i] / 32768;
-            xim[i] = 0.0f;
-        }
         int k = 0;
 
         for (int l = 1; l <= nu; l++) {
