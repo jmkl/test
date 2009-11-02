@@ -17,6 +17,9 @@
 package org.hermit.android.core;
 
 
+import org.hermit.utils.CharFormatter;
+import org.hermit.utils.CharFormatter.OverflowException;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -71,6 +74,14 @@ public abstract class SurfaceRunner
         // Make a Paint for drawing performance data.
         perfPaint = new Paint();
         perfPaint.setColor(0xffff0000);
+        
+        // Set up buffers for the performance data OSD.
+        osdBuffers = new char[3][];
+        for (int i = 0; i < 3; ++i)
+            osdBuffers[i] = new char[14];
+        CharFormatter.formatString(osdBuffers[0], 6, " fps", 8);
+        CharFormatter.formatString(osdBuffers[1], 6, " µs phys", 8);
+        CharFormatter.formatString(osdBuffers[2], 6, " µs draw", 8);
     }
     
 
@@ -352,7 +363,11 @@ public abstract class SurfaceRunner
             canvas = surfaceHolder.lockCanvas(null);
             synchronized (surfaceHolder) {
                 doDraw(canvas, now);
-                
+                if (showPerf) {
+                    drawTime += (System.currentTimeMillis() - now) * 1000;
+                    ++drawCount;
+                }
+
                 // Show performance data, if required.
                 if (showPerf) {
                     // Count frames per second.
@@ -363,15 +378,26 @@ public abstract class SurfaceRunner
                     if (now - perfLastTime > 1000) {
                         fpsLastCount = fpsSinceLast;
                         fpsSinceLast = 0;
-                        physLastAvg = physCount == 0 ? 0 : physTime / physCount;
+                        physLastAvg = (int) (physCount == 0 ? 0 : physTime / physCount);
                         physTime = 0;
                         physCount = 0;
+                        drawLastAvg = (int) (drawCount == 0 ? 0 : drawTime / drawCount);
+                        drawTime = 0;
+                        drawCount = 0;
                         perfLastTime = now;
                     }
                     
                     // Draw the FPS and average physics time on screen.
-                    canvas.drawText("" + fpsLastCount + " fps", 4, 12, perfPaint);
-                    canvas.drawText("" + physLastAvg + " µs", 4, 24, perfPaint);
+                    try {
+                        CharFormatter.formatInt(osdBuffers[0], 0, fpsLastCount, 6, false);
+                        CharFormatter.formatInt(osdBuffers[1], 0, physLastAvg, 6, false);
+                        CharFormatter.formatInt(osdBuffers[2], 0, drawLastAvg, 6, false);
+                        canvas.drawText(osdBuffers[0], 0, osdBuffers[0].length, 4, 12, perfPaint);
+                        canvas.drawText(osdBuffers[1], 0, osdBuffers[1].length, 4, 24, perfPaint);
+                        canvas.drawText(osdBuffers[2], 0, osdBuffers[2].length, 4, 36, perfPaint);
+                    } catch (OverflowException e) {
+                        Log.e(TAG, "Formatting OSD: " + e.getMessage());
+                    }
                 }
             }
         } finally {
@@ -383,6 +409,9 @@ public abstract class SurfaceRunner
         }
     }
 
+    
+    // Character buffers for annotations.
+    private char[][] osdBuffers;
 
     // ******************************************************************** //
     // Client Methods.
@@ -624,8 +653,15 @@ public abstract class SurfaceRunner
     // passes since last update; and keep the last displayed average time.
     private long physTime = 0;
     private int physCount = 0;
-    private long physLastAvg = 0;
-    
+    private int physLastAvg = 0;
+
+    // Data for monitoring drawing performance.  We count the total number
+    // of ms spent drawing since last update, and number of drawing
+    // passes since last update; and keep the last displayed average time.
+    private long drawTime = 0;
+    private int drawCount = 0;
+    private int drawLastAvg = 0;
+  
     // Time of last performance display update.  Used for both FPS and physics.
     private long perfLastTime = 0;
 
