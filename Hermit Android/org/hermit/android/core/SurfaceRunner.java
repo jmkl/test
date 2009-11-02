@@ -25,6 +25,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -70,18 +71,6 @@ public abstract class SurfaceRunner
         // Register for events on the surface.
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
-        
-        // Make a Paint for drawing performance data.
-        perfPaint = new Paint();
-        perfPaint.setColor(0xffff0000);
-        
-        // Set up buffers for the performance data OSD.
-        osdBuffers = new char[3][];
-        for (int i = 0; i < 3; ++i)
-            osdBuffers[i] = new char[14];
-        CharFormatter.formatString(osdBuffers[0], 6, " fps", 8);
-        CharFormatter.formatString(osdBuffers[1], 6, " µs phys", 8);
-        CharFormatter.formatString(osdBuffers[2], 6, " µs draw", 8);
     }
     
 
@@ -329,26 +318,24 @@ public abstract class SurfaceRunner
             
             appSize(canvasWidth, canvasHeight, canvasConfig);
         }
+        
+        // Do the stats setup.
+        statsInit();
     }
 
-
+    
     // ******************************************************************** //
     // Run Control.
     // ******************************************************************** //
 
     private void tick() {
+        // Do the application's physics.
         long now = System.currentTimeMillis();
         doUpdate(now);
-
-        // If we're tracking performance, update the metrics.
-        // Count microsecs, so we can display a number more than
-        // 1 per second.  The granularity sucks but hopefully
-        // it averages out.
-        if (showPerf) {
-            physTime += (System.currentTimeMillis() - now) * 1000;
-            ++physCount;
-        }
+        if (showPerf)
+            statsTimeInt(1, (System.currentTimeMillis() - now) * 1000);
         
+        // And update the screen.
         refreshScreen(now);
     }
     
@@ -362,42 +349,25 @@ public abstract class SurfaceRunner
         try {
             canvas = surfaceHolder.lockCanvas(null);
             synchronized (surfaceHolder) {
+                long drawStart = System.currentTimeMillis();
                 doDraw(canvas, now);
-                if (showPerf) {
-                    drawTime += (System.currentTimeMillis() - now) * 1000;
-                    ++drawCount;
-                }
+                if (showPerf)
+                    statsTimeInt(2, (System.currentTimeMillis() - drawStart) * 1000);
 
                 // Show performance data, if required.
                 if (showPerf) {
                     // Count frames per second.
-                    ++fpsSinceLast;
+                    statsCountInt(0, 1);
                     
-                    // If it's time to make a new displayed total, tot up the figures
-                    // and reset the running counts.
+                    // If it's time to make a new displayed total, tot up
+                    // the figures and reset the running counts.
                     if (now - perfLastTime > 1000) {
-                        fpsLastCount = fpsSinceLast;
-                        fpsSinceLast = 0;
-                        physLastAvg = (int) (physCount == 0 ? 0 : physTime / physCount);
-                        physTime = 0;
-                        physCount = 0;
-                        drawLastAvg = (int) (drawCount == 0 ? 0 : drawTime / drawCount);
-                        drawTime = 0;
-                        drawCount = 0;
+                        statsDraw();
                         perfLastTime = now;
                     }
-                    
-                    // Draw the FPS and average physics time on screen.
-                    try {
-                        CharFormatter.formatInt(osdBuffers[0], 0, fpsLastCount, 6, false);
-                        CharFormatter.formatInt(osdBuffers[1], 0, physLastAvg, 6, false);
-                        CharFormatter.formatInt(osdBuffers[2], 0, drawLastAvg, 6, false);
-                        canvas.drawText(osdBuffers[0], 0, osdBuffers[0].length, 4, 12, perfPaint);
-                        canvas.drawText(osdBuffers[1], 0, osdBuffers[1].length, 4, 24, perfPaint);
-                        canvas.drawText(osdBuffers[2], 0, osdBuffers[2].length, 4, 36, perfPaint);
-                    } catch (OverflowException e) {
-                        Log.e(TAG, "Formatting OSD: " + e.getMessage());
-                    }
+
+                    // Draw the stats on screen.
+                    canvas.drawBitmap(perfBitmap, 0, 0, null);
                 }
             }
         } finally {
@@ -410,9 +380,6 @@ public abstract class SurfaceRunner
     }
 
     
-    // Character buffers for annotations.
-    private char[][] osdBuffers;
-
     // ******************************************************************** //
     // Client Methods.
     // ******************************************************************** //
@@ -522,7 +489,162 @@ public abstract class SurfaceRunner
         showPerf = enable;
     }
     
- 
+
+    // ******************************************************************** //
+    // Stats Handling.
+    // ******************************************************************** //
+
+    /**
+     * Reserve space in the stats display for some application performance
+     * stats.  The given labels will become stats which will be displayed if
+     * {@link #setDebugPerf(boolean enable)} is passed true.  Each stat is
+     * subsequently referred to by its index in this labels array.
+     * 
+     * <p>This method must be called before appStart() in order for the
+     * app's stats to be displayed.  After appStart() is called, the stats
+     * content is frozen until the next appStop() / appStart().
+     * Typically the app should invoke this method from its constructor.
+     * However this method is, of course, optional.
+     * 
+     * @param   labels          Labels for the app's stats, one label
+     *                          per stat.  Labels need to be 7 chars or less.
+     */
+    protected void statsCreate(String[] labels) {
+        perfAppLabels = labels;
+    }
+    
+    
+    /**
+     * Set up the stats display for the next run.  At this point the stats
+     * the app has prepared by calling statsCreate() are frozen.
+     */
+    private void statsInit() {
+        // Make a Paint for drawing performance data.
+        perfPaint = new Paint();
+        perfPaint.setColor(0xffff0000);
+        perfPaint.setTypeface(Typeface.MONOSPACE);
+        
+        // Set up buffers for the performance data OSD.  Make space for the
+        // app's stats as well as our own.
+        int nstats = 3;
+        if (perfAppLabels != null)
+            nstats += perfAppLabels.length;
+        
+        perfBuffers = new char[nstats][];
+        int i;
+        for (i = 0; i < nstats; ++i)
+            perfBuffers[i] = new char[14];
+        i = 0;
+        CharFormatter.formatString(perfBuffers[i++], 6, " fps", 8);
+        CharFormatter.formatString(perfBuffers[i++], 6, " µs phys", 8);
+        CharFormatter.formatString(perfBuffers[i++], 6, " µs draw", 8);
+        if (perfAppLabels != null)
+            for (String alab : perfAppLabels)
+                CharFormatter.formatString(perfBuffers[i++], 6, " " + alab, 8);
+        
+        // Now make a bitmap for the stats.
+        perfBitmap = Bitmap.createBitmap(100, nstats * 12 + 4, canvasConfig);
+        perfCanvas = new Canvas(perfBitmap);
+        
+        // Make the values and counts arrays.
+        perfStats = new int[nstats];
+        perfCounts = new int[nstats];
+    }
+    
+    
+    /**
+     * Increment a performance counter.  This method is used for counts
+     * of specific quantities, which will be displayed as counts per second;
+     * for example frames per second.
+     * 
+     * @param   index       Index of the stat to bump (its index in the
+     *                      "labels" argument to
+     *                      {@link #statsCreate(String[] labels)}).
+     * @param   val         Amount to add to the counter.
+     */
+    protected void statsCount(int index, int val) {
+        statsCountInt(index + 3, val);
+    }
+    
+    
+    /**
+     * Increment a performance counter.  This method is used for counts
+     * of specific quantities, which will be displayed as counts per second;
+     * for example frames per second.
+     * 
+     * @param   index       Index of the stat to bump (its absolute index,
+     *                      which includes internal stats).
+     * @param   val         Amount to add to the counter.
+     */
+    private void statsCountInt(int index, int val) {
+        if (showPerf && index >= 0 && index < perfStats.length)
+            perfStats[index] += val;
+    }
+    
+
+    /**
+     * Record a performance timer.  This method is used for timings
+     * of specific activities; the average of the recorded values will 
+     * be displayed.
+     * 
+     * @param   index       Index of the stat to record (its index in the
+     *                      "labels" argument to
+     *                      {@link #statsCreate(String[] labels)}).
+     * @param   val         The time value for this iteration.
+     */
+    protected void statsTime(int index, long val) {
+        statsTimeInt(index + 3, val);
+    }
+    
+    
+    /**
+     * Record a performance timer.  This method is used for timings
+     * of specific activities; the average of the recorded values will 
+     * be displayed.
+     * 
+     * @param   index       Index of the stat to record (its absolute index,
+     *                      which includes internal stats).
+     * @param   val         The time value for this iteration.
+     */
+    private void statsTimeInt(int index, long val) {
+        if (showPerf && index >= 0 && index < perfStats.length) {
+            perfStats[index] += (int) val;
+            ++perfCounts[index];
+        }
+    }
+    
+   
+    /**
+     * Draw the stats into perfBitmap.
+     */
+    private void statsDraw() {
+        // Format all the values we have.
+        for (int i = 0; i < perfStats.length && i < perfBuffers.length; ++i) {
+            try {
+                int v = perfStats[i];
+                int c = perfCounts[i];
+                if (c != 0)
+                    v /= c;
+                CharFormatter.formatInt(perfBuffers[i], 0, v, 6, false);
+            } catch (OverflowException e) {
+                Log.e(TAG, "Formatting Perf: " + e.getMessage());
+            }
+        }
+        
+        // Draw the stats into the canvas.
+        perfCanvas.drawColor(0xff000000);
+        for (int i = 0; i < perfBuffers.length; ++i)
+            perfCanvas.drawText(perfBuffers[i], 0, perfBuffers[i].length,
+                                0, i * 12 + 12, perfPaint);
+        
+        // Reset all stored stats.
+        for (int i = 0; i < perfStats.length && i < perfBuffers.length; ++i) {
+            perfStats[i] = 0;
+            perfCounts[i] = 0;
+        }
+    }
+    
+
     // ******************************************************************** //
     // Private Classes.
     // ******************************************************************** //
@@ -637,32 +759,27 @@ public abstract class SurfaceRunner
     // The ticker thread which runs the animation.
     private Ticker animTicker = null;
 
-    // Data for counting frames per second.  Value displayed at last
-    // update, time in system ms of last update, frames since last update.
-    private int fpsLastCount = 0;
-    private int fpsSinceLast = 0;
-
     // Display performance data on-screen.
     private boolean showPerf = false;
 
+    // Labels for app-supplied performance stats.
+    private String[] perfAppLabels = null;
+    
+    // Stored perf stats values for all stats.  Counters for each stat.
+    private int[] perfStats = null;
+    private int[] perfCounts = null;
+
+    // Character buffers for performance / stats annotations.
+    private char[][] perfBuffers;
+
+    // Bitmap for drawing the stats into.  Canvas for drawing into it.
+    private Bitmap perfBitmap = null;
+    private Canvas perfCanvas = null;
+    
     // Paint for drawing performance data.
     private Paint perfPaint = null;
     
-    // Data for monitoring physics performance.  We count the total number
-    // of ms spent doing physics since last update, and number of physics
-    // passes since last update; and keep the last displayed average time.
-    private long physTime = 0;
-    private int physCount = 0;
-    private int physLastAvg = 0;
-
-    // Data for monitoring drawing performance.  We count the total number
-    // of ms spent drawing since last update, and number of drawing
-    // passes since last update; and keep the last displayed average time.
-    private long drawTime = 0;
-    private int drawCount = 0;
-    private int drawLastAvg = 0;
-  
-    // Time of last performance display update.  Used for both FPS and physics.
+    // Time of last performance display update.
     private long perfLastTime = 0;
 
 }
