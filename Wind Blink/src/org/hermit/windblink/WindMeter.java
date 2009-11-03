@@ -18,6 +18,8 @@ package org.hermit.windblink;
 
 
 import org.hermit.android.core.SurfaceRunner;
+import org.hermit.dsp.FFTTransformer;
+import org.hermit.dsp.PowerMeter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -26,6 +28,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -52,7 +55,7 @@ public class WindMeter
         
         audioReader = new AudioReader();
         
-        fourierTransformer = new FourierTransformer(FFT_BLOCK);
+        fourierTransformer = new FFTTransformer(FFT_BLOCK);
         
         spectrumData = new float[FFT_BLOCK / 2];
         
@@ -170,13 +173,17 @@ public class WindMeter
             if (audioData != null && !audioProcessed) {
                 final int len = audioData.length;
 
-                currentPower = calculatePowerDb(audioData, 0, len);
+                currentPower = PowerMeter.calculatePowerDb(audioData, 0, len);
 
                 if (len >= FFT_BLOCK) {
                     long fftStart = System.currentTimeMillis();
-                    fourierTransformer.fftData(audioData, len - FFT_BLOCK, FFT_BLOCK);
-                    fourierTransformer.fftMag(spectrumData);
-                    statsTime(0, (System.currentTimeMillis() - fftStart) * 1000);
+                    fourierTransformer.setInput(audioData, len - FFT_BLOCK, FFT_BLOCK);
+                    fourierTransformer.transform();
+                    fourierTransformer.getResults(spectrumData);
+                    long fftEnd = System.currentTimeMillis();
+                    if (fftEnd < fftStart)
+                        Log.e(TAG, "Negative time: " + fftStart + " -> " + fftEnd);
+                    statsTime(0, (fftEnd - fftStart) * 1000);
                 }
                 
                 audioProcessed = true;
@@ -252,90 +259,6 @@ public class WindMeter
         canvas.drawRect(x, 420, x + 256f, 440, fingerPaint);
         fingerPaint.setStyle(Style.FILL);
         canvas.drawRect(x, 424, x + currentPower * 256f, 436, fingerPaint);
-    }
-    
-
-    // ******************************************************************** //
-    // Digital Signal Processing.
-    // ******************************************************************** //
-
-    private float calculatePowerDb(short[] sdata, int off, int samples) {
-        /**
-        Calculate power of the signal depending on format.
-
-        Since the signal may not have an average value of 0 precisely,
-        we shouldn't simply calculate:
-
-        sum_for_all_samples (pulse_value²) / number_of_samples
-
-        but this formula assumes that the average is zero, which is not
-        always true (for example, in 8 bits on a Sound Blaster 64,
-        there is always a shift by one unit.
-
-        We could calculate in two passes, first the average, then the
-        power of the measure minus the average. But we can do this in
-        one pass.
-
-        Let measure = signal + bias,
-        where measure is the pulse value,
-        signal is what we want,
-        bias is a constant, such that the average of signal is zero.
-        
-        What we want is the value of: power = sum_for_all_samples (signal²)
-
-        Let's calculate in the same pass:
-        a=sum_for_all_samples (measure²)
-        and
-        b=sum_for_all_samples (measure)
-        
-        Then a and b are equivalent to:
-        a = sum_for_all_samples (measure²)
-          = sum_for_all_samples ((signal + bias)²)
-          = sum_for_all_samples (signal² + bias²)
-          = sum_for_all_samples (signal²) + number_of_samples * bias²
-      
-        and 
-        b = sum_for_all_samples (measure)
-          = bias * number_of_samples
-        that is, number_of_samples * bias² = b² / number_of_samples
-
-        So a = power + b² / number_of_samples
-
-        And power = a - b² / number_of_samples
-
-        So we've got the correct power of the signal in one pass.
-        
-      */
-
-
-
-        long b = 0;
-        long a = 0;
-        float floatPower = 0;
-        for (int i = 0; i < samples; i++) {
-            /* Since we calculate the square of something that can be
-              as big as +-32767 we assume a width of at least 32 bits
-              for a signed int. Moreover, we add a thousand of these
-              to calculate power, so 32 bits aren't enough. I chose 64
-              bits unsigned int for precision. We could have switched
-              to float or double instead... */
-            final int v = sdata[off + i];
-            /* Note: we calculate max value anyway, to detect clipping */
-            a += (v * v);
-            b += v;
-        }
-
-        /* Ok for raw power. Now normalize it. */
-        long power = a - b * b / samples;
-
-        int maxAmp = 32768;
-        floatPower = ((float) power) / ((float) maxAmp) / ((float) maxAmp) / ((float) samples);
-
-        /* we want leftmost to be 100dB
-          (though signal-to-noise ratio can't be more than 96.33dB in power)
-          and rightmost to be 0dB (maximum power) */
-        float dBvalue = 1f + 0.1f * (float) Math.log10(floatPower);
-        return dBvalue;
     }
     
 
@@ -439,7 +362,7 @@ public class WindMeter
     private boolean audioProcessed;
 
     // Fourier Transform calculator we use for calculating the spectrum.
-    private final FourierTransformer fourierTransformer;
+    private final FFTTransformer fourierTransformer;
     
     // Current signal power level.
     private float currentPower = 0;
