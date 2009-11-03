@@ -181,8 +181,6 @@ public class WindMeter
                     fourierTransformer.transform();
                     fourierTransformer.getResults(spectrumData);
                     long fftEnd = System.currentTimeMillis();
-                    if (fftEnd < fftStart)
-                        Log.e(TAG, "Negative time: " + fftStart + " -> " + fftEnd);
                     statsTime(0, (fftEnd - fftStart) * 1000);
                 }
                 
@@ -232,8 +230,8 @@ public class WindMeter
                 max = spectrumData[i];
         }
         
-        float scale = (float) Math.sqrt(1f / (max / 50f));
-        
+        float scale = (float) Math.pow(1f / (max / 0.2f), 0.8) * 5;
+       
         float x = 32f;
         float y = 400f;
         float w = 256f / (FFT_BLOCK / 2);
