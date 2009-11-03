@@ -351,8 +351,10 @@ public abstract class SurfaceRunner
             synchronized (surfaceHolder) {
                 long drawStart = System.currentTimeMillis();
                 doDraw(canvas, now);
-                if (showPerf)
-                    statsTimeInt(2, (System.currentTimeMillis() - drawStart) * 1000);
+                if (showPerf) {
+                    long drawEnd = System.currentTimeMillis();
+                    statsTimeInt(2, (drawEnd - drawStart) * 1000);
+                }
 
                 // Show performance data, if required.
                 if (showPerf) {
@@ -578,7 +580,7 @@ public abstract class SurfaceRunner
      */
     private void statsCountInt(int index, int val) {
         if (val < 0)
-            throw new IllegalArgumentException("Negative counter: " + index + "=" + val);
+            return;
         if (showPerf && index >= 0 && index < perfStats.length)
             perfStats[index] += val;
     }
@@ -610,7 +612,7 @@ public abstract class SurfaceRunner
      */
     private void statsTimeInt(int index, long val) {
         if (val < 0)
-            throw new IllegalArgumentException("Negative time: " + index + "=" + val);
+            return;
         if (showPerf && index >= 0 && index < perfStats.length) {
             perfStats[index] += (int) val;
             ++perfCounts[index];
