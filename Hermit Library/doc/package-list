@@ -1,5 +1,6 @@
 net.goui.util
 org.hermit.astro
+org.hermit.dsp
 org.hermit.geo
 org.hermit.geometry
 org.hermit.geometry.cluster
