@@ -17,7 +17,6 @@
 package org.hermit.windblink;
 
 
-import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -28,7 +27,7 @@ import android.media.MediaRecorder;
  * class to do the bulk of the animation control.
  */
 public class AudioReader
-	extends Thread
+    implements Runnable
 {
 
     // ******************************************************************** //
@@ -88,7 +87,7 @@ public class AudioReader
             inputBufferIndex = 0;
             inputListener = listener;
             running = true;
-            start();
+            new Thread(this, "Audio Reader").start();
         }
     }
     
