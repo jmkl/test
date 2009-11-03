@@ -577,6 +577,8 @@ public abstract class SurfaceRunner
      * @param   val         Amount to add to the counter.
      */
     private void statsCountInt(int index, int val) {
+        if (val < 0)
+            throw new IllegalArgumentException("Negative counter: " + index + "=" + val);
         if (showPerf && index >= 0 && index < perfStats.length)
             perfStats[index] += val;
     }
@@ -607,6 +609,8 @@ public abstract class SurfaceRunner
      * @param   val         The time value for this iteration.
      */
     private void statsTimeInt(int index, long val) {
+        if (val < 0)
+            throw new IllegalArgumentException("Negative time: " + index + "=" + val);
         if (showPerf && index >= 0 && index < perfStats.length) {
             perfStats[index] += (int) val;
             ++perfCounts[index];
