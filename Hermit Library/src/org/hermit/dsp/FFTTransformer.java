@@ -18,11 +18,30 @@ package org.hermit.dsp;
 
 
 /**
- * Implementation of the Cooley–Tukey FFT algorithm by Tsan-Kuang Lee:
+ * Implementation of the Cooley–Tukey FFT algorithm by Tsan-Kuang Lee,
+ * for real-valued data and results:
  * http://www.ling.upenn.edu/~tklee/Projects/dsp/
  * 
- * His copyright statement: "Do whatever you want with the code.
+ * <p>His copyright statement: "Do whatever you want with the code.
  * Feedbacks and improvement welcome."
+ * 
+ * <p>Usage: create an FFTTransformer with a specified block size, to
+ * pre-allocate the necessary resources.  Then, for each block that
+ * you want to transform:
+ * <ul>
+ * <li>Call {@link #setInput(float[], int, int)} to
+ *     supply the input data.  The execution of this method is the only
+ *     time your input buffer will be accessed; the data is converted
+ *     to complex and copied to a different buffer.
+ * <li>Call {@link #transform()} to actually do the FFT.  This is the
+ *     time-consuming part.
+ * <li>Call {@link #getResults(float[])} to get the results into
+ *     your output buffer.
+ * </ul>
+ * <p>The flow is broken up like this to allow you to make best use of
+ * locks.  For example, if the input buffer is also accessed by a thread
+ * which reads from the audio, you only need to lock out that thread during
+ * {@link #setInput(float[], int, int)}, not the entire FFT process.
  */
 public final class FFTTransformer {
 

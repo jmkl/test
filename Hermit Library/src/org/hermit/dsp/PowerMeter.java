@@ -40,10 +40,10 @@ public final class PowerMeter {
     /**
      * Calculate the power of the given input signal.
      * 
-     * @param   sdata       Input samples to process.
+     * @param   sdata       Buffer containing the input samples to process.
      * @param   off         Offset in sdata of the data of interest.
      * @param   samples     Number of data samples to process.
-     * @return              Calculates power in dB; zero represents
+     * @return              The calculated power in dB; zero represents
      *                      100dB and 1 is 0dB (maximum power).
      */
     public final static float calculatePowerDb(short[] sdata, int off, int samples) {
