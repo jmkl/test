@@ -20,6 +20,7 @@ package org.hermit.windblink;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.util.Log;
 
 
 /**
@@ -80,6 +81,7 @@ public class AudioReader
      * @param   listener    Listener to be notified on each completed read.
      */
     public void startReader(int block, Listener listener) {
+        Log.i(TAG, "Reader: Start Thread");
         synchronized (this) {
             inputBlockSize = block;
             inputBuffer = new short[2][inputBlockSize];
@@ -87,7 +89,8 @@ public class AudioReader
             inputBufferIndex = 0;
             inputListener = listener;
             running = true;
-            new Thread(this, "Audio Reader").start();
+            readerThread = new Thread(this, "Audio Reader");
+            readerThread.start();
         }
     }
     
@@ -96,12 +99,21 @@ public class AudioReader
      * Start this reader.
      */
     public void stopReader() {
+        Log.i(TAG, "Reader: Signal Stop");
         synchronized (this) {
             running = false;
         }
+        try {
+            if (readerThread != null)
+                readerThread.join();
+        } catch (InterruptedException e) {
+            ;
+        }
+        readerThread = null;
+        Log.i(TAG, "Reader: Thread Stopped");
     }
-    
- 
+
+
     // ******************************************************************** //
     // Main Loop.
     // ******************************************************************** //
@@ -115,7 +127,10 @@ public class AudioReader
         int index, readSize;
 
         try {
+            int astate = audioInput.getState();
             audioInput.startRecording();
+            Log.i(TAG, "Reader: Start Recording (" + astate +
+                                " -> " + audioInput.getState() + ")");
             while (running) {
                 synchronized (this) {
                     if (!running)
@@ -147,6 +162,7 @@ public class AudioReader
                     readDone(buffer);
             }
         } finally {
+            Log.i(TAG, "Reader: Stop Recording");
             audioInput.stop();
         }
     }
@@ -198,5 +214,7 @@ public class AudioReader
     // Flag whether the thread should be running.
     private boolean running = false;
     
+    // The thread, if any, which is currently reading.  Null if not running.
+    private Thread readerThread = null;
 }
 

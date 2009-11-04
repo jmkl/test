@@ -88,14 +88,19 @@ public class WindMeter
      */
     @Override
     protected void appSize(int width, int height, Bitmap.Config config) {
-        // Create the bitmap we actually render to.  Make the Canvas which
-        // draws into it -- used for drawing in the finger path.
-        renderBitmap = getBitmap();
-        renderCanvas = new Canvas(renderBitmap);
+        // Create the bitmap for the audio waveform display,
+        // and the Canvas for drawing into it.
+        waveBitmap = getBitmap(256, 64);
+        waveCanvas = new Canvas(waveBitmap);
+        
+        // Create the bitmap for the audio spectrum display,
+        // and the Canvas for drawing into it.
+        spectrumBitmap = getBitmap(256, 256);
+        spectrumCanvas = new Canvas(spectrumBitmap);
 
         // Make a Paint for drawing the meter.
-        fingerPaint = new Paint();
-        fingerPaint.setAntiAlias(true);
+        screenPaint = new Paint();
+        screenPaint.setAntiAlias(true);
     }
     
 
@@ -142,7 +147,7 @@ public class WindMeter
      * Handle audio input.
      */
     private void processAudio(short[] buffer) {
-        synchronized (this) {
+        synchronized (audioReader) {
             audioData = buffer;
             audioProcessed = false;
         }
@@ -168,22 +173,40 @@ public class WindMeter
      */
     @Override
     protected void doUpdate(long now) {
-        synchronized (this) {
+        boolean gotData = false;
+        float sigPower = 0f;
+
+        // Lock the audio input buffer only while we read it.
+        synchronized (audioReader) {
             if (audioData != null && !audioProcessed) {
                 final int len = audioData.length;
 
-                currentPower = PowerMeter.calculatePowerDb(audioData, 0, len);
+                // Calculate the power now, while we have the input
+                // buffer; this is pretty cheap.
+                sigPower = PowerMeter.calculatePowerDb(audioData, 0, len);
 
-                if (len >= FFT_BLOCK) {
-                    long fftStart = System.currentTimeMillis();
-                    fourierTransformer.setInput(audioData, len - FFT_BLOCK, FFT_BLOCK);
-                    fourierTransformer.transform();
-                    fourierTransformer.getResults(spectrumData);
-                    long fftEnd = System.currentTimeMillis();
-                    statsTime(0, (fftEnd - fftStart) * 1000);
-                }
-                
+                // Set up the FFT input data.
+                fourierTransformer.setInput(audioData, len - FFT_BLOCK, FFT_BLOCK);
                 audioProcessed = true;
+                gotData = true;
+                
+                drawWaveform(waveCanvas, now, 0, 0);
+            }
+        }
+
+        if (gotData) {
+            // Do the (expensive) transformation.
+            // The transformer has its own state, no need to lock here.
+            long fftStart = System.currentTimeMillis();
+            fourierTransformer.transform();
+            long fftEnd = System.currentTimeMillis();
+            statsTime(0, (fftEnd - fftStart) * 1000);
+
+            // Lock this while we write to the output buffer.
+            synchronized (this) {
+                currentPower = sigPower;
+                fourierTransformer.getResults(spectrumData);
+                drawSpectrum(spectrumCanvas, now, 0, 0);
             }
         }
     }
@@ -205,10 +228,39 @@ public class WindMeter
      */
     @Override
     protected void doDraw(Canvas canvas, long now) {
-        drawInto(renderCanvas, now);
-        canvas.drawBitmap(renderBitmap, 0, 0, null);
+        canvas.drawBitmap(waveBitmap, 32, 64, null);
+        canvas.drawBitmap(spectrumBitmap, 32, 128, null);
+        drawVuMeter(canvas, now, 32, 420);
+    }
+
+    
+    /**
+     * Draw the waveform of the current audio sample into the given canvas.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   now         Current time in ms.  Will be the same as that
+     *                      passed to doUpdate(), if there was a preceeding
+     *                      call to doUpdate().
+     */
+    private void drawWaveform(Canvas canvas, long now, int cx, int cy) {
+        canvas.drawColor(0xff000000);
         
-//        drawInto(canvas, now);
+        // Calculate a scaling factor.  We want a degree of AGC, but not
+        // so much that the waveform is always the same height.
+        float max = 0f;
+        for (int i = 1; i < 256; ++i)
+            if (audioData[i] > max)
+                max = audioData[i];
+        float scale = (float) Math.pow(1f / (max / 6500f), 0.7) * 4;
+        
+        float px = 0;
+        float py = audioData[0] * scale / 1024f + 32f;
+        for (int i = 1; i < 256; ++i) {
+            float y = audioData[i] * scale / 1024f + 32f;
+            canvas.drawLine(px, py, i, y, screenPaint);
+            px = i;
+            py = y;
+        }
     }
 
     
@@ -220,42 +272,65 @@ public class WindMeter
      *                      passed to doUpdate(), if there was a preceeding
      *                      call to doUpdate().
      */
-    private void drawInto(Canvas canvas, long now) {
+    private void drawSpectrum(Canvas canvas, long now, int cx, int cy) {
         canvas.drawColor(0xff000000);
         
+        // Calculate a scaling factor.  We want a degree of AGC, but not
+        // so much that the spectrum is always the same height.
         float max = 0f;
-        for (int i = 1; i < FFT_BLOCK / 2; ++i) {
+        for (int i = 1; i < FFT_BLOCK / 2; ++i)
             if (spectrumData[i] > max)
                 max = spectrumData[i];
-        }
-        
         float scale = (float) Math.pow(1f / (max / 0.2f), 0.8) * 5;
        
-        float x = 32f;
-        float y = 400f;
+        float x = cx;
+        float y = cy + 256f;
         float w = 256f / (FFT_BLOCK / 2);
         
-        fingerPaint.setColor(0xffff0000);
-        fingerPaint.setStyle(Style.STROKE);
-        canvas.drawLine(x, y - 256f, x + 256f, y - 256f, fingerPaint);
+        screenPaint.setColor(0xffff0000);
+        screenPaint.setStyle(Style.STROKE);
+        screenPaint.setStyle(Style.FILL);
+        canvas.drawLine(x, y - 256f, x + 256f, y - 256f, screenPaint);
        
-        fingerPaint.setStyle(Style.FILL);
         paintColor[1] = 1f;
         paintColor[2] = 1f;
         for (int i = 1; i < FFT_BLOCK / 2; ++i) {
-            paintColor[0] = (float) i / (float) (FFT_BLOCK / 2) * 360f;
-            fingerPaint.setColor(Color.HSVToColor(paintColor));
+            // Cycle the hue angle from 0° to 300°; i.e. red to purple.
+            paintColor[0] = (float) i / (float) (FFT_BLOCK / 2) * 300f;
+            screenPaint.setColor(Color.HSVToColor(paintColor));
             float bar = y - spectrumData[i] * scale * 256f;
-            canvas.drawRect(x, bar, x + w, y, fingerPaint);
+            canvas.drawRect(x, bar, x + w, y, screenPaint);
             x += w;
         }
-        
+
         x = 32f;
-        fingerPaint.setColor(0xffffff00);
-        fingerPaint.setStyle(Style.STROKE);
-        canvas.drawRect(x, 420, x + 256f, 440, fingerPaint);
-        fingerPaint.setStyle(Style.FILL);
-        canvas.drawRect(x, 424, x + currentPower * 256f, 436, fingerPaint);
+        screenPaint.setColor(0xffffff00);
+        screenPaint.setStyle(Style.STROKE);
+        canvas.drawRect(x, 420, x + 256f, 440, screenPaint);
+        screenPaint.setStyle(Style.FILL);
+        canvas.drawRect(x, 424, x + currentPower * 256f, 436, screenPaint);
+    }
+    
+
+    /**
+     * Draw the current frame of the application into the given canvas.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   now         Current time in ms.  Will be the same as that
+     *                      passed to doUpdate(), if there was a preceeding
+     *                      call to doUpdate().
+     */
+    private void drawVuMeter(Canvas canvas, long now, int x, int y) {
+//        canvas.drawColor(0xff000000);
+        
+        screenPaint.setColor(0xffffff00);
+        screenPaint.setStyle(Style.STROKE);
+        canvas.drawRect(x, y, x + 256f, y + 20f, screenPaint);
+        screenPaint.setStyle(Style.FILL);
+        screenPaint.setColor(0xff000000);
+        canvas.drawRect(x + 1, y + 1, x + 255f, y + 19f, screenPaint);
+        screenPaint.setColor(0xffffff00);
+        canvas.drawRect(x, y + 4f, x + currentPower * 256f, y + 16f, screenPaint);
     }
     
 
@@ -344,7 +419,7 @@ public class WindMeter
     // Amount by which we decimate the input for each FFT.  We read this
     // many multiples of FFT_BLOCK, but then FFT only the last FFT_BLOCK
     // samples.
-    private static final int DECIMATE = 2;
+    private static final int DECIMATE = 1;
 
 	
 	// ******************************************************************** //
@@ -366,14 +441,19 @@ public class WindMeter
 
     // Analysed audio spectrum data.
     private final float[] spectrumData;
-    
-    // Bitmap in which we maintain the current image of the garden,
-	// and the Canvas for drawing into it.
-	private Bitmap renderBitmap = null;
-	private Canvas renderCanvas = null;
+
+    // Bitmap in which we draw the audio waveform display,
+    // and the Canvas for drawing into it.
+    private Bitmap waveBitmap = null;
+    private Canvas waveCanvas = null;
+
+    // Bitmap in which we draw the audio spectrum display,
+    // and the Canvas for drawing into it.
+    private Bitmap spectrumBitmap = null;
+    private Canvas spectrumCanvas = null;
 
     // Paint used for drawing the display.
-    private Paint fingerPaint = null;
+    private Paint screenPaint = null;
     float[] paintColor = { 0, 1, 1 };
 
     // Last touch event position.
