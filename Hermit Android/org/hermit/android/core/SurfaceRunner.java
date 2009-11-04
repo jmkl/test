@@ -478,6 +478,21 @@ public abstract class SurfaceRunner
     }
     
 
+    /**
+     * Get a Bitmap of a given size, in the same format as the screen.
+     * This can be used to get an off-screen rendering buffer, for
+     * example.
+     * 
+     * @param   w           Desired width in pixels.
+     * @param   h           Desired height in pixels.
+     * @return              A Bitmap which is the same size and pixel
+     *                      format as the screen.
+     */
+    protected Bitmap getBitmap(int w, int h) {
+        return Bitmap.createBitmap(w, h, canvasConfig);
+    }
+    
+
     // ******************************************************************** //
     // Debug Control.
     // ******************************************************************** //
