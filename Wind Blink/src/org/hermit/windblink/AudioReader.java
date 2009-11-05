@@ -75,7 +75,7 @@ public class AudioReader
     /**
      * Start this reader.
      * 
-     * @param   block       Number of bytes of input to read at a time.
+     * @param   block       Number of samples of input to read at a time.
      *                      This is different from the system audio
      *                      buffer size.
      * @param   listener    Listener to be notified on each completed read.
@@ -84,6 +84,8 @@ public class AudioReader
         Log.i(TAG, "Reader: Start Thread");
         synchronized (this) {
             inputBlockSize = block;
+            sleepTime = (long) (1000f / ((float) SAMPLE_RATE / (float) block));
+            sleepTime -= 10;
             inputBuffer = new short[2][inputBlockSize];
             inputBufferWhich = 0;
             inputBufferIndex = 0;
@@ -132,21 +134,22 @@ public class AudioReader
             Log.i(TAG, "Reader: Start Recording (" + astate +
                                 " -> " + audioInput.getState() + ")");
             while (running) {
-                synchronized (this) {
-                    if (!running)
-                        break;
-                    readSize = inputBlockSize;
-                    int space = inputBlockSize - inputBufferIndex;
-                    if (readSize > space)
-                        readSize = space;
-                    buffer = inputBuffer[inputBufferWhich];
-                    index = inputBufferIndex;
-                }
+                long stime = System.currentTimeMillis();
 
-                int nread = audioInput.read(buffer, index, readSize);
+                if (!running)
+                    break;
 
-                boolean done = false;
-                synchronized (this) {
+                readSize = inputBlockSize;
+                int space = inputBlockSize - inputBufferIndex;
+                if (readSize > space)
+                    readSize = space;
+                buffer = inputBuffer[inputBufferWhich];
+                index = inputBufferIndex;
+
+                synchronized (buffer) {
+                    int nread = audioInput.read(buffer, index, readSize);
+
+                    boolean done = false;
                     if (!running)
                         break;
                     int end = inputBufferIndex + nread;
@@ -156,10 +159,26 @@ public class AudioReader
                         done = true;
                     } else
                         inputBufferIndex = end;
-                }
 
-                if (done)
-                    readDone(buffer);
+                    if (done) {
+                        readDone(buffer);
+
+                        // Because our block size is way smaller than the audio
+                        // buffer, we get blocks in bursts, which messes up
+                        // the audio analyzer.  We don't want to be forced to
+                        // wait until the analysis is done, because if
+                        // the analysis is slow, lag will build up.  Instead
+                        // wait, but with a timeout which lets us keep the
+                        // input serviced.
+                        long etime = System.currentTimeMillis();
+                        long sleep = sleepTime - (etime - stime);
+                        if (sleep < 5)
+                            sleep = 5;
+                        try {
+                            buffer.wait(sleep);
+                        } catch (InterruptedException e) { }
+                    }
+                }
             }
         } finally {
             Log.i(TAG, "Reader: Stop Recording");
@@ -207,6 +226,9 @@ public class AudioReader
 
     // Size of the block to read each time.
     private int inputBlockSize = 0;
+    
+    // Time in ms to sleep between blocks, to meter the supply rate.
+    private long sleepTime = 0;
     
     // Listener for input.
     private Listener inputListener = null;
