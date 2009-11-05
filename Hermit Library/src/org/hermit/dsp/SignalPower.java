@@ -20,7 +20,7 @@ package org.hermit.dsp;
 /**
  * A power metering algorithm.
  */
-public final class PowerMeter {
+public final class SignalPower {
 
     // ******************************************************************** //
     // Constructor.
@@ -29,7 +29,7 @@ public final class PowerMeter {
     /**
      * Only static methods are provided in this class.
      */
-    private PowerMeter() {
+    private SignalPower() {
     }
     
 
