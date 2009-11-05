@@ -19,8 +19,9 @@
 package org.hermit.tricorder;
 
 
+import org.hermit.android.instruments.Element;
+
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -38,10 +39,9 @@ abstract class DataView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 */
-	public DataView(Tricorder context, SurfaceHolder sh) {
-		super(context, sh);
+	public DataView(Tricorder context) {
+		super(context);
 	}
 	
 

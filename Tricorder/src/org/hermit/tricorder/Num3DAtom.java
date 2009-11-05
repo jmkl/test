@@ -18,11 +18,11 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.TextAtom;
 import org.hermit.utils.CharFormatter;
 import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.util.Log;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -43,12 +43,11 @@ class Num3DAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	gridCol			Colour for the framing elements.
 	 * @param	plotCol			Colour for the data display.
 	 */
-	public Num3DAtom(Tricorder context, SurfaceHolder sh, int gridCol, int plotCol) {
-		super(context, sh);
+	public Num3DAtom(Tricorder context, int gridCol, int plotCol) {
+		super(context);
 		
 		setTextColor(plotCol);
 		

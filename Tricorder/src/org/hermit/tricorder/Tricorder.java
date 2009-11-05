@@ -20,6 +20,7 @@ package org.hermit.tricorder;
 
 
 import org.hermit.android.core.AppUtils;
+import org.hermit.android.instruments.Element;
 import org.hermit.android.notice.InfoBox;
 import org.hermit.tricorder.TricorderView.ViewDefinition;
 
@@ -277,21 +278,23 @@ public class Tricorder
 
     	// Much of the layout size is constrained by the text size.
     	// Calculate the base text size from the screen size.
-    	baseTextSize = (float) minDim * 0.075f;
+    	float baseTextSize = (float) minDim * 0.075f;
 		if (baseTextSize < 10)
 			baseTextSize = 10;
 		else if (baseTextSize > 32)
 			baseTextSize = 32;
+		Element.setBaseTextSize(baseTextSize);
 		
 		navBarWidth = (int) ((float) minDim * 0.22f);
 		topBarHeight = (int) ((float) minDim * 0.15f);
 		topTitleHeight = (int) baseTextSize + 4;
-		viewSidebar =  minDim / 64;
-		interPadding = minDim / 40;
-		innerGap = minDim / 100;
+		Element.setSidebarWidth(minDim / 64);
+		Element.setInterPadding(minDim / 40);
+		float innerGap = minDim / 100;
 		if (innerGap < 1)
 			innerGap = 1;
-
+		Element.setInnerGap((int) innerGap);
+		
     	final int FPAR = RelativeLayout.LayoutParams.FILL_PARENT;
 
         // Create a layout to hold the board and status bar.
@@ -315,7 +318,7 @@ public class Tricorder
         layout = new RelativeLayout.LayoutParams(bwidth, topTitleHeight);
 		layout.addRule(RelativeLayout.RIGHT_OF, 2);
 		layout.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        layout.setMargins(innerGap, 0, 0, 0);
+        layout.setMargins((int) innerGap, 0, 0, 0);
 		mainLayout.addView(topLabel, layout);
 		
 		topButton = new NavButton(this, null);
@@ -323,7 +326,7 @@ public class Tricorder
         layout = new RelativeLayout.LayoutParams(FPAR, topTitleHeight);
 		layout.addRule(RelativeLayout.RIGHT_OF, 4);
 		layout.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        layout.setMargins(innerGap, 0, 0, 0);
+        layout.setMargins((int) innerGap, 0, 0, 0);
 		mainLayout.addView(topButton, layout);
 		topButton.setOnClickListener(new View.OnClickListener() {
         	@Override
@@ -348,70 +351,9 @@ public class Tricorder
     }
 
     
-    /**
-     * Get the base size for text based on this screen's size.
-     * 
-     * @return				Base text size for the app.
-     */
-    float getBaseTextSize() {
-    	return baseTextSize;
-    }
-
-
-    /**
-     * Get the size for mini text based on this screen's size.
-     * 
-     * @return              Mini text size for the app.
-     */
-    float getMiniTextSize() {
-        return baseTextSize - 6;
-    }
-
-
-    /**
-     * Get the size for tiny text based on this screen's size.
-     * 
-     * @return              Tiny text size for the app.
-     */
-    float getTinyTextSize() {
-        return baseTextSize - 7;
-    }
-
-    
-    /**
-     * Get the calculated sidebar width.
-     * 
-	 * @return				The calculated sidebar width.
-	 */
-	int getSidebarWidth() {
-		return viewSidebar;
-	}
-
-
 	// ******************************************************************** //
     // Menu and Preferences Handling.
     // ******************************************************************** //
-
-	/**
-	 * Get the amount of padding between major elements in a view.
-	 * 
-	 * @return			The amount of padding between major elements in a view.
-	 */
-	int getInterPadding() {
-		return interPadding;
-	}
-
-
-	/**
-	 * Get the amount of padding within atoms within an element.  Specifically
-	 * the small gaps in side bars.
-	 * 
-	 * @return			The amount of padding within atoms within an element
-	 */
-	int getInnerGap() {
-		return innerGap;
-	}
-
 
 	/**
      * Initialize the contents of the game's options menu by adding items
@@ -729,23 +671,10 @@ public class Tricorder
     // The currently selected view.
     private ViewDefinition currentView = null;
 
-    // The base size for all text, based on screen size.
-    private float baseTextSize = 0f;
-
 	// Vertical navigation bar width, top bar height.
 	private int navBarWidth;
 	private int topBarHeight;
 	private int topTitleHeight;
-	
-	// The thickness of a side bar in a view element.
-	private int viewSidebar;
-	
-	// The amount of padding between major elements in a view.
-	private int interPadding;
-	
-	// The amount of padding within atoms within an element.  Specifically
-	// the small gaps in side bars.
-	private int innerGap;
 
     // The top header bar.
     private HeaderBar swoopCorner;

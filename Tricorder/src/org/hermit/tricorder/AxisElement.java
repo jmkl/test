@@ -18,9 +18,12 @@
 
 package org.hermit.tricorder;
 
+
+import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.TextAtom;
+
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -41,7 +44,6 @@ class AxisElement
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -50,46 +52,46 @@ class AxisElement
 	 * @param	fields			Strings representing the columns to display
 	 *							in the header bar.
 	 */
-	public AxisElement(Tricorder context, SurfaceHolder sh,
+	public AxisElement(Tricorder context,
 					   float unit, float range,
 	   				   int gridCol, int plotCol, String[] fields)
 	{
-		super(context, sh, gridCol, plotCol);
+		super(context, gridCol, plotCol);
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, sh, fields);
+    	headerBar = new HeaderBarElement(context, fields);
     	headerBar.setBarColor(gridCol);
     	
-    	xGauge = new GaugeAtom(context, sh, unit, range,
+    	xGauge = new GaugeAtom(context, unit, range,
 				   			   gridCol, Tricorder.COL_POINTER,
 				   			   GaugeAtom.Orientation.BOTTOM, true);
-    	yGauge = new GaugeAtom(context, sh, unit, range,
+    	yGauge = new GaugeAtom(context, unit, range,
 				   			   gridCol, Tricorder.COL_POINTER,
 				   			   GaugeAtom.Orientation.LEFT, true);
-    	zGauge = new GaugeAtom(context, sh, unit, range,
+    	zGauge = new GaugeAtom(context, unit, range,
 				   			   gridCol, Tricorder.COL_POINTER,
 				   			   GaugeAtom.Orientation.LEFT, true);
     	
-    	xyAxes = new Axis2DAtom(context, sh, unit, range,
+    	xyAxes = new Axis2DAtom(context, unit, range,
 	   			   			    gridCol, plotCol);
     	
     	// Size of the gauge labels.
-    	final float labSize = context.getBaseTextSize() - 7;
+    	final float labSize = getBaseTextSize() - 7;
 
     	String[] zTemplate = new String[] { getRes(R.string.lab_z) };
-    	zLabel = new TextAtom(context, sh, zTemplate, 1);
+    	zLabel = new TextAtom(context, zTemplate, 1);
     	zLabel.setTextColor(gridCol);
     	zLabel.setTextSize(labSize);
     	
     	String[] altTemplate = new String[] { getRes(R.string.lab_alt) };
-    	altLabel = new TextAtom(context, sh, altTemplate, 1);
+    	altLabel = new TextAtom(context, altTemplate, 1);
     	altLabel.setTextColor(gridCol);
     	altLabel.setTextSize(labSize);
 	
-    	ell = new EllAtom(context, sh, context.getSidebarWidth());
+    	ell = new EllAtom(context, getSidebarWidth());
     	ell.setBarColor(gridCol);
     	
-    	altDial = new DialAtom(context, sh,
+    	altDial = new DialAtom(context,
     						   gridCol, Tricorder.COL_POINTER,
     						   DialAtom.Orientation.RIGHT);
 	}
@@ -108,7 +110,7 @@ class AxisElement
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		if (bounds.right - bounds.left < bounds.bottom - bounds.top)
@@ -131,18 +133,18 @@ class AxisElement
 									   bounds.right, bounds.top + headHeight));
 		
 		int x = bounds.left;
-		int y = bounds.top + headHeight + appContext.getInnerGap();
-		int xySize = (bounds.bottom - y) / 2 - appContext.getInterPadding();
+		int y = bounds.top + headHeight + getInnerGap();
+		int xySize = (bounds.bottom - y) / 2 - getInterPadding();
 
 		int plotSize = layoutXY(x, y, xySize);
-		y += xySize + appContext.getInterPadding();
+		y += xySize + getInterPadding();
 	
 		// Position the Z gauge and its label.
 		int zWidth = zGauge.getPreferredWidth();
 		Rect zRect = new Rect(x, y, x + zWidth, y + plotSize);
 		Rect zlRect = new Rect(x, y + plotSize + 1, x + zWidth, bounds.bottom);
 		
-		x += zWidth + appContext.getInterPadding();
+		x += zWidth + getInterPadding();
 		
 		int dialWidth = altDial.getWidthForHeight(xySize);
 		x = bounds.right - dialWidth;
@@ -170,13 +172,13 @@ class AxisElement
 									   bounds.right, bounds.top + headHeight));
 		
 		int x = bounds.left;
-		int y = bounds.top + headHeight + appContext.getInnerGap();
+		int y = bounds.top + headHeight + getInnerGap();
 		int xySize = bounds.bottom - y;
 
 		int plotSize = layoutXY(x, y, xySize);
-		x += xySize + appContext.getInterPadding();
+		x += xySize + getInterPadding();
 
-		int plotTop = bounds.top + headHeight + appContext.getInnerGap();
+		int plotTop = bounds.top + headHeight + getInnerGap();
 		int plotBot = plotTop + plotSize;
 	
 		// Position the Z gauge and its label.
@@ -184,7 +186,7 @@ class AxisElement
 		Rect zRect = new Rect(x, plotTop, x + zWidth, plotBot);
 		Rect zlRect = new Rect(x, plotBot + 1, x + zWidth, bounds.bottom);
 		
-		x += zWidth + appContext.getInterPadding();
+		x += zWidth + getInterPadding();
 		
 		int dialWidth = altDial.getWidthForHeight(xySize);
 		Rect altRect = new Rect(x, plotTop, x + dialWidth, plotBot);
@@ -223,9 +225,9 @@ class AxisElement
 		int leftWidth = yGauge.getPreferredWidth();
 		int bottomHeight = xGauge.getPreferredHeight();
 		
-		int plotSize = size - bottomHeight - appContext.getInnerGap();
+		int plotSize = size - bottomHeight - getInnerGap();
 		int plotBot = top + plotSize;
-		int plotLeft = left + leftWidth + appContext.getInnerGap();
+		int plotLeft = left + leftWidth + getInnerGap();
 		
 		// Position the left-side Y gauge.
 		yGauge.setGeometry(new Rect(left, top, left + leftWidth, plotBot));
@@ -256,7 +258,7 @@ class AxisElement
      * @param	plot			Colour for drawing data plots.
 	 */
 	@Override
-	void setDataColors(int grid, int plot) {
+	public void setDataColors(int grid, int plot) {
     	ell.setBarColor(grid);
     	headerBar.setBarColor(grid);
 		zLabel.setTextColor(grid);
@@ -355,7 +357,7 @@ class AxisElement
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		ell.draw(canvas, now);

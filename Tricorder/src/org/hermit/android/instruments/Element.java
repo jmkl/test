@@ -16,19 +16,20 @@
  */
 
 
-package org.hermit.tricorder;
+package org.hermit.android.instruments;
 
+
+import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
  * This class displays an element of the UI.  An element is a region
  * within a view, and can display text, etc.
  */
-class Element
+public class Element
 {
 
 	// ******************************************************************** //
@@ -39,9 +40,8 @@ class Element
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 */
-	public Element(Tricorder context, SurfaceHolder sh) {
+	public Element(Activity context) {
 		appContext = context;
 
 		// Set up our paint.
@@ -55,11 +55,10 @@ class Element
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
      * @param	grid			Colour for drawing a data scale / grid.
      * @param	plot			Colour for drawing data plots.
 	 */
-	public Element(Tricorder context, SurfaceHolder sh, int grid, int plot) {
+	public Element(Activity context, int grid, int plot) {
 		appContext = context;
 		gridColour = grid;
 		plotColour = plot;
@@ -80,7 +79,113 @@ class Element
 	 */
 	protected void initializePaint(Paint paint) { }
 	
-	   
+
+    // ******************************************************************** //
+    // Global Layout Parameters.
+    // ******************************************************************** //
+
+    /**
+     * Get the base size for text based on this screen's size.
+     * 
+     * @param   size        Base text size for the app.
+     */
+	public static void setBaseTextSize(float size) {
+        baseTextSize = size;
+    }
+
+
+    /**
+     * Get the base size for text based on this screen's size.
+     * 
+     * @return              Base text size for the app.
+     */
+	public static float getBaseTextSize() {
+        return baseTextSize;
+    }
+
+
+    /**
+     * Get the size for mini text based on this screen's size.
+     * 
+     * @return              Mini text size for the app.
+     */
+	public static float getMiniTextSize() {
+        return baseTextSize - 6;
+    }
+
+
+    /**
+     * Get the size for tiny text based on this screen's size.
+     * 
+     * @return              Tiny text size for the app.
+     */
+	public static float getTinyTextSize() {
+        return baseTextSize - 7;
+    }
+
+
+    /**
+     * Set the sidebar width.
+     * 
+     * @param   width       The sidebar width.
+     */
+	public static void setSidebarWidth(int width) {
+        viewSidebar = width;
+    }
+
+    
+    /**
+     * Get the sidebar width.
+     * 
+     * @return              The sidebar width.
+     */
+	public static int getSidebarWidth() {
+        return viewSidebar;
+    }
+
+
+    /**
+     * Set the amount of padding between major elements in a view.
+     * 
+     * @param   pad     The amount of padding between major elements in a view.
+     */
+	public static void setInterPadding(int pad) {
+        interPadding = pad;
+    }
+
+
+    /**
+     * Get the amount of padding between major elements in a view.
+     * 
+     * @return          The amount of padding between major elements in a view.
+     */
+	public static int getInterPadding() {
+        return interPadding;
+    }
+
+
+    /**
+     * Set the amount of padding within atoms within an element.  Specifically
+     * the small gaps in side bars.
+     * 
+     * @param   gap     The amount of padding within atoms within an element
+     */
+	public static void setInnerGap(int gap) {
+        innerGap = gap;
+    }
+
+
+    /**
+     * Get the amount of padding within atoms within an element.  Specifically
+     * the small gaps in side bars.
+     * 
+     * @return          The amount of padding within atoms within an element
+     */
+	public static int getInnerGap() {
+        return innerGap;
+    }
+
+
     // ******************************************************************** //
 	// Geometry.
 	// ******************************************************************** //
@@ -93,7 +198,7 @@ class Element
 	 * @param	bounds		The bounding rect of this element within
 	 * 						its parent View.
      */
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		elemBounds = bounds;
 	}
 
@@ -104,7 +209,7 @@ class Element
 	 * @return			The minimum preferred width for this atom.
 	 * 					Returns zero if we don't know yet.
 	 */
-	int getPreferredWidth() {
+	public int getPreferredWidth() {
 		return 0;
 	}
 	
@@ -115,7 +220,7 @@ class Element
 	 * @return			The minimum preferred height for this atom.
 	 * 					Returns zero if we don't know yet.
 	 */
-	int getPreferredHeight() {
+	public int getPreferredHeight() {
 		return 0;
 	}
 	
@@ -127,7 +232,7 @@ class Element
 	 * 						its parent View.  This will be 0, 0, 0, 0 if
 	 * 						setGeometry() has not been called yet.
 	 */
-	protected Rect getBounds() {
+	public final Rect getBounds() {
 		return elemBounds;
 	}
 
@@ -139,7 +244,7 @@ class Element
 	 * 						its parent View.  This will be 0 if
 	 * 						setGeometry() has not been called yet.
 	 */
-	protected final int getWidth() {
+	public final int getWidth() {
 		return elemBounds.right - elemBounds.left;
 	}
 	
@@ -151,21 +256,21 @@ class Element
 	 * 						its parent View.  This will be 0 if
 	 * 						setGeometry() has not been called yet.
 	 */
-	protected final int getHeight() {
+	public final int getHeight() {
 		return elemBounds.bottom - elemBounds.top;
 	}
 	
-	
+
     // ******************************************************************** //
-	// Appearance.
-	// ******************************************************************** //
+    // Appearance.
+    // ******************************************************************** //
 
 	/**
 	 * Set the background colour of this element.
 	 * 
 	 * @param	col			The new background colour, in ARGB format.
 	 */
-	void setBackgroundColor(int col) {
+	public void setBackgroundColor(int col) {
 		colBg = col;
 	}
 	
@@ -175,22 +280,62 @@ class Element
 	 * 
 	 * @return				The background colour, in ARGB format.
 	 */
-	int getBackgroundColor() {
+	public int getBackgroundColor() {
 		return colBg;
 	}
 	
 
 	/**
-	 * Set the background colour of this element.
+	 * Set the plot colours of this element.
 	 * 
-     * @param	grid			Colour for drawing a data scale / grid.
-     * @param	plot			Colour for drawing data plots.
+     * @param	grid      Colour for drawing a data scale / grid.
+     * @param	plot      Colour for drawing data plots.
 	 */
-	void setDataColors(int grid, int plot) {
+	public void setDataColors(int grid, int plot) {
 		gridColour = grid;
 		plotColour = plot;
 	}
 	
+
+    /**
+     * Set the data scale / grid colour of this element.
+     * 
+     * @param   grid      Colour for drawing a data scale / grid.
+     */
+    public void setGridColor(int grid) {
+        gridColour = grid;
+    }
+    
+
+    /**
+     * Set the data plot colour of this element.
+     * 
+     * @param   plot      Colour for drawing a data plot.
+     */
+    public void setPlotColor(int plot) {
+        plotColour = plot;
+    }
+    
+
+    /**
+     * Get the data scale / grid colour of this element.
+     * 
+     * @return            Colour for drawing a data scale / grid.
+     */
+    public int getGridColor() {
+        return gridColour;
+    }
+    
+
+    /**
+     * Get the data plot colour of this element.
+     * 
+     * @return          Colour for drawing data plots.
+     */
+    public int getPlotColor() {
+        return plotColour;
+    }
+    
 
 	// ******************************************************************** //
 	// View Drawing.
@@ -212,7 +357,7 @@ class Element
 	 * @param	canvas		Canvas to draw into.
 	 * @param	now				Current system time in ms.
 	 */
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		drawStart(canvas, drawPaint);
 		drawBody(canvas, drawPaint);
 		drawFinish(canvas, drawPaint);
@@ -261,11 +406,22 @@ class Element
 	// Utilities.
 	// ******************************************************************** //
 
-	protected Tricorder getContext() {
+	/**
+	 * Get the app context of this Element.
+	 * 
+	 * @return             The app context we're running in.
+	 */
+	protected Activity getContext() {
 		return appContext;
 	}
 	
 
+	/**
+	 * Get the String value of a resource.
+	 * 
+	 * @param  resid       The ID of the resource we want.
+	 * @return             The resource value.
+	 */
 	protected String getRes(int resid) {
 		return appContext.getString(resid);
 	}
@@ -278,27 +434,40 @@ class Element
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "tricorder";
-	
+
+    // The base size for all text, based on screen size.
+    private static float baseTextSize = 0f;
+
+    // The thickness of a side bar in a view element.
+    private static int viewSidebar;
+    
+    // The amount of padding between major elements in a view.
+    private static int interPadding;
+    
+    // The amount of padding within atoms within an element.  Specifically
+    // the small gaps in side bars.
+    private static int innerGap;
+
 
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
 
 	// Application handle.
-	protected final Tricorder appContext;
+	private final Activity appContext;
 	
 	// The paint we use for drawing.
-	protected Paint drawPaint = null;
+	private Paint drawPaint = null;
 
 	// The bounding rect of this element within its parent View.
-	protected Rect elemBounds = new Rect(0, 0, 0, 0);
+	private Rect elemBounds = new Rect(0, 0, 0, 0);
 
 	// Background colour.
-	protected int colBg = 0xff000000;
+	private int colBg = 0xff000000;
 
 	// Colour of the graph grid and plot.
-	protected int gridColour = 0xff00ff00;
-	protected int plotColour = 0xffff0000;
+	private int gridColour = 0xff00ff00;
+	private int plotColour = 0xffff0000;
 
 }
 

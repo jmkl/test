@@ -18,9 +18,10 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -38,24 +39,23 @@ class SatelliteElement
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	headBgCol		Colour for the header bar.
 	 * @param	headTextCol		Colours for the header text.
 	 */
-	public SatelliteElement(Tricorder context, SurfaceHolder sh,
+	public SatelliteElement(Tricorder context,
 							int headBgCol, int headTextCol)
 	{
-		super(context, sh, headBgCol, headTextCol);
+		super(context, headBgCol, headTextCol);
 		
 		// Create the header bar.
         final String[] hFields = {  getRes(R.string.title_sats), "99",  };
-    	headerBar = new HeaderBarElement(context, sh, hFields);
+    	headerBar = new HeaderBarElement(context, hFields);
     	headerBar.setBarColor(headBgCol);
         headerBar.setTextColor(headTextCol);
         headerBar.setText(0, 0, hFields[0]);
         
         // Create the sky diagram.
-        skyMap = new SkyMapAtom(context, sh, COLOUR_GRID, 0xffff0000);
+        skyMap = new SkyMapAtom(context, COLOUR_GRID, 0xffff0000);
         
         // Create the list of GPS bargraphs, displaying ASU.  We'll assume
         // a WiFi ASU range from 0 to 41.  Since satellite numbers are
@@ -63,13 +63,13 @@ class SatelliteElement
         // can index directly.
         gpsBars = new MiniBarElement[GeoView.NUM_SATS + 1];
         for (int g = 1; g <= GeoView.NUM_SATS; ++g) {
-            gpsBars[g] = new MiniBarElement(context, sh, 5f, 8.2f,
+            gpsBars[g] = new MiniBarElement(context, 5f, 8.2f,
                                             headBgCol, headTextCol,
                                             "00");
         }
         
         // Create the right-side bar.
-        sideBar = new Element(context, sh);
+        sideBar = new Element(context);
         sideBar.setBackgroundColor(COLOUR_GRID);
 	}
 
@@ -87,11 +87,11 @@ class SatelliteElement
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 	      
-        int bar = appContext.getSidebarWidth();
-        int pad = appContext.getInterPadding();
+        int bar = getSidebarWidth();
+        int pad = getInterPadding();
         
         // Lay out the displays.
         int sx = bounds.left;
@@ -102,7 +102,7 @@ class SatelliteElement
 		int headHeight = headerBar.getPreferredHeight();
 		headerBar.setGeometry(new Rect(sx, y, ex, y + headHeight));
         
-        y += headHeight + appContext.getInnerGap();
+        y += headHeight + getInnerGap();
 
         // Set up the position of the right-side bar.
         sideBar.setGeometry(new Rect(ex - bar, y, ex, bounds.bottom));
@@ -199,7 +199,7 @@ class SatelliteElement
                 bar.clearValue();
             } else {
                 bar.setLabel("" + prn);
-                bar.setDataColors(gridColour, ginfo.colour);
+                bar.setDataColors(getGridColor(), ginfo.colour);
                 bar.setValue(ginfo.snr);
             }
         }
@@ -229,7 +229,7 @@ class SatelliteElement
 	 * @param	now			Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		headerBar.draw(canvas, now);

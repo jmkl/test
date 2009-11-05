@@ -30,15 +30,14 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.GpsSatellite;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
-import android.location.GpsStatus;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -90,14 +89,12 @@ class GeoView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
      * @param   sman            The SensorManager to get data from.
 	 */
-	public GeoView(Tricorder context, SurfaceHolder sh, SensorManager sman) {
-		super(context, sh);
+	public GeoView(Tricorder context, SensorManager sman) {
+		super(context);
 		
 		appContext = context;
-		surfaceHolder = sh;
 		sensorManager = sman;
 
 		// Set up the satellite data cache.  For simplicity, we allocate
@@ -111,15 +108,15 @@ class GeoView
         locationManager =
         	(LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
-		netElement = new GeoElement(context, sh,
+		netElement = new GeoElement(context,
 									HEAD_BG_COL, HEAD_TEXT_COL, false);
        	netElement.setText(0, 0, getRes(R.string.title_network));
 		
-		gpsElement = new GeoElement(context, sh,
+		gpsElement = new GeoElement(context,
 									HEAD_BG_COL, HEAD_TEXT_COL, true);
        	gpsElement.setText(0, 0, getRes(R.string.title_gps));
        	
-       	satElement = new SatelliteElement(context, sh,
+       	satElement = new SatelliteElement(context,
        	                                  HEAD_BG_COL, HEAD_TEXT_COL);
         satElement.setText(0, 0, getRes(R.string.title_sats));
 	}
@@ -138,7 +135,7 @@ class GeoView
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 
         if (bounds.right - bounds.left < bounds.bottom - bounds.top)
@@ -156,7 +153,7 @@ class GeoView
      */
     private void layoutPortrait(Rect bounds) {
         // Lay out the displays.
-        int pad = appContext.getInterPadding();
+        int pad = getInterPadding();
         int sx = bounds.left + pad;
         int ex = bounds.right;
         int y = bounds.top;
@@ -182,7 +179,7 @@ class GeoView
      */
     private void layoutLandscape(Rect bounds) {
         // Lay out the displays.
-        int pad = appContext.getInterPadding();
+        int pad = getInterPadding();
         int sx = bounds.left + pad;
         int ex = bounds.right;
         
@@ -305,7 +302,7 @@ class GeoView
 	 * @param	loc			   The new location, as a Location object.
 	 */
 	public void onLocationChanged(Location loc) {
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			if (loc.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
 			    netLocation = loc;
                 netElement.setValue(loc);
@@ -327,7 +324,7 @@ class GeoView
 	 */
 	public void onProviderDisabled(String provider) {
 		Log.i(TAG, "Provider disabled: " + provider);
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			if (provider.equals(LocationManager.NETWORK_PROVIDER))
 				netElement.setStatus(getRes(R.string.msgDisabled));
 			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
@@ -346,7 +343,7 @@ class GeoView
 	 */
 	public void onProviderEnabled(String provider) {
 		Log.i(TAG, "Provider enabled: " + provider);
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			if (provider.equals(LocationManager.NETWORK_PROVIDER))
 				netElement.setStatus(null);
 			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
@@ -379,7 +376,7 @@ class GeoView
 	 */
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 		Log.i(TAG, "Provider status: " + provider + "=" + status);
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			String msg = null;
 			if (status == LocationProvider.OUT_OF_SERVICE)
 				msg = getRes(R.string.msgOffline);
@@ -554,7 +551,7 @@ class GeoView
         final int action = event.getAction();
         boolean done = false;
 
-        synchronized (surfaceHolder) {
+        synchronized (this) {
             if (action == MotionEvent.ACTION_DOWN) {
                 if (satBounds != null && satBounds.contains(x, y)) {
                     satElement.toggleMode();
@@ -580,7 +577,7 @@ class GeoView
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		// Draw the data views.
@@ -623,12 +620,9 @@ class GeoView
 	// Private Data.
 	// ******************************************************************** //
 
-	// Our application context.
-	private Tricorder appContext;
-	
-	// The surface we're drawing on.
-	private SurfaceHolder surfaceHolder;
-
+    // Application handle.
+    private final Tricorder appContext;
+    
     // The sensor manager, which we use to interface to all sensors.
     private SensorManager sensorManager;
 

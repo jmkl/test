@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
 import org.hermit.tricorder.TricorderView.ViewDefinition;
 
 import android.view.View;
@@ -66,7 +67,7 @@ class NavigationBar
         final int numViews = ViewDefinition.values().length;
         
         // Get the inter-button gap.
-        int gap = parent.getInnerGap();
+        int gap = Element.getInnerGap();
 
         // Work out a good button height.
         int h = height / numViews - gap;

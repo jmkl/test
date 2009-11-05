@@ -18,11 +18,12 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -43,18 +44,17 @@ class ChartAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
 	 */
-	public ChartAtom(Tricorder context, SurfaceHolder sh,
+	public ChartAtom(Tricorder context,
 							float unit, float range,
 							int gridCol, int plotCol)
 	{
-		this(context, sh, 1, unit, range, gridCol, new int[] { plotCol }, false);
+		this(context, 1, unit, range, gridCol, new int[] { plotCol }, false);
 	}
 
 
@@ -62,7 +62,6 @@ class ChartAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	num				The number of values plotted on this graph.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
@@ -72,11 +71,11 @@ class ChartAtom
 	 * @param	centered		If true, the zero value is in the centre;
 	 * 							else at the left or bottom.
 	 */
-	public ChartAtom(Tricorder context, SurfaceHolder sh,
+	public ChartAtom(Tricorder context,
 							int num, float unit, float range,
 							int gridCol, int[] plotCols, boolean centered)
 	{
-		super(context, sh, gridCol, plotCols[0]);
+		super(context, gridCol, plotCols[0]);
 		
 		numPlots = num;
 		unitSize = unit;
@@ -109,7 +108,7 @@ class ChartAtom
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		// Position of the chart on screen.
@@ -199,7 +198,7 @@ class ChartAtom
      * @param	plot			Colour for drawing data plots.
 	 */
 	@Override
-	void setDataColors(int grid, int plot) {
+	public void setDataColors(int grid, int plot) {
 		setDataColors(grid, new int[] { plot });
 	}
 	
@@ -458,7 +457,7 @@ class ChartAtom
 		}
 
 		// Draw scale lines.
-		paint.setColor(gridColour);
+		paint.setColor(getGridColor());
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(SCALE_WIDTH);
 		for (int y = 0; y < plotRange * unitScale; y += unitScale) {

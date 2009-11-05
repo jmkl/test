@@ -18,10 +18,11 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -42,18 +43,17 @@ class Axis2DAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
 	 */
-	public Axis2DAtom(Tricorder context, SurfaceHolder sh,
+	public Axis2DAtom(Tricorder context,
 					  float unit, float range,
 	   				  int gridCol, int plotCol)
 	{
-		super(context, sh, gridCol, plotCol);
+		super(context, gridCol, plotCol);
 		
 		unitSize = unit;
 		plotRange = range;
@@ -73,7 +73,7 @@ class Axis2DAtom
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 
 		barLen = (bounds.bottom - bounds.top) / 2;
@@ -150,7 +150,7 @@ class Axis2DAtom
 		float x = currentValues[0] * dataScale;
 		float y = currentValues[1] * dataScale;
 
-		paint.setColor(gridColour);
+		paint.setColor(getGridColor());
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(SCALE_WIDTH);
 
@@ -172,7 +172,7 @@ class Axis2DAtom
 		// Draw the data values if we have them.
 		// REMEMBER THE SCREEN Y-AXIS is NEGATIVE UP.
 		if (haveValue) {
-			paint.setColor(plotColour);
+			paint.setColor(getPlotColor());
 			paint.setStyle(Paint.Style.FILL_AND_STROKE);
 			paint.setStrokeWidth(DATA_WIDTH);
 			final float l = Math.min(crossX, crossX + x);

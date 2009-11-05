@@ -26,6 +26,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.TimeZone;
 
+import org.hermit.android.instruments.TextAtom;
 import org.hermit.android.net.CachedFile;
 import org.hermit.android.net.WebBasedData;
 import org.hermit.android.net.WebFetcher;
@@ -39,7 +40,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -58,13 +58,11 @@ class SolarView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 */
-	public SolarView(Tricorder context, SurfaceHolder sh) {
-		super(context, sh);
+	public SolarView(Tricorder context) {
+		super(context);
+		appContext = context;
 		
-		surfaceHolder = sh;
-
 		// Set up the database helper.
 		databaseHelper = new DbHelper(appContext);
         TimeZone utc = TimeZone.getTimeZone("UTC");
@@ -76,23 +74,23 @@ class SolarView
 							  "99 days to Jan 16" };
 	
 		// The solar image display, and its caption.
-		sunImage = new ImageAtom(context, sh, FILES_SOHO, SUN_URLS);
+		sunImage = new ImageAtom(context, FILES_SOHO, SUN_URLS);
 		final String[] fields = { "Jan 99 12:02xx", };
-		sunCaption = new TextAtom(context, sh, fields, 3);
-		sunCaption.setTextSize(context.getBaseTextSize() - 5);
+		sunCaption = new TextAtom(context, fields, 3);
+		sunCaption.setTextSize(getBaseTextSize() - 5);
 		sunCaption.setTextColor(0xffffff00);
 		sunCaptionBuf = sunCaption.getBuffer();
 		
-		sunData = new TextAtom(context, sh, fields, 3);
-		sunData.setTextSize(context.getBaseTextSize() - 5);
+		sunData = new TextAtom(context, fields, 3);
+		sunData.setTextSize(getBaseTextSize() - 5);
 		sunData.setTextColor(COLOUR_PLOT);
 		sunDataBuf = sunData.getBuffer();
 		
 		// Big solar image display, for alternate mode.
-		sunBigImage = new ImageAtom(context, sh, FILES_SOHO, SUN_URLS);
+		sunBigImage = new ImageAtom(context, FILES_SOHO, SUN_URLS);
 
 		// Graph for solar wind data.
-		swindGraph = new MagnitudeElement(context, sh,
+		swindGraph = new MagnitudeElement(context,
 		                                  EPAM1_PLOT_FIELDS.length, 400, 5,
 										  COLOUR_GRID, EPAM1_PLOT_COLS,
 										  tfields1);       	
@@ -101,7 +99,7 @@ class SolarView
 		swindGraph.setText(0, 1, getRes(R.string.msgNoData));
 
 		// Graph for magnetic data.
-		epamGraph = new MagnitudeElement(context, sh,
+		epamGraph = new MagnitudeElement(context,
 		                                 EPAM2_PLOT_FIELDS.length, 400, 5,
 										 COLOUR_GRID, EPAM2_PLOT_COLS,
 										 tfields1);       	
@@ -110,7 +108,7 @@ class SolarView
 		epamGraph.setText(0, 1, getRes(R.string.msgNoData));
 
 		// Graph for solar data (sunspots / flares).
-		solGraph = new MagnitudeElement(context, sh,
+		solGraph = new MagnitudeElement(context,
 		                                DSD_PLOT_FIELDS.length, 10, 2,
 										COLOUR_GRID, DSD_PLOT_COLS,
 										tfields2);
@@ -145,10 +143,10 @@ class SolarView
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
-		final int pad = getContext().getInterPadding();
+		final int pad = getInterPadding();
 		final int w = bounds.right - bounds.left;
 		final int h = bounds.bottom - bounds.top;
 		if (w < h) {
@@ -437,7 +435,7 @@ class SolarView
 			// For the DSD data, use the last record for the sun data fields.
 			ContentValues data = s.lastRecord();
 			if (data != null) {
-				synchronized (surfaceHolder) {
+				synchronized (this) {
 				    String spots = "Spots: " + data.getAsInteger("nsunspot") +
                                     "(" + data.getAsInteger("asunspot") + ")";
 				    String flares = "Flares: " + data.getAsInteger("flares");
@@ -466,7 +464,7 @@ class SolarView
 	private void updateImage(CachedFile cache, URL url) {
 		for (int i = 0; i < SUN_URLS.length; ++i) {
 			if (SUN_URLS[i].equals(url)) {
-				synchronized (surfaceHolder) {
+				synchronized (this) {
 					CachedFile.Entry entry = cache.getFile(url);
 					String dstr = formatDate(entry.date);
 					SUN_CAPTIONS[i][2] = dstr;
@@ -524,7 +522,7 @@ class SolarView
 		final int action = event.getAction();
 		boolean done = false;
 
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			if (action == MotionEvent.ACTION_DOWN) {
 				if ((!altMode && imageBounds != null && imageBounds.contains(x, y)) ||
 								(altMode && imageBigBounds != null && imageBigBounds.contains(x, y))) {
@@ -551,7 +549,7 @@ class SolarView
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		if (!altMode) {
@@ -823,9 +821,9 @@ class SolarView
 	// Private Data.
 	// ******************************************************************** //
 
-	// The surface we're drawing on.
-	private final SurfaceHolder surfaceHolder;
-
+    // Application handle.
+    private final Tricorder appContext;
+    
 	// Database open/close helper.
 	private DbHelper databaseHelper = null;
 	

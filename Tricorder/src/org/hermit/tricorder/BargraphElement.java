@@ -18,13 +18,14 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.TextAtom;
 import org.hermit.utils.CharFormatter;
 import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.Log;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -45,7 +46,6 @@ class BargraphElement
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -55,22 +55,21 @@ class BargraphElement
 	 *							in the header bar.
 	 * @param	rows			The number of rows of text to display.
 	 */
-	public BargraphElement(Tricorder context, SurfaceHolder sh,
+	public BargraphElement(Tricorder context,
 							float unit, float range,
 							int gridCol, int plotCol,
 							String[] fields, int rows)
 	{
-		super(context, sh, gridCol, plotCol);
+		super(context, gridCol, plotCol);
 		
 		// Create the label.
-    	headerBar = new TextAtom(context, sh, fields, rows);
-    	headerBar.setTextSize(context.getBaseTextSize() - 5);
+    	headerBar = new TextAtom(context, fields, rows);
+    	headerBar.setTextSize(getBaseTextSize() - 5);
     	headerBar.setTextColor(plotCol);
     	fieldBuffers = headerBar.getBuffer();
     	
     	// The magnitude gauge bar.
-    	magBar = new BargraphAtom(context, sh,
-    							  unit, range,
+    	magBar = new BargraphAtom(context, unit, range,
     							  gridCol, plotCol,
 				 				  BargraphAtom.Orientation.LEFT);
 	}
@@ -89,7 +88,7 @@ class BargraphElement
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		int y = bounds.top;
@@ -113,7 +112,7 @@ class BargraphElement
 	 * 					Returns zero if we don't know yet.
 	 */
 	@Override
-	int getPreferredHeight() {
+	public int getPreferredHeight() {
 		return headerBar.getPreferredHeight() +
 						magBar.getPreferredHeight() + PADDING;
 	}
@@ -130,7 +129,7 @@ class BargraphElement
      * @param	plot			Colour for drawing data plots.
 	 */
 	@Override
-	void setDataColors(int grid, int plot) {
+	public void setDataColors(int grid, int plot) {
 		headerBar.setDataColors(grid, plot);
 		magBar.setDataColors(grid, plot);
 	}
@@ -257,7 +256,7 @@ class BargraphElement
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		headerBar.draw(canvas, now);

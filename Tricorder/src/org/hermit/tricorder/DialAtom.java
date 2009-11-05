@@ -18,13 +18,14 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -61,19 +62,17 @@ class DialAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
 	 * @param	orient		The orientation for this gauge.
 	 */
-	public DialAtom(Tricorder context, SurfaceHolder sh,
-							int gridCol, int plotCol,
-							Orientation orient)
+	public DialAtom(Tricorder context, int gridCol, int plotCol,
+					Orientation orient)
 	{
-		super(context, sh, gridCol, plotCol);
+		super(context, gridCol, plotCol);
 		
 		orientation = orient;
-		barThickness = context.getSidebarWidth();
+		barThickness = getSidebarWidth();
 	}
 
 
@@ -103,7 +102,7 @@ class DialAtom
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		int w = bounds.right - bounds.left;
@@ -230,7 +229,7 @@ class DialAtom
 		int bgColour = getBackgroundColor();
 
 		// Draw the base bar and arc.
-		paint.setColor(gridColour);
+		paint.setColor(getGridColor());
 		paint.setStyle(Paint.Style.FILL);
 		canvas.drawRect(barRect, paint);
 		paint.setStyle(Paint.Style.STROKE);
@@ -254,7 +253,7 @@ class DialAtom
 			paint.setStyle(Paint.Style.STROKE);
 			paint.setStrokeWidth(1.5f);
 			canvas.drawPath(pointerPath, paint);
-			paint.setColor(plotColour);
+			paint.setColor(getPlotColor());
 			paint.setStyle(Paint.Style.FILL);
 			canvas.drawPath(pointerPath, paint);
 			

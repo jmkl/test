@@ -18,9 +18,10 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -41,7 +42,6 @@ class Num3DElement
 	 * Set up this view.
 	 * 
 	 * @param	context		Parent application context.
-     * @param	sh			SurfaceHolder we're drawing in.
 	 * @param	gridCol		Colour for the framing elements.
 	 * @param	plotCol		Colour for the data display.
      * @param   fields      Strings representing the columns to display.
@@ -49,21 +49,21 @@ class Num3DElement
      *                      which will be measured to determine the
      *                      required space for each column.
 	 */
-	public Num3DElement(Tricorder context, SurfaceHolder sh,
+	public Num3DElement(Tricorder context,
 						int gridCol, int plotCol, String[] fields)
 	{
-		super(context, sh, gridCol, plotCol);
+		super(context, gridCol, plotCol);
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, sh, fields);
+    	headerBar = new HeaderBarElement(context, fields);
     	headerBar.setBarColor(gridCol);
     	
     	// Create the left-side bar.
-    	rightBar = new Element(context, sh);
+    	rightBar = new Element(context);
     	rightBar.setBackgroundColor(gridCol);
 		
     	// Create the numeric display.
-    	dataDisplay = new Num3DAtom(context, sh, gridCol, plotCol);
+    	dataDisplay = new Num3DAtom(context, gridCol, plotCol);
 	}
 
 	   
@@ -80,7 +80,7 @@ class Num3DElement
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		int y = bounds.top;
@@ -89,10 +89,10 @@ class Num3DElement
 		int headHeight = headerBar.getPreferredHeight();
 		headerBar.setGeometry(new Rect(bounds.left, y,
 									   bounds.right, y + headHeight));
-		y += headHeight + appContext.getInnerGap();
+		y += headHeight + getInnerGap();
 
-		int bar = appContext.getSidebarWidth();
-		int ex = bounds.right - bar - getContext().getInterPadding();
+		int bar = getSidebarWidth();
+		int ex = bounds.right - bar - getInterPadding();
 		int dataHeight = dataDisplay.getPreferredHeight();
 		dataDisplay.setGeometry(new Rect(bounds.left, y, ex, y + dataHeight));
 		
@@ -108,8 +108,8 @@ class Num3DElement
 	 * 					Returns zero if setTextFields() hasn't been called.
 	 */
 	@Override
-	int getPreferredWidth() {
-		return getContext().getSidebarWidth() + getContext().getInterPadding() +
+	public int getPreferredWidth() {
+		return getSidebarWidth() + getInterPadding() +
 											dataDisplay.getPreferredWidth();
 	}
 	
@@ -121,8 +121,8 @@ class Num3DElement
 	 * 					Returns zero if setTextFields() hasn't been called.
 	 */
 	@Override
-	int getPreferredHeight() {
-		return headerBar.getPreferredHeight() + getContext().getInnerGap() +
+	public int getPreferredHeight() {
+		return headerBar.getPreferredHeight() + getInnerGap() +
 											dataDisplay.getPreferredHeight();
 	}
 	
@@ -138,7 +138,7 @@ class Num3DElement
      * @param	plot			Colour for drawing data plots.
 	 */
 	@Override
-	void setDataColors(int grid, int plot) {
+	public void setDataColors(int grid, int plot) {
 		headerBar.setBarColor(grid);
     	rightBar.setBackgroundColor(grid);
 		dataDisplay.setDataColors(grid, plot);
@@ -205,7 +205,7 @@ class Num3DElement
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		headerBar.draw(canvas, now);

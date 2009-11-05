@@ -91,7 +91,7 @@ class TricorderView
 
 		currentView = null;
 		
-		createGui(context, surfaceHolder);
+		createGui(context);
 
 		// Make sure we get key events.
         setFocusable(true);
@@ -103,9 +103,8 @@ class TricorderView
      * Create the GUI for this view.
      * 
      * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
      */
-    private void createGui(Tricorder context, SurfaceHolder sh) {
+    private void createGui(Tricorder context) {
      	// Get the main sensor manager, as several views use it.
     	SensorManager sm = (SensorManager)
     					context.getSystemService(Context.SENSOR_SERVICE);
@@ -115,7 +114,7 @@ class TricorderView
     		switch (vdef) {
     		case GRA:
     			float gravUnit = SensorManager.STANDARD_GRAVITY;
-    	    	vdef.view = new TridataView(context, sh, sm,
+    	    	vdef.view = new TridataView(context, sm,
     	    								Sensor.TYPE_ACCELEROMETER,
     	    								gravUnit, 2.2f,
     	    							    0xffccccff, 0xffff9e63,
@@ -123,23 +122,23 @@ class TricorderView
     	    	break;
     		case MAG:
     	        float magUnit = SensorManager.MAGNETIC_FIELD_EARTH_MAX;
-    	        vdef.view = new TridataView(context, sh, sm,
+    	        vdef.view = new TridataView(context, sm,
 											Sensor.TYPE_MAGNETIC_FIELD,
 											magUnit, 2.2f,
 					    					0xff6666ff, 0xffffcc00,
 					    					0xffcc6666, 0xffffcc00);
     	    	break;
     		case ENV:
-    	    	vdef.view = new MultiGraphView(context, sh, sm);
+    	    	vdef.view = new MultiGraphView(context, sm);
     	        break;
     		case GEO:
-    	    	vdef.view = new GeoView(context, sh, sm);
+    	    	vdef.view = new GeoView(context, sm);
     	        break;
     		case COM:
-    	    	vdef.view = new CommView(context, sh);
+    	    	vdef.view = new CommView(context);
     	        break;
     		case SOL:
-    	    	vdef.view = new SolarView(context, sh);
+    	    	vdef.view = new SolarView(context);
     	        break;
     		}
     	}

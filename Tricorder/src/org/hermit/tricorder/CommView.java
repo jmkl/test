@@ -20,6 +20,8 @@ package org.hermit.tricorder;
 
 import java.util.List;
 
+import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.TextAtom;
 import org.hermit.tricorder.Tricorder.Sound;
 import org.hermit.utils.CharFormatter;
 
@@ -39,7 +41,6 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -58,13 +59,11 @@ class CommView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 */
-	public CommView(Tricorder context, SurfaceHolder sh) {
-		super(context, sh);
+	public CommView(Tricorder context) {
+		super(context);
 		
 		appContext = context;
-		surfaceHolder = sh;
 		
 		// Get the information providers we need.
         telephonyManager =
@@ -73,21 +72,21 @@ class CommView
 		
         // Create the section header bars.
 		String[] cfields = { getRes(R.string.lab_cell) , "", "999 days 23h" };
-		cellHead = new HeaderBarElement(context, sh, cfields);
+		cellHead = new HeaderBarElement(context, cfields);
 		cellHead.setBarColor(0xffdfb682);
 		cellHead.setText(0, 0, getRes(R.string.lab_cell));
 		String[] wfields = {
 			getRes(R.string.lab_wifi), "xx", "999 days 23h"
 
 		};
-		wifiHead = new HeaderBarElement(context, sh, wfields);
+		wifiHead = new HeaderBarElement(context, wfields);
 		wifiHead.setBarColor(0xffdfb682);
 		wifiHead.setText(0, 0, getRes(R.string.lab_wifi));
 		
 		// Create the label.
 		String[] wsfields = { getRes(R.string.msgPoweringOff) };
-    	wifiStatus = new TextAtom(context, sh, wsfields, 1);
-    	wifiStatus.setTextSize(context.getMiniTextSize());
+    	wifiStatus = new TextAtom(context, wsfields, 1);
+    	wifiStatus.setTextSize(getMiniTextSize());
     	wifiStatus.setTextColor(COLOUR_PLOT);
     	wifiStatusBuffer = wifiStatus.getBuffer();
     	CharFormatter.formatString(wifiStatusBuffer[0][0], 0, "?", -1);
@@ -100,14 +99,14 @@ class CommView
 		//     Current signal strength in dBm ranges from -113 - -51dBm
 		// We'll assume an ASU range from 0 to 31.
 		String[] ctext = { "000000000", "#", "T - Mobile X", "00" };
-		cellBar = new BargraphElement(context, sh, 5f, 6.2f,
+		cellBar = new BargraphElement(context, 5f, 6.2f,
 									  COLOUR_GRID, COLOUR_PLOT, ctext, 1);
         cellBar.clearCid();
         cellBar.setLabel(getRes(R.string.msgNoData));
         cellBar.clearAsu();
 		cellBars = new BargraphElement[MAX_CELL];
 		for (int c = 0; c < MAX_CELL; ++c) {
-			cellBars[c] = new BargraphElement(context, sh, 5f, 6.2f,
+			cellBars[c] = new BargraphElement(context, 5f, 6.2f,
 					                          COLOUR_GRID, COLOUR_GRID, ctext, 1);
 	        cellBars[c].clearCid();
 	        cellBars[c].setLabel(getRes(R.string.msgNoData));
@@ -119,15 +118,15 @@ class CommView
 		wifiBars = new BargraphElement[MAX_WIFI];
 		String[] wtext = { "2.456", "#", "aw19.alamedawireless.o", "00" };
 		for (int w = 0; w < MAX_WIFI; ++w) {
-			wifiBars[w] = new BargraphElement(context, sh, 5f, 8.2f,
+			wifiBars[w] = new BargraphElement(context, 5f, 8.2f,
 											  COLOUR_GRID, COLOUR_PLOT,
 					  						  wtext, 1);
 		}
     	
     	// Create the left-side bars.
-    	cRightBar = new Element(context, sh);
+    	cRightBar = new Element(context);
     	cRightBar.setBackgroundColor(COLOUR_GRID);
-    	wLeftBar = new Element(context, sh);
+    	wLeftBar = new Element(context);
     	wLeftBar.setBackgroundColor(COLOUR_GRID);
 	}
 
@@ -145,19 +144,19 @@ class CommView
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
-        int bar = appContext.getSidebarWidth();
-		int pad = appContext.getInterPadding();
+        int bar = getSidebarWidth();
+		int pad = getInterPadding();
 		
-		int sx = bounds.left + appContext.getInterPadding();
+		int sx = bounds.left + getInterPadding();
 		int y = bounds.top;
 		
 		// Lay out the cellular heading.
 		int cheadHeight = cellHead.getPreferredHeight();
 		cellHead.setGeometry(new Rect(sx, y, bounds.right, y + cheadHeight));
-    	y += cheadHeight + appContext.getInnerGap();
+    	y += cheadHeight + getInnerGap();
 
 		// Provisionally position the right side bar.
 		Rect rbrect = new Rect(bounds.right - bar, y, bounds.right, -1);
@@ -172,18 +171,18 @@ class CommView
 		for (int i = 0; i < MAX_CELL; ++i) {
 			int bh = cellBars[i].getPreferredHeight();
 			cellBars[i].setGeometry(new Rect(sx, y, ex, y + bh));
-	    	y += bh + appContext.getInnerGap();
+	    	y += bh + getInnerGap();
 		}
 
 		// Now finalize the right bar.
 		rbrect.bottom = y;
 		cRightBar.setGeometry(rbrect);
 		
-		y += appContext.getInterPadding();
+		y += getInterPadding();
 
 		int wheadHeight = wifiHead.getPreferredHeight();
 		wifiHead.setGeometry(new Rect(sx, y, bounds.right, y + wheadHeight));
-    	y += wheadHeight + appContext.getInnerGap();
+    	y += wheadHeight + getInnerGap();
 
 		rbrect = new Rect(bounds.right - bar, y, bounds.right, -1);
 		ex = bounds.right - bar - pad;
@@ -191,17 +190,17 @@ class CommView
 		// Place the WiFi status field.
 		int wsHeight = wifiStatus.getPreferredHeight();
 		wifiStatus.setGeometry(new Rect(sx, y, ex, y + wsHeight));
-    	y += wsHeight + appContext.getInnerGap();
+    	y += wsHeight + getInnerGap();
 
     	// Place all the WiFi bars.
 		for (int i = 0; i < MAX_WIFI; ++i) {
 			int bh = wifiBars[i].getPreferredHeight();
 			wifiBars[i].setGeometry(new Rect(sx, y, ex, y + bh));
-	    	y += bh + appContext.getInnerGap();
+	    	y += bh + getInnerGap();
 		}
 		
 		// Now finalize the left bar.
-		rbrect.bottom = y - appContext.getInnerGap();
+		rbrect.bottom = y - getInnerGap();
 		wLeftBar.setGeometry(rbrect);
 	}
 
@@ -347,7 +346,7 @@ class CommView
 		
 		@Override
 		public void onCellLocationChanged(CellLocation location) {
-			synchronized (surfaceHolder) {
+			synchronized (this) {
 				if (location instanceof GsmCellLocation) {
 					GsmCellLocation gloc = (GsmCellLocation) location;
 					cellId = gloc.getCid();
@@ -358,7 +357,7 @@ class CommView
 		
 		@Override
 		public void onDataActivity(int direction) {
-			synchronized (surfaceHolder) {
+			synchronized (this) {
 				switch (direction) {
 				case TelephonyManager.DATA_ACTIVITY_NONE:
 					cellHead.setTopIndicator(false, 0xffff0000);
@@ -387,7 +386,7 @@ class CommView
 		
 		@Override
 		public void onServiceStateChanged(ServiceState serviceState) {
-			synchronized (surfaceHolder) {
+			synchronized (this) {
 				cellState = serviceState.getState();
 				cellOp = serviceState.getOperatorAlphaLong();
 				updateHead();
@@ -399,7 +398,7 @@ class CommView
 		
 		@Override
 		public void onSignalStrengthChanged(int asu) {
-			synchronized (surfaceHolder) {
+			synchronized (this) {
 				cellAsu = asu;
 				updateHead();
 				if (cellState == ServiceState.STATE_IN_SERVICE ||
@@ -477,7 +476,7 @@ class CommView
 	 * Get the current WiFi power state.  Update the display.
 	 */
 	private void getWifiState() {
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			wifiPowerState = wifiManager.getWifiState();
 			wifiPowerName = "?";
 			wifiRunning = false;
@@ -528,7 +527,7 @@ class CommView
 	 * Get the latest WiFi connection status.  Update the display.
 	 */
 	private void getWifiConnection() {
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			// If WiFi is off, don't bother.
 			if (wifiPowerState != WifiManager.WIFI_STATE_ENABLED)
 				return;
@@ -613,7 +612,7 @@ class CommView
 	    final List<NeighboringCellInfo> csigs = telephonyManager.getNeighboringCellInfo();
 	    final long ctime = System.currentTimeMillis();
 		
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			cellSignals = csigs;
 			cellSignalsTime = ctime;
 			
@@ -647,7 +646,7 @@ class CommView
 		final List<ScanResult> wsigs = wifiManager.getScanResults();
 		final long wtime = System.currentTimeMillis();
 		
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			wifiSignals = wsigs;
 			wifiSignalsTime = wtime;
 			
@@ -713,7 +712,7 @@ class CommView
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		// Draw the graph views.
@@ -797,9 +796,6 @@ class CommView
 	
 	// The application context we're running in.
 	private Tricorder appContext;
-	
-	// The surface we're drawing on.
-	private SurfaceHolder surfaceHolder;
 	
     // The telephony manager, for cellular state updates.
 	private TelephonyManager telephonyManager;

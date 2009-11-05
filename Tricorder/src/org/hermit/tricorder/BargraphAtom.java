@@ -18,10 +18,11 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -58,7 +59,6 @@ class BargraphAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -66,12 +66,12 @@ class BargraphAtom
 	 * @param	plotCol			Colour for the graph plot.
 	 * @param	orient		    The orientation for this gauge.
 	 */
-	public BargraphAtom(Tricorder context, SurfaceHolder sh,
+	public BargraphAtom(Tricorder context,
 							float unit, float range,
 							int gridCol, int plotCol,
 							Orientation orient)
 	{
-		super(context, sh, gridCol, plotCol);
+		super(context, gridCol, plotCol);
 		
 		unitSize = unit;
 		plotRange = range;
@@ -93,7 +93,7 @@ class BargraphAtom
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		plotWidth = bounds.right - bounds.left;
@@ -136,7 +136,7 @@ class BargraphAtom
 	 * 					Returns zero if we don't know yet.
 	 */
 	@Override
-	int getPreferredWidth() {
+	public int getPreferredWidth() {
 		return DEF_PLOT_WIDTH;
 	}
 	
@@ -148,7 +148,7 @@ class BargraphAtom
 	 * 					Returns zero if we don't know yet.
 	 */
 	@Override
-	int getPreferredHeight() {
+	public int getPreferredHeight() {
 		return DEF_PLOT_WIDTH;
 	}
 	
@@ -200,7 +200,7 @@ class BargraphAtom
 		Rect bounds = getBounds();
 
 		// Draw the outline and scale lines.
-		paint.setColor(gridColour);
+		paint.setColor(getGridColor());
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(SCALE_WIDTH);
 		for (int off = 0; off < plotRange * unitScale; off += unitScale) {
@@ -263,7 +263,7 @@ class BargraphAtom
 			}
 			
 			// Draw the bar.
-			paint.setColor(plotColour);
+			paint.setColor(getPlotColor());
 			paint.setStyle(Paint.Style.FILL);
 			canvas.drawRect(baseX, baseY, endX, endY, paint);
 		}

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.hermit.android.instruments.Element;
 import org.hermit.android.net.CachedFile;
 
 import android.graphics.Bitmap;
@@ -32,7 +33,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -51,15 +51,12 @@ class ImageAtom
 	 * Set up this atom.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
      * @param	cache			File cache which will hold the image files.
 	 * @param	urls			URLs of the specific  images we will want
 	 * 							to display.
 	 */
-	ImageAtom(Tricorder context, SurfaceHolder sh, CachedFile cache, URL[] urls) {
-		super(context, sh);
-
-		surfaceHolder = sh;
+	ImageAtom(Tricorder context, CachedFile cache, URL[] urls) {
+		super(context);
 
 		fileCache = cache;
 		imageUrls = urls;
@@ -88,7 +85,7 @@ class ImageAtom
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		imageX = bounds.left;
@@ -102,11 +99,11 @@ class ImageAtom
 		
 		// Add all the URLs to the image cache.  Since we may have the
 		// cache database already, try to get the images.
-		long delay = 100;
+		long delay = 1000;
 		for (URL url : imageUrls) {
 		    imageCache.put(url, null);
 		    loadHandler.postDelayed(new Loader(url), delay);
-		    delay += 200;
+		    delay += 1000;
 		}
 	}
 
@@ -117,7 +114,7 @@ class ImageAtom
 	    }
         @Override
         public void run() {
-            synchronized (ImageAtom.this) {
+            synchronized (imageCache) {
                 CachedFile.Entry entry = fileCache.getFile(imgUrl);
                 if (entry.path != null)
                     imageLoaded(imgUrl, entry.path);
@@ -145,7 +142,7 @@ class ImageAtom
 		URL url = (URL) arg;
 		CachedFile.Entry entry = cache.getFile(url);
 
-		synchronized (surfaceHolder) {
+		synchronized (imageCache) {
 			// Make sure it's an image we're interested in.
 			if (!imageCache.containsKey(url))
 				return;
@@ -199,10 +196,9 @@ class ImageAtom
 	 * @param	index			Index of the image to display.
 	 */
 	public void setDisplayedImage(int index) {
-		synchronized (surfaceHolder) {
+		synchronized (imageCache) {
 			currentImage = imageUrls[index];
-			if (imageCache != null)
-				currentBitmap = imageCache.get(currentImage);
+			currentBitmap = imageCache.get(currentImage);
 		}
 	}
 	
@@ -241,9 +237,6 @@ class ImageAtom
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-
-	// The surface we're drawing on.
-	private SurfaceHolder surfaceHolder;
 
 	// The list of URLs we're to display.
 	private URL[] imageUrls = null;

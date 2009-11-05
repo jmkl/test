@@ -27,7 +27,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -49,7 +48,6 @@ class TridataView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	sman			The SensorManager to get data from.
 	 * @param	sensor			The ID of the sensor to read:
 	 * 							Sensor.TYPE_XXX.
@@ -61,16 +59,15 @@ class TridataView
 	 * @param	gridCol2		Colour for the graph grid in rel mode.
 	 * @param	plotCol2		Colour for the graph plot in rel mode.
 	 */
-	public TridataView(Tricorder context, SurfaceHolder sh,
+	public TridataView(Tricorder context,
 					   SensorManager sman, int sensor,
 					   float unit, float range,
 					   int gridCol1, int plotCol1,
 					   int gridCol2, int plotCol2)
 	{
-		super(context, sh);
+		super(context);
 		
 		appContext = context;
-		surfaceHolder = sh;
 		sensorManager = sman;
 		sensorId = sensor;
 		dataUnit = unit;
@@ -86,20 +83,20 @@ class TridataView
         sensorEquipped = (sensorManager.getSensors() & sensorId) != 0;
 
         // Add the gravity 3-axis plot.
-        plotView = new AxisElement(context, sh, unit, range,
+        plotView = new AxisElement(context, unit, range,
 				 				   gridCol1, plotCol1,
 				 				   new String[] { "XXXXXXXXXXXXXXXXXXXX" });
 
         // Add the gravity magnitude chart.
-        chartView = new MagnitudeElement(context, sh, unit, range,
+        chartView = new MagnitudeElement(context, unit, range,
         								 gridCol1, plotCol1,
         								 new String[] { "XXXXXXXXXXXXXXXXXXXX" });
 
         // Add the numeric display.
-        numView = new Num3DElement(context, sh, gridCol1, plotCol1,
+        numView = new Num3DElement(context, gridCol1, plotCol1,
                                    new String[] { "XXXXXXXXXXXXXXXXXXXX" });
         
-        xyzView = new MagnitudeElement(context, sh, 3, unit, range,
+        xyzView = new MagnitudeElement(context, 3, unit, range,
 				 					   gridCol1, XYZ_PLOT_COLS,
 				 					   new String[] { "XXXXXXXXXXXXXXXXXXXX" }, true);
 
@@ -120,7 +117,7 @@ class TridataView
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		if (bounds.right - bounds.left < bounds.bottom - bounds.top)
@@ -140,7 +137,7 @@ class TridataView
 	 * 						its parent View.
      */
 	private void layoutPortrait(Rect bounds) {
-		final int pad = appContext.getInterPadding();
+		final int pad = getInterPadding();
 		final int h = bounds.bottom - bounds.top;
 		
 		final int plotHeight = h / 3;
@@ -172,7 +169,7 @@ class TridataView
 	 * 						its parent View.
      */
 	private void layoutLandscape(Rect bounds) {
-		final int pad = appContext.getInterPadding();
+		final int pad = getInterPadding();
 		final int w = bounds.right - bounds.left;
 		final int h = bounds.bottom - bounds.top;
 
@@ -211,7 +208,7 @@ class TridataView
 	void setSimulateMode(boolean fakeIt) {
 		// If we're not faking it, reset all the graphs.
 		if (fakeIt && !sensorEquipped) {
-			synchronized (surfaceHolder) {
+			synchronized (this) {
 				dataGenerator = new DataGenerator(this, sensorId, 3,
 												  dataUnit, dataRange);
 				plotView.setIndicator(true, 0xff0000ff);
@@ -220,7 +217,7 @@ class TridataView
 				xyzView.setIndicator(true, 0xff0000ff);
 			}
 		} else {
-			synchronized (surfaceHolder) {
+			synchronized (this) {
 				dataGenerator = null;
 				plotView.setIndicator(false, 0xff0000ff);
 				plotView.clearValues();
@@ -337,7 +334,7 @@ class TridataView
         if (values.length < 3)
             return;
 
-        synchronized (surfaceHolder) {
+        synchronized (this) {
             // If we're in relative mode, subtract the baseline values.
             if (relativeMode) {
                 // First time through, set the baseline values.
@@ -401,7 +398,7 @@ class TridataView
 		final int action = event.getAction();
 		boolean done = false;
 
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			if (action == MotionEvent.ACTION_DOWN) {
 				if (plotBounds != null && plotBounds.contains(x, y)) {
 					setRelativeMode(!relativeMode);
@@ -432,7 +429,7 @@ class TridataView
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
     	// If the sensor is not equipped, fake the data if requested to.
@@ -469,9 +466,6 @@ class TridataView
 	// Application handle.
 	private Tricorder appContext;
 	
-	// The surface we're drawing on.
-	private SurfaceHolder surfaceHolder;
-
 	// The sensor manager, which we use to interface to all sensors.
     private SensorManager sensorManager;
     

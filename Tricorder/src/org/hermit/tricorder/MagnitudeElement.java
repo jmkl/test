@@ -21,12 +21,12 @@ package org.hermit.tricorder;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.hermit.android.instruments.Element;
 import org.hermit.android.net.WebBasedData;
 
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -48,7 +48,6 @@ class MagnitudeElement
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -57,12 +56,12 @@ class MagnitudeElement
 	 * @param	fields			Strings representing the columns to display
 	 *							in the header bar.
 	 */
-	public MagnitudeElement(Tricorder context, SurfaceHolder sh,
+	public MagnitudeElement(Tricorder context,
 							float unit, float range,
 							int gridCol, int plotCol,
 							String[] fields)
 	{
-		this(context, sh, 1, unit, range,
+		this(context, 1, unit, range,
 						gridCol, new int[] { plotCol }, fields, false);
     }
 
@@ -71,7 +70,6 @@ class MagnitudeElement
      * Set up this view.
      * 
      * @param   context         Parent application context.
-     * @param   sh              SurfaceHolder we're drawing in.
      * @param   num             The number of values plotted on this graph.
      * @param   unit            The size of a unit of measure (for example,
      *                          1g of acceleration).
@@ -81,12 +79,12 @@ class MagnitudeElement
      * @param   fields          Strings representing the columns to display
      *                          in the header bar.
      */
-    public MagnitudeElement(Tricorder context, SurfaceHolder sh,
+    public MagnitudeElement(Tricorder context,
                             int num, float unit, float range,
                             int gridCol, int[] plotCols,
                             String[] fields)
     {
-        this(context, sh, num, unit, range,
+        this(context, num, unit, range,
                 gridCol, plotCols, fields, false);
 	}
 
@@ -95,7 +93,6 @@ class MagnitudeElement
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	num				The number of values plotted on this graph.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
@@ -107,15 +104,13 @@ class MagnitudeElement
 	 * @param	centered		If true, the zero value is in the centre;
 	 * 							else at the left or bottom.
 	 */
-	public MagnitudeElement(Tricorder context, SurfaceHolder sh,
+	public MagnitudeElement(Tricorder context,
 						    int num, float unit, float range,
 							int gridCol, int[] plotCols,
 							String[] fields, boolean centered)
 	{
-		super(context, sh, gridCol, plotCols[0]);
+		super(context, gridCol, plotCols[0]);
 		
-		surfaceHolder = sh;
-
 		numPlots = num;
 		//		baseDataUnit = unit;
 		//		baseDataRange = range;
@@ -126,16 +121,16 @@ class MagnitudeElement
 		tempValue = new float[numPlots];
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, sh, fields);
+    	headerBar = new HeaderBarElement(context, fields);
     	headerBar.setBarColor(gridCol);
     	
     	// The magnitude gauge bar.
-    	magBar = new GaugeAtom(context, sh, num, unit, range,
+    	magBar = new GaugeAtom(context, num, unit, range,
     						   gridCol, plotCols,
     						   GaugeAtom.Orientation.RIGHT, centered);
 
     	// The graph plot.
-    	chartPlot = new ChartAtom(context, sh, num, unit, range,
+    	chartPlot = new ChartAtom(context, num, unit, range,
     							  gridCol, plotCols, centered);
 	}
 
@@ -173,7 +168,7 @@ class MagnitudeElement
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		// First position the header bar.
@@ -181,12 +176,12 @@ class MagnitudeElement
 		headerBar.setGeometry(new Rect(bounds.left, bounds.top,
 									   bounds.right, bounds.top + headHeight));
 		
-		int chartTop = bounds.top + headHeight + getContext().getInnerGap();
+		int chartTop = bounds.top + headHeight + getInnerGap();
 		
 		// Position the magnitude bar.
 		int barWidth = magBar.getPreferredWidth();
 		int barLeft = bounds.right - barWidth;
-		int gap = getContext().getInnerGap();
+		int gap = getInnerGap();
 		magBar.setGeometry(new Rect(barLeft, chartTop,
 									bounds.right, bounds.bottom));
 		
@@ -207,7 +202,7 @@ class MagnitudeElement
      * @param	plot			Colour for drawing data plots.
 	 */
 	@Override
-	void setDataColors(int grid, int plot) {
+	public void setDataColors(int grid, int plot) {
 		setDataColors(grid, new int[] { plot });
 	}
 	
@@ -332,17 +327,19 @@ class MagnitudeElement
 	 * @param	values				The new values.
 	 */
 	public void setValue(float[] values) {
-	    for (int i = 0; i < values.length; ++i) {
-	        float value = values[i];
-	        if (Float.isInfinite(value))
-	            value = dataUnit;
-	        else if (value / dataUnit > dataRange)
-	            setDataRange(value / dataUnit);
-	        currentValue[i] = value;
+	    synchronized (currentValue) {
+	        for (int i = 0; i < values.length; ++i) {
+	            float value = values[i];
+	            if (Float.isInfinite(value))
+	                value = dataUnit;
+	            else if (value / dataUnit > dataRange)
+	                setDataRange(value / dataUnit);
+	            currentValue[i] = value;
+	        }
+
+	        magBar.setValue(currentValue);
+	        chartPlot.setValue(currentValue);
 	    }
-		
-		magBar.setValue(currentValue);
-		chartPlot.setValue(currentValue);
 	}
 
 
@@ -379,11 +376,9 @@ class MagnitudeElement
 
 		// Now, go through all the data sets and add them.
 		while (c.moveToNext()) {
-			synchronized (surfaceHolder) {
-				for (int i = 0; i < numPlots && i < columns.length; ++i)
-					tempValue[i] = c.getFloat(columns[i]);
-				setValue(tempValue);
-			}
+		    for (int i = 0; i < numPlots && i < columns.length; ++i)
+		        tempValue[i] = c.getFloat(columns[i]);
+		    setValue(tempValue);
 		}
 		c.close();
 
@@ -403,7 +398,7 @@ class MagnitudeElement
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		headerBar.draw(canvas, now);
@@ -424,9 +419,6 @@ class MagnitudeElement
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-
-	// The surface we're drawing on.
-	private final SurfaceHolder surfaceHolder;
 
 	// If we're getting data from a data source, this is the source.
 	private WebBasedData dataSource = null;

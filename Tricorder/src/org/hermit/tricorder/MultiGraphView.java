@@ -24,7 +24,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -83,13 +82,11 @@ class MultiGraphView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	sman			The SensorManager to get data from.
 	 */
-	public MultiGraphView(Tricorder context, SurfaceHolder sh, SensorManager sman) {
-		super(context, sh);
+	public MultiGraphView(Tricorder context, SensorManager sman) {
+		super(context);
 		
-		surfaceHolder = sh;
 		sensorManager = sman;
 		
         // Add the magnitude charts and labels for each value.
@@ -97,7 +94,7 @@ class MultiGraphView
 		String[] tfields = { flab, "00000.000" };
 		
         for (GraphDefinition def : GraphDefinition.values()) {
-        	def.view = new MagnitudeElement(context, sh,
+        	def.view = new MagnitudeElement(context,
         								    def.dataUnit, def.dataRange,
         								    def.gridColour, def.plotColour,
         								    tfields);
@@ -124,10 +121,10 @@ class MultiGraphView
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
-		int pad = getContext().getInterPadding();
+		int pad = getInterPadding();
 		int h = bounds.bottom - bounds.top;
 		int graphHeight = (h - pad * 2) / 3;
 
@@ -157,7 +154,7 @@ class MultiGraphView
 	@Override
 	void setSimulateMode(boolean fakeIt) {
 		String labStr = getRes(R.string.msgNoData);
-		synchronized (surfaceHolder) {
+		synchronized (this) {
 			// For each graph, put it in simulation if requested and
 			// if its sensor is not present.
 			for (GraphDefinition def : GraphDefinition.values()) {
@@ -263,7 +260,7 @@ class MultiGraphView
 		else
 			return;
 
-		synchronized (surfaceHolder) {
+		synchronized (this) {
         	valId.view.setText(0, 1, format(value));
 			valId.view.setValue(value);
 		}
@@ -301,7 +298,7 @@ class MultiGraphView
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		// Draw the graph views.
@@ -327,9 +324,6 @@ class MultiGraphView
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-
-	// The surface we're drawing on.
-	private SurfaceHolder surfaceHolder;
 
 	// The sensor manager, which we use to interface to all sensors.
     private SensorManager sensorManager;

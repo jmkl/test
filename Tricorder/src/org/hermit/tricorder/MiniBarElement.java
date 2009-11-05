@@ -18,11 +18,12 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.TextAtom;
 import org.hermit.utils.CharFormatter;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -43,7 +44,6 @@ class MiniBarElement
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -51,23 +51,21 @@ class MiniBarElement
 	 * @param	plotCol			Colour for the graph plot.
      * @param   text            Initial text for the label.
 	 */
-	public MiniBarElement(Tricorder context, SurfaceHolder sh,
+	public MiniBarElement(Tricorder context,
 							float unit, float range,
 							int gridCol, int plotCol, String text)
 	{
-		super(context, sh, gridCol, plotCol);
+		super(context, gridCol, plotCol);
 		
 		// Create the label.
         String[] template = new String[] { text };
-    	barLabel = new TextAtom(context, sh, template, 1);
-    	barLabel.setTextSize(context.getTinyTextSize());
+    	barLabel = new TextAtom(context, template, 1);
+    	barLabel.setTextSize(getTinyTextSize());
     	barLabel.setTextColor(plotCol);
     	fieldBuffers = barLabel.getBuffer();
     	
     	// The magnitude gauge bar.
-    	magBar = new BargraphAtom(context, sh,
-    							  unit, range,
-    							  gridCol, plotCol,
+    	magBar = new BargraphAtom(context, unit, range, gridCol, plotCol,
 				 				  BargraphAtom.Orientation.BOTTOM);
 	}
 
@@ -85,7 +83,7 @@ class MiniBarElement
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		int x = bounds.left;
@@ -112,7 +110,7 @@ class MiniBarElement
 	 * 					Returns zero if we don't know yet.
 	 */
 	@Override
-	int getPreferredWidth() {
+	public int getPreferredWidth() {
 	    int bw = 8;
 	    int lw = barLabel.getPreferredWidth();
 		return bw > lw ? bw : lw;
@@ -126,7 +124,7 @@ class MiniBarElement
      *                  Returns zero if we don't know yet.
      */
     @Override
-    int getPreferredHeight() {
+    public int getPreferredHeight() {
         return barLabel.getPreferredHeight() - 4 + magBar.getPreferredHeight();
     }
     
@@ -142,7 +140,7 @@ class MiniBarElement
      * @param	plot			Colour for drawing data plots.
 	 */
 	@Override
-	void setDataColors(int grid, int plot) {
+	public void setDataColors(int grid, int plot) {
 		barLabel.setDataColors(grid, plot);
 		magBar.setDataColors(grid, plot);
 	}
@@ -192,7 +190,7 @@ class MiniBarElement
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		barLabel.draw(canvas, now);

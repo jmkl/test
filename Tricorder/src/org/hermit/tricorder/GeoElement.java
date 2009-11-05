@@ -18,6 +18,8 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.TextAtom;
 import org.hermit.utils.CharFormatter;
 import org.hermit.utils.CharFormatter.OverflowException;
 
@@ -25,7 +27,6 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.location.Location;
 import android.util.Log;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -43,15 +44,14 @@ class GeoElement
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	gridCol			Colour for the framing elements.
 	 * @param	plotCol			Colour for the data display.
 	 * @param	course			If true, show course info.
 	 */
-	public GeoElement(Tricorder context, SurfaceHolder sh,
+	public GeoElement(Tricorder context,
 					  int gridCol, int plotCol, boolean course)
 	{
-		super(context, sh, gridCol, plotCol);
+		super(context, gridCol, plotCol);
 		
 		final String[] hFields = {
 			getRes(R.string.title_network), "xx", "999 days 23h",
@@ -64,13 +64,13 @@ class GeoElement
 			getRes(R.string.lab_speed), "999.9m/s",
 		};
 		
-		headerBar = new HeaderBarElement(context, sh, hFields);
+		headerBar = new HeaderBarElement(context, hFields);
 		headerBar.setBarColor(gridCol);
  
-		posFields = new TextAtom(context, sh, bFields, 2);
+		posFields = new TextAtom(context, bFields, 2);
         posBuffers = posFields.getBuffer();
 		if (course) {
-			courseFields = new TextAtom(context, sh, cFields, 1);
+			courseFields = new TextAtom(context, cFields, 1);
 	        courseBuffers = courseFields.getBuffer();
 		} else {
 			courseFields = null;
@@ -78,7 +78,7 @@ class GeoElement
 		}
 
     	// Create the left-side bar.
-    	rightBar = new Element(context, sh);
+    	rightBar = new Element(context);
     	rightBar.setBackgroundColor(gridCol);
 	}
 
@@ -96,7 +96,7 @@ class GeoElement
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 
 		int y = bounds.top;
@@ -105,10 +105,10 @@ class GeoElement
 		int headHeight = headerBar.getPreferredHeight();
 		headerBar.setGeometry(new Rect(bounds.left, y,
 									   bounds.right, y + headHeight));
-		y += headHeight + appContext.getInnerGap();
+		y += headHeight + getInnerGap();
 
-        int bar = appContext.getSidebarWidth();
-        int pad = appContext.getInterPadding();
+        int bar = getSidebarWidth();
+        int pad = getInterPadding();
 		int ex = bounds.right - bar - pad;
 
 		// Position the right bar, except we don't know the height yet.
@@ -140,9 +140,9 @@ class GeoElement
      *                  Returns zero if setTextFields() hasn't been called.
      */
     @Override
-    int getPreferredWidth() {
-        int bar = appContext.getSidebarWidth();
-        int pad = appContext.getInterPadding();
+    public int getPreferredWidth() {
+        int bar = getSidebarWidth();
+        int pad = getInterPadding();
         int w = headerBar.getPreferredWidth();
         int p = posFields.getPreferredWidth() + bar + pad;
         if (p > w)
@@ -163,7 +163,7 @@ class GeoElement
 	 * 					Returns zero if setTextFields() hasn't been called.
 	 */
 	@Override
-	int getPreferredHeight() {
+	public int getPreferredHeight() {
 		return headerBar.getPreferredHeight() +
 						posFields.getPreferredHeight() +
 						(courseFields == null ? 0 :
@@ -182,7 +182,7 @@ class GeoElement
      * @param	plot			Colour for drawing data plots.
 	 */
 	@Override
-	void setDataColors(int grid, int plot) {
+	public void setDataColors(int grid, int plot) {
 		headerBar.setDataColors(grid, plot);
 		posFields.setDataColors(grid, plot);
 		if (courseFields != null)
@@ -380,7 +380,7 @@ class GeoElement
 	 * @param	now				Current system time in ms.
 	 */
 	@Override
-	protected void draw(Canvas canvas, long now) {
+	public void draw(Canvas canvas, long now) {
 		super.draw(canvas, now);
 		
 		headerBar.draw(canvas, now);

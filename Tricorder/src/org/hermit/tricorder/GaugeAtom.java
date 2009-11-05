@@ -18,11 +18,12 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -60,7 +61,6 @@ class GaugeAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -70,12 +70,11 @@ class GaugeAtom
 	 * @param	centered		If true, the zero value is in the center;
 	 * 							else at the left or bottom.
 	 */
-	public GaugeAtom(Tricorder context, SurfaceHolder sh,
-					 float unit, float range,
+	public GaugeAtom(Tricorder context, float unit, float range,
 					 int gridCol, int plotCol,
 					 Orientation orient, boolean centered)
 	{
-		this(context, sh, 1, unit, range, gridCol, new int[] { plotCol },
+		this(context, 1, unit, range, gridCol, new int[] { plotCol },
 															orient, centered);
 	}
 
@@ -84,7 +83,6 @@ class GaugeAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	num				The number of values plotted on this gauge.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
@@ -95,12 +93,12 @@ class GaugeAtom
 	 * @param	centered		If true, the zero value is in the center;
 	 * 							else at the left or bottom.
 	 */
-	public GaugeAtom(Tricorder context, SurfaceHolder sh,
+	public GaugeAtom(Tricorder context,
 					 int num, float unit, float range,
 					 int gridCol, int[] plotCols,
 					 Orientation orient, boolean centered)
 	{
-		super(context, sh, gridCol, plotCols[0]);
+		super(context, gridCol, plotCols[0]);
 		
 		numPlots = num;
 		unitSize = unit;
@@ -110,7 +108,7 @@ class GaugeAtom
 		vertical = orient == Orientation.LEFT || orient == Orientation.RIGHT;
 		datumCenter = centered;
 		
-		barThickness = context.getSidebarWidth();
+		barThickness = getSidebarWidth();
 		currentValue = new float[numPlots];
 	}
 
@@ -128,7 +126,7 @@ class GaugeAtom
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		barRect = new Rect(bounds);
@@ -195,7 +193,7 @@ class GaugeAtom
 	 * 					Returns zero if we don't know yet.
 	 */
 	@Override
-	int getPreferredWidth() {
+	public int getPreferredWidth() {
 		return vertical ? (int) (barThickness * 2.5f + 1f) : 0;
 	}
 	
@@ -207,7 +205,7 @@ class GaugeAtom
 	 * 					Returns zero if we don't know yet.
 	 */
 	@Override
-	int getPreferredHeight() {
+	public int getPreferredHeight() {
 		return vertical ? 0 : (int) (barThickness * 2.5f + 1f);
 	}
 	
@@ -223,7 +221,7 @@ class GaugeAtom
      * @param	plot			Colour for drawing data plots.
 	 */
 	@Override
-	void setDataColors(int grid, int plot) {
+	public void setDataColors(int grid, int plot) {
 		setDataColors(grid, new int[] { plot });
 	}
 	
@@ -310,7 +308,7 @@ class GaugeAtom
 	@Override
 	protected void drawBody(Canvas canvas, Paint paint) {
 		// Draw the bar.
-		paint.setColor(gridColour);
+		paint.setColor(getGridColor());
 		paint.setStyle(Paint.Style.FILL);
 		canvas.drawRect(barRect, paint);
 

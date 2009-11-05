@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.TextAtom;
 import org.hermit.utils.CharFormatter;
 import org.hermit.utils.CharFormatter.OverflowException;
 
@@ -26,7 +27,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -50,14 +50,13 @@ class HeaderBarElement
 	 * values to be measured; we then allocate the space automatically.
 	 * 
 	 * @param	context		Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	fields		Strings representing the columns to display.
 	 * 						Each one should be a sample piece of text
 	 * 						which will be measured to determine the
 	 * 						required space for each column.
 	 */
-	HeaderBarElement(Tricorder context, SurfaceHolder sh, String[] fields) {
-		super(context, sh, fields, 1);
+	HeaderBarElement(Tricorder context, String[] fields) {
+		super(context, fields, 1);
 		fieldBuffers = getBuffer();
 		
 		init();
@@ -70,9 +69,9 @@ class HeaderBarElement
 	private void init() {
 		// Set the text black since we probably have a light background.
 		setTextColor(0xff000000);
-    	setTextSize(getContext().getBaseTextSize() - 4);
+    	setTextSize(getBaseTextSize() - 4);
 
-		sideBarWidth = getContext().getSidebarWidth();
+		sideBarWidth = getSidebarWidth();
 		
 		// Calculate the corner dimensions.
 		swoopWidth = sideBarWidth * 3;
@@ -106,7 +105,7 @@ class HeaderBarElement
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		headerBounds = bounds;
 

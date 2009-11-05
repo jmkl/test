@@ -18,12 +18,13 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -41,11 +42,10 @@ class EllAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	thick			Thickness of the bars we connect to.
 	 */
-	EllAtom(Tricorder context, SurfaceHolder sh, int thick) {
-		super(context, sh);
+	EllAtom(Tricorder context, int thick) {
+		super(context);
 		
 		barThickness = thick;
 	}
@@ -64,7 +64,7 @@ class EllAtom
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
 		final int l = bounds.left;

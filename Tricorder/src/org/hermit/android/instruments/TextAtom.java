@@ -16,20 +16,21 @@
  */
 
 
-package org.hermit.tricorder;
+package org.hermit.android.instruments;
 
+
+import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.view.SurfaceHolder;
 
 
 /**
  * This class displays an element of the UI.  An element is a region
  * within a view, and can display text, etc.
  */
-class TextAtom
+public class TextAtom
 	extends Element
 {
 
@@ -48,11 +49,10 @@ class TextAtom
      * table format.
      * 
      * @param   context     Parent application context.
-     * @param   sh          SurfaceHolder we're drawing in.
      */
-    TextAtom(Tricorder context, SurfaceHolder sh) {
-        super(context, sh);
-        textSize = context.getBaseTextSize();
+    public TextAtom(Activity context) {
+        super(context);
+        textSize = getBaseTextSize();
     }
 
 
@@ -66,16 +66,15 @@ class TextAtom
      * values to be measured; we then allocate the space automatically.
      * 
      * @param   context     Parent application context.
-     * @param   sh          SurfaceHolder we're drawing in.
      * @param   template    Strings representing the columns to display.
      *                      Each one should be a sample piece of text
      *                      which will be measured to determine the
      *                      required space for each column.  Must be provided.
      * @param   rows        Number of rows of text to display.
      */
-    TextAtom(Tricorder context, SurfaceHolder sh, String[] template, int rows) {
-        super(context, sh);
-        textSize = context.getBaseTextSize();
+    public TextAtom(Activity context, String[] template, int rows) {
+        super(context);
+        textSize = getBaseTextSize();
         
         // Set up the text fields.
         setTextFields(template, rows);
@@ -110,7 +109,7 @@ class TextAtom
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 
 		// Position our text based on our actual geometry.  If setTextFields()
@@ -128,7 +127,7 @@ class TextAtom
 	 * @param	right		The right margin.
 	 * @param	bottom		The bottom margin.
      */
-	void setMargins(int left, int top, int right, int bottom) {
+	public void setMargins(int left, int top, int right, int bottom) {
 		marginLeft = left;
 		marginTop = top;
 		marginRight = right;
@@ -156,7 +155,7 @@ class TextAtom
 	 * 						required space for each column.
      * @param   rows        Number of rows of text to display.
 	 */
-	protected void setTextFields(String[] template, int rows) {
+	public void setTextFields(String[] template, int rows) {
 		fieldTemplate = template;
         numRows = rows;
 
@@ -197,7 +196,7 @@ class TextAtom
 	 * 					Returns zero if setTextFields() hasn't been called.
 	 */
 	@Override
-	int getPreferredWidth() {
+	public int getPreferredWidth() {
 		return textWidth;
 	}
 	
@@ -209,7 +208,7 @@ class TextAtom
 	 * 					Returns zero if setTextFields() hasn't been called.
 	 */
 	@Override
-	int getPreferredHeight() {
+	public int getPreferredHeight() {
 		return textHeight;
 	}
 
@@ -276,8 +275,8 @@ class TextAtom
 	 * 
 	 * @param	col			The new text colour, in ARGB format.
 	 */
-	void setTextColor(int col) {
-		plotColour = col;
+	public void setTextColor(int col) {
+		setPlotColor(col);
 	}
 	
 
@@ -286,8 +285,8 @@ class TextAtom
 	 * 
 	 * @return				The text colour, in ARGB format.
 	 */
-	int getTextColor() {
-		return plotColour;
+	public int getTextColor() {
+		return getPlotColor();
 	}
 	
 
@@ -296,7 +295,7 @@ class TextAtom
 	 * 
 	 * @param	size		The new text size.
 	 */
-	void setTextSize(float size) {
+	public void setTextSize(float size) {
 		textSize = size;
 		
 		// Position our text based on the new size.  If setTextFields()
@@ -310,7 +309,7 @@ class TextAtom
 	 * 
 	 * @return				The text size.
 	 */
-	float getTextSize() {
+	public float getTextSize() {
 		return textSize;
 	}
 	
@@ -328,7 +327,7 @@ class TextAtom
 	@Override
 	protected void drawBody(Canvas canvas, Paint paint) {
 		// Set up the display style.
-		paint.setColor(plotColour);
+		paint.setColor(getPlotColor());
 		paint.setTextSize(textSize);
 
 		final char[][][] tv = fieldBuffers;

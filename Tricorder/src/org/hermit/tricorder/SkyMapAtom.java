@@ -18,12 +18,13 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.instruments.Element;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.FloatMath;
-import android.view.SurfaceHolder;
 
 
 /**
@@ -41,14 +42,13 @@ class SkyMapAtom
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
-     * @param	sh				SurfaceHolder we're drawing in.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
 	 */
-	public SkyMapAtom(Tricorder context, SurfaceHolder sh,
+	public SkyMapAtom(Tricorder context,
 	   				  int gridCol, int plotCol)
 	{
-		super(context, sh, gridCol, plotCol);
+		super(context, gridCol, plotCol);
 	}
 
 	   
@@ -65,7 +65,7 @@ class SkyMapAtom
 	 * 						its parent View.
      */
 	@Override
-	protected void setGeometry(Rect bounds) {
+	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 
 		final int width = bounds.right - bounds.left;
@@ -144,14 +144,14 @@ class SkyMapAtom
 	    canvas.rotate(-currentAzimuth, crossX, crossY);
 	    
 		// Draw our axes.
-        paint.setColor(gridColour);
+        paint.setColor(getGridColor());
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(GRID_WIDTH);
         paint.setAntiAlias(true);
         canvas.drawPath(gridPath, paint);
        
         paint.setStrokeWidth(0);
-        paint.setTextSize(appContext.getTinyTextSize());
+        paint.setTextSize(getTinyTextSize());
         float lw = paint.measureText("N");
         canvas.drawText("N", crossX - lw / 2, crossY - mapRadius - 2, paint);
         canvas.drawText("S", crossX - lw / 2, crossY + mapRadius + 15, paint);
@@ -169,7 +169,7 @@ class SkyMapAtom
 
 		paint.setStyle(Paint.Style.FILL_AND_STROKE);
 		paint.setStrokeWidth(0);
-		paint.setTextSize(appContext.getTinyTextSize());
+		paint.setTextSize(getTinyTextSize());
 		
 		for (int prn = 1; prn <= GeoView.NUM_SATS; ++prn) {
             GeoView.GpsInfo ginfo = currentValues[prn];
