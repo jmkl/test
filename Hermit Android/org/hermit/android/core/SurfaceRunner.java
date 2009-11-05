@@ -685,6 +685,7 @@ public abstract class SurfaceRunner
 	     * Constructor -- start at once.
 	     */
 	    private Ticker() {
+	        super("Surface Runner");
 	        Log.v(TAG, "Ticker: start");
 	        enable = true;
 	        start();
