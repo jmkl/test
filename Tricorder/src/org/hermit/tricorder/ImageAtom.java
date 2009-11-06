@@ -99,11 +99,11 @@ class ImageAtom
 		
 		// Add all the URLs to the image cache.  Since we may have the
 		// cache database already, try to get the images.
-		long delay = 1000;
+		long delay = 500;
 		for (URL url : imageUrls) {
 		    imageCache.put(url, null);
 		    loadHandler.postDelayed(new Loader(url), delay);
-		    delay += 1000;
+		    delay += 200;
 		}
 	}
 
