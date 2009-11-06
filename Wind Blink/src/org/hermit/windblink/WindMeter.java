@@ -18,6 +18,7 @@ package org.hermit.windblink;
 
 
 import org.hermit.android.core.SurfaceRunner;
+import org.hermit.android.io.AudioReader;
 import org.hermit.dsp.FFTTransformer;
 import org.hermit.dsp.SignalPower;
 
@@ -156,9 +157,8 @@ public class WindMeter
      * Handle audio input.
      */
     private void processAudio(short[] buffer) {
-        // Lock on audioReader to protect updates to these local variables.
-        // See doUpdate().
-        synchronized (audioReader) {
+        // Lock to protect updates to these local variables.  See doUpdate().
+        synchronized (this) {
             audioData = buffer;
             ++audioSequence;
         }
@@ -184,10 +184,10 @@ public class WindMeter
      */
     @Override
     protected void doUpdate(long now) {
-        // We need to lock on audioReader to get the current audioData
+        // We need to lock to get the current audioData
         // and audioSequence correctly; see processAudio().
         short[] buffer = null;
-        synchronized (audioReader) {
+        synchronized (this) {
             if (audioData != null && audioSequence > audioProcessed) {
                 // Count skipped blocks, if any.
                 statsCount(4, (int) (audioSequence - audioProcessed - 1));
