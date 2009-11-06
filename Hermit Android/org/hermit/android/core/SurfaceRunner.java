@@ -1,6 +1,9 @@
 
 /**
- * core: basic Android utilities.
+ * org.hermit.android.core: useful Android foundation classes.
+ * 
+ * These classes are designed to help build various types of application.
+ *
  * <br>Copyright 2009 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify

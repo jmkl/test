@@ -1,18 +1,20 @@
 
 /**
- * Tricorder: turn your phone into a tricorder.
+ * org.hermit.android.net: Android utilities for accessing network data.
  * 
- * This is an Android implementation of a Star Trek tricorder, based on
- * the phone's own sensors.  It's also a demo project for sensor access.
+ * These classes provide some basic utilities for accessing and cacheing
+ * various forms of data from network servers.
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <br>Copyright 2009 Ian Cameron Smith
+ *
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
