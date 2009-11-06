@@ -118,6 +118,11 @@ of sunspots (red), optical flares (blue), and X-ray flares (purple).  The
 Sun image shows images of the Sun in different wavelengths of light; tap it
 to step through the available images.\n\
 \n\
+The Sun images are downloaded directly from SOHO.  If you see banner text
+on the image, like \"CCD Bakeout\", this generally indicates that images
+are unavailable as the satellite is doing a maintenance routine on the
+camera.  Google \"CCD Bakeout\" for more (it\'s interesting).\n\
+\n\
 <b>MENU</b>\n\
 \n\
 The \"menu\" button gets you to the program settings, the
