@@ -19,12 +19,10 @@
 package org.hermit.tricorder;
 
 
-import org.hermit.android.core.AppUtils;
+import org.hermit.android.core.MainActivity;
 import org.hermit.android.instruments.Element;
-import org.hermit.android.notice.InfoBox;
 import org.hermit.tricorder.TricorderView.ViewDefinition;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -50,7 +48,7 @@ import android.widget.RelativeLayout;
  * This class is the main Activity for Tricorder.
  */
 public class Tricorder
-	extends Activity
+	extends MainActivity
 {
 
     // ******************************************************************** //
@@ -126,6 +124,12 @@ public class Tricorder
     			(icicle == null ? "clean start" : "restart"));
     
         super.onCreate(icicle);
+        
+        createMessageBox(R.string.button_close);
+        setAboutInfo(R.string.about_text, R.string.help_text);
+        setHomeInfo(R.string.button_homepage, R.string.url_homepage);
+        setManualInfo(R.string.button_manual, R.string.url_manual);
+        setLicenseInfo(R.string.button_license, R.string.url_license);
 
         // We don't want a title bar or status bar.
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -143,12 +147,6 @@ public class Tricorder
 
         // Restore our preferences.
         updatePreferences();
-
-        // Create the dialog we use for help and about.
-        AppUtils autils = AppUtils.getInstance(this);
-        messageDialog = new InfoBox(this, R.string.button_close);
-        String version = autils.getVersionString();
-		messageDialog.setTitle(version);
          
         // Set the initial view.  This also starts it so it gets updates.
 		selectDataView(ViewDefinition.GRA);
@@ -403,17 +401,18 @@ public class Tricorder
         	// know when it returns.
         	Intent pIntent = new Intent();
         	pIntent.setClass(this, Preferences.class);
-        	startActivityForResult(pIntent, SUBACTIVITY_PREFERENCES);
+            startActivityForResult(pIntent, new MainActivity.ActivityListener() {
+                @Override
+                public void onActivityFinished(int resultCode, Intent data) {
+                    updatePreferences();
+                }
+            });
         	break;
     	case R.id.menu_help:
-            messageDialog.setLinkButton(1, R.string.button_homepage, R.string.url_homepage);
-            messageDialog.setLinkButton(2, R.string.button_manual, R.string.url_manual);
-            messageDialog.show(R.string.help_text);
-    		break;
+    	    showHelp();
+    	    break;
     	case R.id.menu_about:
-            messageDialog.setLinkButton(1, R.string.button_homepage, R.string.url_homepage);
-            messageDialog.setLinkButton(2, R.string.button_license, R.string.url_license);
-            messageDialog.show(R.string.about_text);
+    	    showAbout();
      		break;
         case R.id.menu_exit:
         	finish();
@@ -425,34 +424,7 @@ public class Tricorder
     	return true;
     }
     
-    
-    /**
-     * Called when an activity you launched exits, giving you the
-     * requestCode you started it with, the resultCode it returned,
-     * and any additional data from it.  The resultCode will be
-     * RESULT_CANCELED if the activity explicitly returned that, didn't
-     * return any result, or crashed during its operation.
-     * 
-     * You will receive this call immediately before onResume() when your
-     * activity is re-starting.
-     * 
-     * @param	requestCode		The integer request code.
-     * @param	resultCode		The integer result code returned by the child
-     * 							activity through its setResult().
-     * @param	data			An Intent with possible extra data.
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        
-        // If this is a result we requested, handle it.
-        if (requestCode == SUBACTIVITY_PREFERENCES) {
-            // Our preferences have been updated; re-read them.
-            updatePreferences();
-        }
-    }
-
-
+ 
     /**
      * Read our application preferences and configure ourself appropriately.
      */
@@ -656,10 +628,6 @@ public class Tricorder
     // Debugging tag.
 	private static final String TAG = "tricorder";
 
-	// Request codes used to identify requests to sub-activities.
-	// Display and edit preferences.
-    private static final int SUBACTIVITY_PREFERENCES = 1;
-
 
 	// ******************************************************************** //
 	// Private Data.
@@ -687,9 +655,6 @@ public class Tricorder
     
     // Top label which identifies the current view.
 	private NavButton topLabel;
-
-	// Dialog used to display about etc.
-	private InfoBox messageDialog;
 
 	// Current sound mode.
 	private SoundMode soundMode;
