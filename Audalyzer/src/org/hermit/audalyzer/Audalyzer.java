@@ -1,6 +1,6 @@
 
 /**
- * Wind Blink: a wind meter for Android.
+ * Audalyzer: an audio analyzer for Android.
  * <br>Copyright 2009 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  */
 
 
-package org.hermit.windblink;
+package org.hermit.audalyzer;
 
 
 import org.hermit.android.core.MainActivity;
@@ -31,11 +31,11 @@ import android.view.WindowManager;
 
 
 /**
- * Main activity for Wind Blink.
+ * Main activity for Audalyzer.
  * 
- * <p>This class basically sets up a WindMeter object and lets it run.
+ * <p>This class basically sets up an AudioMeter object and lets it run.
  */
-public class WindBlink
+public class Audalyzer
     extends MainActivity
 {
 
@@ -72,7 +72,6 @@ public class WindBlink
         createMessageBox(R.string.button_close);
         setAboutInfo(R.string.about_text, R.string.help_text);
         setHomeInfo(R.string.button_homepage, R.string.url_homepage);
-        setManualInfo(R.string.button_manual, R.string.url_manual);
         setLicenseInfo(R.string.button_license, R.string.url_license);
 
         // We don't want a title bar or status bar.
@@ -84,7 +83,7 @@ public class WindBlink
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         // Create the application GUI.
-        windMeter = new WindMeter(this);
+        windMeter = new AudioMeter(this);
         setContentView(windMeter);
         
         // Restore our preferences.
@@ -325,7 +324,7 @@ public class WindBlink
     // ******************************************************************** //
     
     // The surface manager for the view.
-    private WindMeter windMeter = null;
+    private AudioMeter windMeter = null;
 
 }
 

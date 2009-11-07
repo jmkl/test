@@ -1,6 +1,6 @@
 
 /**
- * Wind Blink: a wind meter for Android.
+ * Audalyzer: an audio analyzer for Android.
  * <br>Copyright 2009 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify
@@ -14,19 +14,22 @@
  */
 
 
-package org.hermit.windblink;
+package org.hermit.audalyzer;
 
 
 import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.io.AudioReader;
 import org.hermit.dsp.FFTTransformer;
 import org.hermit.dsp.SignalPower;
+import org.hermit.utils.CharFormatter;
+import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.Paint.Style;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,10 +38,10 @@ import android.view.MotionEvent;
 
 
 /**
- * The main wind meter view.  This class relies on the parent SurfaceRunner
+ * The main audio analyser view.  This class relies on the parent SurfaceRunner
  * class to do the bulk of the animation control.
  */
-public class WindMeter
+public class AudioMeter
 	extends SurfaceRunner
 {
 
@@ -51,7 +54,7 @@ public class WindMeter
 	 * 
 	 * @param	app			The application context we're running in.
 	 */
-    public WindMeter(Context app) {
+    public AudioMeter(Context app) {
         super(app);
         
         audioReader = new AudioReader();
@@ -63,6 +66,9 @@ public class WindMeter
         meterPeaks = new float[METER_PEAKS];
         meterPeakTimes = new long[METER_PEAKS];
         meterPrevious = new float[METER_AVERAGE_COUNT];
+        
+        biasRange = new float[2];
+        dbBuffer = "-100.0 dB".toCharArray();
         
         // On-screen debug stats display.
         statsCreate(new String[] { "µs FFT", "µs dWav", "µs dSpe", "µs dMet", "skip/s" });
@@ -112,6 +118,8 @@ public class WindMeter
 
         // Make a Paint for drawing the display.
         screenPaint = new Paint();
+        screenPaint.setTextSize(28);
+        screenPaint.setTypeface(Typeface.MONOSPACE);
     }
     
 
@@ -122,14 +130,12 @@ public class WindMeter
      */
     @Override
     protected void animStart() {
-        Log.v(TAG, "Meter: Anim start");
         audioReader.startReader(FFT_BLOCK * DECIMATE, new AudioReader.Listener() {
             @Override
             public void onReadComplete(short[] buffer) {
                 processAudio(buffer);
             }
         });
-        Log.v(TAG, "Meter: Anim started");
     }
     
 
@@ -140,9 +146,7 @@ public class WindMeter
      */
     @Override
     protected void animStop() {
-        Log.v(TAG, "Meter: Anim stop");
         audioReader.stopReader();
-        Log.v(TAG, "Meter: Anim stopped");
     }
     
 
@@ -189,8 +193,6 @@ public class WindMeter
      */
     @Override
     protected void doUpdate(long now) {
-        Log.v(TAG, "Meter: doUpdate 1");
-        
         // We need to lock to get the current audioData
         // and audioSequence correctly; see processAudio().
         short[] buffer = null;
@@ -206,7 +208,6 @@ public class WindMeter
         // If we got a buffer, process it.  While reading it, it needs
         // to be locked.
         if (buffer != null) {
-            Log.v(TAG, "Meter: doUpdate 2");
             synchronized (buffer) {
                 // Calculate the power now, while we have the input
                 // buffer; this is pretty cheap.
@@ -218,7 +219,6 @@ public class WindMeter
 
                 // Draw the waveform now, while we have the raw data.
                 long wavStart = System.currentTimeMillis();
-                Log.v(TAG, "Meter: doUpdate 3");
                 drawWaveform(now, buffer, len - FFT_BLOCK, FFT_BLOCK,
                              waveCanvas, 0, 0, WAVE_WIDTH, WAVE_HEIGHT);
                 long wavEnd = System.currentTimeMillis();
@@ -243,7 +243,6 @@ public class WindMeter
             long speEnd = System.currentTimeMillis();
             statsTime(2, (speEnd - speStart) * 1000);
         }
-        Log.v(TAG, "Meter: doUpdate X");
     }
 
 
@@ -270,9 +269,9 @@ public class WindMeter
         statsTime(3, (vuEnd - vuStart) * 1000);
   
         // Draw the components on to the screen.
-        canvas.drawBitmap(waveBitmap, 32, 32, null);
-        canvas.drawBitmap(spectrumBitmap, 32, 128, null);
-        canvas.drawBitmap(meterBitmap, 32, 416, null);
+        canvas.drawBitmap(waveBitmap, 32, 24, null);
+        canvas.drawBitmap(spectrumBitmap, 32, 88, null);
+        canvas.drawBitmap(meterBitmap, 32, 368, null);
     }
 
     
@@ -294,27 +293,17 @@ public class WindMeter
     {
         canvas.drawColor(0xff000000);
         
-        // Calculate a scaling factor.  We want a degree of AGC, but not
-        // so much that the waveform is always the same height.  Also
-        // calculate the signal bias -- if we scale without removing the
-        // bias, a large scale moves the signal off-screen.
-        float min =  1000000f;
-        float max = -1000000f;
-        float bias = 0;
-        for (int i = off; i < off + len; ++i) {
-            bias += buffer[i];
-            if (buffer[i] < min)
-                min = buffer[i];
-            if (buffer[i] > max)
-                max = buffer[i];
-        }
-        bias /= len;
-        min += bias;
-        max -= bias;
-        float range = Math.abs(max - min) / 2f;
+        // Get the signal bias and range.
+        SignalPower.biasAndRange(buffer, off, len, biasRange);
+        final float bias = biasRange[0];
+        float range = biasRange[1];
         if (range < 1f)
             range = 1f;
-        
+
+        // Calculate a scaling factor.  We want a degree of AGC, but not
+        // so much that the waveform is always the same height.  Note we have
+        // to take bias into account, otherwise we could scale the signal
+        // off the screen.
         float scale = (float) Math.pow(1f / (range / 6500f), 0.7) / 16384 * ch;
         if (Float.isInfinite(scale))
             scale = 0f;
@@ -397,16 +386,20 @@ public class WindMeter
      * @param   canvas      The Canvas to draw into.
      * @param   cx          X position to draw at.
      * @param   cy          Y position to draw at.
-     * @param   cw          Width to draw in.
-     * @param   ch          Height to draw in.
+     * @param   w           Width to draw in.
+     * @param   h           Height to draw in.
      */
     private void drawVuMeter(long now, float power, Canvas canvas,
-                             int cx, int cy, int cw, int ch)
+                             int cx, int cy, int w, int h)
     {
         canvas.drawColor(0xff000000);
         
+        // Area for the meter part; leaving room for the text.
+        int cw = w;
+        int ch = h - 32;
+        
         // Get the previous power value, and add the new value into the
-        // history buffer.  Re-calcluate the rolling average power value.
+        // history buffer.  Re-calculate the rolling average power value.
         if (++meterIndex >= meterPrevious.length)
             meterIndex = 0;
         float prev = meterPrevious[meterIndex];
@@ -490,6 +483,17 @@ public class WindMeter
                                 cx + pp + 3, cy + ch - gap * 2, screenPaint);
             }
         }
+        
+        // Draw the text below the meter.
+        final float dB = (meterAverage - 1f) * 100f;
+        try {
+            CharFormatter.formatFloat(dbBuffer, 0, dB, 6, 1);
+        } catch (OverflowException e) {
+            Log.e(TAG, "Format dB failed: " + e.getMessage());
+        }
+        screenPaint.setStyle(Style.STROKE);
+        screenPaint.setColor(0xff00ffff);
+        canvas.drawText(dbBuffer, 0, dbBuffer.length, cx, cy + ch + 28, screenPaint);
     }
 
     
@@ -590,7 +594,7 @@ public class WindMeter
 
     // Size for the VU meter.
     private static final int METER_WIDTH = 256;
-    private static final int METER_HEIGHT = 32;
+    private static final int METER_HEIGHT = 64;
     
     // Number of peaks we will track in the VU meter.
     private static final int METER_PEAKS = 4;
@@ -658,5 +662,11 @@ public class WindMeter
     private Paint screenPaint = null;
     private float[] paintColor = { 0, 1, 1 };
     
+    // Temp. buffer for calculated bias and range.
+    private float[] biasRange = null;
+    
+    // Buffer for displayed dB value text.
+    private char[] dbBuffer = null;
+
 }
 
