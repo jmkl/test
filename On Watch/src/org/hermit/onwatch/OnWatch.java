@@ -21,11 +21,8 @@ package org.hermit.onwatch;
 
 import java.util.LinkedList;
 
-import org.hermit.android.core.AppUtils;
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.core.SplashActivity;
-import org.hermit.android.notice.EulaBox;
-import org.hermit.android.notice.InfoBox;
 import org.hermit.android.widgets.TimeZoneActivity;
 
 import android.app.AlarmManager;
@@ -104,6 +101,16 @@ public class OnWatch
         
         // We want the audio controls to control our sound volume.
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        
+        // Create our EULA box.
+        createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);       
+
+        // Set up the standard dialogs.
+        createMessageBox(R.string.button_close);
+        setAboutInfo(R.string.about_text, R.string.help_text);
+        setHomeInfo(R.string.button_homepage, R.string.url_homepage);
+        setManualInfo(R.string.button_manual, R.string.url_manual);
+        setLicenseInfo(R.string.button_license, R.string.url_license);
 
         // Create the time and location models.
         locationModel = LocationModel.getInstance(this);
@@ -112,17 +119,7 @@ public class OnWatch
         // Create the application GUI.
         setContentView(R.layout.on_watch);
         viewController = new MainController(this);
-
-        // Create the EULA dialog.
-        eulaDialog = new EulaBox(this, R.string.eula_title,
-        						 R.string.eula_text,R.string.button_close);
         
-        // Create the dialog we use for help and about.
-        AppUtils autils = AppUtils.getInstance(this);
-        messageDialog = new InfoBox(this, R.string.button_close);
-        String version = autils.getVersionString();
-		messageDialog.setTitle(version);
-
 		// Create a handler for tick events.
 		tickHandler = new Handler() {
 			@Override
@@ -190,7 +187,7 @@ public class OnWatch
         super.onResume();
 
         // First time round, show the EULA.
-        eulaDialog.showFirstTime();
+        showFirstEula();
         
         viewController.resume();
         locationModel.resume();
@@ -364,17 +361,13 @@ public class OnWatch
         	});
         	break;
     	case R.id.menu_help:
-    		messageDialog.setLinkButton(1, R.string.button_homepage, R.string.url_homepage);
-    		messageDialog.setLinkButton(2, R.string.button_manual, R.string.url_manual);
- 			messageDialog.show(R.string.help_text);
+            showHelp();
     		break;
     	case R.id.menu_about:
-    		messageDialog.setLinkButton(1, R.string.button_homepage, R.string.url_homepage);
-    		messageDialog.setLinkButton(2, R.string.button_license, R.string.url_license);
- 			messageDialog.show(R.string.about_text);
+            showAbout();
      		break;
     	case R.id.menu_eula:
-            eulaDialog.showNow();
+    	    showEula();
      		break;
         case R.id.menu_exit:
         	finish();
@@ -632,13 +625,7 @@ public class OnWatch
 
 	// The location model we use for all our positioning.
 	private LocationModel locationModel;
-	
-    // The EULA dialog.
-    private EulaBox eulaDialog;
 
-	// Dialog used to display about etc.
-	private InfoBox messageDialog;
-	
 	// View controller used to manage switching between the various views.
 	private MainController viewController = null;
 
