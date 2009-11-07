@@ -17,10 +17,15 @@
 package org.hermit.windblink;
 
 
-import android.app.Activity;
+import org.hermit.android.core.MainActivity;
+
+import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -30,7 +35,9 @@ import android.view.WindowManager;
  * 
  * <p>This class basically sets up a WindMeter object and lets it run.
  */
-public class WindBlink extends Activity {
+public class WindBlink
+    extends MainActivity
+{
 
     // ******************************************************************** //
     // Activity Lifecycle.
@@ -57,6 +64,16 @@ public class WindBlink extends Activity {
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+        
+        // Create our EULA box.
+        createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);       
+
+        // Set up the standard dialogs.
+        createMessageBox(R.string.button_close);
+        setAboutInfo(R.string.about_text, R.string.help_text);
+        setHomeInfo(R.string.button_homepage, R.string.url_homepage);
+        setManualInfo(R.string.button_manual, R.string.url_manual);
+        setLicenseInfo(R.string.button_license, R.string.url_license);
 
         // We don't want a title bar or status bar.
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -74,14 +91,8 @@ public class WindBlink extends Activity {
 //        eulaDialog = new EulaBox(this, R.string.eula_title,
 //                                 R.string.eula_text,R.string.button_close);
         
-        // Create the dialog we use for help and about.
-//        AppUtils autils = AppUtils.getInstance(this);
-//        messageDialog = new InfoBox(this, R.string.button_close);
-//        String version = autils.getVersionString();
-//        messageDialog.setTitle(version);
-
         // Restore our preferences.
-//        updatePreferences();
+        updatePreferences();
         
         // Restore our app state, if this is a restart.
         if (icicle != null)
@@ -124,8 +135,10 @@ public class WindBlink extends Activity {
         Log.i(TAG, "onResume()");
 
         super.onResume();
+        
         // First time round, show the EULA.
-//        eulaDialog.showFirstTime();
+        showFirstEula();
+        
         windMeter.onResume();
         
         // Just start straight away.
@@ -175,6 +188,136 @@ public class WindBlink extends Activity {
         super.onStop();
         
         windMeter.onStop();
+    }
+
+
+    // ******************************************************************** //
+    // Menu Handling.
+    // ******************************************************************** //
+
+    /**
+     * Initialize the contents of the game's options menu by adding items
+     * to the given menu.
+     * 
+     * This is only called once, the first time the options menu is displayed.
+     * To update the menu every time it is displayed, see
+     * onPrepareOptionsMenu(Menu).
+     * 
+     * When we add items to the menu, we can either supply a Runnable to
+     * receive notification of selection, or we can implement the Activity's
+     * onOptionsItemSelected(Menu.Item) method to handle them there.
+     * 
+     * @param   menu            The options menu in which we should
+     *                          place our items.  We can safely hold on this
+     *                          (and any items created from it), making
+     *                          modifications to it as desired, until the next
+     *                          time onCreateOptionsMenu() is called.
+     * @return                  true for the menu to be displayed; false
+     *                          to suppress showing it.
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // We must call through to the base implementation.
+        super.onCreateOptionsMenu(menu);
+        
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+
+        return true;
+    }
+    
+    
+    /**
+     * This hook is called whenever an item in your options menu is selected.
+     * Derived classes should call through to the base class for it to
+     * perform the default menu handling.  (True?)
+     *
+     * @param   item            The menu item that was selected.
+     * @return                  false to have the normal processing happen.
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.menu_prefs:
+            // Launch the preferences activity as a subactivity, so we
+            // know when it returns.
+            Intent pIntent = new Intent();
+            pIntent.setClass(this, Preferences.class);
+            startActivityForResult(pIntent, new MainActivity.ActivityListener() {
+                @Override
+                public void onActivityFinished(int resultCode, Intent data) {
+                    updatePreferences();
+                }
+            });
+            break;
+        case R.id.menu_help:
+            showHelp();
+            break;
+        case R.id.menu_about:
+            showAbout();
+            break;
+        case R.id.menu_eula:
+            showEula();
+            break;
+        case R.id.menu_exit:
+            finish();
+            break;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+        
+        return true;
+    }
+    
+
+    // ******************************************************************** //
+    // Preferences Handling.
+    // ******************************************************************** //
+
+    /**
+     * Read our application preferences and configure ourself appropriately.
+     */
+    private void updatePreferences() {
+//        SharedPreferences prefs =
+//                        PreferenceManager.getDefaultSharedPreferences(this);
+//        
+//        // See if sounds are enabled and how.
+//        soundMode = SoundMode.FULL;
+//        try {
+//            String smode = prefs.getString("soundMode", null);
+//            soundMode = SoundMode.valueOf(smode);
+//        } catch (Exception e) {
+//            Log.e(TAG, "Pref: bad soundMode");
+//        }
+//        Log.i(TAG, "Prefs: soundMode " + soundMode);
+//
+//        wifiPing = false;
+//        try {
+//            wifiPing = prefs.getBoolean("wifiPing", false);
+//        } catch (Exception e) {
+//            Log.e(TAG, "Pref: bad wifiPing");
+//        }
+//        Log.i(TAG, "Prefs: wifiPing " + wifiPing);
+//
+//        // Get the desired orientation.
+//        int orientMode = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+//        try {
+//            String omode = prefs.getString("orientMode", null);
+//            orientMode = Integer.valueOf(omode);
+//        } catch (Exception e) {
+//            Log.e(TAG, "Pref: bad orientMode");
+//        }
+//        Log.i(TAG, "Prefs: orientMode " + orientMode);
+//        setRequestedOrientation(orientMode);
+//        
+//        boolean fakeMissingData = false;
+//        try {
+//            fakeMissingData = prefs.getBoolean("fakeMissingData", false);
+//        } catch (Exception e) {
+//            Log.e(TAG, "Pref: bad fakeMissingData");
+//        }
+//        Log.i(TAG, "Prefs: fakeMissingData " + fakeMissingData);
+//        mainView.setSimulateMode(fakeMissingData);
     }
 
 

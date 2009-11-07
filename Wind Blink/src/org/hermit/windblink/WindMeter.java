@@ -29,6 +29,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -121,12 +122,14 @@ public class WindMeter
      */
     @Override
     protected void animStart() {
+        Log.v(TAG, "Meter: Anim start");
         audioReader.startReader(FFT_BLOCK * DECIMATE, new AudioReader.Listener() {
             @Override
             public void onReadComplete(short[] buffer) {
                 processAudio(buffer);
             }
         });
+        Log.v(TAG, "Meter: Anim started");
     }
     
 
@@ -137,7 +140,9 @@ public class WindMeter
      */
     @Override
     protected void animStop() {
+        Log.v(TAG, "Meter: Anim stop");
         audioReader.stopReader();
+        Log.v(TAG, "Meter: Anim stopped");
     }
     
 
@@ -184,6 +189,8 @@ public class WindMeter
      */
     @Override
     protected void doUpdate(long now) {
+        Log.v(TAG, "Meter: doUpdate 1");
+        
         // We need to lock to get the current audioData
         // and audioSequence correctly; see processAudio().
         short[] buffer = null;
@@ -199,6 +206,7 @@ public class WindMeter
         // If we got a buffer, process it.  While reading it, it needs
         // to be locked.
         if (buffer != null) {
+            Log.v(TAG, "Meter: doUpdate 2");
             synchronized (buffer) {
                 // Calculate the power now, while we have the input
                 // buffer; this is pretty cheap.
@@ -210,6 +218,7 @@ public class WindMeter
 
                 // Draw the waveform now, while we have the raw data.
                 long wavStart = System.currentTimeMillis();
+                Log.v(TAG, "Meter: doUpdate 3");
                 drawWaveform(now, buffer, len - FFT_BLOCK, FFT_BLOCK,
                              waveCanvas, 0, 0, WAVE_WIDTH, WAVE_HEIGHT);
                 long wavEnd = System.currentTimeMillis();
@@ -234,6 +243,7 @@ public class WindMeter
             long speEnd = System.currentTimeMillis();
             statsTime(2, (speEnd - speStart) * 1000);
         }
+        Log.v(TAG, "Meter: doUpdate X");
     }
 
 
@@ -288,16 +298,30 @@ public class WindMeter
         // so much that the waveform is always the same height.  Also
         // calculate the signal bias -- if we scale without removing the
         // bias, a large scale moves the signal off-screen.
-        float max = 0f;
+        float min =  1000000f;
+        float max = -1000000f;
         float bias = 0;
         for (int i = off; i < off + len; ++i) {
             bias += buffer[i];
+            if (buffer[i] < min)
+                min = buffer[i];
             if (buffer[i] > max)
                 max = buffer[i];
         }
         bias /= len;
-        final float scale = (float) Math.pow(1f / (max / 6500f), 0.7) / 16384 * ch;
+        min += bias;
+        max -= bias;
+        float range = Math.abs(max - min) / 2f;
+        if (range < 1f)
+            range = 1f;
         
+        float scale = (float) Math.pow(1f / (range / 6500f), 0.7) / 16384 * ch;
+        if (Float.isInfinite(scale))
+            scale = 0f;
+        if (scale < 0.01f)
+            scale = 0.01f;
+        else if (scale > 100f)
+            scale = 100f;
         final float baseY = cy + ch / 2f;
         final float uw = (float) cw / (float) len;
 
