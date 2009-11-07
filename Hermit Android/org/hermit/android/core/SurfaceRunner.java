@@ -74,6 +74,7 @@ public abstract class SurfaceRunner
         // Register for events on the surface.
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
+        setFocusable(true);
     }
     
 
@@ -206,8 +207,10 @@ public abstract class SurfaceRunner
      */
 	@Override
 	public void onWindowFocusChanged(boolean hasWindowFocus) {
-//		if (!hasWindowFocus)
-//			pause();
+		if (!hasWindowFocus)
+		    clearEnable(ENABLE_FOCUSED);
+		else
+            setEnable(ENABLE_FOCUSED);
 	}
 
     
@@ -762,8 +765,10 @@ public abstract class SurfaceRunner
     private static final int ENABLE_SIZE = 0x02;
     private static final int ENABLE_RESUMED = 0x04;
     private static final int ENABLE_STARTED = 0x08;
+    private static final int ENABLE_FOCUSED = 0x10;
     private static final int ENABLE_ALL =
-               ENABLE_SURFACE | ENABLE_SIZE | ENABLE_RESUMED | ENABLE_STARTED;
+               ENABLE_SURFACE | ENABLE_SIZE | ENABLE_RESUMED |
+               ENABLE_STARTED | ENABLE_FOCUSED;
 
 	
 	// ******************************************************************** //
