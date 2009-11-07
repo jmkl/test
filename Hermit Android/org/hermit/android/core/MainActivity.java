@@ -312,7 +312,8 @@ public class MainActivity
      */
     public void showAbout() {
         messageDialog.setLinkButton(1, homeButton, homeLink);
-        messageDialog.setLinkButton(2, licButton, licLink);
+        if (licButton != 0 && licLink != 0)
+            messageDialog.setLinkButton(2, licButton, licLink);
         messageDialog.show(aboutText);
     }
 
@@ -325,7 +326,8 @@ public class MainActivity
      */
     public void showHelp() {
         messageDialog.setLinkButton(1, homeButton, homeLink);
-        messageDialog.setLinkButton(2, manButton, manLink);
+        if (manButton != 0 && manLink != 0)
+            messageDialog.setLinkButton(2, manButton, manLink);
         messageDialog.show(helpText);
     }
 
