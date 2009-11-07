@@ -43,6 +43,49 @@ public final class SignalPower {
      * @param   sdata       Buffer containing the input samples to process.
      * @param   off         Offset in sdata of the data of interest.
      * @param   samples     Number of data samples to process.
+     * @param   out         A float array in which the results will be placed
+     *                      Must have space for two entries, which will be
+     *                      set to:
+     *                      <ul>
+     *                      <li>The bias, i.e. the offset of the average
+     *                      signal value from zero.
+     *                      <li>The range, i.e. the absolute value of the largest
+     *                      departure from the bias level.
+     *                      </ul>
+     * @throws  NullPointerException    Null output array reference.
+     * @throws  ArrayIndexOutOfBoundsException  Output array too small.
+     */
+    public final static void biasAndRange(short[] sdata, int off, int samples,
+                                          float[] out)
+    {
+        // Find the max and min signal values, and calculate the bias.
+        short min =  32767;
+        short max = -32768;
+        int total = 0;
+        for (int i = off; i < off + samples; ++i) {
+            final short val = sdata[i];
+            total += val;
+            if (val < min)
+                min = val;
+            if (val > max)
+                max = val;
+        }
+        final float bias = (float) total / (float) samples;
+        final float bmin = min + bias;
+        final float bmax = max - bias;
+        final float range = Math.abs(bmax - bmin) / 2f;
+        
+        out[0] = bias;
+        out[1] = range;
+    }
+    
+    
+    /**
+     * Calculate the power of the given input signal.
+     * 
+     * @param   sdata       Buffer containing the input samples to process.
+     * @param   off         Offset in sdata of the data of interest.
+     * @param   samples     Number of data samples to process.
      * @return              The calculated power in dB; zero represents
      *                      100dB and 1 is 0dB (maximum power).
      */
@@ -121,7 +164,7 @@ public final class SignalPower {
         /* we want leftmost to be 100dB
           (though signal-to-noise ratio can't be more than 96.33dB in power)
           and rightmost to be 0dB (maximum power) */
-        float dBvalue = 1f + 0.1f * (float) Math.log10(floatPower);
+        float dBvalue = 1f + (float) Math.log10(floatPower) / 10f;
         return dBvalue;
     }
     
