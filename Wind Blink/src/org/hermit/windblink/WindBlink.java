@@ -86,10 +86,6 @@ public class WindBlink
         // Create the application GUI.
         windMeter = new WindMeter(this);
         setContentView(windMeter);
-
-        // Create the EULA dialog.
-//        eulaDialog = new EulaBox(this, R.string.eula_title,
-//                                 R.string.eula_text,R.string.button_close);
         
         // Restore our preferences.
         updatePreferences();
@@ -98,12 +94,6 @@ public class WindBlink
         if (icicle != null)
             ;
 //            restoreState(icicle);
-
-        // First time, show the splash screen.
-//        if (!shownSplash) {
-//            SplashActivity.launch(this, R.drawable.splash_screen, SPLASH_TIME);
-//            shownSplash = true;
-//        }
     }
     
 
@@ -138,7 +128,7 @@ public class WindBlink
         
         // First time round, show the EULA.
         showFirstEula();
-        
+    
         windMeter.onResume();
         
         // Just start straight away.

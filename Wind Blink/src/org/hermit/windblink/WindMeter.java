@@ -318,10 +318,10 @@ public class WindMeter
         float scale = (float) Math.pow(1f / (range / 6500f), 0.7) / 16384 * ch;
         if (Float.isInfinite(scale))
             scale = 0f;
-        if (scale < 0.01f)
-            scale = 0.01f;
-        else if (scale > 100f)
-            scale = 100f;
+        if (scale < 0.001f)
+            scale = 0.001f;
+        else if (scale > 1000f)
+            scale = 1000f;
         final float baseY = cy + ch / 2f;
         final float uw = (float) cw / (float) len;
 
