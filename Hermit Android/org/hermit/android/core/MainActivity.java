@@ -22,11 +22,13 @@ package org.hermit.android.core;
 
 import java.util.HashMap;
 
-import org.hermit.android.notice.EulaBox;
 import org.hermit.android.notice.InfoBox;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 
@@ -114,8 +116,39 @@ public class MainActivity
 	}
 
 
+    // ******************************************************************** //
+    // Activity Lifecycle.
+    // ******************************************************************** //
+
+    /**
+     * Called when the activity is starting.  This is where most
+     * initialisation should go: calling setContentView(int) to inflate
+     * the activity's UI, etc.
+     * 
+     * You can call finish() from within this function, in which case
+     * onDestroy() will be immediately called without any of the rest of
+     * the activity lifecycle executing.
+     * 
+     * Derived classes must call through to the super class's implementation
+     * of this method.  If they do not, an exception will be thrown.
+     * 
+     * @param   icicle          If the activity is being re-initialised
+     *                          after previously being shut down then this
+     *                          Bundle contains the data it most recently
+     *                          supplied in onSaveInstanceState(Bundle).
+     *                          Note: Otherwise it is null.
+     */
+    @Override
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+        
+        appUtils = AppUtils.getInstance(this);
+        appPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+    }
+    
+
 	// ******************************************************************** //
-	// Public API.
+	// EULA Dialog.
 	// ******************************************************************** //
 
     /**
@@ -130,7 +163,9 @@ public class MainActivity
      */
     public void createEulaBox(int title, int text, int close) {
         // Create the EULA dialog.
-        eulaDialog = new EulaBox(this, title, text, close);
+        eulaTitle = title;
+        eulaText = text;
+        eulaClose = close;
     }
 
 
@@ -140,7 +175,8 @@ public class MainActivity
      * calling {@link #createEulaBox(int, int, int)}.
      */
     public void showFirstEula() {
-        eulaDialog.showFirstTime();
+        if (!isEulaAccepted())
+            showEula();
     }
 
 
@@ -150,9 +186,54 @@ public class MainActivity
      * calling {@link #createEulaBox(int, int, int)}.
      */
     public void showEula() {
-        eulaDialog.showNow();
+        if (eulaDialog == null) {
+            eulaDialog = new InfoBox(this, eulaClose) {
+                @Override
+                protected void okButtonPressed() {
+                    setSeen();
+                    super.okButtonPressed();
+                }
+            };
+        }
+        eulaDialog.show(eulaTitle, eulaText);
     }
 
+
+    /**
+     * Query whether the EULA dialog has been shown to the user and accepted.
+     * 
+     * @return              True iff the user has seen the EULA dialog and
+     *                      clicked "OK".
+     */
+    protected boolean isEulaAccepted() {
+        AppUtils.Version version = appUtils.getAppVersion();
+        
+        int seen = -1;
+        try {
+            seen = appPrefs.getInt(PREF_NAME, seen);
+        } catch (Exception e) { }
+        
+        // We consider the EULA accepted if the version seen by the user
+        // most recently is the current version.
+        return seen == version.versionCode;
+    }
+
+
+    /**
+     * Flag that this dialog has been seen, by setting a preference.
+     */
+    private void setSeen() {
+        AppUtils.Version version = appUtils.getAppVersion();
+        
+        SharedPreferences.Editor editor = appPrefs.edit();
+        editor.putInt(PREF_NAME, version.versionCode);
+        editor.commit();
+    }
+    
+
+    // ******************************************************************** //
+    // Help and About Boxes.
+    // ******************************************************************** //
 
     /**
      * Create a dialog for help / about boxes etc.  If you want to display
@@ -165,9 +246,8 @@ public class MainActivity
      * @param   close        Resource ID of the close button.
      */
     public void createMessageBox(int close) {
-        AppUtils autils = AppUtils.getInstance(this);
         messageDialog = new InfoBox(this, close);
-        String version = autils.getVersionString();
+        String version = appUtils.getVersionString();
         messageDialog.setTitle(version);
     }
 
@@ -250,6 +330,10 @@ public class MainActivity
     }
 
 
+    // ******************************************************************** //
+    // Sub-Activities.
+    // ******************************************************************** //
+
     /**
      * Launch an activity for which you would like a result when it
      * finished.  When this activity exits, the given ActivityListener
@@ -313,9 +397,23 @@ public class MainActivity
     }
 
 
+    // ******************************************************************** //
+    // Private Constants.
+    // ******************************************************************** //
+
+    // Name of the preference used to flag that the EULA dialog has been seen.
+    private static final String PREF_NAME = "org.hermit.android.core.eulaVersion";
+    
+
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
+    
+    // Application utilities instance, used to get app version.
+    private AppUtils appUtils = null;
+    
+    // Application's default shared preferences.
+    private SharedPreferences appPrefs = null;
 
     // The next request code available to be used.  Our request codes
     // start at a large number, for no special reason.
@@ -327,8 +425,14 @@ public class MainActivity
     private HashMap<Integer, ActivityListener> codeMap =
     							new HashMap<Integer, ActivityListener>();
     
+    // Resource IDs of the EULA dialog title, the EULA / warning text,
+    // and the close button label.
+    private int eulaTitle = 0;
+    private int eulaText = 0;
+    private int eulaClose = 0;
+
     // The EULA dialog.
-    private EulaBox eulaDialog;
+    private InfoBox eulaDialog;
 
     // Dialog used to display about etc.
     private InfoBox messageDialog;

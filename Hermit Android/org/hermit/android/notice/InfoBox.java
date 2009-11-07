@@ -236,15 +236,19 @@ public class InfoBox
     /**
      * Called when the OK button is clicked.
      */
-    void okButtonPressed() {
+    protected void okButtonPressed() {
     	dismiss();
     }
     
 
     /**
      * Called when a link button is clicked.
+     * 
+     * @param   which       The ID of the link button which has been
+     *                      clicked, as passed to
+     *                      {@link #setLinkButton(int, int, int)}.
      */
-    private void linkButtonPressed(int which) {
+    protected void linkButtonPressed(int which) {
     	if (which < 1 || which >= buttonLinks.length)
     		return;
     	
