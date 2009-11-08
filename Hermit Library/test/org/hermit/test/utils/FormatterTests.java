@@ -79,8 +79,6 @@ public class FormatterTests
             res = "!OOB!";
         } catch (IllegalArgumentException e) {
             res = "!ILL!";
-        } catch (CharFormatter.OverflowException e) {
-            res = "!OFL!";
         }
         assertEquals(expect, res);
     }
@@ -94,8 +92,6 @@ public class FormatterTests
             res = "!OOB!";
         } catch (IllegalArgumentException e) {
             res = "!ILL!";
-        } catch (CharFormatter.OverflowException e) {
-            res = "!OFL!";
         }
         assertEquals(expect, res);
     }
@@ -126,7 +122,7 @@ public class FormatterTests
     public void testPosIntUns() {
         run(13, 173, 7, false, "    173");
         run(13, 173, 3, false, "173");
-        run(13, 173, 2, false, "!OFL!");
+        run(13, 173, 2, false, " +");
         run(35, 173, 7, false, "!OOB!");
     }
 
@@ -138,16 +134,16 @@ public class FormatterTests
 
 
     public void testNegIntUns() {
-        run(13, -173, 7, false, "!ILL!");
-        run(13, -173, 3, false, "!ILL!");
+        run(13, -173, 7, false, "      -");
+        run(13, -173, 3, false, "  -");
     }
 
 
     public void testPosIntSgn() {
         run(13, 173, 7, true, "    173");
         run(13, 173, 4, true, " 173");
-        run(13, 173, 3, true, "!OFL!");
-        run(13, 173, 2, true, "!OFL!");
+        run(13, 173, 3, true, "  +");
+        run(13, 173, 2, true, " +");
         run(35, 173, 7, true, "!OOB!");
     }
 
@@ -162,8 +158,8 @@ public class FormatterTests
     public void testNegIntSgn() {
         run(13, -173, 7, true, "   -173");
         run(13, -173, 4, true, "-173");
-        run(13, -173, 3, true, "!OFL!");
-        run(13, -173, 2, true, "!OFL!");
+        run(13, -173, 3, true, "  +");
+        run(13, -173, 2, true, " +");
     }
 
 
@@ -175,7 +171,7 @@ public class FormatterTests
         run(13, 173.45678, 7, 2, false, " 173.45");
         run(13, 173.45678, 7, 3, false, "173.456");
         run(13, 73.00678, 7, 4, false, "73.0067");
-        run(13, 173.45678, 7, 4, false, "!OFL!");
+        run(13, 173.45678, 7, 4, false, "      +");
     }
 
 
@@ -186,17 +182,17 @@ public class FormatterTests
 
 
     public void testNegFloatUns() {
-        run(13, -173.45678, 7, 2, false, "!ILL!");
-        run(13, -173.45678, 7, 3, false, "!ILL!");
-        run(13, -73.00678, 7, 4, false, "!ILL!");
+        run(13, -173.45678, 7, 2, false, "      -");
+        run(13, -173.45678, 7, 3, false, "      -");
+        run(13, -73.00678, 7, 4, false, "      -");
     }
 
 
     public void testPosFloatSgn() {
         run(13, 173.45678, 7, 2, true, " 173.45");
         run(13, 73.00678, 7, 3, true, " 73.006");
-        run(13, 173.45678, 7, 3, true, "!OFL!");
-        run(13, 73.00678, 7, 4, true, "!OFL!");
+        run(13, 173.45678, 7, 3, true, "      +");
+        run(13, 73.00678, 7, 4, true, "      +");
     }
 
 
@@ -210,8 +206,8 @@ public class FormatterTests
         run(13, -173.45678, 7, 2, true, "-173.45");
         run(13, -173.45678, 7, 2, true, "-173.45");
         run(13, -73.00678, 7, 3, true, "-73.006");
-        run(13, -173.45678, 7, 3, true, "!OFL!");
-        run(13, -73.00678, 7, 4, true, "!OFL!");
+        run(13, -173.45678, 7, 3, true, "      +");
+        run(13, -73.00678, 7, 4, true, "      +");
     }
 
 
@@ -222,18 +218,14 @@ public class FormatterTests
         for (int i = 0; i < COUNT; ++i)
             String.format("%7.2f", -(i / 1345678f));
         long j2 = System.currentTimeMillis();
-        
-        try {
-            long c1 = System.currentTimeMillis();
-            for (int i = 0; i < COUNT; ++i)
-                CharFormatter.formatFloat(buf, 13, -(i / 1345678f), 7, 2, true);
-            long c2 = System.currentTimeMillis();
-            
-            // CharFormatter should be at least 10 times faster.
-            assertTrue((c2 - c1) * 10 < (j2 - j1));
-        } catch (CharFormatter.OverflowException e) {
-            assertFalse("Exception thrown by CharFormatter", true);
-        }
+
+        long c1 = System.currentTimeMillis();
+        for (int i = 0; i < COUNT; ++i)
+            CharFormatter.formatFloat(buf, 13, -(i / 1345678f), 7, 2, true);
+        long c2 = System.currentTimeMillis();
+
+        // CharFormatter should be at least 10 times faster.
+        assertTrue((c2 - c1) * 10 < (j2 - j1));
     }
 
 

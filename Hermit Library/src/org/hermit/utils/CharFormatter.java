@@ -31,27 +31,6 @@ package org.hermit.utils;
 public class CharFormatter
 {
 
-    // ******************************************************************** //
-    // Private Exceptions.
-    // ******************************************************************** //
-
-    /**
-     * A value given was to large to fit in the specified field width,
-     * and would have been truncated.
-     */
-    public static final class OverflowException extends Exception {
-        /**
-         * Create an overflow exception.
-         * @param   s       Exception message.
-         */
-        public OverflowException(String s) {
-            super(s);
-        }
-        
-        private static final long serialVersionUID = 7127839900810123989L;
-    }
-    
-    
 	// ******************************************************************** //
 	// Private Constructors.
 	// ******************************************************************** //
@@ -154,6 +133,47 @@ public class CharFormatter
 
 
     /**
+     * Format a single character into a fixed-width field.  The remainder
+     * is filled with spaces.  MUCH faster than String.format.
+     * 
+     * @param   buf         Buffer to place the result in.
+     * @param   off         Offset within buf to start writing at.
+     * @param   val         The value to format.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.
+     * @param   right       Iff true, format the text right-aligned; else
+     *                      left-aligned.
+     * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
+     */
+    public static final void formatChar(char[] buf, int off, char val,
+                                        int field, boolean right)
+    {
+        if (field < 0)
+            field = buf.length - off;
+        if (field < 0)
+            field = 0;
+        if (off + field > buf.length)
+            throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
+                                                     "] too small for " +
+                                                     off + "+" + field);
+        if (val == 0 || field < 1) {
+            blank(buf, off, field);
+            return;
+        }
+        
+        int pad = field - 1;
+        if (!right)
+            buf[off] = val;
+        else
+            buf[off + pad] = val;
+        
+        int pads = !right ? off + 1 : off;
+        for (int i = 0; i < pad; ++i)
+            buf[pads + i] = ' ';
+    }
+
+
+    /**
      * Format an integer into a fixed-width field.  MUCH faster
      * than String.format.
      * 
@@ -165,14 +185,12 @@ public class CharFormatter
      * @param   signed      Iff true, add a sign character, space for
      *                      positive, '-' for negative.  This takes
      *                      up one place in the given field width.
-     * @throws  OverflowException  Value too large for field.
      * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
      * @throws  IllegalArgumentException        Negative value given and
      *                                          signed == false.
      */
     public static final void formatInt(char[] buf, int off, int val,
                                        int field, boolean signed)
-        throws OverflowException
     {
         if (field < 0)
             field = buf.length - off;
@@ -182,13 +200,22 @@ public class CharFormatter
             throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
                                                      "] too small for " +
                                                      off + "+" + field);
-        if (!signed && val < 0)
-            throw new IllegalArgumentException("Negative value given for unsigned format");
+        
+        // If the value is negative but field is unsigned, just put in an
+        // error indicator.
+        if (!signed && val < 0) {
+            formatChar(buf, off, '-', field, true);
+            return;
+        }
         
         int sign = val >= 0 ? 1 : -1;
         val *= sign;
         char schar = signed ? (sign < 0 ? '-' : ' ') : 0;
-        formatInt(buf, off, val, field, schar, false);
+        try {
+            formatInt(buf, off, val, field, schar, false);
+        } catch (OverflowException e) {
+            formatChar(buf, off, '+', field, true);
+        }
     }
 
 
@@ -202,14 +229,12 @@ public class CharFormatter
      * @param   field       Width of the field to format in.  -1 means use
      *                      all available space.
      * @param   frac        Number of digits after the decimal.
-     * @throws  OverflowException  Value too large for field.
      * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
      * @throws  IllegalArgumentException        Negative value given and
      *                                          signed == false.
      */
     public static final void formatFloat(char[] buf, int off, double val,
                                          int field, int frac)
-        throws OverflowException
     {
         formatFloat(buf, off, val, field, frac, true);
     }
@@ -228,14 +253,12 @@ public class CharFormatter
      * @param   signed      Iff true, add a sign character, space for
      *                      positive, '-' for negative.  This takes
      *                      up one place in the given field width.
-     * @throws  OverflowException  Value too large for field.
      * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
      * @throws  IllegalArgumentException        Negative value given and
      *                                          signed == false.
      */
     public static final void formatFloat(char[] buf, int off, double val,
                                          int field, int frac, boolean signed)
-        throws OverflowException
     {
         if (field < 0)
             field = buf.length - off;
@@ -245,8 +268,13 @@ public class CharFormatter
             throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
                                                      "] too small for " +
                                                      off + "+" + field);
-        if (!signed && val < 0)
-            throw new IllegalArgumentException("Negative value given for unsigned format");
+
+        // If the value is negative but field is unsigned, just put in an
+        // error indicator.
+        if (!signed && val < 0) {
+            formatChar(buf, off, '-', field, true);
+            return;
+        }
 
         int intDigits = field - frac - 1;
         int sign = val >= 0 ? 1 : -1;
@@ -257,9 +285,13 @@ public class CharFormatter
         for (int i = 0; i < frac; ++i)
             fracPart *= 10;
 
-        formatInt(buf, off, intPart, intDigits, schar, false);
-        buf[off + intDigits] = '.';
-        formatInt(buf, off + intDigits + 1, (int) fracPart, frac, (char) 0, true);
+        try {
+            formatInt(buf, off, intPart, intDigits, schar, false);
+            buf[off + intDigits] = '.';
+            formatInt(buf, off + intDigits + 1, (int) fracPart, frac, (char) 0, true);
+        } catch (OverflowException e) {
+            formatChar(buf, off, '+', field, true);
+        }
     }
 
 
@@ -275,12 +307,13 @@ public class CharFormatter
      *                      up one place in the given field width.
      * @param   leadZero    Iff true, pad on the left with leading zeros
      *                      instead of spaces.
-     * @throws  IllegalArgumentException        Field has no room for digits.
-     * @throws  OverflowException  Value too large for field.
+     * @throws  IllegalArgumentException    Field width is too small.
+     * @throws  OverflowException     Overflow: the value is too big to be
+     *                      formatted into the field.
      */
     private static final void formatInt(char[] buf, int off, int val,
                                         int field, char schar, boolean leadZero)
-        throws OverflowException
+        throws IllegalArgumentException, OverflowException
     {
         int intDigits = field - (schar != 0 ? 1 : 0);
         if (intDigits < 1)
@@ -297,11 +330,13 @@ public class CharFormatter
             }
         }
         
-        // We should have used up all the value.  If not, then we've
-        // truncated it, which is bad -- complain.
-        if (val != 0)
-            throw new OverflowException("Value " + val +
-                                        " too large for field <" + field + ">");
+        // We should have used up all the value.  If not, then the value
+        // doesn't fit; just put in an error indicator.
+        if (val != 0) {
+            formatChar(buf, off, '+', field, true);
+            throw new OverflowException();
+        }
+
         if (schar != 0) {
             buf[off] = ' ';
             buf[last - 1] = schar;
@@ -319,10 +354,8 @@ public class CharFormatter
 	 * @param	angle		The angle to format.
      * @return              Number of characters written.
      * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
-     * @throws  OverflowException  Value too large for field.
 	 */
 	public static int formatDegMin(char[] buf, int off, double angle)
-        throws OverflowException
     {
 		return formatDegMin(buf, off, angle, ' ', '-', false);
 	}
@@ -341,11 +374,9 @@ public class CharFormatter
      *                      Otherwise pack them.
      * @return              Number of characters written.
      * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
-     * @throws  OverflowException  Value too large for field.
 	 */
 	public static int formatDegMin(char[] buf, int off, double angle,
 									char pos, char neg, boolean space)
-        throws OverflowException
 	{
         if (off + (space ? 14 : 12) > buf.length)
             throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
@@ -366,20 +397,24 @@ public class CharFormatter
 		int min = (int) (angle * 60.0 % 60.0);
 		int frac = (int) (angle * 60000.0 % 1000.0);
 		
-        formatInt(buf, p, deg, 3, (char) 0, false);
-        p += 3;
-        buf[p++] = '°';
-        if (space)
-            buf[p++] = ' ';
-        
-        formatInt(buf, p, min, 2, (char) 0, true);
-        p += 2;
-        buf[p++] = '.';
-        
-        formatInt(buf, p, frac, 3, (char) 0, true);
-        p += 3;
-        buf[p++] = '\'';
-        
+		try {
+		    formatInt(buf, p, deg, 3, (char) 0, false);
+		    p += 3;
+		    buf[p++] = '°';
+		    if (space)
+		        buf[p++] = ' ';
+
+		    formatInt(buf, p, min, 2, (char) 0, true);
+		    p += 2;
+		    buf[p++] = '.';
+
+		    formatInt(buf, p, frac, 3, (char) 0, true);
+		    p += 3;
+		    buf[p++] = '\'';
+		} catch (OverflowException e) {
+		    formatChar(buf, p, '+', 1, true);
+		}
+
         return p - off;
 	}
 	
@@ -396,11 +431,9 @@ public class CharFormatter
      *                      Otherwise pack them.
 	 * @return				Number of characters written.
      * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
-     * @throws  OverflowException  Value too large for field.
 	 */
 	public static int formatLatLon(char[] buf, int off,
 	                               double lat, double lon, boolean space)
-        throws OverflowException
 	{
         if (off + (space ? 29 : 25) > buf.length)
             throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
@@ -414,6 +447,15 @@ public class CharFormatter
 		p += formatDegMin(buf, off, lon, 'E', 'W', space);
         
         return p - off;
+	}
+
+	
+    // ******************************************************************** //
+    // Private Classes.
+    // ******************************************************************** //
+	
+	private static final class OverflowException extends Exception {
+        private static final long serialVersionUID = -6009530000597939453L;
 	}
 
 }
