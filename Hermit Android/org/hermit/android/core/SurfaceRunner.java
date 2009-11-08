@@ -21,7 +21,6 @@ package org.hermit.android.core;
 
 
 import org.hermit.utils.CharFormatter;
-import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -112,6 +111,14 @@ public abstract class SurfaceRunner
     public void surfaceChanged(SurfaceHolder holder,
     						   int format, int width, int height)
     {
+        // On Droid (at least) this can get called after a rotation,
+        // which shouldn't happen as we should get shut down first.
+        // Ignore that.
+        if (isEnable(ENABLE_SIZE)) {
+            Log.e(TAG, "ignored surfaceChanged " + width + "x" + height);
+            return;
+        }
+        
         Log.i(TAG, "set size " + width + "x" + height);
         
         setSize(format, width, height);
@@ -212,6 +219,21 @@ public abstract class SurfaceRunner
 		else
             setEnable(ENABLE_FOCUSED);
 	}
+
+    
+    /**
+     * Query the given enable flag.
+     * 
+     * @param   flag        The flag to check.
+     * @return              The flag value.
+     */
+    private boolean isEnable(int flag) {
+        boolean val = false;
+        synchronized (surfaceHolder) {
+            val = (enableFlags & flag) == flag;
+        }
+        return val;
+    }
 
     
     /**
@@ -647,15 +669,11 @@ public abstract class SurfaceRunner
     private void statsDraw() {
         // Format all the values we have.
         for (int i = 0; i < perfStats.length && i < perfBuffers.length; ++i) {
-            try {
-                int v = perfStats[i];
-                int c = perfCounts[i];
-                if (c != 0)
-                    v /= c;
-                CharFormatter.formatInt(perfBuffers[i], 0, v, 6, false);
-            } catch (OverflowException e) {
-                Log.e(TAG, "Formatting Perf: " + e.getMessage());
-            }
+            int v = perfStats[i];
+            int c = perfCounts[i];
+            if (c != 0)
+                v /= c;
+            CharFormatter.formatInt(perfBuffers[i], 0, v, 6, false);
         }
         
         // Draw the stats into the canvas.

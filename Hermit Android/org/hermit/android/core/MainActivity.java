@@ -139,7 +139,7 @@ public class MainActivity
      *                          Note: Otherwise it is null.
      */
     @Override
-    public void onCreate(Bundle icicle) {
+    protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         
         appUtils = AppUtils.getInstance(this);
