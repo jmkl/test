@@ -339,7 +339,7 @@ class ChartAtom
 	        return;
 	    
 		// Buffer the value we are about to plot.
-		for (int p = 0; p < numPlots; ++p)
+		for (int p = 0; p < numPlots && p < values.length; ++p)
 			dataBuffer[p][dataCursor] = values[p];
 		if (dataCount < dataLength)
 			++dataCount;
@@ -398,6 +398,9 @@ class ChartAtom
 	 * at the new scale.
 	 */
 	void redrawGraph() {
+	    if (chartCanvas == null)
+	        return;
+	        
 		Paint paint = getPaint();
 		
 		// First clear the bitmap.

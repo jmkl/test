@@ -123,7 +123,7 @@ class CommView
 					  						  wtext, 1);
 		}
     	
-    	// Create the left-side bars.
+    	// Create the right-side bars.
     	cRightBar = new Element(context);
     	cRightBar.setBackgroundColor(COLOUR_GRID);
     	wLeftBar = new Element(context);
@@ -146,62 +146,114 @@ class CommView
 	@Override
 	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
-		
+	      
+        if (bounds.right - bounds.left < bounds.bottom - bounds.top)
+            layoutPortrait(bounds);
+        else
+            layoutLandscape(bounds);
+    }
+
+
+    /**
+     * Set up the layout of this view in portrait mode.
+     * 
+     * @param   bounds      The bounding rect of this element within
+     *                      its parent View.
+     */
+    private void layoutPortrait(Rect bounds) {
         int bar = getSidebarWidth();
 		int pad = getInterPadding();
 		
-		int sx = bounds.left + getInterPadding();
+		int sx = bounds.left + pad;
 		int y = bounds.top;
 		
-		// Lay out the cellular heading.
-		int cheadHeight = cellHead.getPreferredHeight();
-		cellHead.setGeometry(new Rect(sx, y, bounds.right, y + cheadHeight));
-    	y += cheadHeight + getInnerGap();
+		y = layoutCells(sx, y, bounds.right, bounds.bottom, bar, pad);
+		y += pad;
+		y = layoutWifi(sx, y, bounds.right, bounds.bottom, bar, pad);
+    }
 
-		// Provisionally position the right side bar.
-		Rect rbrect = new Rect(bounds.right - bar, y, bounds.right, -1);
-		int ex = bounds.right - bar - pad;
-		
-		// Lay out the cellular graph.
-    	int graphHeight = cellBar.getPreferredHeight();
-    	cellBar.setGeometry(new Rect(sx, y, ex, y + graphHeight));
-    	y += graphHeight;
-		
-    	// Place all the neighboring bars.
-		for (int i = 0; i < MAX_CELL; ++i) {
-			int bh = cellBars[i].getPreferredHeight();
-			cellBars[i].setGeometry(new Rect(sx, y, ex, y + bh));
-	    	y += bh + getInnerGap();
-		}
 
-		// Now finalize the right bar.
-		rbrect.bottom = y;
-		cRightBar.setGeometry(rbrect);
-		
-		y += getInterPadding();
+    /**
+     * Set up the layout of this view in portrait mode.
+     * 
+     * @param   bounds      The bounding rect of this element within
+     *                      its parent View.
+     */
+    private void layoutLandscape(Rect bounds) {
+        int bar = getSidebarWidth();
+        int pad = getInterPadding();
+        
+        int sx = bounds.left + pad;
+        int ex = bounds.right;
+        int cw = (ex - sx) / 2 - pad;
+        int x = sx;
+        
+        layoutCells(x, bounds.top, x + cw, bounds.bottom, bar, pad);
+        x += cw + pad;
+        layoutWifi(x, bounds.top, bounds.right, bounds.bottom, bar, pad);
+    }
 
-		int wheadHeight = wifiHead.getPreferredHeight();
-		wifiHead.setGeometry(new Rect(sx, y, bounds.right, y + wheadHeight));
-    	y += wheadHeight + getInnerGap();
 
-		rbrect = new Rect(bounds.right - bar, y, bounds.right, -1);
-		ex = bounds.right - bar - pad;
-		
-		// Place the WiFi status field.
-		int wsHeight = wifiStatus.getPreferredHeight();
-		wifiStatus.setGeometry(new Rect(sx, y, ex, y + wsHeight));
-    	y += wsHeight + getInnerGap();
+    /**
+     * Lay out the WiFi bars.
+     */
+    private int layoutCells(int sx, int sy, int ex, int ey, int bar, int pad) {
+        int cheadHeight = cellHead.getPreferredHeight();
+        int cbarHeight = cellBar.getPreferredHeight();
+        int gap = getInnerGap();
+        int y = sy;
+        
+        // Lay out the cellular heading.
+        cellHead.setGeometry(new Rect(sx, y, ex, y + cheadHeight));
+        y += cheadHeight + gap;
 
-    	// Place all the WiFi bars.
-		for (int i = 0; i < MAX_WIFI; ++i) {
-			int bh = wifiBars[i].getPreferredHeight();
-			wifiBars[i].setGeometry(new Rect(sx, y, ex, y + bh));
-	    	y += bh + getInnerGap();
-		}
-		
-		// Now finalize the left bar.
-		rbrect.bottom = y - getInnerGap();
-		wLeftBar.setGeometry(rbrect);
+        // Position the right side bar.
+        int bars = cbarHeight * (MAX_CELL + 1) + gap * MAX_CELL;
+        cRightBar.setGeometry(new Rect(ex - bar, y, ex, y + bars));
+        ex -= bar + pad;
+        
+        // Lay out the connected cell signal bar.
+        cellBar.setGeometry(new Rect(sx, y, ex, y + cbarHeight));
+        y += cbarHeight + gap;
+        
+        // Place all the neighboring bars.
+        for (int i = 0; i < MAX_CELL; ++i) {
+            cellBars[i].setGeometry(new Rect(sx, y, ex, y + cbarHeight));
+            y += cbarHeight + gap;
+        }
+        
+        return y - gap;
+    }
+
+
+    /**
+     * Lay out the WiFi bars.
+     */
+    private int layoutWifi(int sx, int sy, int ex, int ey, int bar, int pad) {
+        int wheadHeight = wifiHead.getPreferredHeight();
+        int wbarHeight = wifiStatus.getPreferredHeight();
+        int gap = getInnerGap();
+        int y = sy;
+        
+        wifiHead.setGeometry(new Rect(sx, y, ex, y + wheadHeight));
+        y += wheadHeight + gap;
+        
+        // Now set up the right bar.
+        wLeftBar.setGeometry(new Rect(ex - bar, y, ex, ey));
+        ex -= bar + pad;
+
+        // Place the WiFi status field.
+        wifiStatus.setGeometry(new Rect(sx, y, ex, y + wbarHeight));
+        y += wbarHeight + gap;
+
+        // Place all the WiFi bars.
+        for (int i = 0; i < MAX_WIFI; ++i) {
+            int bh = wifiBars[i].getPreferredHeight();
+            wifiBars[i].setGeometry(new Rect(sx, y, ex, y + bh));
+            y += bh + gap;
+        }
+        
+        return y - gap;
 	}
 
 
@@ -724,14 +776,18 @@ class CommView
 		wifiStatus.draw(canvas, now);
 
 		// Draw the WiFi bars, as many as we have.
-		if (wifiSignals != null) {
-			for (int w = 0; w < wifiSignals.size() && w < MAX_WIFI; ++w)
-				wifiBars[w].draw(canvas, now);
+		synchronized (this) {
+		    if (wifiSignals != null) {
+		        for (int w = 0; w < wifiSignals.size() && w < MAX_WIFI; ++w)
+		            wifiBars[w].draw(canvas, now);
+		    }
 		}
-		
-		if (cellSignals != null) {
-			for (int w = 0; w < cellSignals.size() && w < MAX_CELL; ++w)
-				cellBars[w].draw(canvas, now);
+
+		synchronized (this) {
+		    if (cellSignals != null) {
+		        for (int w = 0; w < cellSignals.size() && w < MAX_CELL; ++w)
+		            cellBars[w].draw(canvas, now);
+		    }
 		}
 	}
 
@@ -779,7 +835,7 @@ class CommView
 	private static final String TAG = "tricorder";
 		
 	// The maximum number of WiFi signals we will show.
-	private static final int MAX_WIFI = 6;
+	private static final int MAX_WIFI = 10;
 	private static final int MAX_CELL = 2;
 	
 	// Minimum interval in seconds between WiFi scans.

@@ -199,6 +199,14 @@ class TricorderView
     public void surfaceChanged(SurfaceHolder holder,
     						   int format, int width, int height)
     {
+        // On Droid (at least) this can get called after a rotation,
+        // which shouldn't happen as we should get shut down first.
+        // Ignore that.
+        if (surfaceSized) {
+            Log.e(TAG, "TV: ignored surfaceChanged: " + width + "x" + height);
+            return;
+        }
+        
     	Log.i(TAG, "TV: surfaceChanged: " + width + "x" + height);
     	
     	Rect bounds = new Rect(0, 0, width, height);
