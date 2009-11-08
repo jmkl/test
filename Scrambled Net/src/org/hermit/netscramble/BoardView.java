@@ -81,9 +81,10 @@ public class BoardView
 	 * sizes[skill][1] is the minor grid size for that skill.
 	 */
 	private enum Screen {
-	    SMALL(9, 6, 9, 6, 5, 6, 5, 4),
-	    MEDIUM(15, 9, 13, 7, 9, 7, 5, 5),
-	    LARGE(17, 10, 15, 8, 11, 8, 7, 6);
+	    SMALL(9, 6, 9, 6, 5, 6, 5, 4),         // Like HVGA.
+	    MEDIUM(11, 7, 11, 7, 9, 7, 5, 5),      // VGA plus.
+        WMEDIUM(12, 7, 10, 7, 8, 7, 6, 5),     // Wide VGA plus.
+	    HUGE(17, 10, 15, 8, 11, 8, 7, 6);      // WSVGA etc.
 	    
 	    Screen(int ml, int ms, int el, int es, int nl, int ns, int vl, int vs) {
 	        major = ml;
@@ -219,13 +220,18 @@ public class BoardView
     	int width = disp.getWidth();
     	int height = disp.getHeight();
     	int min = width < height ? width : height;
-
+        int max = width > height ? width : height;
+    	float aspect = (float) max / (float) min;
+    	
         if (min <= 400)
             screenConfig = Screen.SMALL;
-        else if (min <= 500)
-            screenConfig = Screen.MEDIUM;
-        else
-            screenConfig = Screen.LARGE;
+        else if (min <= 500) {
+            if (aspect > 1.5f)
+                screenConfig = Screen.WMEDIUM;
+            else
+                screenConfig = Screen.MEDIUM;
+        } else
+            screenConfig = Screen.HUGE;
             
         if (width > height) {
         	gridWidth = screenConfig.major;
