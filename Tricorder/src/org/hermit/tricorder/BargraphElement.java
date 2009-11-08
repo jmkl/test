@@ -21,11 +21,9 @@ package org.hermit.tricorder;
 import org.hermit.android.instruments.Element;
 import org.hermit.android.instruments.TextAtom;
 import org.hermit.utils.CharFormatter;
-import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.util.Log;
 
 
 /**
@@ -157,11 +155,7 @@ class BargraphElement
 	 * @param	freq			The new frequency value.
 	 */
 	protected void setFreq(float freq) {
-        try {
-            CharFormatter.formatFloat(fieldBuffers[0][0], 0, freq, 5, 3, false);
-        } catch (OverflowException e) {
-            Log.e(TAG, "Freq field too small");
-        }
+	    CharFormatter.formatFloat(fieldBuffers[0][0], 0, freq, 5, 3, false);
 	}
 
     
@@ -210,11 +204,7 @@ class BargraphElement
      * @param   asu             The new ASU value.
      */
     protected void setAsu(int asu) {
-        try {
-            CharFormatter.formatInt(fieldBuffers[0][3], 0, asu, 2, false);
-        } catch (OverflowException e) {
-            Log.e(TAG, "ASU field too small");
-        }
+        CharFormatter.formatInt(fieldBuffers[0][3], 0, asu, 2, false);
     }
 
 

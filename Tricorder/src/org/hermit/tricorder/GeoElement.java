@@ -21,7 +21,6 @@ package org.hermit.tricorder;
 import org.hermit.android.instruments.Element;
 import org.hermit.android.instruments.TextAtom;
 import org.hermit.utils.CharFormatter;
-import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -302,39 +301,35 @@ class GeoElement
 		if (l == null)
 			return;
 
-		try {
-		    CharFormatter.formatDegMin(pos[0][0], 0, l.getLatitude(), 'N', 'S', false);
-		    CharFormatter.formatDegMin(pos[1][0], 0, l.getLongitude(), 'E', 'W', false);
+		CharFormatter.formatDegMin(pos[0][0], 0, l.getLatitude(), 'N', 'S', false);
+		CharFormatter.formatDegMin(pos[1][0], 0, l.getLongitude(), 'E', 'W', false);
 
-		    if (l.hasAltitude()) {
-		        CharFormatter.formatString(pos[0][1], 0, getRes(R.string.lab_alt), -1);
-		        CharFormatter.formatFloat(pos[0][2], 0, l.getAltitude(), 7, 1, true);
-		        pos[0][2][7] = 'm';
-		    } else {
-		        CharFormatter.blank(pos[0][1], 0, -1);
-		        CharFormatter.blank(pos[0][2], 0, -1);
-		    }
-		    CharFormatter.formatString(pos[1][1], 0, getRes(R.string.lab_acc), -1);
-		    CharFormatter.formatFloat(pos[1][2], 0, l.getAccuracy(), 7, 1, false);
-		    pos[1][2][7] = 'm';
+		if (l.hasAltitude()) {
+		    CharFormatter.formatString(pos[0][1], 0, getRes(R.string.lab_alt), -1);
+		    CharFormatter.formatFloat(pos[0][2], 0, l.getAltitude(), 7, 1, true);
+		    pos[0][2][7] = 'm';
+		} else {
+		    CharFormatter.blank(pos[0][1], 0, -1);
+		    CharFormatter.blank(pos[0][2], 0, -1);
+		}
+		CharFormatter.formatString(pos[1][1], 0, getRes(R.string.lab_acc), -1);
+		CharFormatter.formatFloat(pos[1][2], 0, l.getAccuracy(), 7, 1, false);
+		pos[1][2][7] = 'm';
 
-		    if (course != null) {
-		        CharFormatter.formatString(course[0][0], 0, getRes(R.string.lab_head), -1);
-		        if (l.hasBearing()) {
-		            CharFormatter.formatInt(course[0][1], 0, (int) l.getBearing(), 3, true);
-		            course[0][1][3] = '°';
-		        } else
-		            CharFormatter.blank(course[0][1], 0, -1);
-		        CharFormatter.blank(course[0][2], 0, -1);
-		        CharFormatter.formatString(course[0][3], 0, getRes(R.string.lab_speed), -1);
-		        if (l.hasSpeed()) {
-		            CharFormatter.formatFloat(course[0][4], 0, l.getSpeed(), 5, 1, false);
-		            CharFormatter.formatString(course[0][4], 5, "m/s", -1);
-		        } else
-		            CharFormatter.blank(course[0][4], 0, -1);
-		    }
-		} catch (OverflowException e) {
-		    Log.e(TAG, "Error formatting location: " + e.getMessage());
+		if (course != null) {
+		    CharFormatter.formatString(course[0][0], 0, getRes(R.string.lab_head), -1);
+		    if (l.hasBearing()) {
+		        CharFormatter.formatInt(course[0][1], 0, (int) l.getBearing(), 3, true);
+		        course[0][1][3] = '°';
+		    } else
+		        CharFormatter.blank(course[0][1], 0, -1);
+		    CharFormatter.blank(course[0][2], 0, -1);
+		    CharFormatter.formatString(course[0][3], 0, getRes(R.string.lab_speed), -1);
+		    if (l.hasSpeed()) {
+		        CharFormatter.formatFloat(course[0][4], 0, l.getSpeed(), 5, 1, false);
+		        CharFormatter.formatString(course[0][4], 5, "m/s", -1);
+		    } else
+		        CharFormatter.blank(course[0][4], 0, -1);
 		}
 	}
 

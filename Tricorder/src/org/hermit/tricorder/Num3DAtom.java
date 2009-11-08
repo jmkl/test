@@ -20,9 +20,6 @@ package org.hermit.tricorder;
 
 import org.hermit.android.instruments.TextAtom;
 import org.hermit.utils.CharFormatter;
-import org.hermit.utils.CharFormatter.OverflowException;
-
-import android.util.Log;
 
 
 /**
@@ -86,20 +83,15 @@ class Num3DAtom
 		float yv = values[1];
 		float zv = values[2];
 		
-		try {
-		    CharFormatter.formatFloat(fieldBuffers[0][1], 0, xv, -1, 3);
-		    CharFormatter.formatFloat(fieldBuffers[1][1], 0, yv, -1, 3);
-		    CharFormatter.formatFloat(fieldBuffers[2][1], 0, zv, -1, 3);
+		CharFormatter.formatFloat(fieldBuffers[0][1], 0, xv, -1, 3);
+		CharFormatter.formatFloat(fieldBuffers[1][1], 0, yv, -1, 3);
+		CharFormatter.formatFloat(fieldBuffers[2][1], 0, zv, -1, 3);
 
-		    CharFormatter.formatFloat(fieldBuffers[0][3], 0, az, -1, 3);
-		    CharFormatter.formatFloat(fieldBuffers[1][3], 0, alt, -1, 3);
-		    CharFormatter.formatFloat(fieldBuffers[2][3], 0, mag, -1, 3);
-		}
-		catch (OverflowException e) {
-		    Log.e(TAG, "field overflow: " + e.getMessage());
-        }
+		CharFormatter.formatFloat(fieldBuffers[0][3], 0, az, -1, 3);
+		CharFormatter.formatFloat(fieldBuffers[1][3], 0, alt, -1, 3);
+		CharFormatter.formatFloat(fieldBuffers[2][3], 0, mag, -1, 3);
 	}
-	
+
 
 	/**
 	 * Clear the current value; i.e. go back to a "no data" state.

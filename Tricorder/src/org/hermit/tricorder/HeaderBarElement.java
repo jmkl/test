@@ -20,7 +20,6 @@ package org.hermit.tricorder;
 
 import org.hermit.android.instruments.TextAtom;
 import org.hermit.utils.CharFormatter;
-import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -211,11 +210,7 @@ class HeaderBarElement
      * @param   val             The value to display.
      */
     protected void setText(int row, int col, int val) {
-        try {
-            CharFormatter.formatInt(fieldBuffers[row][col], 0, val, -1, false);
-        } catch (OverflowException e) {
-            CharFormatter.formatString(fieldBuffers[row][col], 0, "?", -1);
-        }
+        CharFormatter.formatInt(fieldBuffers[row][col], 0, val, -1, false);
     }
 
 
