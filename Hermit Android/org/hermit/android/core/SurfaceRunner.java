@@ -59,17 +59,44 @@ public abstract class SurfaceRunner
 {
 
     // ******************************************************************** //
+    // Public Constants.
+    // ******************************************************************** //
+
+    /**
+     * Surface runner option: handle configuration changes dynamically.
+     * If set, configuration changes such as screen orientation changes
+     * will be passed up to the app; otherwise, it is assumed that we
+     * will re-start for these.
+     */
+    public static final int OPTION_DYNAMIC = 0x0001;
+    
+    
+    // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
 
-	/**
-	 * Create a SurfaceRunner instance.
-	 * 
-	 * @param	app			The application context we're running in.
-	 */
+    /**
+     * Create a SurfaceRunner instance.
+     * 
+     * @param   app         The application context we're running in.
+     */
     public SurfaceRunner(Context app) {
+        this(app, 0);
+    }
+    
+
+    /**
+     * Create a SurfaceRunner instance.
+     * 
+     * @param   app         The application context we're running in.
+     * @param   options     Options for this SurfaceRunner.  A bitwise OR of
+     *                      OPTION_XXX constants.
+     */
+    public SurfaceRunner(Context app, int options) {
         super(app);
 
+        surfaceOptions = options;
+        
         // Register for events on the surface.
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
@@ -77,9 +104,9 @@ public abstract class SurfaceRunner
     }
     
 
-	// ******************************************************************** //
-	// State Handling.
-	// ******************************************************************** //
+    // ******************************************************************** //
+    // State Handling.
+    // ******************************************************************** //
 
     /**
      * This is called immediately after the surface is first created.
@@ -113,8 +140,8 @@ public abstract class SurfaceRunner
     {
         // On Droid (at least) this can get called after a rotation,
         // which shouldn't happen as we should get shut down first.
-        // Ignore that.
-        if (isEnable(ENABLE_SIZE)) {
+        // Ignore that, unless we're handling config changes dynamically.
+        if ((surfaceOptions & OPTION_DYNAMIC) == 0 && isEnable(ENABLE_SIZE)) {
             Log.e(TAG, "ignored surfaceChanged " + width + "x" + height);
             return;
         }
@@ -795,6 +822,9 @@ public abstract class SurfaceRunner
     
     // The surface manager for the view.
     private SurfaceHolder surfaceHolder = null;
+    
+    // Option flags for this instance.  A bitwise OR of OPTION_XXX constants.
+    private int surfaceOptions = 0;
 
     // Enablement flags; see comment above.
     private int enableFlags = 0;
