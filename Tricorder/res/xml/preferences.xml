@@ -10,24 +10,27 @@
                 android:summary="@string/prefs_sound_summary"
                 android:entries="@array/prefs_sound_entries"
                 android:entryValues="@array/prefs_sound_values"
-                android:dialogTitle="@string/prefs_sound_title" />
+                android:dialogTitle="@string/prefs_sound_title"
+                android:defaultValue="FULL" />
                         
         <CheckBoxPreference
                 android:key="wifiPing"
                 android:title="@string/prefs_ping"
-                android:summary="@string/prefs_ping_summary" />
+                android:summary="@string/prefs_ping_summary"
+                android:defaultValue="false" />
             
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/prefs_cat_display">
                            
         <ListPreference
-                android:key="orientMode"
+                android:key="orientationMode"
                 android:title="@string/prefs_orient"
                 android:summary="@string/prefs_orient_summary"
                 android:entries="@array/prefs_orient_entries"
                 android:entryValues="@array/prefs_orient_values"
-                android:dialogTitle="@string/prefs_orient_title" />
+                android:dialogTitle="@string/prefs_orient_title"
+                android:defaultValue="1" />
             
     </PreferenceCategory>
   
@@ -36,7 +39,8 @@
         <CheckBoxPreference
                 android:key="fakeMissingData"
                 android:title="@string/prefs_fake"
-                android:summary="@string/prefs_fake_summary" />
+                android:summary="@string/prefs_fake_summary"
+                android:defaultValue="false" />
             
     </PreferenceCategory>
      

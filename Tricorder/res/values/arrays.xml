@@ -18,7 +18,7 @@
     
     <!-- Entry names for the screen orientation menu. -->
     <string-array name="prefs_orient_entries">
-        <item>Default</item>
+        <item>System default</item>
         <item>Portrait</item>
         <item>Landscape</item>  
         <item>User preference</item>  

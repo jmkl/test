@@ -453,12 +453,12 @@ public class Tricorder
         // Get the desired orientation.
         int orientMode = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         try {
-            String omode = prefs.getString("orientMode", null);
+            String omode = prefs.getString("orientationMode", null);
             orientMode = Integer.valueOf(omode);
         } catch (Exception e) {
-            Log.e(TAG, "Pref: bad orientMode");
+            Log.e(TAG, "Pref: bad orientationMode");
         }
-        Log.i(TAG, "Prefs: orientMode " + orientMode);
+        Log.i(TAG, "Prefs: orientationMode " + orientMode);
         setRequestedOrientation(orientMode);
         
     	boolean fakeMissingData = false;
