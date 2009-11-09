@@ -166,8 +166,13 @@ public class TextAtom
         for (int r = 0; r < numRows; ++r) {
             int cols = template.length;
             buffers[r] = new char[cols][];
-            for (int c = 0; c < cols; ++c)
-                buffers[r][c] = new char[template[c].length()];
+            for (int c = 0; c < cols; ++c) {
+                int l = template[c].length();
+                char[] buf = new char[l];
+                for (int i = 0; i < l; ++i)
+                    buf[i] = ' ';
+                buffers[r][c] = buf;
+            }
         }
         fieldBuffers = buffers;
 
