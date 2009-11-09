@@ -270,7 +270,8 @@ class ChartAtom
 		timeScale = scale;
 		
 		// Size the data buffer for the new scale.
-		setupBuffer((int) Math.ceil(chartWidth / timeScale));
+		if (chartWidth > 0)
+		    setupBuffer((int) Math.ceil(chartWidth / timeScale));
 	}
 	
 
