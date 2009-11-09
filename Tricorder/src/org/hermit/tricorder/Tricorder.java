@@ -451,7 +451,7 @@ public class Tricorder
     	Log.i(TAG, "Prefs: wifiPing " + wifiPing);
 
         // Get the desired orientation.
-        int orientMode = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        int orientMode = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         try {
             String omode = prefs.getString("orientationMode", null);
             orientMode = Integer.valueOf(omode);
