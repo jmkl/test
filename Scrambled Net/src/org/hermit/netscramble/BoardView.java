@@ -114,7 +114,7 @@ public class BoardView
 	/**
 	 * The maximum cell size in pixels.
 	 */
-	private static final int CELL_MAX = 64;
+	private static final int CELL_MAX = 72;
 
 	
 	// ******************************************************************** //
