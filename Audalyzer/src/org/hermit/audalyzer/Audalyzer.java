@@ -20,8 +20,11 @@ package org.hermit.audalyzer;
 import org.hermit.android.core.MainActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -267,46 +270,19 @@ public class Audalyzer
      * Read our application preferences and configure ourself appropriately.
      */
     private void updatePreferences() {
-//        SharedPreferences prefs =
-//                        PreferenceManager.getDefaultSharedPreferences(this);
-//        
-//        // See if sounds are enabled and how.
-//        soundMode = SoundMode.FULL;
-//        try {
-//            String smode = prefs.getString("soundMode", null);
-//            soundMode = SoundMode.valueOf(smode);
-//        } catch (Exception e) {
-//            Log.e(TAG, "Pref: bad soundMode");
-//        }
-//        Log.i(TAG, "Prefs: soundMode " + soundMode);
-//
-//        wifiPing = false;
-//        try {
-//            wifiPing = prefs.getBoolean("wifiPing", false);
-//        } catch (Exception e) {
-//            Log.e(TAG, "Pref: bad wifiPing");
-//        }
-//        Log.i(TAG, "Prefs: wifiPing " + wifiPing);
-//
-//        // Get the desired orientation.
-//        int orientMode = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-//        try {
-//            String omode = prefs.getString("orientMode", null);
-//            orientMode = Integer.valueOf(omode);
-//        } catch (Exception e) {
-//            Log.e(TAG, "Pref: bad orientMode");
-//        }
-//        Log.i(TAG, "Prefs: orientMode " + orientMode);
-//        setRequestedOrientation(orientMode);
-//        
-//        boolean fakeMissingData = false;
-//        try {
-//            fakeMissingData = prefs.getBoolean("fakeMissingData", false);
-//        } catch (Exception e) {
-//            Log.e(TAG, "Pref: bad fakeMissingData");
-//        }
-//        Log.i(TAG, "Prefs: fakeMissingData " + fakeMissingData);
-//        mainView.setSimulateMode(fakeMissingData);
+        SharedPreferences prefs =
+                        PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Get the desired orientation.
+        int orientMode = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        try {
+            String omode = prefs.getString("orientationMode", null);
+            orientMode = Integer.valueOf(omode);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad orientationMode");
+        }
+        Log.i(TAG, "Prefs: orientationMode " + orientMode);
+        setRequestedOrientation(orientMode);
     }
 
 

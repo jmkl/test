@@ -22,17 +22,16 @@ import org.hermit.android.io.AudioReader;
 import org.hermit.dsp.FFTTransformer;
 import org.hermit.dsp.SignalPower;
 import org.hermit.utils.CharFormatter;
-import org.hermit.utils.CharFormatter.OverflowException;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.Paint.Style;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -55,7 +54,7 @@ public class AudioMeter
 	 * @param	app			The application context we're running in.
 	 */
     public AudioMeter(Context app) {
-        super(app);
+        super(app, OPTION_DYNAMIC);
         
         audioReader = new AudioReader();
         
@@ -101,25 +100,7 @@ public class AudioMeter
      */
     @Override
     protected void appSize(int width, int height, Bitmap.Config config) {
-        // Create the bitmap for the audio waveform display,
-        // and the Canvas for drawing into it.
-        waveBitmap = getBitmap(WAVE_WIDTH, WAVE_HEIGHT);
-        waveCanvas = new Canvas(waveBitmap);
-        
-        // Create the bitmap for the audio spectrum display,
-        // and the Canvas for drawing into it.
-        spectrumBitmap = getBitmap(SPECTRUM_WIDTH, SPECTRUM_HEIGHT);
-        spectrumCanvas = new Canvas(spectrumBitmap);
-
-        // Create the bitmap for the VU meter display,
-        // and the Canvas for drawing into it.
-        meterBitmap = getBitmap(METER_WIDTH, METER_HEIGHT);
-        meterCanvas = new Canvas(meterBitmap);
-
-        // Make a Paint for drawing the display.
-        screenPaint = new Paint();
-        screenPaint.setTextSize(28);
-        screenPaint.setTypeface(Typeface.MONOSPACE);
+        layout(width, height);
     }
     
 
@@ -155,6 +136,95 @@ public class AudioMeter
      */
     @Override
     protected void appStop() {
+    }
+    
+
+    // ******************************************************************** //
+    // Layout Processing.
+    // ******************************************************************** //
+
+    /**
+     * Lay out the display for a given screen size.
+     * 
+     * @param   width       The new width of the surface.
+     * @param   height      The new height of the surface.
+     */
+    private void layout(int width, int height) {
+        if (width > height)
+            layoutLandscape(width, height);
+        else
+            layoutPortrait(width, height);
+        
+        // Create the bitmap for the audio waveform display,
+        // and the Canvas for drawing into it.
+        waveBitmap = getBitmap(waveRect.width(), waveRect.height());
+        waveCanvas = new Canvas(waveBitmap);
+        
+        // Create the bitmap for the audio spectrum display,
+        // and the Canvas for drawing into it.
+        spectrumBitmap = getBitmap(specRect.width(), specRect.height());
+        spectrumCanvas = new Canvas(spectrumBitmap);
+
+        // Create the bitmap for the VU meter display,
+        // and the Canvas for drawing into it.
+        meterBitmap = getBitmap(meterRect.width(), meterRect.height());
+        meterCanvas = new Canvas(meterBitmap);
+
+        // Make a Paint for drawing the display.
+        screenPaint = new Paint();
+        screenPaint.setTextSize(28);
+        screenPaint.setTypeface(Typeface.MONOSPACE);
+    }
+    
+
+    /**
+     * Lay out the display for a given screen size.
+     * 
+     * @param   width       The new width of the surface.
+     * @param   height      The new height of the surface.
+     */
+    private void layoutLandscape(int width, int height) {
+        // Divide the display into two columns.
+        int gutter = width / 20;
+        int col = (width - gutter * 3) / 2;
+        
+        // Divide the left pane in two.
+        int row = (height - gutter * 3) / 2;
+        
+        int x = gutter;
+        int y = gutter;
+        waveRect = new Rect(x, y, x + col, y + row);
+        y += row + gutter;
+        meterRect = new Rect(x, y, x + col, height - gutter);
+        
+        x += col + gutter;
+        y = gutter;
+        specRect = new Rect(x, y, x + col, height - gutter);
+    }
+    
+
+    /**
+     * Lay out the display for a given screen size.
+     * 
+     * @param   width       The new width of the surface.
+     * @param   height      The new height of the surface.
+     */
+    private void layoutPortrait(int width, int height) {
+        // Divide the display into three vertical elements, the
+        // spectrum display being double-height.
+        int gutter = width / 20;
+        int unit = (height - gutter * 4) / 4;
+        int col = width - gutter * 2;
+
+        int x = gutter;
+        int y = gutter;
+        waveRect = new Rect(x, y, x + col, y + unit);
+        y += unit + gutter;
+        
+        specRect = new Rect(x, y, x + col, y + unit * 2);
+        y += unit * 2 + gutter;
+        
+        meterRect = new Rect(x, y, x + col, y + unit);
     }
     
 
@@ -269,9 +339,9 @@ public class AudioMeter
         statsTime(3, (vuEnd - vuStart) * 1000);
   
         // Draw the components on to the screen.
-        canvas.drawBitmap(waveBitmap, 32, 24, null);
-        canvas.drawBitmap(spectrumBitmap, 32, 88, null);
-        canvas.drawBitmap(meterBitmap, 32, 368, null);
+        canvas.drawBitmap(waveBitmap, waveRect.left, waveRect.top, null);
+        canvas.drawBitmap(spectrumBitmap, specRect.left, specRect.top, null);
+        canvas.drawBitmap(meterBitmap, meterRect.left, meterRect.top, null);
     }
 
     
@@ -486,11 +556,7 @@ public class AudioMeter
         
         // Draw the text below the meter.
         final float dB = (meterAverage - 1f) * 100f;
-        try {
-            CharFormatter.formatFloat(dbBuffer, 0, dB, 6, 1);
-        } catch (OverflowException e) {
-            Log.e(TAG, "Format dB failed: " + e.getMessage());
-        }
+        CharFormatter.formatFloat(dbBuffer, 0, dB, 6, 1);
         screenPaint.setStyle(Style.STROKE);
         screenPaint.setColor(0xff00ffff);
         canvas.drawText(dbBuffer, 0, dbBuffer.length, cx, cy + ch + 28, screenPaint);
@@ -629,6 +695,11 @@ public class AudioMeter
 
     // Current signal power level.
     private float currentPower = 0f;
+    
+    // Bounding rectangles for the waveform, spectrum, and VU meter displays.
+    private Rect waveRect = null;
+    private Rect specRect = null;
+    private Rect meterRect = null;
 
     // Bitmap in which we draw the audio waveform display,
     // and the Canvas for drawing into it.

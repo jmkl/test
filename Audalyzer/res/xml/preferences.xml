@@ -2,5 +2,18 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <PreferenceCategory android:title="@string/prefs_cat_display">
+                           
+        <ListPreference
+                android:key="orientationMode"
+                android:title="@string/prefs_orient"
+                android:summary="@string/prefs_orient_summary"
+                android:entries="@array/prefs_orient_entries"
+                android:entryValues="@array/prefs_orient_values"
+                android:dialogTitle="@string/prefs_orient_title"
+                android:defaultValue="1" />
+            
+    </PreferenceCategory>
+  
 </PreferenceScreen>
 
