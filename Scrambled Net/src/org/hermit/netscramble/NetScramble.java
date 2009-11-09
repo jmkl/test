@@ -33,11 +33,9 @@
 package org.hermit.netscramble;
 
 
-import org.hermit.android.core.AppUtils;
-import org.hermit.android.notice.InfoBox;
+import org.hermit.android.core.MainActivity;
 import org.hermit.netscramble.BoardView.Skill;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -72,7 +70,7 @@ import android.widget.ViewAnimator;
  * Main NetScramble activity.
  */
 public class NetScramble
-	extends Activity
+	extends MainActivity
 {
 
 	// ******************************************************************** //
@@ -83,8 +81,7 @@ public class NetScramble
      * Current state of the game.
      */
     static enum State {
-        NEW, RESTORED, INIT,
-    					PAUSED, HELP, RUNNING, SOLVED, ABORTED;
+        NEW, RESTORED, INIT, PAUSED, HELP, RUNNING, SOLVED, ABORTED;
         
         static State getValue(int ordinal) {
             return states[ordinal];
@@ -156,7 +153,13 @@ public class NetScramble
         			(icicle == null ? "clean start" : "restart"));
         
         super.onCreate(icicle);
-        
+
+        // Set up the standard dialogs.
+        createMessageBox(R.string.button_close);
+        setAboutInfo(R.string.about_text, R.string.help_text);
+        setHomeInfo(R.string.button_homepage, R.string.url_homepage);
+        setLicenseInfo(R.string.button_license, R.string.url_license);
+
         appResources = getResources();
         
         gameTimer = new GameTimer();
@@ -193,14 +196,6 @@ public class NetScramble
         
         // Load the sounds.
         soundPool = createSoundPool();
-
-        // Create the dialog we use for help and about.
-        AppUtils autils = AppUtils.getInstance(this);
-        messageDialog = new InfoBox(this, R.string.button_close);
-        messageDialog.setLinkButton(1, R.string.button_homepage, R.string.url_homepage);
-        messageDialog.setLinkButton(2, R.string.button_license, R.string.url_license);
-        String version = autils.getVersionString(AppUtils.Detail.SIMPLE);
-		messageDialog.setTitle(version);
 
         // If we have a previous state to restore, try to do so.
         boolean restored = false;
@@ -756,7 +751,7 @@ public class NetScramble
     		setState(State.HELP);
     		break;
     	case R.id.menu_about:
- 			messageDialog.show(R.string.about_text);
+ 			showAbout();
     		break;
     	case R.id.skill_novice:
     		startGame(Skill.NOVICE);
@@ -1304,9 +1299,6 @@ public class NetScramble
 	// The previous cell that was clicked.  Used to detect multiple clicks
 	// on the same cell.
 	private Cell prevClickedCell = null;
-
-	// Dialog used to display about etc.
-	private InfoBox messageDialog;
 
 }
 
