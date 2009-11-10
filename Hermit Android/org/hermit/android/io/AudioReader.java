@@ -64,11 +64,6 @@ public class AudioReader
         audioBufferBytes = AudioRecord.getMinBufferSize(SAMPLE_RATE,
                                      AudioFormat.CHANNEL_CONFIGURATION_MONO,
                                      AudioFormat.ENCODING_PCM_16BIT) * 2;
-        audioInput = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                                     SAMPLE_RATE,
-                                     AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                                     AudioFormat.ENCODING_PCM_16BIT,
-                                     audioBufferBytes);
     }
 
 
@@ -87,6 +82,13 @@ public class AudioReader
     public void startReader(int block, Listener listener) {
         Log.i(TAG, "Reader: Start Thread");
         synchronized (this) {
+            // Set up the audio input.
+            audioInput = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                    SAMPLE_RATE,
+                    AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                    audioBufferBytes);
+
             inputBlockSize = block;
             sleepTime = (long) (1000f / ((float) SAMPLE_RATE / (float) block));
             inputBuffer = new short[2][inputBlockSize];
@@ -115,6 +117,13 @@ public class AudioReader
             ;
         }
         readerThread = null;
+        
+        // Kill the audio input.
+        synchronized (this) {
+            audioInput.release();
+            audioInput = null;
+        }
+        
         Log.i(TAG, "Reader: Thread Stopped");
     }
 
@@ -219,11 +228,11 @@ public class AudioReader
 	// Private Data.
 	// ******************************************************************** //
     
-    // Our audio input device.
-    private final AudioRecord audioInput;
-    
     // Size of the system audio buffer.
     private final int audioBufferBytes;
+    
+    // Our audio input device.
+    private AudioRecord audioInput;
 
     // Our audio input buffer, and the index of the next item to go in.
     private short[][] inputBuffer = null;
