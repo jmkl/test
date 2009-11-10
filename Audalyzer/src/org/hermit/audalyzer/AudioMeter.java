@@ -150,10 +150,15 @@ public class AudioMeter
      * @param   height      The new height of the surface.
      */
     private void layout(int width, int height) {
+        // Make up some layout parameters.
+        int gutter = width / 20;
+        if (Math.min(width, height) > 400)
+            gutter = width / 15;
+
         if (width > height)
-            layoutLandscape(width, height);
+            layoutLandscape(width, height, gutter);
         else
-            layoutPortrait(width, height);
+            layoutPortrait(width, height, gutter);
         
         // Create the bitmap for the audio waveform display,
         // and the Canvas for drawing into it.
@@ -172,20 +177,33 @@ public class AudioMeter
 
         // Make a Paint for drawing the display.
         screenPaint = new Paint();
-        screenPaint.setTextSize(28);
         screenPaint.setTypeface(Typeface.MONOSPACE);
+        
+        // Do some layout within the meter.
+        int mh = meterRect.height();
+        meterBarY = 0;
+        meterBarHeight = 32;
+        meterLabSize = 14;
+        meterLabY = meterBarY + meterBarHeight + meterLabSize + 2;
+        meterTextSize = 42;
+        meterTextY = meterLabY + meterTextSize + 4;
+        meterBarMargin = meterLabSize * 1;
+        
+        // Draw in the meter background.
+        drawVuMeterBg(meterCanvas,
+                      0, 0, meterRect.width(), meterRect.height());
     }
-    
+   
 
     /**
      * Lay out the display for a given screen size.
      * 
      * @param   width       The new width of the surface.
      * @param   height      The new height of the surface.
+     * @param   gutter      Spacing to leave between items.
      */
-    private void layoutLandscape(int width, int height) {
+    private void layoutLandscape(int width, int height, int gutter) {
         // Divide the display into two columns.
-        int gutter = width / 20;
         int col = (width - gutter * 3) / 2;
         
         // Divide the left pane in two.
@@ -208,11 +226,11 @@ public class AudioMeter
      * 
      * @param   width       The new width of the surface.
      * @param   height      The new height of the surface.
+     * @param   gutter      Spacing to leave between items.
      */
-    private void layoutPortrait(int width, int height) {
+    private void layoutPortrait(int width, int height, int gutter) {
         // Divide the display into three vertical elements, the
         // spectrum display being double-height.
-        int gutter = width / 20;
         int unit = (height - gutter * 4) / 4;
         int col = width - gutter * 2;
 
@@ -290,7 +308,7 @@ public class AudioMeter
                 // Draw the waveform now, while we have the raw data.
                 long wavStart = System.currentTimeMillis();
                 drawWaveform(now, buffer, len - FFT_BLOCK, FFT_BLOCK,
-                             waveCanvas, 0, 0, WAVE_WIDTH, WAVE_HEIGHT);
+                             waveCanvas, 0, 0, waveRect.width(), waveRect.height());
                 long wavEnd = System.currentTimeMillis();
                 statsTime(1, (wavEnd - wavStart) * 1000);
 
@@ -308,8 +326,8 @@ public class AudioMeter
             // Get the FFT output and draw the spectrum.
             fourierTransformer.getResults(spectrumData);
             long speStart = System.currentTimeMillis();
-            drawSpectrum(now, spectrumData,
-                         spectrumCanvas, 0, 0, SPECTRUM_WIDTH, SPECTRUM_HEIGHT);
+            drawSpectrum(now, spectrumData, spectrumCanvas,
+                         0, 0, specRect.width(), specRect.height());
             long speEnd = System.currentTimeMillis();
             statsTime(2, (speEnd - speStart) * 1000);
         }
@@ -330,18 +348,18 @@ public class AudioMeter
      */
     @Override
     protected void doDraw(Canvas canvas, long now) {
+        // Draw the components on to the screen.
+        canvas.drawColor(0xff000000);
+        canvas.drawBitmap(waveBitmap, waveRect.left, waveRect.top, null);
+        canvas.drawBitmap(spectrumBitmap, specRect.left, specRect.top, null);
+        
         // Draw the VU meter.  We do this every frame, even though the
         // power level may not have changed (if a new audio read hasn't
         // arrived), so that the peak bars can animate smoothly.
-        long vuStart = System.currentTimeMillis();
-        drawVuMeter(now, currentPower, meterCanvas, 0, 0, METER_WIDTH, METER_HEIGHT);
-        long vuEnd = System.currentTimeMillis();
-        statsTime(3, (vuEnd - vuStart) * 1000);
-  
-        // Draw the components on to the screen.
-        canvas.drawBitmap(waveBitmap, waveRect.left, waveRect.top, null);
-        canvas.drawBitmap(spectrumBitmap, specRect.left, specRect.top, null);
         canvas.drawBitmap(meterBitmap, meterRect.left, meterRect.top, null);
+        drawVuMeter(now, currentPower, canvas,
+                    meterRect.left, meterRect.top,
+                    meterRect.width(), meterRect.height());
     }
 
     
@@ -449,6 +467,48 @@ public class AudioMeter
     
 
     /**
+     * Draw the VU meter background into the given canvas.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   cx          X position to draw at.
+     * @param   cy          Y position to draw at.
+     * @param   w           Width to draw in.
+     * @param   h           Height to draw in.
+     */
+    private void drawVuMeterBg(Canvas canvas,
+                               int cx, int cy, int w, int h)
+    {
+        canvas.drawColor(0xff000000);
+        
+        screenPaint.setColor(0xffffff00);
+        screenPaint.setStyle(Style.STROKE);
+        
+        // Draw the grid.
+        final int mx = cx + meterBarMargin;
+        final int mw = w - meterBarMargin * 2;
+        final int by = meterBarY;
+        final int bh = meterBarHeight;
+        final float bw = mw - 1f;
+        final float gw = bw / 10f;
+        canvas.drawRect(mx, by, mx + bw - 1, by + bh - 1, screenPaint);
+        for (float i = 0f; i < bw; i += gw) {
+            canvas.drawLine(mx + i + 1, by, mx + i + 1, by + bh - 1, screenPaint);
+        }
+
+        // Draw the labels below the grid.
+        final int ly = meterLabY;
+        final int ls = meterLabSize;
+        screenPaint.setTextSize(ls);
+        for (int i = 0; i <= 10; ++i) {
+            String text = "" + (i * 10 - 100);
+            float tw = screenPaint.measureText(text);
+            float lx = mx + i * gw + 1 - (tw / 2);
+            canvas.drawText(text, lx, ly, screenPaint);
+        }
+    }
+
+
+    /**
      * Draw the VU meter into the given canvas.
      * 
      * @param   now         Nominal time of the current frame in ms.
@@ -462,12 +522,6 @@ public class AudioMeter
     private void drawVuMeter(long now, float power, Canvas canvas,
                              int cx, int cy, int w, int h)
     {
-        canvas.drawColor(0xff000000);
-        
-        // Area for the meter part; leaving room for the text.
-        int cw = w;
-        int ch = h - 32;
-        
         // Get the previous power value, and add the new value into the
         // history buffer.  Re-calculate the rolling average power value.
         if (++meterIndex >= meterPrevious.length)
@@ -476,32 +530,69 @@ public class AudioMeter
         meterPrevious[meterIndex] = power;
         meterAverage -= prev / METER_AVERAGE_COUNT;
         meterAverage += power / METER_AVERAGE_COUNT;
+        
+        // Re-calculate the peak markers.
+        calculatePeaks(now, power, prev);
 
         screenPaint.setColor(0xffffff00);
         screenPaint.setStyle(Style.STROKE);
-        canvas.drawRect(cx, cy, cx + cw - 1, cy + ch - 1, screenPaint);
         
-        // Draw the grid.
-        final float gap = 5f;
-        final float bw = cw - 1f;
-        final float gw = bw / 10f;
-        for (float i = 0f; i < bw; i += gw)
-            canvas.drawLine(cx + i + 1, cy, cx + i + 1, cy + ch - 1, screenPaint);
+        // Position parameters.
+        final int mx = cx + meterBarMargin;
+        final int mw = w - meterBarMargin * 2;
+        final int by = cy + meterBarY;
+        final int bh = meterBarHeight;
+        final float gap = 6f;
+        final float bw = mw - 1f;
 
         // Draw the average bar.
         final float pa = meterAverage * bw;
         screenPaint.setStyle(Style.FILL);
-        screenPaint.setColor(0xff00ffff);
-        canvas.drawRect(cx, cy + gap, cx + pa + 1, cy + ch - gap, screenPaint);
+        screenPaint.setColor(METER_AVERAGE_COL);
+        canvas.drawRect(mx, by + gap, mx + pa + 1, by + bh - gap, screenPaint);
         
         // Draw the power bar.
         final float p = power * bw;
         screenPaint.setStyle(Style.FILL);
-        screenPaint.setColor(0xffffff00);
-        canvas.drawRect(cx, cy + gap * 2, cx + p + 1, cy + ch - gap * 2, screenPaint);
+        screenPaint.setColor(METER_POWER_COL);
+        canvas.drawRect(mx, by + gap * 2, mx + p + 1, by + bh - gap * 2, screenPaint);
 
-        // Now, handle the peaks.  First, delete any that have been passed
-        // or have timed out.
+        // Now, draw in the peaks.
+        screenPaint.setStyle(Style.FILL);
+        for (int i = 0; i < METER_PEAKS; ++i) {
+            if (meterPeakTimes[i] != 0) {
+                // Fade the peak according to its age.
+                long age = now - meterPeakTimes[i];
+                float fac = 1f - ((float) age / (float) METER_PEAK_TIME);
+                int alpha = (int) (fac * 255f);
+                screenPaint.setColor(METER_PEAK_COL | (alpha << 24));
+                // Draw it in.
+                final float pp = meterPeaks[i] * bw;
+                canvas.drawRect(mx + pp - 1, by + gap * 2,
+                                mx + pp + 3, by + bh - gap * 2, screenPaint);
+            }
+        }
+
+        // Draw the text below the meter.
+        final int ty = cy + meterTextY;
+        final int ts = meterTextSize;
+        final float dB = (meterAverage - 1f) * 100f;
+        CharFormatter.formatFloat(dbBuffer, 0, dB, 6, 1);
+        screenPaint.setStyle(Style.STROKE);
+        screenPaint.setColor(0xff00ffff);
+        screenPaint.setTextSize(ts);
+//      private int meterTextY = 0;
+//      private int meterTextSize = 0;
+
+        canvas.drawText(dbBuffer, 0, dbBuffer.length, cx, ty, screenPaint);
+    }
+
+
+    /**
+     * Re-calculate the positions of the peak markers in the VU meter.
+     */
+    private void calculatePeaks(long now, float power, float prev) {
+        // First, delete any that have been passed or have timed out.
         for (int i = 0; i < METER_PEAKS; ++i) {
             if (meterPeakTimes[i] != 0 &&
                     (meterPeaks[i] < power ||
@@ -536,32 +627,8 @@ public class AudioMeter
                 }
             }
         }
-        
-        // Now, draw in the peaks.
-        screenPaint.setStyle(Style.FILL);
-        for (int i = 0; i < METER_PEAKS; ++i) {
-            if (meterPeakTimes[i] != 0) {
-                // Fade the peak according to its age.
-                long age = now - meterPeakTimes[i];
-                float fac = 1f - ((float) age / (float) METER_PEAK_TIME);
-                int alpha = (int) (fac * 255f);
-                screenPaint.setColor(Color.argb(alpha, 255, 0, 0));
-                
-                // Draw it in.
-                final float pp = meterPeaks[i] * bw;
-                canvas.drawRect(cx + pp - 1, cy + gap * 2,
-                                cx + pp + 3, cy + ch - gap * 2, screenPaint);
-            }
-        }
-        
-        // Draw the text below the meter.
-        final float dB = (meterAverage - 1f) * 100f;
-        CharFormatter.formatFloat(dbBuffer, 0, dB, 6, 1);
-        screenPaint.setStyle(Style.STROKE);
-        screenPaint.setColor(0xff00ffff);
-        canvas.drawText(dbBuffer, 0, dbBuffer.length, cx, cy + ch + 28, screenPaint);
     }
-
+    
     
 	// ******************************************************************** //
 	// Input Handling.
@@ -650,18 +717,6 @@ public class AudioMeter
     // samples.
     private static final int DECIMATE = 2;
 
-    // Size for the waveform display.
-    private static final int WAVE_WIDTH = 256;
-    private static final int WAVE_HEIGHT = 64;
-
-    // Size for the audio spectrum display.
-    private static final int SPECTRUM_WIDTH = 256;
-    private static final int SPECTRUM_HEIGHT = 256;
-
-    // Size for the VU meter.
-    private static final int METER_WIDTH = 256;
-    private static final int METER_HEIGHT = 64;
-    
     // Number of peaks we will track in the VU meter.
     private static final int METER_PEAKS = 4;
 
@@ -671,6 +726,12 @@ public class AudioMeter
     // Number of updates over which we average the VU meter to get
     // a rolling average.
     private static final int METER_AVERAGE_COUNT = 200;
+
+    // Colours for the meter pwoer bar and average bar and peak marks.
+    // In METER_PEAK_COL, alpha is set dynamically in the code.
+    private static final int METER_POWER_COL = 0xffffff00;
+    private static final int METER_AVERAGE_COL = 0x8080d000;
+    private static final int METER_PEAK_COL = 0x00ff0000;
 
 	
 	// ******************************************************************** //
@@ -700,7 +761,18 @@ public class AudioMeter
     private Rect waveRect = null;
     private Rect specRect = null;
     private Rect meterRect = null;
-
+    
+    // Layout parameters for the VU meter.  Position and size for the
+    // bar itself; position and size for the bar labels; position
+    // and size for the main readout text.
+    private int meterBarY = 0;
+    private int meterBarHeight = 0;
+    private int meterLabY = 0;
+    private int meterLabSize = 0;
+    private int meterTextY = 0;
+    private int meterTextSize = 0;
+    private int meterBarMargin = 0;
+    
     // Bitmap in which we draw the audio waveform display,
     // and the Canvas for drawing into it.
     private Bitmap waveBitmap = null;
