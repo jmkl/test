@@ -20,6 +20,7 @@ package org.hermit.tricorder;
 
 import org.hermit.tricorder.Tricorder.Sound;
 
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.hardware.Sensor;
@@ -192,7 +193,19 @@ class TridataView
 		xyzView.setGeometry(new Rect(x, y, ex, y + chartHeight));
 	}
 
-
+    
+	/**
+	 * Set the device orientation, so that we
+     * can adjust the sensor axes to match the screen axes.
+     * 
+     * @param   orientation     Device orientation, as one of the
+     *                          Configuration.ORIENTATION_XXX flags.
+	 */
+	public void setOrientation(int orientation) {
+	    deviceOrientation = orientation;
+	}
+	
+	
 	// ******************************************************************** //
 	// Configuration.
 	// ******************************************************************** //
@@ -333,7 +346,7 @@ class TridataView
     public void onSensorData(int sensorId, float[] values) {
         if (values.length < 3)
             return;
-
+        
         synchronized (this) {
             // If we're in relative mode, subtract the baseline values.
             if (relativeMode) {
@@ -345,13 +358,27 @@ class TridataView
                     relativeValues[2] = values[2];
                 }
 
-                processedValues[0] = values[0] - relativeValues[0];
-                processedValues[1] = values[1] - relativeValues[1];
-                processedValues[2] = values[2] - relativeValues[2];
+                // Adjust the axes according to the device's orientation.
+                if (deviceOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    processedValues[0] = -(values[1] - relativeValues[1]);
+                    processedValues[1] = values[0] - relativeValues[0];
+                    processedValues[2] = values[2] - relativeValues[2];
+                } else {
+                    processedValues[0] = values[0] - relativeValues[0];
+                    processedValues[1] = values[1] - relativeValues[1];
+                    processedValues[2] = values[2] - relativeValues[2];
+                }
             } else {
-                processedValues[0] = values[0];
-                processedValues[1] = values[1];
-                processedValues[2] = values[2];
+                // Adjust the axes according to the device's orientation.
+                if (deviceOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    processedValues[0] = -values[1];
+                    processedValues[1] = values[0];
+                    processedValues[2] = values[2];
+                } else {
+                    processedValues[0] = values[0];
+                    processedValues[1] = values[1];
+                    processedValues[2] = values[2];
+                }
             }
 
             final float x = processedValues[0];
@@ -476,6 +503,10 @@ class TridataView
     // for this display; dataRange is the current range under zooming.
 	public final float dataUnit;
 	public float dataRange;
+    
+    // Current device orientation, as one of the
+    // Configuration.ORIENTATION_XXX flags.
+    private int deviceOrientation = 0;
 
 	// Processed data values.
 	private float[] processedValues = null;

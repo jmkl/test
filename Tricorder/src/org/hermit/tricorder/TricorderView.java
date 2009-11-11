@@ -19,6 +19,8 @@
 package org.hermit.tricorder;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -84,6 +86,7 @@ class TricorderView
 	 */
 	public TricorderView(Tricorder context) {
 		super(context);
+		appContext = context;
 
         // Register for events on the surface.
         surfaceHolder = getHolder();
@@ -114,19 +117,21 @@ class TricorderView
     		switch (vdef) {
     		case GRA:
     			float gravUnit = SensorManager.STANDARD_GRAVITY;
-    	    	vdef.view = new TridataView(context, sm,
-    	    								Sensor.TYPE_ACCELEROMETER,
-    	    								gravUnit, 2.2f,
-    	    							    0xffccccff, 0xffff9e63,
-    	    							    0xff50d050, 0xffff9e63);
+    			gravView = new TridataView(context, sm,
+                                           Sensor.TYPE_ACCELEROMETER,
+                                           gravUnit, 2.2f,
+                                           0xffccccff, 0xffff9e63,
+                                           0xff50d050, 0xffff9e63);
+    	    	vdef.view = gravView;
     	    	break;
     		case MAG:
     	        float magUnit = SensorManager.MAGNETIC_FIELD_EARTH_MAX;
-    	        vdef.view = new TridataView(context, sm,
-											Sensor.TYPE_MAGNETIC_FIELD,
-											magUnit, 2.2f,
-					    					0xff6666ff, 0xffffcc00,
-					    					0xffcc6666, 0xffffcc00);
+    	        magView = new TridataView(context, sm,
+										  Sensor.TYPE_MAGNETIC_FIELD,
+										  magUnit, 2.2f,
+										  0xff6666ff, 0xffffcc00,
+										  0xffcc6666, 0xffffcc00);
+                vdef.view = magView;
     	    	break;
     		case ENV:
     	    	vdef.view = new MultiGraphView(context, sm);
@@ -214,7 +219,14 @@ class TricorderView
 	    	for (ViewDefinition vdef : ViewDefinition.values())
 	    		vdef.view.setGeometry(bounds);
 		}
-		
+	      
+        // Tell the Grav and Mag views our orientation, so that they
+		// can adjust the sensor axes to match the screen axes.
+        Resources res = appContext.getResources();
+        Configuration conf = res.getConfiguration();
+        gravView.setOrientation(conf.orientation);
+        magView.setOrientation(conf.orientation);
+
 		surfaceSized = true;
 		setState();
     }
@@ -508,8 +520,15 @@ class TricorderView
 	// Private Data.
 	// ******************************************************************** //
 
-	// The surface holder for our surface.
-	private SurfaceHolder surfaceHolder;
+	// Out application context.
+	private Tricorder appContext;
+
+    // The surface holder for our surface.
+    private SurfaceHolder surfaceHolder;
+    
+    // The Grav and Mag views.
+    private TridataView gravView = null;
+    private TridataView magView = null;
 
     // The currently selected view.
     private ViewDefinition currentView = null;
