@@ -67,7 +67,7 @@ public class AudioMeter
         meterPrevious = new float[METER_AVERAGE_COUNT];
         
         biasRange = new float[2];
-        dbBuffer = "-100.0 dB".toCharArray();
+        dbBuffer = "-100.0dB".toCharArray();
         
         // On-screen debug stats display.
         statsCreate(new String[] { "µs FFT", "µs dWav", "µs dSpe", "µs dMet", "skip/s" });
@@ -151,9 +151,8 @@ public class AudioMeter
      */
     private void layout(int width, int height) {
         // Make up some layout parameters.
-        int gutter = width / 20;
-        if (Math.min(width, height) > 400)
-            gutter = width / 15;
+        int min = Math.min(width, height);
+        int gutter = min / (min > 400 ? 15 : 20);
 
         if (width > height)
             layoutLandscape(width, height, gutter);
@@ -180,14 +179,18 @@ public class AudioMeter
         screenPaint.setTypeface(Typeface.MONOSPACE);
         
         // Do some layout within the meter.
+        int mw = meterRect.width();
         int mh = meterRect.height();
         meterBarY = 0;
-        meterBarHeight = 32;
-        meterLabSize = 14;
+        meterBarHeight = (int) (mh / 6f + 16f);
+        meterBarGap = meterBarHeight / 4;
+        meterLabSize = Math.min(meterBarHeight / 2, mw / 24);
         meterLabY = meterBarY + meterBarHeight + meterLabSize + 2;
-        meterTextSize = 42;
+        meterTextSize = Math.min(mh - (meterBarHeight + meterLabSize + 2), mw / 6);
+        if (meterTextSize > 64)
+            meterTextSize = 64;
         meterTextY = meterLabY + meterTextSize + 4;
-        meterBarMargin = meterLabSize * 1;
+        meterBarMargin = meterLabSize;
         
         // Draw in the meter background.
         drawVuMeterBg(meterCanvas,
@@ -542,20 +545,20 @@ public class AudioMeter
         final int mw = w - meterBarMargin * 2;
         final int by = cy + meterBarY;
         final int bh = meterBarHeight;
-        final float gap = 6f;
+        final float gap = meterBarGap;
         final float bw = mw - 1f;
 
         // Draw the average bar.
         final float pa = meterAverage * bw;
         screenPaint.setStyle(Style.FILL);
         screenPaint.setColor(METER_AVERAGE_COL);
-        canvas.drawRect(mx, by + gap, mx + pa + 1, by + bh - gap, screenPaint);
+        canvas.drawRect(mx, by + 1, mx + pa + 1, by + bh - 1, screenPaint);
         
         // Draw the power bar.
         final float p = power * bw;
         screenPaint.setStyle(Style.FILL);
         screenPaint.setColor(METER_POWER_COL);
-        canvas.drawRect(mx, by + gap * 2, mx + p + 1, by + bh - gap * 2, screenPaint);
+        canvas.drawRect(mx, by + gap, mx + p + 1, by + bh - gap, screenPaint);
 
         // Now, draw in the peaks.
         screenPaint.setStyle(Style.FILL);
@@ -568,8 +571,8 @@ public class AudioMeter
                 screenPaint.setColor(METER_PEAK_COL | (alpha << 24));
                 // Draw it in.
                 final float pp = meterPeaks[i] * bw;
-                canvas.drawRect(mx + pp - 1, by + gap * 2,
-                                mx + pp + 3, by + bh - gap * 2, screenPaint);
+                canvas.drawRect(mx + pp - 1, by + gap,
+                                mx + pp + 3, by + bh - gap, screenPaint);
             }
         }
 
@@ -581,8 +584,6 @@ public class AudioMeter
         screenPaint.setStyle(Style.STROKE);
         screenPaint.setColor(0xff00ffff);
         screenPaint.setTextSize(ts);
-//      private int meterTextY = 0;
-//      private int meterTextSize = 0;
 
         canvas.drawText(dbBuffer, 0, dbBuffer.length, cx, ty, screenPaint);
     }
@@ -729,8 +730,8 @@ public class AudioMeter
 
     // Colours for the meter pwoer bar and average bar and peak marks.
     // In METER_PEAK_COL, alpha is set dynamically in the code.
-    private static final int METER_POWER_COL = 0xffffff00;
-    private static final int METER_AVERAGE_COL = 0x8080d000;
+    private static final int METER_POWER_COL = 0xff0000ff;
+    private static final int METER_AVERAGE_COL = 0xa0ff9000;
     private static final int METER_PEAK_COL = 0x00ff0000;
 
 	
@@ -767,6 +768,7 @@ public class AudioMeter
     // and size for the main readout text.
     private int meterBarY = 0;
     private int meterBarHeight = 0;
+    private int meterBarGap = 0;
     private int meterLabY = 0;
     private int meterLabSize = 0;
     private int meterTextY = 0;
