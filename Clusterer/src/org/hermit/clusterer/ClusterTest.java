@@ -134,7 +134,7 @@ public class ClusterTest
         synchronized (this) {
             // Run one clustering iteration.
             long cstart = System.currentTimeMillis();
-            hasConverged = clusterer.iterate(clusterIds, clusterMeans);
+            hasConverged = clusterer.iterate();
             long cdone = System.currentTimeMillis();
             clusterDuration = cdone - cstart;
 
@@ -251,6 +251,17 @@ public class ClusterTest
      */
     public long getClusterTime() {
         return clusterDuration;
+    }
+    
+
+    /**
+     * Calculate a quality metric for the current clustering solution.
+     * This number is available after each step.
+     * 
+     * @return             Quality metric for this solution; small is better.
+     */
+    public double getClusterMetric() {
+        return clusterer.metric();
     }
     
 

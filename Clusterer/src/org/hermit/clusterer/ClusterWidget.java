@@ -213,10 +213,12 @@ public class ClusterWidget
             int iterCount = clusterTest.getIterations();
             long clusterDuration = clusterTest.getClusterTime();
             long voronoiDuration = clusterTest.getVoronoiTime();
+            long metric = (long) clusterTest.getClusterMetric();
             String ctext = iterCount + (converged ? " converged" : "");
             canvas.drawText("Iter:" + ctext, 4, 15, clusterPaint);
             canvas.drawText("Clus:" + clusterDuration, 4, 30, clusterPaint);
             canvas.drawText("Voro:" + voronoiDuration, 4, 45, clusterPaint);
+            canvas.drawText(String.format("Qual:%8d", metric), 4, 60, clusterPaint);
         }
     }
 
