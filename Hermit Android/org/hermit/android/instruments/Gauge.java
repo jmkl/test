@@ -31,7 +31,7 @@ import android.graphics.Rect;
  * This class displays an element of the UI.  An element is a region
  * within a view, and can display text, etc.
  */
-public class Element
+public class Gauge
 {
 
 	// ******************************************************************** //
@@ -43,7 +43,7 @@ public class Element
 	 * 
 	 * @param	context			Parent application context.
 	 */
-	public Element(Activity context) {
+	public Gauge(Activity context) {
 		appContext = context;
 
 		// Set up our paint.
@@ -60,7 +60,7 @@ public class Element
      * @param	grid			Colour for drawing a data scale / grid.
      * @param	plot			Colour for drawing data plots.
 	 */
-	public Element(Activity context, int grid, int plot) {
+	public Gauge(Activity context, int grid, int plot) {
 		appContext = context;
 		gridColour = grid;
 		plotColour = plot;

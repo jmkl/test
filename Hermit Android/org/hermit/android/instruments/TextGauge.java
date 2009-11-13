@@ -32,8 +32,8 @@ import android.graphics.Typeface;
  * This class displays an element of the UI.  An element is a region
  * within a view, and can display text, etc.
  */
-public class TextAtom
-	extends Element
+public class TextGauge
+	extends Gauge
 {
 
 	// ******************************************************************** //
@@ -52,7 +52,7 @@ public class TextAtom
      * 
      * @param   context     Parent application context.
      */
-    public TextAtom(Activity context) {
+    public TextGauge(Activity context) {
         super(context);
         textSize = getBaseTextSize();
     }
@@ -74,7 +74,7 @@ public class TextAtom
      *                      required space for each column.  Must be provided.
      * @param   rows        Number of rows of text to display.
      */
-    public TextAtom(Activity context, String[] template, int rows) {
+    public TextGauge(Activity context, String[] template, int rows) {
         super(context);
         textSize = getBaseTextSize();
         
