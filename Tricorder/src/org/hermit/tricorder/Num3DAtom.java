@@ -18,7 +18,7 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.TextAtom;
+import org.hermit.android.instruments.TextGauge;
 import org.hermit.utils.CharFormatter;
 
 
@@ -29,7 +29,7 @@ import org.hermit.utils.CharFormatter;
  * compass values.
  */
 class Num3DAtom
-	extends TextAtom
+	extends TextGauge
 {
 
 	// ******************************************************************** //

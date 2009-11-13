@@ -18,7 +18,7 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -31,7 +31,7 @@ import android.util.FloatMath;
  * A view which displays satellite status information as a sky diagram.
  */
 class SkyMapAtom
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //

@@ -18,7 +18,7 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -28,7 +28,7 @@ import android.graphics.Rect;
  * A view which displays GPS satellite status graphically.
  */
 class SatelliteElement
-	extends Element
+	extends Gauge
 {
 
     // ******************************************************************** //
@@ -69,7 +69,7 @@ class SatelliteElement
         }
         
         // Create the right-side bar.
-        sideBar = new Element(context);
+        sideBar = new Gauge(context);
         sideBar.setBackgroundColor(COLOUR_GRID);
 	}
 
@@ -279,7 +279,7 @@ class SatelliteElement
     private MiniBarElement[] gpsBars;
 	
     // Side bar element.
-    private Element sideBar;
+    private Gauge sideBar;
 
 }
 

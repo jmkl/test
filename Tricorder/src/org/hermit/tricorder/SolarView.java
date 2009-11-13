@@ -26,7 +26,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.TimeZone;
 
-import org.hermit.android.instruments.TextAtom;
+import org.hermit.android.instruments.TextGauge;
 import org.hermit.android.net.CachedFile;
 import org.hermit.android.net.WebBasedData;
 import org.hermit.android.net.WebFetcher;
@@ -76,12 +76,12 @@ class SolarView
 		// The solar image display, and its caption.
 		sunImage = new ImageAtom(context, FILES_SOHO, SUN_URLS);
 		final String[] fields = { "Jan 99 12:02xx", };
-		sunCaption = new TextAtom(context, fields, 3);
+		sunCaption = new TextGauge(context, fields, 3);
 		sunCaption.setTextSize(getBaseTextSize() - 5);
 		sunCaption.setTextColor(0xffffff00);
 		sunCaptionBuf = sunCaption.getBuffer();
 		
-		sunData = new TextAtom(context, fields, 3);
+		sunData = new TextGauge(context, fields, 3);
 		sunData.setTextSize(getBaseTextSize() - 5);
 		sunData.setTextColor(COLOUR_PLOT);
 		sunDataBuf = sunData.getBuffer();
@@ -834,8 +834,8 @@ class SolarView
 	// data display.
 	private ImageAtom sunImage;
     private Rect imageBounds;
-	private TextAtom sunCaption;
-	private TextAtom sunData;
+	private TextGauge sunCaption;
+	private TextGauge sunData;
 	
 	// Text field buffers for the Sun captions and the Sun data display.
     private char[][][] sunCaptionBuf;

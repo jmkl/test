@@ -20,7 +20,7 @@ package org.hermit.tricorder;
 
 
 import org.hermit.android.core.MainActivity;
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 import org.hermit.tricorder.TricorderView.ViewDefinition;
 
 import android.content.Context;
@@ -281,17 +281,17 @@ public class Tricorder
 			baseTextSize = 10;
 		else if (baseTextSize > 32)
 			baseTextSize = 32;
-		Element.setBaseTextSize(baseTextSize);
+		Gauge.setBaseTextSize(baseTextSize);
 		
 		navBarWidth = (int) ((float) minDim * 0.22f);
 		topBarHeight = (int) ((float) minDim * 0.15f);
 		topTitleHeight = (int) baseTextSize + 4;
-		Element.setSidebarWidth(minDim / 64);
-		Element.setInterPadding(minDim / 40);
+		Gauge.setSidebarWidth(minDim / 64);
+		Gauge.setInterPadding(minDim / 40);
 		float innerGap = minDim / 100;
 		if (innerGap < 1)
 			innerGap = 1;
-		Element.setInnerGap((int) innerGap);
+		Gauge.setInnerGap((int) innerGap);
 		
     	final int FPAR = RelativeLayout.LayoutParams.FILL_PARENT;
 

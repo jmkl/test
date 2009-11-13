@@ -18,7 +18,7 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -33,7 +33,7 @@ import android.graphics.Rect;
  * absolute magnetic field strength value.
  */
 class ChartAtom
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //

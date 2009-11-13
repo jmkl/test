@@ -18,7 +18,7 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 import org.hermit.tricorder.TricorderView.ViewDefinition;
 
 import android.graphics.Typeface;
@@ -44,7 +44,7 @@ class NavButton
 		super(parent);
 
 		setTextColor(0xff000000);
-		setTextSize(Element.getBaseTextSize());
+		setTextSize(Gauge.getBaseTextSize());
 		setTextScaleX(0.5f);
 		setGravity(Gravity.BOTTOM | Gravity.RIGHT);
 		setTypeface(Typeface.MONOSPACE, Typeface.BOLD);

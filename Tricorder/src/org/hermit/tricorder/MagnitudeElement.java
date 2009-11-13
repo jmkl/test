@@ -21,7 +21,7 @@ package org.hermit.tricorder;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 import org.hermit.android.net.WebBasedData;
 
 import android.database.Cursor;
@@ -36,7 +36,7 @@ import android.graphics.Rect;
  * absolute magnetic field strength value.
  */
 class MagnitudeElement
-	extends Element
+	extends Gauge
 	implements Observer
 {
 

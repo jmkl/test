@@ -18,7 +18,7 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -31,7 +31,7 @@ import android.graphics.RectF;
  * An atom which draws a simple corner (an ell) in a swoop.
  */
 class EllAtom
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //

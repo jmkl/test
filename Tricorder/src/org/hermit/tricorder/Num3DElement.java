@@ -18,7 +18,7 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -31,7 +31,7 @@ import android.graphics.Rect;
  * compass values.
  */
 class Num3DElement
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //
@@ -59,7 +59,7 @@ class Num3DElement
     	headerBar.setBarColor(gridCol);
     	
     	// Create the left-side bar.
-    	rightBar = new Element(context);
+    	rightBar = new Gauge(context);
     	rightBar.setBackgroundColor(gridCol);
 		
     	// Create the numeric display.
@@ -222,7 +222,7 @@ class Num3DElement
 	private HeaderBarElement headerBar;
 
 	// The left-side bar (just a solid colour bar).
-	private Element rightBar;
+	private Gauge rightBar;
 	
 	// Numeric data display.
 	private Num3DAtom dataDisplay;

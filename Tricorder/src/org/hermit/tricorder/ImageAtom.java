@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 import org.hermit.android.net.CachedFile;
 
 import android.graphics.Bitmap;
@@ -39,7 +39,7 @@ import android.os.Handler;
  * An atom which draws an image from the web.
  */
 class ImageAtom
-	extends Element
+	extends Gauge
 	implements Observer
 {
 

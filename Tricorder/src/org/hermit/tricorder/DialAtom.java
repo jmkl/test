@@ -18,7 +18,7 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -34,7 +34,7 @@ import android.graphics.RectF;
  * This could be used, for example, to show an elevation angle.
  */
 class DialAtom
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //

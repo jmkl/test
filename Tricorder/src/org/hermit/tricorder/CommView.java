@@ -20,8 +20,8 @@ package org.hermit.tricorder;
 
 import java.util.List;
 
-import org.hermit.android.instruments.Element;
-import org.hermit.android.instruments.TextAtom;
+import org.hermit.android.instruments.Gauge;
+import org.hermit.android.instruments.TextGauge;
 import org.hermit.tricorder.Tricorder.Sound;
 import org.hermit.utils.CharFormatter;
 
@@ -85,7 +85,7 @@ class CommView
 		
 		// Create the label.
 		String[] wsfields = { getRes(R.string.msgPoweringOff) };
-    	wifiStatus = new TextAtom(context, wsfields, 1);
+    	wifiStatus = new TextGauge(context, wsfields, 1);
     	wifiStatus.setTextSize(getMiniTextSize());
     	wifiStatus.setTextColor(COLOUR_PLOT);
     	wifiStatusBuffer = wifiStatus.getBuffer();
@@ -124,9 +124,9 @@ class CommView
 		}
     	
     	// Create the right-side bars.
-    	cRightBar = new Element(context);
+    	cRightBar = new Gauge(context);
     	cRightBar.setBackgroundColor(COLOUR_GRID);
-    	wLeftBar = new Element(context);
+    	wLeftBar = new Gauge(context);
     	wLeftBar.setBackgroundColor(COLOUR_GRID);
 	}
 
@@ -867,7 +867,7 @@ class CommView
 	private BargraphElement cellBar;
 	
 	// Text field for displaying the WiFi status.
-	private TextAtom wifiStatus;
+	private TextGauge wifiStatus;
 
     // Buffer where the WiFi status field contents are stored.
     private char[][][] wifiStatusBuffer;
@@ -878,8 +878,8 @@ class CommView
 	private BargraphElement[] cellBars;
 	
 	// The left-side bars for cell and wifi (just solid colour bars).
-	private Element cRightBar;
-	private Element wLeftBar;
+	private Gauge cRightBar;
+	private Gauge wLeftBar;
 
 	// Current cell state, operator, cell ID and signal strength.
 	private int cellState = ServiceState.STATE_OUT_OF_SERVICE;

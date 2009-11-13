@@ -18,8 +18,8 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
-import org.hermit.android.instruments.TextAtom;
+import org.hermit.android.instruments.Gauge;
+import org.hermit.android.instruments.TextGauge;
 import org.hermit.utils.CharFormatter;
 
 import android.graphics.Canvas;
@@ -33,7 +33,7 @@ import android.graphics.Rect;
  * absolute magnetic field strength value.
  */
 class BargraphElement
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //
@@ -61,7 +61,7 @@ class BargraphElement
 		super(context, gridCol, plotCol);
 		
 		// Create the label.
-    	headerBar = new TextAtom(context, fields, rows);
+    	headerBar = new TextGauge(context, fields, rows);
     	headerBar.setTextSize(getBaseTextSize() - 5);
     	headerBar.setTextColor(plotCol);
     	fieldBuffers = headerBar.getBuffer();
@@ -271,7 +271,7 @@ class BargraphElement
 	// ******************************************************************** //
 
 	// The header bar for the graph.
-	private TextAtom headerBar;
+	private TextGauge headerBar;
 
 	// The magnitude gauge bar.
 	private BargraphAtom magBar;

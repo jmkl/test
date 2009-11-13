@@ -18,8 +18,8 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
-import org.hermit.android.instruments.TextAtom;
+import org.hermit.android.instruments.Gauge;
+import org.hermit.android.instruments.TextGauge;
 import org.hermit.utils.CharFormatter;
 
 import android.graphics.Canvas;
@@ -33,7 +33,7 @@ import android.graphics.Rect;
  * This could be used, for example, to show a GPS satellite signal bar.
  */
 class MiniBarElement
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //
@@ -59,7 +59,7 @@ class MiniBarElement
 		
 		// Create the label.
         String[] template = new String[] { text };
-    	barLabel = new TextAtom(context, template, 1);
+    	barLabel = new TextGauge(context, template, 1);
     	barLabel.setTextSize(getTinyTextSize());
     	barLabel.setTextColor(plotCol);
     	fieldBuffers = barLabel.getBuffer();
@@ -215,7 +215,7 @@ class MiniBarElement
 	// ******************************************************************** //
 
 	// The header bar for the graph.
-	private TextAtom barLabel;
+	private TextGauge barLabel;
 
 	// The magnitude gauge bar.
 	private BargraphAtom magBar;

@@ -19,7 +19,7 @@
 package org.hermit.tricorder;
 
 
-import org.hermit.android.instruments.Element;
+import org.hermit.android.instruments.Gauge;
 
 import android.view.MotionEvent;
 
@@ -28,7 +28,7 @@ import android.view.MotionEvent;
  * A view which displays tricorder data.
  */
 abstract class DataView
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //

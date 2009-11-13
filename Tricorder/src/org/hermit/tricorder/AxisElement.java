@@ -19,8 +19,8 @@
 package org.hermit.tricorder;
 
 
-import org.hermit.android.instruments.Element;
-import org.hermit.android.instruments.TextAtom;
+import org.hermit.android.instruments.Gauge;
+import org.hermit.android.instruments.TextGauge;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -33,7 +33,7 @@ import android.graphics.Rect;
  * compass values.
  */
 class AxisElement
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //
@@ -79,12 +79,12 @@ class AxisElement
     	final float labSize = getBaseTextSize() - 7;
 
     	String[] zTemplate = new String[] { getRes(R.string.lab_z) };
-    	zLabel = new TextAtom(context, zTemplate, 1);
+    	zLabel = new TextGauge(context, zTemplate, 1);
     	zLabel.setTextColor(gridCol);
     	zLabel.setTextSize(labSize);
     	
     	String[] altTemplate = new String[] { getRes(R.string.lab_alt) };
-    	altLabel = new TextAtom(context, altTemplate, 1);
+    	altLabel = new TextGauge(context, altTemplate, 1);
     	altLabel.setTextColor(gridCol);
     	altLabel.setTextSize(labSize);
 	
@@ -396,8 +396,8 @@ class AxisElement
 	// X-Y plot for the X and Y data.
 	private Axis2DAtom xyAxes;
 	
-	private TextAtom zLabel;
-	private TextAtom altLabel;
+	private TextGauge zLabel;
+	private TextGauge altLabel;
 	
 	// The ell in the bottom left corner.
 	private EllAtom ell;

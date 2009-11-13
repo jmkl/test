@@ -18,8 +18,8 @@
 
 package org.hermit.tricorder;
 
-import org.hermit.android.instruments.Element;
-import org.hermit.android.instruments.TextAtom;
+import org.hermit.android.instruments.Gauge;
+import org.hermit.android.instruments.TextGauge;
 import org.hermit.utils.CharFormatter;
 
 import android.graphics.Canvas;
@@ -32,7 +32,7 @@ import android.util.Log;
  * A view which displays geographical data.
  */
 class GeoElement
-	extends Element
+	extends Gauge
 {
 
 	// ******************************************************************** //
@@ -66,10 +66,10 @@ class GeoElement
 		headerBar = new HeaderBarElement(context, hFields);
 		headerBar.setBarColor(gridCol);
  
-		posFields = new TextAtom(context, bFields, 2);
+		posFields = new TextGauge(context, bFields, 2);
         posBuffers = posFields.getBuffer();
 		if (course) {
-			courseFields = new TextAtom(context, cFields, 1);
+			courseFields = new TextGauge(context, cFields, 1);
 	        courseBuffers = courseFields.getBuffer();
 		} else {
 			courseFields = null;
@@ -77,7 +77,7 @@ class GeoElement
 		}
 
     	// Create the left-side bar.
-    	rightBar = new Element(context);
+    	rightBar = new Gauge(context);
     	rightBar.setBackgroundColor(gridCol);
 	}
 
@@ -416,11 +416,11 @@ class GeoElement
 	// Display panes for the network and GPS locations, with heading,
 	// position, and course data for each.
 	private HeaderBarElement headerBar;
-	private TextAtom posFields;
-	private TextAtom courseFields;
+	private TextGauge posFields;
+	private TextGauge courseFields;
 
 	// The left-side bar (just a solid colour bar).
-	private Element rightBar;
+	private Gauge rightBar;
 
     // Text field buffers for the data display.
     private char[][][] posBuffers;
