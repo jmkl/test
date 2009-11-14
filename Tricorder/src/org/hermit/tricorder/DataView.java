@@ -19,8 +19,10 @@
 package org.hermit.tricorder;
 
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
+import android.app.Activity;
 import android.view.MotionEvent;
 
 
@@ -39,9 +41,10 @@ abstract class DataView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 */
-	public DataView(Tricorder context) {
-		super(context);
+	public DataView(Activity context, SurfaceRunner parent) {
+		super(parent);
 	}
 	
 

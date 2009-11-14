@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 import org.hermit.android.instruments.TextGauge;
 import org.hermit.utils.CharFormatter;
@@ -42,42 +43,53 @@ class GeoElement
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	gridCol			Colour for the framing elements.
 	 * @param	plotCol			Colour for the data display.
 	 * @param	course			If true, show course info.
 	 */
-	public GeoElement(Tricorder context,
+	public GeoElement(SurfaceRunner parent,
 					  int gridCol, int plotCol, boolean course)
 	{
-		super(context, gridCol, plotCol);
-		
+		super(parent, gridCol, plotCol);
+	      
+        // Get some UI strings.
+        msgNoData = parent.getRes(R.string.msgNoData);
+
 		final String[] hFields = {
-			getRes(R.string.title_network), "xx", "999 days 23h",
+		        parent.getRes(R.string.title_network), "xx", "999 days 23h",
 		};
 		final String[] bFields = {
-			"W122° 59.999'", getRes(R.string.lab_alt), "-9999.9m",
+			"W122° 59.999'", parent.getRes(R.string.lab_alt), "-9999.9m",
 		};
 		final String[] cFields = {
-			getRes(R.string.lab_head), "999°", "xx",
-			getRes(R.string.lab_speed), "999.9m/s",
+		        parent.getRes(R.string.lab_head), "999°", "xx",
+		        parent.getRes(R.string.lab_speed), "999.9m/s",
 		};
 		
-		headerBar = new HeaderBarElement(context, hFields);
+		headerBar = new HeaderBarElement(parent, hFields);
 		headerBar.setBarColor(gridCol);
  
-		posFields = new TextGauge(context, bFields, 2);
+		posFields = new TextGauge(parent, bFields, 2);
         posBuffers = posFields.getBuffer();
+        CharFormatter.formatString(posBuffers[0][1], 0,
+                                   parent.getRes(R.string.lab_alt), -1);
+        CharFormatter.formatString(posBuffers[1][1], 0,
+                                   parent.getRes(R.string.lab_acc), -1);
 		if (course) {
-			courseFields = new TextGauge(context, cFields, 1);
+			courseFields = new TextGauge(parent, cFields, 1);
 	        courseBuffers = courseFields.getBuffer();
+	        CharFormatter.formatString(courseBuffers[0][0], 0,
+	                                   parent.getRes(R.string.lab_head), -1);
+	        CharFormatter.formatString(courseBuffers[0][3], 0,
+	                                   parent.getRes(R.string.lab_speed), -1);
 		} else {
 			courseFields = null;
             courseBuffers = null;
 		}
 
     	// Create the left-side bar.
-    	rightBar = new Gauge(context);
+    	rightBar = new Gauge(parent);
     	rightBar.setBackgroundColor(gridCol);
 	}
 
@@ -258,7 +270,7 @@ class GeoElement
 		if (currentStatus != null)
 			headerBar.setText(0, 2, currentStatus);
 		else if (loc == null)
-			headerBar.setText(0, 2, getRes(R.string.msgNoData));
+			headerBar.setText(0, 2, msgNoData);
 		else
 			headerBar.setText(0, 2, elapsed(age));
 
@@ -305,26 +317,22 @@ class GeoElement
 		CharFormatter.formatDegMin(pos[1][0], 0, l.getLongitude(), 'E', 'W', false);
 
 		if (l.hasAltitude()) {
-		    CharFormatter.formatString(pos[0][1], 0, getRes(R.string.lab_alt), -1);
 		    CharFormatter.formatFloat(pos[0][2], 0, l.getAltitude(), 7, 1, true);
 		    pos[0][2][7] = 'm';
 		} else {
 		    CharFormatter.blank(pos[0][1], 0, -1);
 		    CharFormatter.blank(pos[0][2], 0, -1);
 		}
-		CharFormatter.formatString(pos[1][1], 0, getRes(R.string.lab_acc), -1);
 		CharFormatter.formatFloat(pos[1][2], 0, l.getAccuracy(), 7, 1, false);
 		pos[1][2][7] = 'm';
 
 		if (course != null) {
-		    CharFormatter.formatString(course[0][0], 0, getRes(R.string.lab_head), -1);
 		    if (l.hasBearing()) {
 		        CharFormatter.formatInt(course[0][1], 0, (int) l.getBearing(), 3, true);
 		        course[0][1][3] = '°';
 		    } else
 		        CharFormatter.blank(course[0][1], 0, -1);
 		    CharFormatter.blank(course[0][2], 0, -1);
-		    CharFormatter.formatString(course[0][3], 0, getRes(R.string.lab_speed), -1);
 		    if (l.hasSpeed()) {
 		        CharFormatter.formatFloat(course[0][4], 0, l.getSpeed(), 5, 1, false);
 		        CharFormatter.formatString(course[0][4], 5, "m/s", -1);
@@ -432,6 +440,9 @@ class GeoElement
 	// The current availability status.  If null, there's no
 	// status except "OK"; we'll display the data age instead.
 	private String currentStatus = null;
+	
+    // Some useful strings.
+    private final String msgNoData;
 
 }
 

@@ -19,6 +19,7 @@
 package org.hermit.tricorder;
 
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.tricorder.Tricorder.Sound;
 
 import android.content.Context;
@@ -89,11 +90,16 @@ class GeoView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
      * @param   sman            The SensorManager to get data from.
 	 */
-	public GeoView(Tricorder context, SensorManager sman) {
-		super(context);
-		
+	public GeoView(Tricorder context, SurfaceRunner parent, SensorManager sman) {
+		super(context, parent);
+	      
+        // Get some UI strings.
+        msgDisabled = parent.getRes(R.string.msgDisabled);
+        msgOffline = parent.getRes(R.string.msgOffline);
+
 		appContext = context;
 		sensorManager = sman;
 
@@ -108,17 +114,17 @@ class GeoView
         locationManager =
         	(LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
-		netElement = new GeoElement(context,
+		netElement = new GeoElement(parent,
 									HEAD_BG_COL, HEAD_TEXT_COL, false);
-       	netElement.setText(0, 0, getRes(R.string.title_network));
+       	netElement.setText(0, 0, parent.getRes(R.string.title_network));
 		
-		gpsElement = new GeoElement(context,
+		gpsElement = new GeoElement(parent,
 									HEAD_BG_COL, HEAD_TEXT_COL, true);
-       	gpsElement.setText(0, 0, getRes(R.string.title_gps));
+       	gpsElement.setText(0, 0, parent.getRes(R.string.title_gps));
        	
-       	satElement = new SatelliteElement(context,
+       	satElement = new SatelliteElement(parent,
        	                                  HEAD_BG_COL, HEAD_TEXT_COL);
-        satElement.setText(0, 0, getRes(R.string.title_sats));
+        satElement.setText(0, 0, parent.getRes(R.string.title_sats));
 	}
 
 	   
@@ -326,9 +332,9 @@ class GeoView
 		Log.i(TAG, "Provider disabled: " + provider);
 		synchronized (this) {
 			if (provider.equals(LocationManager.NETWORK_PROVIDER))
-				netElement.setStatus(getRes(R.string.msgDisabled));
+				netElement.setStatus(msgDisabled);
 			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
-				gpsElement.setStatus(getRes(R.string.msgDisabled));
+				gpsElement.setStatus(msgDisabled);
                 satElement.clearValues();
 			}
 		}
@@ -379,7 +385,7 @@ class GeoView
 		synchronized (this) {
 			String msg = null;
 			if (status == LocationProvider.OUT_OF_SERVICE)
-				msg = getRes(R.string.msgOffline);
+				msg = msgOffline;
 			if (provider.equals(LocationManager.NETWORK_PROVIDER))
 				netElement.setStatus(msg);
 			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
@@ -660,6 +666,10 @@ class GeoView
     // The most recent accelerometer and compass data.
     private float[] accelValues = null;
     private float[] magValues = null;
+    
+    // Some useful strings.
+    private final String msgDisabled;
+    private final String msgOffline;
 
 }
 

@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.tricorder.Tricorder.Sound;
 
 import android.content.res.Configuration;
@@ -49,6 +50,7 @@ class TridataView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	sman			The SensorManager to get data from.
 	 * @param	sensor			The ID of the sensor to read:
 	 * 							Sensor.TYPE_XXX.
@@ -60,14 +62,24 @@ class TridataView
 	 * @param	gridCol2		Colour for the graph grid in rel mode.
 	 * @param	plotCol2		Colour for the graph plot in rel mode.
 	 */
-	public TridataView(Tricorder context,
+	public TridataView(Tricorder context, SurfaceRunner parent,
 					   SensorManager sman, int sensor,
 					   float unit, float range,
 					   int gridCol1, int plotCol1,
 					   int gridCol2, int plotCol2)
 	{
-		super(context);
+		super(context, parent);
 		
+		// Get the UI strings.
+	    title_vect_abs = parent.getRes(R.string.title_vect_abs);
+	    title_mag_abs = parent.getRes(R.string.title_mag_abs);
+	    title_num_abs = parent.getRes(R.string.title_num_abs);
+	    title_xyz_abs = parent.getRes(R.string.title_xyz_abs);
+	    title_vect_rel = parent.getRes(R.string.title_vect_rel);
+	    title_mag_rel = parent.getRes(R.string.title_mag_rel);
+	    title_num_rel = parent.getRes(R.string.title_num_rel);
+	    title_xyz_rel = parent.getRes(R.string.title_xyz_rel);
+
 		appContext = context;
 		sensorManager = sman;
 		sensorId = sensor;
@@ -84,20 +96,20 @@ class TridataView
         sensorEquipped = (sensorManager.getSensors() & sensorId) != 0;
 
         // Add the gravity 3-axis plot.
-        plotView = new AxisElement(context, unit, range,
+        plotView = new AxisElement(parent, unit, range,
 				 				   gridCol1, plotCol1,
 				 				   new String[] { "XXXXXXXXXXXXXXXXXXXX" });
 
         // Add the gravity magnitude chart.
-        chartView = new MagnitudeElement(context, unit, range,
+        chartView = new MagnitudeElement(parent, unit, range,
         								 gridCol1, plotCol1,
         								 new String[] { "XXXXXXXXXXXXXXXXXXXX" });
 
         // Add the numeric display.
-        numView = new Num3DElement(context, gridCol1, plotCol1,
+        numView = new Num3DElement(parent, gridCol1, plotCol1,
                                    new String[] { "XXXXXXXXXXXXXXXXXXXX" });
         
-        xyzView = new MagnitudeElement(context, 3, unit, range,
+        xyzView = new MagnitudeElement(parent, 3, unit, range,
 				 					   gridCol1, XYZ_PLOT_COLS,
 				 					   new String[] { "XXXXXXXXXXXXXXXXXXXX" }, true);
 
@@ -260,22 +272,22 @@ class TridataView
 		relativeValues = null;
 		
 		if (!relativeMode) {
-			plotView.setText(0, 0, getRes(R.string.title_vect_abs));
+			plotView.setText(0, 0, title_vect_abs);
 			plotView.setDataColors(gridColour1, plotColour1);
-			chartView.setText(0, 0, getRes(R.string.title_mag_abs));
+			chartView.setText(0, 0, title_mag_abs);
 			chartView.setDataColors(gridColour1, plotColour1);
-			numView.setText(0, 0, getRes(R.string.title_num_abs));
+			numView.setText(0, 0, title_num_abs);
 			numView.setDataColors(gridColour1, plotColour1);
-			xyzView.setText(0, 0, getRes(R.string.title_xyz_abs));
+			xyzView.setText(0, 0, title_xyz_abs);
 			xyzView.setDataColors(gridColour1, XYZ_PLOT_COLS);
 		} else {
-			plotView.setText(0, 0, getRes(R.string.title_vect_rel));
+			plotView.setText(0, 0, title_vect_rel);
 			plotView.setDataColors(gridColour2, plotColour2);
-			chartView.setText(0, 0, getRes(R.string.title_mag_rel));
+			chartView.setText(0, 0, title_mag_rel);
 			chartView.setDataColors(gridColour2, plotColour2);
-			numView.setText(0, 0, getRes(R.string.title_num_rel));
+			numView.setText(0, 0, title_num_rel);
 			numView.setDataColors(gridColour2, plotColour2);
-			xyzView.setText(0, 0, getRes(R.string.title_xyz_rel));
+			xyzView.setText(0, 0, title_xyz_rel);
 			xyzView.setDataColors(gridColour2, XYZ_PLOT_COLS);
 		}
 	}
@@ -543,6 +555,16 @@ class TridataView
 	// Simulate missing sensors.  If not null, sensors that aren't equipped
 	// will have simulated data generated using this generator.
 	private DataGenerator dataGenerator = null;
+	
+	// Some useful strings.
+    private String title_vect_abs;
+    private String title_mag_abs;
+    private String title_num_abs;
+    private String title_xyz_abs;
+    private String title_vect_rel;
+    private String title_mag_rel;
+    private String title_num_rel;
+    private String title_xyz_rel;
 
 }
 

@@ -19,6 +19,7 @@
 package org.hermit.tricorder;
 
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 import org.hermit.android.instruments.TextGauge;
 
@@ -43,7 +44,7 @@ class AxisElement
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -52,46 +53,46 @@ class AxisElement
 	 * @param	fields			Strings representing the columns to display
 	 *							in the header bar.
 	 */
-	public AxisElement(Tricorder context,
+	public AxisElement(SurfaceRunner parent,
 					   float unit, float range,
 	   				   int gridCol, int plotCol, String[] fields)
 	{
-		super(context, gridCol, plotCol);
+		super(parent, gridCol, plotCol);
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, fields);
+    	headerBar = new HeaderBarElement(parent, fields);
     	headerBar.setBarColor(gridCol);
     	
-    	xGauge = new GaugeAtom(context, unit, range,
+    	xGauge = new GaugeAtom(parent, unit, range,
 				   			   gridCol, Tricorder.COL_POINTER,
 				   			   GaugeAtom.Orientation.BOTTOM, true);
-    	yGauge = new GaugeAtom(context, unit, range,
+    	yGauge = new GaugeAtom(parent, unit, range,
 				   			   gridCol, Tricorder.COL_POINTER,
 				   			   GaugeAtom.Orientation.LEFT, true);
-    	zGauge = new GaugeAtom(context, unit, range,
+    	zGauge = new GaugeAtom(parent, unit, range,
 				   			   gridCol, Tricorder.COL_POINTER,
 				   			   GaugeAtom.Orientation.LEFT, true);
     	
-    	xyAxes = new Axis2DAtom(context, unit, range,
+    	xyAxes = new Axis2DAtom(parent, unit, range,
 	   			   			    gridCol, plotCol);
     	
     	// Size of the gauge labels.
     	final float labSize = getBaseTextSize() - 7;
 
-    	String[] zTemplate = new String[] { getRes(R.string.lab_z) };
-    	zLabel = new TextGauge(context, zTemplate, 1);
+    	String[] zTemplate = new String[] { parent.getRes(R.string.lab_z) };
+    	zLabel = new TextGauge(parent, zTemplate, 1);
     	zLabel.setTextColor(gridCol);
     	zLabel.setTextSize(labSize);
     	
-    	String[] altTemplate = new String[] { getRes(R.string.lab_alt) };
-    	altLabel = new TextGauge(context, altTemplate, 1);
+    	String[] altTemplate = new String[] { parent.getRes(R.string.lab_alt) };
+    	altLabel = new TextGauge(parent, altTemplate, 1);
     	altLabel.setTextColor(gridCol);
     	altLabel.setTextSize(labSize);
 	
-    	ell = new EllAtom(context, getSidebarWidth());
+    	ell = new EllAtom(parent, getSidebarWidth());
     	ell.setBarColor(gridCol);
     	
-    	altDial = new DialAtom(context,
+    	altDial = new DialAtom(parent,
     						   gridCol, Tricorder.COL_POINTER,
     						   DialAtom.Orientation.RIGHT);
 	}

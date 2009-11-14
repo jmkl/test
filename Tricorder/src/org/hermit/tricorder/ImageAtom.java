@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 import org.hermit.android.net.CachedFile;
 
@@ -50,13 +51,13 @@ class ImageAtom
 	/**
 	 * Set up this atom.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
      * @param	cache			File cache which will hold the image files.
 	 * @param	urls			URLs of the specific  images we will want
 	 * 							to display.
 	 */
-	ImageAtom(Tricorder context, CachedFile cache, URL[] urls) {
-		super(context);
+	ImageAtom(SurfaceRunner parent, CachedFile cache, URL[] urls) {
+		super(parent);
 
 		fileCache = cache;
 		imageUrls = urls;
@@ -64,7 +65,7 @@ class ImageAtom
 		imageCache = new HashMap<URL, Bitmap>();
 		currentImage = imageUrls[0];
 		currentBitmap = null;
-		statusString = getRes(R.string.msgLoading);
+		statusString = parent.getRes(R.string.msgLoading);
 		
 		loadHandler = new Handler();
 		
@@ -212,9 +213,10 @@ class ImageAtom
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 		// Drawing is easy, if the image is loaded.
 		if (currentBitmap != null)
 			canvas.drawBitmap(currentBitmap, imageX, imageY, null);

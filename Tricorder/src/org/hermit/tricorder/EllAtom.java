@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
@@ -41,11 +42,11 @@ class EllAtom
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	thick			Thickness of the bars we connect to.
 	 */
-	EllAtom(Tricorder context, int thick) {
-		super(context);
+	EllAtom(SurfaceRunner parent, int thick) {
+		super(parent);
 		
 		barThickness = thick;
 	}
@@ -128,9 +129,10 @@ class EllAtom
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 		// Drawing the bar is easy -- just draw the path.
 		paint.setColor(barColor);
 		paint.setStyle(Paint.Style.FILL);

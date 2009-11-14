@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.TextGauge;
 import org.hermit.utils.CharFormatter;
 
@@ -48,14 +49,14 @@ class HeaderBarElement
 	 * of fields.  The fields are specified by passing in sample text
 	 * values to be measured; we then allocate the space automatically.
 	 * 
-	 * @param	context		Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	fields		Strings representing the columns to display.
 	 * 						Each one should be a sample piece of text
 	 * 						which will be measured to determine the
 	 * 						required space for each column.
 	 */
-	HeaderBarElement(Tricorder context, String[] fields) {
-		super(context, fields, 1);
+	HeaderBarElement(SurfaceRunner parent, String[] fields) {
+		super(parent, fields, 1);
 		fieldBuffers = getBuffer();
 		
 		init();
@@ -223,9 +224,10 @@ class HeaderBarElement
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 		// Drawing the bar is easy -- just draw the path.
 		paint.setColor(barColor);
 		paint.setStyle(Paint.Style.FILL);
@@ -246,7 +248,7 @@ class HeaderBarElement
 		}
 
 		// Call the base class to draw the text in.
-		super.drawBody(canvas, paint);
+		super.drawBody(canvas, paint, now);
 	}
 
 	

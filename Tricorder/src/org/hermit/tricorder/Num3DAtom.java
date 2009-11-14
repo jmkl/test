@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.TextGauge;
 import org.hermit.utils.CharFormatter;
 
@@ -39,29 +40,29 @@ class Num3DAtom
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	gridCol			Colour for the framing elements.
 	 * @param	plotCol			Colour for the data display.
 	 */
-	public Num3DAtom(Tricorder context, int gridCol, int plotCol) {
-		super(context);
+	public Num3DAtom(SurfaceRunner parent, int gridCol, int plotCol) {
+		super(parent);
 		
 		setTextColor(plotCol);
 		
 		// Define the display format.
 		final String[] fields = {
-		        getRes(R.string.lab_x), "88888888",
-		        getRes(R.string.lab_mag), "88888888",
+		        parent.getRes(R.string.lab_x), "88888888",
+		        parent.getRes(R.string.lab_mag), "88888888",
 		};
 		setTextFields(fields, 3);
 		
 		fieldBuffers = getBuffer();
-		CharFormatter.formatString(fieldBuffers[0][0], 0, getRes(R.string.lab_x), 1);
-        CharFormatter.formatString(fieldBuffers[1][0], 0, getRes(R.string.lab_y), 1);
-        CharFormatter.formatString(fieldBuffers[2][0], 0, getRes(R.string.lab_z), 1);
-        CharFormatter.formatString(fieldBuffers[0][2], 0, getRes(R.string.lab_azi), 3);
-        CharFormatter.formatString(fieldBuffers[1][2], 0, getRes(R.string.lab_alt), 3);
-        CharFormatter.formatString(fieldBuffers[2][2], 0, getRes(R.string.lab_mag), 3);
+		CharFormatter.formatString(fieldBuffers[0][0], 0, parent.getRes(R.string.lab_x), 1);
+        CharFormatter.formatString(fieldBuffers[1][0], 0, parent.getRes(R.string.lab_y), 1);
+        CharFormatter.formatString(fieldBuffers[2][0], 0, parent.getRes(R.string.lab_z), 1);
+        CharFormatter.formatString(fieldBuffers[0][2], 0, parent.getRes(R.string.lab_azi), 3);
+        CharFormatter.formatString(fieldBuffers[1][2], 0, parent.getRes(R.string.lab_alt), 3);
+        CharFormatter.formatString(fieldBuffers[2][2], 0, parent.getRes(R.string.lab_mag), 3);
 	}
 
 	

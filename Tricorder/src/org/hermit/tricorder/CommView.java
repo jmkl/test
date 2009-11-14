@@ -20,6 +20,7 @@ package org.hermit.tricorder;
 
 import java.util.List;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 import org.hermit.android.instruments.TextGauge;
 import org.hermit.tricorder.Tricorder.Sound;
@@ -59,33 +60,49 @@ class CommView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 */
-	public CommView(Tricorder context) {
-		super(context);
+	public CommView(Tricorder context, SurfaceRunner parent) {
+		super(context, parent);
 		
 		appContext = context;
 		
+		// Get some UI strings.
+	    msgPoweringOn = parent.getRes(R.string.msgPoweringOn);
+	    msgScanning = parent.getRes(R.string.msgScanning);
+	    msgAuthenticating = parent.getRes(R.string.msgAuthenticating);
+	    msgPoweringOff = parent.getRes(R.string.msgPoweringOff);
+	    msgEnabled = parent.getRes(R.string.msgEnabled);
+	    msgNoData = parent.getRes(R.string.msgNoData);
+	    msgNoPower = parent.getRes(R.string.msgNoPower);
+	    msgOffline = parent.getRes(R.string.msgOffline);
+	    msgDormant = parent.getRes(R.string.msgDormant);
+	    msgNoSignal = parent.getRes(R.string.msgNoSignal);
+	    msgInvalid = parent.getRes(R.string.msgInvalid);
+	    msgAssociated = parent.getRes(R.string.msgAssociated);
+	    msgAssociating = parent.getRes(R.string.msgAssociating);
+	    msgConnected = parent.getRes(R.string.msgConnected);
+
 		// Get the information providers we need.
         telephonyManager =
         	(TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		
         // Create the section header bars.
-		String[] cfields = { getRes(R.string.lab_cell) , "", "999 days 23h" };
-		cellHead = new HeaderBarElement(context, cfields);
+		String[] cfields = { parent.getRes(R.string.lab_cell) , "", "999 days 23h" };
+		cellHead = new HeaderBarElement(parent, cfields);
 		cellHead.setBarColor(0xffdfb682);
-		cellHead.setText(0, 0, getRes(R.string.lab_cell));
+		cellHead.setText(0, 0, parent.getRes(R.string.lab_cell));
 		String[] wfields = {
-			getRes(R.string.lab_wifi), "xx", "999 days 23h"
-
+		        parent.getRes(R.string.lab_wifi), "xx", "999 days 23h"
 		};
-		wifiHead = new HeaderBarElement(context, wfields);
+		wifiHead = new HeaderBarElement(parent, wfields);
 		wifiHead.setBarColor(0xffdfb682);
-		wifiHead.setText(0, 0, getRes(R.string.lab_wifi));
+		wifiHead.setText(0, 0, parent.getRes(R.string.lab_wifi));
 		
 		// Create the label.
-		String[] wsfields = { getRes(R.string.msgPoweringOff) };
-    	wifiStatus = new TextGauge(context, wsfields, 1);
+		String[] wsfields = { msgPoweringOff };
+    	wifiStatus = new TextGauge(parent, wsfields, 1);
     	wifiStatus.setTextSize(getMiniTextSize());
     	wifiStatus.setTextColor(COLOUR_PLOT);
     	wifiStatusBuffer = wifiStatus.getBuffer();
@@ -99,17 +116,17 @@ class CommView
 		//     Current signal strength in dBm ranges from -113 - -51dBm
 		// We'll assume an ASU range from 0 to 31.
 		String[] ctext = { "000000000", "#", "T - Mobile X", "00" };
-		cellBar = new BargraphElement(context, 5f, 6.2f,
+		cellBar = new BargraphElement(parent, 5f, 6.2f,
 									  COLOUR_GRID, COLOUR_PLOT, ctext, 1);
         cellBar.clearCid();
-        cellBar.setLabel(getRes(R.string.msgNoData));
+        cellBar.setLabel(msgNoData);
         cellBar.clearAsu();
 		cellBars = new BargraphElement[MAX_CELL];
 		for (int c = 0; c < MAX_CELL; ++c) {
-			cellBars[c] = new BargraphElement(context, 5f, 6.2f,
+			cellBars[c] = new BargraphElement(parent, 5f, 6.2f,
 					                          COLOUR_GRID, COLOUR_GRID, ctext, 1);
 	        cellBars[c].clearCid();
-	        cellBars[c].setLabel(getRes(R.string.msgNoData));
+	        cellBars[c].setLabel(msgNoData);
 	        cellBars[c].clearAsu();
 		}
 		
@@ -118,15 +135,15 @@ class CommView
 		wifiBars = new BargraphElement[MAX_WIFI];
 		String[] wtext = { "2.456", "#", "aw19.alamedawireless.o", "00" };
 		for (int w = 0; w < MAX_WIFI; ++w) {
-			wifiBars[w] = new BargraphElement(context, 5f, 8.2f,
+			wifiBars[w] = new BargraphElement(parent, 5f, 8.2f,
 											  COLOUR_GRID, COLOUR_PLOT,
 					  						  wtext, 1);
 		}
     	
     	// Create the right-side bars.
-    	cRightBar = new Gauge(context);
+    	cRightBar = new Gauge(parent);
     	cRightBar.setBackgroundColor(COLOUR_GRID);
-    	wLeftBar = new Gauge(context);
+    	wLeftBar = new Gauge(parent);
     	wLeftBar.setBackgroundColor(COLOUR_GRID);
 	}
 
@@ -322,13 +339,13 @@ class CommView
 		if (wifiPowerState == WifiManager.WIFI_STATE_ENABLED) {
 			long age = (time - wifiSignalsTime) / 1000;
 			if (wifiSignalsTime == 0)
-				wifiHead.setText(0, 2, getRes(R.string.msgNoData));
+				wifiHead.setText(0, 2, msgNoData);
 			else
 				wifiHead.setText(0, 2, elapsed(age));
 
 			age = (time - cellSignalsTime) / 1000;
 			if (cellSignalsTime == 0)
-				cellHead.setText(0, 2, getRes(R.string.msgNoData));
+				cellHead.setText(0, 2, msgNoData);
 			else
 				cellHead.setText(0, 2, elapsed(age));
 			
@@ -474,17 +491,17 @@ class CommView
 				break;
 			case ServiceState.STATE_OUT_OF_SERVICE:
                 cellBar.clearCid();
-                cellBar.setLabel(getRes(R.string.msgNoSignal));
+                cellBar.setLabel(msgNoSignal);
                 cellBar.clearAsu();
                 break;
 			case ServiceState.STATE_POWER_OFF:
                 cellBar.clearCid();
-                cellBar.setLabel(getRes(R.string.msgNoPower));
+                cellBar.setLabel(msgNoPower);
                 cellBar.clearAsu();
                 break;
 			default:
                 cellBar.clearCid();
-                cellBar.setLabel(getRes(R.string.msgNoData));
+                cellBar.setLabel(msgNoData);
                 cellBar.clearAsu();
                 break;
 			}
@@ -534,20 +551,20 @@ class CommView
 			wifiRunning = false;
 			switch (wifiPowerState) {
 			case WifiManager.WIFI_STATE_DISABLED:
-				wifiPowerName = getRes(R.string.msgNoPower);
+				wifiPowerName = msgNoPower;
 				break;
 			case WifiManager.WIFI_STATE_DISABLING:
-				wifiPowerName = getRes(R.string.msgPoweringOff);
+				wifiPowerName = msgPoweringOff;
 				break;
 			case WifiManager.WIFI_STATE_ENABLED:
 				wifiRunning = true;
-				wifiPowerName = getRes(R.string.msgEnabled);
+				wifiPowerName = msgEnabled;
 				break;
 			case WifiManager.WIFI_STATE_ENABLING:
-				wifiPowerName = getRes(R.string.msgPoweringOn);
+				wifiPowerName = msgPoweringOn;
 				break;
 			case WifiManager.WIFI_STATE_UNKNOWN:
-				wifiPowerName = getRes(R.string.msgNoData);
+				wifiPowerName = msgNoData;
 				break;
 			}
 
@@ -587,58 +604,58 @@ class CommView
 			wifiConnection = wifiManager.getConnectionInfo();
 
 			SupplicantState sstate = wifiConnection.getSupplicantState();
-			int format = 0;
+			String format = null;
 			wifiConnState = "?";
 			switch (sstate) {
 			case ASSOCIATED:
 				// Association completed.
-				format = R.string.msgAssociated;
+				format = msgAssociated;
 				break;
 			case ASSOCIATING:
 				// Trying to associate with a BSS/SSID. 
-				format = R.string.msgAssociating;
+				format = msgAssociating;
 				break;
 			case COMPLETED:
 				// All authentication completed. 
 				// Trying to associate with a BSS/SSID. 
-				format = R.string.msgConnected;
+				format = msgConnected;
 				break;
 			case DISCONNECTED:
 				// This state indicates that client is not associated, but is
 				// likely to start looking for an access point. 
-				wifiConnState = getRes(R.string.msgOffline);
+				wifiConnState = msgOffline;
 				break;
 			case DORMANT:
 				// An Android-added state that is reported when a client issues an explicit DISCONNECT command. 
-				wifiConnState = getRes(R.string.msgDormant);
+				wifiConnState = msgDormant;
 				break;
 			case FOUR_WAY_HANDSHAKE:
 			case GROUP_HANDSHAKE:
 				// WPA 4-Way Key Handshake in progress. 
 				// WPA Group Key Handshake in progress. 
-				format = R.string.msgAuthenticating;
+				format = msgAuthenticating;
 				break;
 			case INACTIVE:
 				// Inactive state (wpa_supplicant disabled). 
-				wifiConnState = getRes(R.string.msgNoSignal);
+				wifiConnState = msgNoSignal;
 				break;
 			case INVALID:
 				// A pseudo-state that should normally never be seen. 
-				wifiConnState = getRes(R.string.msgInvalid);
+				wifiConnState = msgInvalid;
 				break;
 			case SCANNING:
 				// Scanning for a network.
-				wifiConnState = getRes(R.string.msgScanning);
+				wifiConnState = msgScanning;
 				break;
 			case UNINITIALIZED:
 				// No connection to wpa_supplicant. 
-				wifiConnState = getRes(R.string.msgNoData);
+				wifiConnState = msgNoData;
 				break;
 			}
 
 			// If we have a formatted status, format it now.
-			if (format != 0) {
-				wifiConnState = String.format(getRes(format),
+			if (format != null) {
+				wifiConnState = String.format(format,
 						wifiConnection.getSSID(),
 						wifiConnection.getRssi());
 			}
@@ -910,6 +927,22 @@ class CommView
 	
 	// Flag whether this view is the up-front view.
 	private boolean viewRunning = false;
+	
+	// Some useful strings.
+    private final String msgPoweringOn;
+    private final String msgScanning;
+    private final String msgAuthenticating;
+    private final String msgPoweringOff;
+    private final String msgEnabled;
+	private final String msgNoData;
+	private final String msgNoPower;
+	private final String msgOffline;
+	private final String msgDormant;
+	private final String msgNoSignal;
+	private final String msgInvalid;
+	private final String msgAssociated;
+	private final String msgAssociating;
+	private final String msgConnected;
 
 }
 

@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 import org.hermit.android.instruments.TextGauge;
 import org.hermit.utils.CharFormatter;
@@ -43,7 +44,7 @@ class MiniBarElement
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -51,21 +52,21 @@ class MiniBarElement
 	 * @param	plotCol			Colour for the graph plot.
      * @param   text            Initial text for the label.
 	 */
-	public MiniBarElement(Tricorder context,
+	public MiniBarElement(SurfaceRunner parent,
 							float unit, float range,
 							int gridCol, int plotCol, String text)
 	{
-		super(context, gridCol, plotCol);
+		super(parent, gridCol, plotCol);
 		
 		// Create the label.
         String[] template = new String[] { text };
-    	barLabel = new TextGauge(context, template, 1);
+    	barLabel = new TextGauge(parent, template, 1);
     	barLabel.setTextSize(getTinyTextSize());
     	barLabel.setTextColor(plotCol);
     	fieldBuffers = barLabel.getBuffer();
     	
     	// The magnitude gauge bar.
-    	magBar = new BargraphAtom(context, unit, range, gridCol, plotCol,
+    	magBar = new BargraphAtom(parent, unit, range, gridCol, plotCol,
 				 				  BargraphAtom.Orientation.BOTTOM);
 	}
 

@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
@@ -38,24 +39,24 @@ class SatelliteElement
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	headBgCol		Colour for the header bar.
 	 * @param	headTextCol		Colours for the header text.
 	 */
-	public SatelliteElement(Tricorder context,
+	public SatelliteElement(SurfaceRunner parent,
 							int headBgCol, int headTextCol)
 	{
-		super(context, headBgCol, headTextCol);
+		super(parent, headBgCol, headTextCol);
 		
 		// Create the header bar.
-        final String[] hFields = {  getRes(R.string.title_sats), "99",  };
-    	headerBar = new HeaderBarElement(context, hFields);
+        final String[] hFields = {  parent.getRes(R.string.title_sats), "99",  };
+    	headerBar = new HeaderBarElement(parent, hFields);
     	headerBar.setBarColor(headBgCol);
         headerBar.setTextColor(headTextCol);
         headerBar.setText(0, 0, hFields[0]);
         
         // Create the sky diagram.
-        skyMap = new SkyMapAtom(context, COLOUR_GRID, 0xffff0000);
+        skyMap = new SkyMapAtom(parent, COLOUR_GRID, 0xffff0000);
         
         // Create the list of GPS bargraphs, displaying ASU.  We'll assume
         // a WiFi ASU range from 0 to 41.  Since satellite numbers are
@@ -63,13 +64,13 @@ class SatelliteElement
         // can index directly.
         gpsBars = new MiniBarElement[GeoView.NUM_SATS + 1];
         for (int g = 1; g <= GeoView.NUM_SATS; ++g) {
-            gpsBars[g] = new MiniBarElement(context, 5f, 8.2f,
+            gpsBars[g] = new MiniBarElement(parent, 5f, 8.2f,
                                             headBgCol, headTextCol,
                                             "00");
         }
         
         // Create the right-side bar.
-        sideBar = new Gauge(context);
+        sideBar = new Gauge(parent);
         sideBar.setBackgroundColor(COLOUR_GRID);
 	}
 

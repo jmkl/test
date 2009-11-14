@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Bitmap;
@@ -43,25 +44,25 @@ class ChartAtom
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
 	 */
-	public ChartAtom(Tricorder context,
+	public ChartAtom(SurfaceRunner parent,
 							float unit, float range,
 							int gridCol, int plotCol)
 	{
-		this(context, 1, unit, range, gridCol, new int[] { plotCol }, false);
+		this(parent, 1, unit, range, gridCol, new int[] { plotCol }, false);
 	}
 
 
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	num				The number of values plotted on this graph.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
@@ -71,11 +72,11 @@ class ChartAtom
 	 * @param	centered		If true, the zero value is in the centre;
 	 * 							else at the left or bottom.
 	 */
-	public ChartAtom(Tricorder context,
+	public ChartAtom(SurfaceRunner parent,
 							int num, float unit, float range,
 							int gridCol, int[] plotCols, boolean centered)
 	{
-		super(context, gridCol, plotCols[0]);
+		super(parent, gridCol, plotCols[0]);
 		
 		numPlots = num;
 		unitSize = unit;
@@ -365,9 +366,10 @@ class ChartAtom
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 		// If we aren't set up yet or the graph is too small, stop now.
 		if (currentValue == null || unitScale < 1)
 			return;

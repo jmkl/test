@@ -21,6 +21,7 @@ package org.hermit.tricorder;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 import org.hermit.android.net.WebBasedData;
 
@@ -47,7 +48,7 @@ class MagnitudeElement
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -56,12 +57,12 @@ class MagnitudeElement
 	 * @param	fields			Strings representing the columns to display
 	 *							in the header bar.
 	 */
-	public MagnitudeElement(Tricorder context,
+	public MagnitudeElement(SurfaceRunner parent,
 							float unit, float range,
 							int gridCol, int plotCol,
 							String[] fields)
 	{
-		this(context, 1, unit, range,
+		this(parent, 1, unit, range,
 						gridCol, new int[] { plotCol }, fields, false);
     }
 
@@ -69,7 +70,7 @@ class MagnitudeElement
     /**
      * Set up this view.
      * 
-     * @param   context         Parent application context.
+     * @param   parent          Parent surface.
      * @param   num             The number of values plotted on this graph.
      * @param   unit            The size of a unit of measure (for example,
      *                          1g of acceleration).
@@ -79,12 +80,12 @@ class MagnitudeElement
      * @param   fields          Strings representing the columns to display
      *                          in the header bar.
      */
-    public MagnitudeElement(Tricorder context,
+    public MagnitudeElement(SurfaceRunner parent,
                             int num, float unit, float range,
                             int gridCol, int[] plotCols,
                             String[] fields)
     {
-        this(context, num, unit, range,
+        this(parent, num, unit, range,
                 gridCol, plotCols, fields, false);
 	}
 
@@ -92,7 +93,7 @@ class MagnitudeElement
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	num				The number of values plotted on this graph.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
@@ -104,12 +105,12 @@ class MagnitudeElement
 	 * @param	centered		If true, the zero value is in the centre;
 	 * 							else at the left or bottom.
 	 */
-	public MagnitudeElement(Tricorder context,
+	public MagnitudeElement(SurfaceRunner parent,
 						    int num, float unit, float range,
 							int gridCol, int[] plotCols,
 							String[] fields, boolean centered)
 	{
-		super(context, gridCol, plotCols[0]);
+		super(parent, gridCol, plotCols[0]);
 		
 		numPlots = num;
 		//		baseDataUnit = unit;
@@ -121,16 +122,16 @@ class MagnitudeElement
 		tempValue = new float[numPlots];
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, fields);
+    	headerBar = new HeaderBarElement(parent, fields);
     	headerBar.setBarColor(gridCol);
     	
     	// The magnitude gauge bar.
-    	magBar = new GaugeAtom(context, num, unit, range,
+    	magBar = new GaugeAtom(parent, num, unit, range,
     						   gridCol, plotCols,
     						   GaugeAtom.Orientation.RIGHT, centered);
 
     	// The graph plot.
-    	chartPlot = new ChartAtom(context, num, unit, range,
+    	chartPlot = new ChartAtom(parent, num, unit, range,
     							  gridCol, plotCols, centered);
 	}
 

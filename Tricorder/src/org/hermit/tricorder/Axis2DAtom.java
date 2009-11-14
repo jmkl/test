@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
@@ -42,18 +43,18 @@ class Axis2DAtom
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
 	 */
-	public Axis2DAtom(Tricorder context,
+	public Axis2DAtom(SurfaceRunner parent,
 					  float unit, float range,
 	   				  int gridCol, int plotCol)
 	{
-		super(context, gridCol, plotCol);
+		super(parent, gridCol, plotCol);
 		
 		unitSize = unit;
 		plotRange = range;
@@ -142,9 +143,10 @@ class Axis2DAtom
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {		
+	protected void drawBody(Canvas canvas, Paint paint, long now) {		
 		// Get the values and scale them.  Note we're synced at the
 		// TridataView level.
 		float x = currentValues[0] * dataScale;

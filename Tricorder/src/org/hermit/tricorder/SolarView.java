@@ -26,6 +26,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.TimeZone;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.TextGauge;
 import org.hermit.android.net.CachedFile;
 import org.hermit.android.net.WebBasedData;
@@ -58,9 +59,10 @@ class SolarView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 */
-	public SolarView(Tricorder context) {
-		super(context);
+	public SolarView(Tricorder context, SurfaceRunner parent) {
+		super(context, parent);
 		appContext = context;
 		
 		// Set up the database helper.
@@ -68,54 +70,54 @@ class SolarView
         TimeZone utc = TimeZone.getTimeZone("UTC");
         imageCal = Calendar.getInstance(utc);
 
-		String[] tfields1 = { getRes(R.string.lab_solar_elec),
+		String[] tfields1 = { parent.getRes(R.string.lab_solar_elec),
 								"99 days to J 16 16:00" };
-		String[] tfields2 = { getRes(R.string.lab_solar_spots),
+		String[] tfields2 = { parent.getRes(R.string.lab_solar_spots),
 							  "99 days to Jan 16" };
 	
 		// The solar image display, and its caption.
-		sunImage = new ImageAtom(context, FILES_SOHO, SUN_URLS);
+		sunImage = new ImageAtom(parent, FILES_SOHO, SUN_URLS);
 		final String[] fields = { "Jan 99 12:02xx", };
-		sunCaption = new TextGauge(context, fields, 3);
+		sunCaption = new TextGauge(parent, fields, 3);
 		sunCaption.setTextSize(getBaseTextSize() - 5);
 		sunCaption.setTextColor(0xffffff00);
 		sunCaptionBuf = sunCaption.getBuffer();
 		
-		sunData = new TextGauge(context, fields, 3);
+		sunData = new TextGauge(parent, fields, 3);
 		sunData.setTextSize(getBaseTextSize() - 5);
 		sunData.setTextColor(COLOUR_PLOT);
 		sunDataBuf = sunData.getBuffer();
 		
 		// Big solar image display, for alternate mode.
-		sunBigImage = new ImageAtom(context, FILES_SOHO, SUN_URLS);
+		sunBigImage = new ImageAtom(parent, FILES_SOHO, SUN_URLS);
 
 		// Graph for solar wind data.
-		swindGraph = new MagnitudeElement(context,
+		swindGraph = new MagnitudeElement(parent,
 		                                  EPAM1_PLOT_FIELDS.length, 400, 5,
 										  COLOUR_GRID, EPAM1_PLOT_COLS,
 										  tfields1);       	
 		swindGraph.setDataSource(SRC_EPAM, EPAM1_PLOT_FIELDS);
-		swindGraph.setText(0, 0, getRes(R.string.lab_solar_prot));
-		swindGraph.setText(0, 1, getRes(R.string.msgNoData));
+		swindGraph.setText(0, 0, parent.getRes(R.string.lab_solar_prot));
+		swindGraph.setText(0, 1, parent.getRes(R.string.msgNoData));
 
 		// Graph for magnetic data.
-		epamGraph = new MagnitudeElement(context,
+		epamGraph = new MagnitudeElement(parent,
 		                                 EPAM2_PLOT_FIELDS.length, 400, 5,
 										 COLOUR_GRID, EPAM2_PLOT_COLS,
 										 tfields1);       	
 		epamGraph.setDataSource(SRC_EPAM, EPAM2_PLOT_FIELDS);
-		epamGraph.setText(0, 0, getRes(R.string.lab_solar_elec));
-		epamGraph.setText(0, 1, getRes(R.string.msgNoData));
+		epamGraph.setText(0, 0, parent.getRes(R.string.lab_solar_elec));
+		epamGraph.setText(0, 1, parent.getRes(R.string.msgNoData));
 
 		// Graph for solar data (sunspots / flares).
-		solGraph = new MagnitudeElement(context,
+		solGraph = new MagnitudeElement(parent,
 		                                DSD_PLOT_FIELDS.length, 10, 2,
 										COLOUR_GRID, DSD_PLOT_COLS,
 										tfields2);
 		solGraph.setTimeScale(DSD_PLOT_TIMESCALE);
 		solGraph.setDataSource(SRC_DSD, DSD_PLOT_FIELDS);
-		solGraph.setText(0, 0, getRes(R.string.lab_solar_spots));
-		solGraph.setText(0, 1, getRes(R.string.msgNoData));
+		solGraph.setText(0, 0, parent.getRes(R.string.lab_solar_spots));
+		solGraph.setText(0, 1, parent.getRes(R.string.msgNoData));
 
 		// Listen for updates from the, for the captions.
 //		SRC_SWEPAM.addObserver(this);

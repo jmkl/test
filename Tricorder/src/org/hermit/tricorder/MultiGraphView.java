@@ -18,6 +18,8 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
+
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.hardware.Sensor;
@@ -82,25 +84,26 @@ class MultiGraphView
 	 * Set up this view.
 	 * 
 	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	sman			The SensorManager to get data from.
 	 */
-	public MultiGraphView(Tricorder context, SensorManager sman) {
-		super(context);
+	public MultiGraphView(Tricorder context, SurfaceRunner parent, SensorManager sman) {
+		super(context, parent);
 		
 		sensorManager = sman;
 		
         // Add the magnitude charts and labels for each value.
-		String flab = getRes(GraphDefinition.LIGHT.labelId);
+		String flab = parent.getRes(GraphDefinition.LIGHT.labelId);
 		String[] tfields = { flab, "00000.000" };
 		
         for (GraphDefinition def : GraphDefinition.values()) {
-        	def.view = new MagnitudeElement(context,
+        	def.view = new MagnitudeElement(parent,
         								    def.dataUnit, def.dataRange,
         								    def.gridColour, def.plotColour,
         								    tfields);
         	
-        	def.view.setText(0, 0, getRes(def.labelId));
-            def.view.setText(0, 1, getRes(R.string.msgNoData));
+        	def.view.setText(0, 0, parent.getRes(def.labelId));
+            def.view.setText(0, 1, parent.getRes(R.string.msgNoData));
             
             // Get the sensor, if we have it.
         	def.sensor = sensorManager.getDefaultSensor(def.sensorId);
@@ -153,7 +156,7 @@ class MultiGraphView
 	 */
 	@Override
 	void setSimulateMode(boolean fakeIt) {
-		String labStr = getRes(R.string.msgNoData);
+		String labStr = getSurface().getRes(R.string.msgNoData);
 		synchronized (this) {
 			// For each graph, put it in simulation if requested and
 			// if its sensor is not present.

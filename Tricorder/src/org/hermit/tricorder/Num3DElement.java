@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
@@ -41,7 +42,7 @@ class Num3DElement
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context		Parent application context.
+     * @param   parent      Parent surface.
 	 * @param	gridCol		Colour for the framing elements.
 	 * @param	plotCol		Colour for the data display.
      * @param   fields      Strings representing the columns to display.
@@ -49,21 +50,21 @@ class Num3DElement
      *                      which will be measured to determine the
      *                      required space for each column.
 	 */
-	public Num3DElement(Tricorder context,
+	public Num3DElement(SurfaceRunner parent,
 						int gridCol, int plotCol, String[] fields)
 	{
-		super(context, gridCol, plotCol);
+		super(parent, gridCol, plotCol);
 		
 		// Create the header bar.
-    	headerBar = new HeaderBarElement(context, fields);
+    	headerBar = new HeaderBarElement(parent, fields);
     	headerBar.setBarColor(gridCol);
     	
     	// Create the left-side bar.
-    	rightBar = new Gauge(context);
+    	rightBar = new Gauge(parent);
     	rightBar.setBackgroundColor(gridCol);
 		
     	// Create the numeric display.
-    	dataDisplay = new Num3DAtom(context, gridCol, plotCol);
+    	dataDisplay = new Num3DAtom(parent, gridCol, plotCol);
 	}
 
 	   

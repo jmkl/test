@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
@@ -58,7 +59,7 @@ class BargraphAtom
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -66,12 +67,12 @@ class BargraphAtom
 	 * @param	plotCol			Colour for the graph plot.
 	 * @param	orient		    The orientation for this gauge.
 	 */
-	public BargraphAtom(Tricorder context,
+	public BargraphAtom(SurfaceRunner parent,
 							float unit, float range,
 							int gridCol, int plotCol,
 							Orientation orient)
 	{
-		super(context, gridCol, plotCol);
+		super(parent, gridCol, plotCol);
 		
 		unitSize = unit;
 		plotRange = range;
@@ -189,9 +190,10 @@ class BargraphAtom
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 		// Get the value and scale it.
 		float sval = currentValue * dataScale;
 		boolean valid = haveValue;

@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
@@ -41,14 +42,12 @@ class SkyMapAtom
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
 	 */
-	public SkyMapAtom(Tricorder context,
-	   				  int gridCol, int plotCol)
-	{
-		super(context, gridCol, plotCol);
+	public SkyMapAtom(SurfaceRunner parent, int gridCol, int plotCol) {
+		super(parent, gridCol, plotCol);
 	}
 
 	   
@@ -136,9 +135,10 @@ class SkyMapAtom
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 	    // Rotate to the azimuth to draw the grid.
 	    canvas.save();
 	    canvas.rotate(-currentAzimuth, crossX, crossY);

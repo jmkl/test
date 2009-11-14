@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
@@ -60,7 +61,7 @@ class GaugeAtom
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
 	 * @param	range			How many units big to make the graph.
@@ -70,11 +71,11 @@ class GaugeAtom
 	 * @param	centered		If true, the zero value is in the center;
 	 * 							else at the left or bottom.
 	 */
-	public GaugeAtom(Tricorder context, float unit, float range,
+	public GaugeAtom(SurfaceRunner parent, float unit, float range,
 					 int gridCol, int plotCol,
 					 Orientation orient, boolean centered)
 	{
-		this(context, 1, unit, range, gridCol, new int[] { plotCol },
+		this(parent, 1, unit, range, gridCol, new int[] { plotCol },
 															orient, centered);
 	}
 
@@ -82,7 +83,7 @@ class GaugeAtom
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	num				The number of values plotted on this gauge.
 	 * @param	unit			The size of a unit of measure (for example,
 	 * 							1g of acceleration).
@@ -93,12 +94,12 @@ class GaugeAtom
 	 * @param	centered		If true, the zero value is in the center;
 	 * 							else at the left or bottom.
 	 */
-	public GaugeAtom(Tricorder context,
+	public GaugeAtom(SurfaceRunner parent,
 					 int num, float unit, float range,
 					 int gridCol, int[] plotCols,
 					 Orientation orient, boolean centered)
 	{
-		super(context, gridCol, plotCols[0]);
+		super(parent, gridCol, plotCols[0]);
 		
 		numPlots = num;
 		unitSize = unit;
@@ -304,9 +305,10 @@ class GaugeAtom
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 		// Draw the bar.
 		paint.setColor(getGridColor());
 		paint.setStyle(Paint.Style.FILL);

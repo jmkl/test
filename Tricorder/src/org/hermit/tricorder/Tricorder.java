@@ -152,7 +152,22 @@ public class Tricorder
 		selectDataView(ViewDefinition.GRA);
     }
 
- 
+
+    /**
+     * Called after {@link #onCreate} or {@link #onStop} when the current
+     * activity is now being displayed to the user.  It will
+     * be followed by {@link #onRestart}.
+     */
+    @Override
+    protected void onStart() {
+        Log.i(TAG, "onStart()");
+        
+        super.onStart();
+        
+        mainView.onStart();
+    }
+
+
     /**
      * This method is called after onStart() when the activity is being
      * re-initialized from a previously saved state, given here in state.
@@ -191,7 +206,10 @@ public class Tricorder
         
         super.onResume();
         
-        mainView.doOnResume();
+        mainView.onResume();
+
+        // Just start straight away.
+        mainView.surfaceStart();
     }
 
 
@@ -234,10 +252,25 @@ public class Tricorder
         
         super.onPause();
         
-        mainView.doOnPause();
+        mainView.onPause();
     }
 
-     
+
+    /**
+     * Called when you are no longer visible to the user.  You will next
+     * receive either {@link #onStart}, {@link #onDestroy}, or nothing,
+     * depending on later user activity.
+     */
+    @Override
+    protected void onStop() {
+        Log.i(TAG, "onStop()");
+        
+        super.onStop();
+        
+        mainView.onStop();
+    }
+
+
     /**
      * Perform any final cleanup before an activity is destroyed.  This can
      * happen either because the activity is finishing (someone called

@@ -18,26 +18,26 @@
 
 package org.hermit.tricorder;
 
+
+import org.hermit.android.core.SurfaceRunner;
+
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 
 
 /**
  * The main tricorder view.
  */
 class TricorderView
-	extends SurfaceView
-	implements SurfaceHolder.Callback
+	extends SurfaceRunner
 {
 
 	// ******************************************************************** //
@@ -88,17 +88,15 @@ class TricorderView
 		super(context);
 		appContext = context;
 
-        // Register for events on the surface.
-        surfaceHolder = getHolder();
-        surfaceHolder.addCallback(this);
-
 		currentView = null;
 		
 		createGui(context);
 
-		// Make sure we get key events.
-        setFocusable(true);
-        setFocusableInTouchMode(true);
+		// Set the animation delay in ms. so we don't just continuously
+		// whack the battery.
+	    setDelay(10);
+	    
+        setDebugPerf(SHOW_FPS);
 	}
 
 
@@ -117,7 +115,7 @@ class TricorderView
     		switch (vdef) {
     		case GRA:
     			float gravUnit = SensorManager.STANDARD_GRAVITY;
-    			gravView = new TridataView(context, sm,
+    			gravView = new TridataView(context, this, sm,
                                            Sensor.TYPE_ACCELEROMETER,
                                            gravUnit, 2.2f,
                                            0xffccccff, 0xffff9e63,
@@ -126,7 +124,7 @@ class TricorderView
     	    	break;
     		case MAG:
     	        float magUnit = SensorManager.MAGNETIC_FIELD_EARTH_MAX;
-    	        magView = new TridataView(context, sm,
+    	        magView = new TridataView(context, this, sm,
 										  Sensor.TYPE_MAGNETIC_FIELD,
 										  magUnit, 2.2f,
 										  0xff6666ff, 0xffffcc00,
@@ -134,16 +132,16 @@ class TricorderView
                 vdef.view = magView;
     	    	break;
     		case ENV:
-    	    	vdef.view = new MultiGraphView(context, sm);
+    	    	vdef.view = new MultiGraphView(context, this, sm);
     	        break;
     		case GEO:
-    	    	vdef.view = new GeoView(context, sm);
+    	    	vdef.view = new GeoView(context, this, sm);
     	        break;
     		case COM:
-    	    	vdef.view = new CommView(context);
+    	    	vdef.view = new CommView(context, this);
     	        break;
     		case SOL:
-    	    	vdef.view = new SolarView(context);
+    	    	vdef.view = new SolarView(context, this);
     	        break;
     		}
     	}
@@ -154,222 +152,91 @@ class TricorderView
 	// App State Management.
 	// ******************************************************************** //
 
-	/**
-	 * Start this tricorder.  This notifies the view that it should start
-	 * receiving and displaying data.
-	 */
-	public void doOnResume() {
-    	Log.i(TAG, "TV: doOnResume");
-    	
-		synchronized (surfaceHolder) {
-			appRunning = true;
-			setState();
-		}
-	}
-	
-
     /**
-     * This is called immediately after the surface is first created.
-     * Implementations of this should start up whatever rendering code
-     * they desire.
-     * 
-     * Note that only one thread can ever draw into a Surface, so you
-     * should not draw into the Surface here if your normal rendering
-     * will be in another thread.
-     * 
-     * @param	holder		The SurfaceHolder whose surface is being created.
+     * The application is starting.  Perform any initial set-up prior to
+     * starting the application.  We may not have a screen size yet,
+     * so this is not a good place to allocate resources which depend on
+     * that.
      */
-    public void surfaceCreated(SurfaceHolder holder) {
-    	Log.i(TAG, "TV: surfaceCreated");
-    	
-        // start the thread here so that we don't busy-wait in run()
-        // waiting for the surface to be created
-		synchronized (surfaceHolder) {
-			surfaceReady = true;
-			setState();
-		}
+    @Override
+    protected void appStart() {
     }
 
-    
+
     /**
-     * This is called immediately after any structural changes (format or
-     * size) have been made to the surface.  This method is always
-     * called at least once, after surfaceCreated(SurfaceHolder).
+     * Set the screen size.  This is guaranteed to be called before
+     * animStart(), but perhaps not before appStart().
      * 
-     * @param	holder		The SurfaceHolder whose surface has changed.
-     * @param	format		The new PixelFormat of the surface.
-     * @param	width		The new width of the surface.
-     * @param	height		The new height of the surface.
+     * @param   width       The new width of the surface.
+     * @param   height      The new height of the surface.
+     * @param   config      The pixel format of the surface.
      */
-    public void surfaceChanged(SurfaceHolder holder,
-    						   int format, int width, int height)
-    {
-        // On Droid (at least) this can get called after a rotation,
-        // which shouldn't happen as we should get shut down first.
-        // Ignore that.
-        if (surfaceSized) {
-            Log.e(TAG, "TV: ignored surfaceChanged: " + width + "x" + height);
-            return;
-        }
+    @Override
+    protected void appSize(int width, int height, Bitmap.Config config) {
+        Log.i(TAG, "TV: surfaceChanged: " + width + "x" + height);
         
-    	Log.i(TAG, "TV: surfaceChanged: " + width + "x" + height);
-    	
-    	Rect bounds = new Rect(0, 0, width, height);
-		synchronized (surfaceHolder) {
-	    	for (ViewDefinition vdef : ViewDefinition.values())
-	    		vdef.view.setGeometry(bounds);
-		}
-	      
+        Rect bounds = new Rect(0, 0, width, height);
+        for (ViewDefinition vdef : ViewDefinition.values())
+            vdef.view.setGeometry(bounds);
+
         // Tell the Grav and Mag views our orientation, so that they
-		// can adjust the sensor axes to match the screen axes.
+        // can adjust the sensor axes to match the screen axes.
         Resources res = appContext.getResources();
         Configuration conf = res.getConfiguration();
         gravView.setOrientation(conf.orientation);
         magView.setOrientation(conf.orientation);
-
-		surfaceSized = true;
-		setState();
     }
-
     
+
     /**
-     * This is called immediately before a surface is destroyed.
-     * After returning from this call, you should no longer try to
-     * access this surface.  If you have a rendering thread that directly
-     * accesses the surface, you must ensure that thread is no longer
-     * touching the Surface before returning from this function.
+     * We are starting the animation loop.  The screen size is known.
      * 
-     * @param	holder		The SurfaceHolder whose surface is being destroyed.
-     */
-    public void surfaceDestroyed(SurfaceHolder holder) {
-    	Log.i(TAG, "TV: surfaceDestroyed");
-    	
-		synchronized (surfaceHolder) {
-			surfaceReady = false;
-			setState();
-		}
-    }
-
-
-	/**
-	 * Stop this tricorder.  This notifies the view that it should stop
-	 * receiving and displaying data, and generally stop using
-	 * resources.
-	 */
-	public void doOnPause() {
-    	Log.i(TAG, "TV: doOnPause");
-    	
-		synchronized (surfaceHolder) {
-			appRunning = false;
-			setState();
-		}
-	}
-	
-	
-	/**
-	 * Set the application state based on whether the app is running
-	 * and whether our surface is created.
-	 */
-	private void setState() {
-		// See if the state actually changed.
-		boolean oldEnabled = enabled;
-		enabled = appRunning && surfaceReady && surfaceSized;
-		if (enabled == oldEnabled)
-			return;
-
-		if (enabled)
-			start();
-		else
-			stop();
-	}
-	
-	
-	/**
-	 * Start everything running.
-	 */
-	private void start() {
-    	Log.i(TAG, "TV: start everything");
-    	
-		// Give all views an app starting notification.
-		for (ViewDefinition vdef : ViewDefinition.values())
-			vdef.view.appStart();
-
-		// Start the front view.
-		if (currentView != null)
-			currentView.view.start();
-
-		// Start the 1-second tick events.
-		if (hasFocus())
-			resume();
-	}
-	
-	
-	/**
-	 * Stop the main ticker.
-	 */
-	private void pause() {
-    	Log.i(TAG, "TV: pause");
-    	
-		// Stop the tick events.
-		if (ticker != null) {
-			ticker.kill();
-			ticker = null;
-		}
-	}
-
-	
-	/**
-	 * Start everything running.
-	 */
-	private void resume() {
-    	Log.i(TAG, "TV: resume");
-    	
-		// Start the 1-second tick events.
-		if (ticker != null)
-			ticker.kill();
-		ticker = new Ticker();
-	}
-	
-
-	/**
-	 * Stop everything running.
-	 */
-	private void stop() {
-    	Log.i(TAG, "TV: stop everything");
-    	
-		// Stop the tick events.
-    	pause();
-
-		// Stop the front view.
-		if (currentView != null)
-			currentView.view.stop();
-		
-		// Give all views an "app stopping" notification.
-		for (ViewDefinition vdef : ViewDefinition.values())
-			vdef.view.appStop();
-	}
-
-	
-    /**
-     * Handle changes in focus.  When we lose focus, pause the display
-     * so a popup (like the menu) doesn't cause havoc.
-     * 
-     * @param	hasWindowFocus		True iff we have focus.
+     * <p>doUpdate() and doDraw() may be called from this point on.
      */
     @Override
-    public void onWindowFocusChanged(boolean hasWindowFocus) {
-    	synchronized (surfaceHolder) {
-    		if (enabled) {
-    	    	Log.i(TAG, "TV: focus: " + hasWindowFocus);
-    	    	
-    			if (!hasWindowFocus)
-    				pause();
-    			else
-    				resume();
-    		}
-    	}
-    }
+    protected void animStart() {
+        Log.i(TAG, "TV: start everything");
+        
+        // Give all views an app starting notification.
+        for (ViewDefinition vdef : ViewDefinition.values())
+            vdef.view.appStart();
 
+        // Start the front view.
+        if (currentView != null)
+            currentView.view.start();
+        
+        enabled = true;
+    }
+    
+
+    /**
+     * We are stopping the animation loop, for example to pause the app.
+     * 
+     * <p>doUpdate() and doDraw() will not be called from this point on.
+     */
+    @Override
+    protected void animStop() {
+        Log.i(TAG, "TV: stop everything");
+        
+        enabled = false;
+
+        // Stop the front view.
+        if (currentView != null)
+            currentView.view.stop();
+        
+        // Give all views an "app stopping" notification.
+        for (ViewDefinition vdef : ViewDefinition.values())
+            vdef.view.appStop();
+    }
+    
+
+    /**
+     * The application is closing down.  Clean up any resources.
+     */
+    @Override
+    protected void appStop() {
+    }
+    
 
     /**
      * Select and display the given view.
@@ -377,7 +244,7 @@ class TricorderView
      * @param	viewDef			View definition of the view to show.
      */
     void selectView(ViewDefinition viewDef) {
-    	synchronized (surfaceHolder) {
+    	synchronized (this) {
     		if (currentView != null)
     			currentView.view.stop();
     		currentView = viewDef;
@@ -421,89 +288,48 @@ class TricorderView
 			vdef.view.setSimulateMode(fakeIt);
 	}
 	
-	
-	/**
-	 * Step the application state.  Redraw the current view.
-	 */
-    private void step() {
-    	Canvas canvas = null;
-
-    	// Pass it to the current front view.
-    	if (enabled) try {
-			DataView view = currentView.view;
-			long now = System.currentTimeMillis();
-			
-			// If 1 second has passed, give the view a 1-sec tick.
-    		if (now - lastTick > 1000) {
-    			synchronized (surfaceHolder) {
-    				view.tick(now);
-    				lastTick = now;
-    			}
-    		}
-    		
-    		// And re-draw the view.
-    		canvas = surfaceHolder.lockCanvas(null);
-    		if (canvas == null)
-    		    return;
-    		synchronized (surfaceHolder) {
-    			canvas.drawColor(Tricorder.COL_BG);
-    			view.draw(canvas, now);
-    		}
-    		
-    		// If we're tracking performance, draw in the FPS.
-    		if (SHOW_FPS) {
-    			++fpsFrameCount;
-    			if (now - fpsLastTime >= 1000) {
-    				fpsLastCount = fpsFrameCount;
-    				fpsFrameCount = 0;
-    				fpsLastTime = now;
-    			}
-    			fpsPaint.setColor(0xff000000);
-    			canvas.drawRect(0, 0, 50, 22, fpsPaint);
-    			fpsPaint.setColor(0xffff0000);
-    			canvas.drawText("" + fpsLastCount + " fps", 5, 14, fpsPaint);
-    		}
-    	} finally {
-    		// do this in a finally so that if an exception is thrown
-    		// during the above, we don't leave the Surface in an
-    		// inconsistent state
-    		if (canvas != null)
-    			surfaceHolder.unlockCanvasAndPost(canvas);
-    	}
+    
+    /**
+     * Update the state of the application for the current frame.
+     * 
+     * <p>Applications must override this, and can use it to update
+     * for example the physics of a game.  This may be a no-op in some cases.
+     * 
+     * <p>doDraw() will always be called after this method is called;
+     * however, the converse is not true, as we sometimes need to draw
+     * just to update the screen.  Hence this method is useful for
+     * updates which are dependent on time rather than frames.
+     * 
+     * @param   now         Nominal time of the current frame in ms.
+     */
+    @Override
+    protected void doUpdate(long now) {
+        // If 1 second has passed, give the view a 1-sec tick.
+        if (now - lastTick > 1000) {
+            currentView.view.tick(now);
+            lastTick = now;
+        }
+    }
+    
+    
+    /**
+     * Draw the current frame of the application.
+     * 
+     * <p>Applications must override this, and are expected to draw the
+     * entire screen into the provided canvas.
+     * 
+     * <p>This method will always be called after a call to doUpdate(),
+     * and also when the screen needs to be re-drawn.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   now         Nominal time of the current frame in ms.
+     */
+    @Override
+    protected void doDraw(Canvas canvas, long now) {
+        canvas.drawColor(Tricorder.COL_BG);
+        currentView.view.draw(canvas, now);
     }
 
-
-    // ******************************************************************** //
-    // Private Types.
-    // ******************************************************************** //
-
-	/**
-	 * Class which generates our ticks.
-	 */
-	private class Ticker extends Thread {
-		public Ticker() {
-			enable = true;
-			start();
-		}
-
-		public void kill() {
-			enable = false;
-		}
-
-		@Override
-		public void run() {
-			while (enable) {
-				step();
-				try {
-					sleep(10);
-				} catch (InterruptedException e) {
-					enable = false;
-				}
-			}
-		}
-		private boolean enable;
-	}
-	
 
     // ******************************************************************** //
     // Class Data.
@@ -522,46 +348,19 @@ class TricorderView
 
 	// Out application context.
 	private Tricorder appContext;
-
-    // The surface holder for our surface.
-    private SurfaceHolder surfaceHolder;
     
     // The Grav and Mag views.
     private TridataView gravView = null;
     private TridataView magView = null;
 
+    // True if we are running.
+    private boolean enabled = false;
+    
     // The currently selected view.
     private ViewDefinition currentView = null;
-    
-    // Is the application running?  This is set in onResume() and cleared
-    // on onPause().  If false, don't do anything.
-    private boolean appRunning = false;
-    
-    // Is the surface ready?  This is set in surfaceCreated() and cleared
-    // on surfaceDestroyed().  If false, don't do anything.
-    private boolean surfaceReady = false;
-    
-    // Flag whether we have the surface size yet.
-    private boolean surfaceSized = false;
-    
-    // Overall enabled flag.
-    private boolean enabled = false;
 	
-    // Timer we use to generate tick events.
-    private Ticker ticker = null;
- 
     // Last time we passed a 1-second tick down to the view.
     private long lastTick = 0;
-    
-    // Data for counting and displaying frames per second.
-	private int fpsFrameCount = 0;
-	private int fpsLastCount = 0;
-	private long fpsLastTime = 0;
-	private Paint fpsPaint = new Paint();
-	{
-		fpsPaint.setColor(0xffff0000);
-		fpsPaint.setTextSize(14);
-	}
 
 }
 

@@ -18,6 +18,7 @@
 
 package org.hermit.tricorder;
 
+import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.graphics.Canvas;
@@ -61,15 +62,15 @@ class DialAtom
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
 	 * @param	gridCol			Colour for the graph grid.
 	 * @param	plotCol			Colour for the graph plot.
 	 * @param	orient		The orientation for this gauge.
 	 */
-	public DialAtom(Tricorder context, int gridCol, int plotCol,
+	public DialAtom(SurfaceRunner parent, int gridCol, int plotCol,
 					Orientation orient)
 	{
-		super(context, gridCol, plotCol);
+		super(parent, gridCol, plotCol);
 		
 		orientation = orient;
 		barThickness = getSidebarWidth();
@@ -218,9 +219,10 @@ class DialAtom
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 		// Get the value and scale it.  We're synced at the View level.
 		final float sval = currentValue;
 		final boolean valid = haveValue;
