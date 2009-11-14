@@ -163,7 +163,7 @@ public class PowerGauge
 	 * 
      * @param   power       The current instantaneous signal power level.
 	 */
-    void update(float power) {
+    final void update(float power) {
         synchronized (this) {
             // Save the current level.
             currentPower = power;
@@ -195,7 +195,7 @@ public class PowerGauge
      * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-    protected void drawBody(Canvas canvas, Paint paint, long now) {
+    protected final void drawBody(Canvas canvas, Paint paint, long now) {
 	    synchronized (this) {
 	        // Re-calculate the peak markers.
 	        calculatePeaks(now, currentPower, prevPower);
@@ -259,7 +259,7 @@ public class PowerGauge
     /**
      * Re-calculate the positions of the peak markers in the VU meter.
      */
-    private void calculatePeaks(long now, float power, float prev) {
+    private final void calculatePeaks(long now, float power, float prev) {
         // First, delete any that have been passed or have timed out.
         for (int i = 0; i < METER_PEAKS; ++i) {
             if (meterPeakTimes[i] != 0 &&

@@ -21,7 +21,8 @@
 package org.hermit.android.instruments;
 
 
-import android.app.Activity;
+import org.hermit.android.core.SurfaceRunner;
+
 import android.os.Bundle;
 
 
@@ -39,10 +40,10 @@ public class Instrument
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+	 * @param	parent			Parent surface.
 	 */
-	public Instrument(Activity context) {
-		appContext = context;
+	public Instrument(SurfaceRunner parent) {
+		parentSurface = parent;
 	}
 
 
@@ -79,6 +80,23 @@ public class Instrument
     }
     
 
+    // ******************************************************************** //
+    // Main Loop.
+    // ******************************************************************** //
+
+    /**
+     * Update the state of the instrument for the current frame.
+     * 
+     * <p>Instruments may override this, and can use it to read the
+     * current input state.  This method is invoked in the main animation
+     * loop -- i.e. frequently.
+     * 
+     * @param   now         Nominal time of the current frame in ms.
+     */
+    protected void doUpdate(long now) {
+    }
+
+
 	// ******************************************************************** //
 	// Utilities.
 	// ******************************************************************** //
@@ -88,8 +106,8 @@ public class Instrument
 	 * 
 	 * @return             The app context we're running in.
 	 */
-	protected Activity getContext() {
-		return appContext;
+	protected SurfaceRunner getSurface() {
+		return parentSurface;
 	}
 	
     
@@ -131,8 +149,8 @@ public class Instrument
 	// Private Data.
 	// ******************************************************************** //
 
-	// Application handle.
-	private final Activity appContext;
+	// The SurfaceRunner we're attached to.
+	private final SurfaceRunner parentSurface;
 
 }
 

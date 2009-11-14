@@ -22,7 +22,6 @@ package org.hermit.android.core;
 
 import org.hermit.utils.CharFormatter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -104,6 +103,7 @@ public abstract class SurfaceRunner
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
         setFocusable(true);
+        setFocusableInTouchMode(true);
     }
     
 
@@ -661,7 +661,7 @@ public abstract class SurfaceRunner
      *                      {@link #statsCreate(String[] labels)}).
      * @param   val         Amount to add to the counter.
      */
-    protected void statsCount(int index, int val) {
+    public void statsCount(int index, int val) {
         statsCountInt(index + 3, val);
     }
     
@@ -693,7 +693,7 @@ public abstract class SurfaceRunner
      *                      {@link #statsCreate(String[] labels)}).
      * @param   val         The time value for this iteration.
      */
-    protected void statsTime(int index, long val) {
+    public void statsTime(int index, long val) {
         statsTimeInt(index + 3, val);
     }
     

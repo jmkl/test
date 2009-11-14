@@ -26,7 +26,6 @@ import org.hermit.android.io.AudioReader;
 import org.hermit.dsp.FFTTransformer;
 import org.hermit.dsp.SignalPower;
 
-import android.app.Activity;
 import android.os.Bundle;
 
 
@@ -35,7 +34,6 @@ import android.os.Bundle;
  */
 public class AudioAnalyser
 	extends Instrument
-    implements Runnable
 {
 
     // ******************************************************************** //
@@ -45,10 +43,11 @@ public class AudioAnalyser
 	/**
 	 * Create a WindMeter instance.
 	 * 
-	 * @param	app			The application context we're running in.
+     * @param   parent          Parent surface.
 	 */
-    public AudioAnalyser(Activity app) {
-        super(app);
+    public AudioAnalyser(SurfaceRunner parent) {
+        super(parent);
+        parentSurface = parent;
         
         audioReader = new AudioReader(SAMPLE_RATE);
         
@@ -82,13 +81,9 @@ public class AudioAnalyser
     public void measureStart() {
         audioProcessed = audioSequence = 0;
         
-        running = true;
-        readerThread = new Thread(this, "Audio Analyser");
-        readerThread.start();
-
         audioReader.startReader(FFT_BLOCK * DECIMATE, new AudioReader.Listener() {
             @Override
-            public void onReadComplete(short[] buffer) {
+            public final void onReadComplete(short[] buffer) {
                 receiveAudio(buffer);
             }
         });
@@ -101,15 +96,6 @@ public class AudioAnalyser
     @Override
     public void measureStop() {
         audioReader.stopReader();
-        
-        running = false;
-        try {
-            if (readerThread != null)
-                readerThread.join();
-        } catch (InterruptedException e) {
-            ;
-        }
-        readerThread = null;
     }
     
 
@@ -181,63 +167,72 @@ public class AudioAnalyser
      * 
      * @param   buffer      Audio data that was just read.
      */
-    private void receiveAudio(short[] buffer) {
+    private final void receiveAudio(short[] buffer) {
         // Lock to protect updates to these local variables.  See run().
         synchronized (this) {
             audioData = buffer;
             ++audioSequence;
-            this.notify();
         }
     }
     
-    
+
+    // ******************************************************************** //
+    // Main Loop.
+    // ******************************************************************** //
+
     /**
-     * Main loop of the audio analyser.  This runs in our own thread.
+     * Update the state of the instrument for the current frame.
+     * This method must be invoked from the doUpdate() method of the
+     * application's {@link SurfaceRunner}.
      * 
-     * <p><b>Note:</b> this method is public because the Thread API
-     * requires it.  Outside classes must not call this.
+     * <p>Since this is called frequently, we first check whether new
+     * audio data has actually arrived.
+     * 
+     * @param   now         Nominal time of the current frame in ms.
      */
     @Override
-    public void run() {
-        while (running) {
-            short[] buffer = null;
-            synchronized (this) {
-                // Wait for input data.  Time out so we can see !running.
-                try {
-                    this.wait(250);
-                } catch (InterruptedException e) { }
-
-                // If we're killed, break.
-                if (!running)
-                    break;
-
-                // See if we actually got some data (as opposed to timing
-                // out etc.).
-                if (audioData != null && audioSequence > audioProcessed) {
-                    audioProcessed = audioSequence;
-                    buffer = audioData;
-                }
+    public final void doUpdate(long now) {
+        short[] buffer = null;
+        synchronized (this) {
+            if (audioData != null && audioSequence > audioProcessed) {
+//                parentSurface.statsCount(4, (int) (audioSequence - audioProcessed - 1));
+                audioProcessed = audioSequence;
+                buffer = audioData;
             }
-
-            // If we got data, process it without the lock.
-            if (buffer != null)
-                processAudio(buffer);
         }
+
+        // If we got data, process it without the lock.
+        if (buffer != null)
+            processAudio(buffer);
     }
-    
+
 
     /**
-     * Handle audio input.  This is called on the thread of the audio
-     * reader.
+     * Handle audio input.  This is called on the thread of the
+     * parent surface.
      * 
      * @param   buffer      Audio data that was just read.
      */
-    private void processAudio(short[] buffer) {
+    private final void processAudio(short[] buffer) {
         // Process the buffer.  While reading it, it needs to be locked.
         synchronized (buffer) {
             // Calculate the power now, while we have the input
             // buffer; this is pretty cheap.
             final int len = buffer.length;
+
+            // Draw the waveform now, while we have the raw data.
+            if (waveformGauge != null) {
+                SignalPower.biasAndRange(buffer, len - FFT_BLOCK, FFT_BLOCK, biasRange);
+                final float bias = biasRange[0];
+                float range = biasRange[1];
+                if (range < 1f)
+                    range = 1f;
+                
+//                long wavStart = System.currentTimeMillis();
+                waveformGauge.update(buffer, len - FFT_BLOCK, FFT_BLOCK, bias, range);
+//                long wavEnd = System.currentTimeMillis();
+//                parentSurface.statsTime(1, (wavEnd - wavStart) * 1000);
+            }
             
             // If we have a power gauge, calculate the signal power.
             if (powerGauge != null)
@@ -247,19 +242,6 @@ public class AudioAnalyser
             if (spectrumGauge != null)
                 fourierTransformer.setInput(buffer, len - FFT_BLOCK, FFT_BLOCK);
 
-            // Draw the waveform now, while we have the raw data.
-            //                drawWaveform(now, buffer, len - FFT_BLOCK, FFT_BLOCK,
-            //                             waveCanvas, 0, 0, waveRect.width(), waveRect.height());
-            if (waveformGauge != null) {
-                SignalPower.biasAndRange(buffer, 0, len, biasRange);
-                final float bias = biasRange[0];
-                float range = biasRange[1];
-                if (range < 1f)
-                    range = 1f;
-                
-                waveformGauge.update(buffer, bias, range);
-            }
-
             // Tell the reader we're done with the buffer.
             buffer.notify();
         }
@@ -268,11 +250,17 @@ public class AudioAnalyser
         if (spectrumGauge != null) {
             // Do the (expensive) transformation.
             // The transformer has its own state, no need to lock here.
+//            long fftStart = System.currentTimeMillis();
             fourierTransformer.transform();
+//            long fftEnd = System.currentTimeMillis();
+//            parentSurface.statsTime(0, (fftEnd - fftStart) * 1000);
 
             // Get the FFT output and draw the spectrum.
             fourierTransformer.getResults(spectrumData);
+//            long speStart = System.currentTimeMillis();
             spectrumGauge.update(spectrumData, NYQUIST_FREQ);
+//            long speEnd = System.currentTimeMillis();
+//            parentSurface.statsTime(2, (speEnd - speStart) * 1000);
         }
         
         // If we have a power gauge, display the signal power.
@@ -334,17 +322,13 @@ public class AudioAnalyser
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-    
+
+    // The SurfaceRunner we're attached to.
+    private final SurfaceRunner parentSurface;
+
     // Our audio input device.
     private final AudioReader audioReader;
     
-    // The thread, if any, which is currently processing audio data.
-    // Null if not running.
-    private Thread readerThread = null;
-    
-    // Flag whether the thread should be running.
-    private boolean running = false;
-
     // Fourier Transform calculator we use for calculating the spectrum.
     private final FFTTransformer fourierTransformer;
     

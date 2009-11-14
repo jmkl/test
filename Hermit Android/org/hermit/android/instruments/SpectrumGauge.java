@@ -97,7 +97,7 @@ public class SpectrumGauge
      * @param   nyquist     The Nyquist frequency -- the highest frequency
      *                      represented in the spectrum data.
 	 */
-    void update(float[] data, int nyquist) {
+	final void update(float[] data, int nyquist) {
         final Canvas canvas = specCanvas;
         final Paint paint = getPaint();
         
@@ -151,7 +151,7 @@ public class SpectrumGauge
      * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-    protected void drawBody(Canvas canvas, Paint paint, long now) {
+    protected final void drawBody(Canvas canvas, Paint paint, long now) {
 	    // Since drawBody may be called more often than we get audio
 	    // data, it makes sense to just draw the buffered image here.
 	    synchronized (this) {

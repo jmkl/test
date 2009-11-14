@@ -92,25 +92,23 @@ public class WaveformGauge
 	 * on the thread of the instrument.
 	 * 
      * @param   buffer      Audio data that was just read.
+     * @param   off         Offset in data of the input data.
+     * @param   len         Length of the input data.
      * @param   bias        Bias of the signal -- i.e. the offset of the
      *                      average signal value from zero.
      * @param   range       The range of the signal -- i.e. the absolute
      *                      value of the largest departure from the bias level.
 	 */
-    void update(short[] buffer, float bias, float range) {
+	final void update(short[] buffer, int off, int len, float bias, float range) {
         final Canvas canvas = waveCanvas;
         final Paint paint = getPaint();
-        
-        final int len = buffer.length;
         
         // Calculate a scaling factor.  We want a degree of AGC, but not
         // so much that the waveform is always the same height.  Note we have
         // to take bias into account, otherwise we could scale the signal
         // off the screen.
         float scale = (float) Math.pow(1f / (range / 6500f), 0.7) / 16384 * dispHeight;
-        if (Float.isInfinite(scale))
-            scale = 0f;
-        if (scale < 0.001f)
+        if (scale < 0.001f || Float.isInfinite(scale))
             scale = 0.001f;
         else if (scale > 1000f)
             scale = 1000f;
@@ -133,7 +131,7 @@ public class WaveformGauge
             paint.setStyle(Style.STROKE);
             for (int i = 0; i < len; ++i) {
                 final float x = i * uw;
-                final float y = baseY - (buffer[i] - bias) * scale;
+                final float y = baseY - (buffer[off + i] - bias) * scale;
                 canvas.drawLine(x, baseY, x, y, paint);
             }
         }
@@ -155,7 +153,7 @@ public class WaveformGauge
      * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-    protected void drawBody(Canvas canvas, Paint paint, long now) {
+    protected final void drawBody(Canvas canvas, Paint paint, long now) {
 	    // Since drawBody may be called more often than we get audio
 	    // data, it makes sense to just draw the buffered image here.
 	    synchronized (this) {
