@@ -35,6 +35,7 @@ import android.os.Bundle;
  */
 public class AudioAnalyser
 	extends Instrument
+    implements Runnable
 {
 
     // ******************************************************************** //
@@ -79,10 +80,16 @@ public class AudioAnalyser
      */
     @Override
     public void measureStart() {
+        audioProcessed = audioSequence = 0;
+        
+        running = true;
+        readerThread = new Thread(this, "Audio Analyser");
+        readerThread.start();
+
         audioReader.startReader(FFT_BLOCK * DECIMATE, new AudioReader.Listener() {
             @Override
             public void onReadComplete(short[] buffer) {
-                processAudio(buffer);
+                receiveAudio(buffer);
             }
         });
     }
@@ -94,6 +101,15 @@ public class AudioAnalyser
     @Override
     public void measureStop() {
         audioReader.stopReader();
+        
+        running = false;
+        try {
+            if (readerThread != null)
+                readerThread.join();
+        } catch (InterruptedException e) {
+            ;
+        }
+        readerThread = null;
     }
     
 
@@ -165,6 +181,57 @@ public class AudioAnalyser
      * 
      * @param   buffer      Audio data that was just read.
      */
+    private void receiveAudio(short[] buffer) {
+        // Lock to protect updates to these local variables.  See run().
+        synchronized (this) {
+            audioData = buffer;
+            ++audioSequence;
+            this.notify();
+        }
+    }
+    
+    
+    /**
+     * Main loop of the audio analyser.  This runs in our own thread.
+     * 
+     * <p><b>Note:</b> this method is public because the Thread API
+     * requires it.  Outside classes must not call this.
+     */
+    @Override
+    public void run() {
+        while (running) {
+            short[] buffer = null;
+            synchronized (this) {
+                // Wait for input data.  Time out so we can see !running.
+                try {
+                    this.wait(250);
+                } catch (InterruptedException e) { }
+
+                // If we're killed, break.
+                if (!running)
+                    break;
+
+                // See if we actually got some data (as opposed to timing
+                // out etc.).
+                if (audioData != null && audioSequence > audioProcessed) {
+                    audioProcessed = audioSequence;
+                    buffer = audioData;
+                }
+            }
+
+            // If we got data, process it without the lock.
+            if (buffer != null)
+                processAudio(buffer);
+        }
+    }
+    
+
+    /**
+     * Handle audio input.  This is called on the thread of the audio
+     * reader.
+     * 
+     * @param   buffer      Audio data that was just read.
+     */
     private void processAudio(short[] buffer) {
         // Process the buffer.  While reading it, it needs to be locked.
         synchronized (buffer) {
@@ -212,7 +279,7 @@ public class AudioAnalyser
         if (powerGauge != null)
             powerGauge.update(currentPower);
     }
-
+    
     
     // ******************************************************************** //
     // Save and Restore.
@@ -270,6 +337,13 @@ public class AudioAnalyser
     
     // Our audio input device.
     private final AudioReader audioReader;
+    
+    // The thread, if any, which is currently processing audio data.
+    // Null if not running.
+    private Thread readerThread = null;
+    
+    // Flag whether the thread should be running.
+    private boolean running = false;
 
     // Fourier Transform calculator we use for calculating the spectrum.
     private final FFTTransformer fourierTransformer;
@@ -279,7 +353,14 @@ public class AudioAnalyser
     private WaveformGauge waveformGauge = null;
     private SpectrumGauge spectrumGauge = null;
     private PowerGauge powerGauge = null;
-   
+    
+    // Buffered audio data, and sequence number of the latest block.
+    private short[] audioData;
+    private long audioSequence = 0;
+    
+    // Sequence number of the last block we processed.
+    private long audioProcessed = 0;
+
     // Analysed audio spectrum data.
     private final float[] spectrumData;
 
