@@ -179,7 +179,7 @@ public class BoardView
         parentApp = parent;
         
         // Animation delay.
-        setDelay(20);
+        setDelay(30);
         
         // Find out the device's screen dimensions and calculate the
         // size and shape of the cell matrix.
