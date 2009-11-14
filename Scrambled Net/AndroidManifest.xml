@@ -31,7 +31,7 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.hermit.netscramble" android:versionCode="15" android:versionName="3.4">
+    package="org.hermit.netscramble" android:versionCode="16" android:versionName="3.5">
     
     <application android:icon="@drawable/netscramble" android:label="@string/title" android:description="@string/description" android:debuggable="false">
         <activity android:name="NetScramble" android:label="@string/title" android:launchMode="singleTop">

@@ -178,6 +178,9 @@ public class BoardView
         super(parent);
         parentApp = parent;
         
+        // Animation delay.
+        setDelay(20);
+        
         // Find out the device's screen dimensions and calculate the
         // size and shape of the cell matrix.
     	findMatrix();
@@ -199,10 +202,6 @@ public class BoardView
         // (used in updateConnections()).
         isConnected = new boolean[gridWidth][gridHeight];
         connectingCells = new LinkedList<Cell>();
-       
-		// Handle key events on the board.  Do so even after touch events.
-		setFocusable(true);
-		setFocusableInTouchMode(true);
 		
 		// Set the initial focus on the root cell.
         focusedCell = null;
