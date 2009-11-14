@@ -56,7 +56,7 @@ public class AudioMeter
     public AudioMeter(Context app) {
         super(app, OPTION_DYNAMIC);
         
-        audioReader = new AudioReader();
+        audioReader = new AudioReader(8000);
         
         fourierTransformer = new FFTTransformer(FFT_BLOCK);
         
@@ -728,7 +728,7 @@ public class AudioMeter
     // a rolling average.
     private static final int METER_AVERAGE_COUNT = 200;
 
-    // Colours for the meter pwoer bar and average bar and peak marks.
+    // Colours for the meter power bar and average bar and peak marks.
     // In METER_PEAK_COL, alpha is set dynamically in the code.
     private static final int METER_POWER_COL = 0xff0000ff;
     private static final int METER_AVERAGE_COL = 0xa0ff9000;

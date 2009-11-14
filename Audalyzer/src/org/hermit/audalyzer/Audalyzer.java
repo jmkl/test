@@ -90,8 +90,11 @@ public class Audalyzer
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         
         // Create the application GUI.
-        windMeter = new AudioMeter(this);
-        setContentView(windMeter);
+//        windMeter = new AudioMeter(this);
+//        setContentView(windMeter);
+        
+        audioInstrument = new AudioInstrument(this);
+        setContentView(audioInstrument);
         
         // Restore our preferences.
         updatePreferences();
@@ -113,7 +116,8 @@ public class Audalyzer
         Log.i(TAG, "onStart()");
         
         super.onStart();
-        windMeter.onStart();
+//        windMeter.onStart();
+        audioInstrument.onStart();
     }
 
 
@@ -139,10 +143,12 @@ public class Audalyzer
         if (wakeLock != null && !wakeLock.isHeld())
             wakeLock.acquire();
 
-        windMeter.onResume();
+//        windMeter.onResume();
+        audioInstrument.onResume();
 
         // Just start straight away.
-        windMeter.surfaceStart();
+//        windMeter.surfaceStart();
+        audioInstrument.surfaceStart();
     }
 
 
@@ -173,7 +179,8 @@ public class Audalyzer
         
         super.onPause();
         
-        windMeter.onPause();
+//        windMeter.onPause();
+        audioInstrument.onPause();
         
         // Let go the wake lock if we have it.
         if (wakeLock != null && wakeLock.isHeld())
@@ -191,7 +198,8 @@ public class Audalyzer
         Log.i(TAG, "onStop()");
         super.onStop();
         
-        windMeter.onStop();
+//        windMeter.onStop();
+        audioInstrument.onStop();
     }
 
 
@@ -323,7 +331,7 @@ public class Audalyzer
 
     // Debugging tag.
     @SuppressWarnings("unused")
-    private static final String TAG = "WindMeter";
+    private static final String TAG = "Audalyzer";
     
     
     // ******************************************************************** //
@@ -335,6 +343,9 @@ public class Audalyzer
 
     // The surface manager for the view.
     private AudioMeter windMeter = null;
+
+    // The surface manager for the view.
+    private AudioInstrument audioInstrument = null;
     
     // Wake lock used to keep the screen alive.  Null if we aren't going
     // to take a lock; non-null indicates that the lock should be taken
