@@ -59,7 +59,7 @@ public class AudioInstrument
 
         // On-screen debug stats display.
         statsCreate(new String[] { "µs FFT", "µs dWav", "µs dSpe", "µs dMet", "skip/s" });
-        setDebugPerf(true);
+        setDebugPerf(false);
     }
 
 
