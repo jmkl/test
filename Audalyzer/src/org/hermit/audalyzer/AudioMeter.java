@@ -71,7 +71,7 @@ public class AudioMeter
         
         // On-screen debug stats display.
         statsCreate(new String[] { "µs FFT", "µs dWav", "µs dSpe", "µs dMet", "skip/s" });
-        setDebugPerf(false);
+        setDebugPerf(true);
     }
 
 
@@ -263,12 +263,12 @@ public class AudioMeter
             ++audioSequence;
         }
     }
-    
-    
+
+
     // ******************************************************************** //
     // Animation Rendering.
     // ******************************************************************** //
-    
+
     /**
      * Update the state of the application for the current frame.
      * 
@@ -318,7 +318,7 @@ public class AudioMeter
                 // Tell the reader we're done with the buffer.
                 buffer.notify();
             }
-            
+
             // Do the (expensive) transformation.
             // The transformer has its own state, no need to lock here.
             long fftStart = System.currentTimeMillis();

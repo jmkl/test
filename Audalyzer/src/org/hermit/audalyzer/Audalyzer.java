@@ -90,11 +90,13 @@ public class Audalyzer
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         
         // Create the application GUI.
-//        windMeter = new AudioMeter(this);
-//        setContentView(windMeter);
-        
-        audioInstrument = new AudioInstrument(this);
-        setContentView(audioInstrument);
+        if (INSTRUMENT) {
+            audioInstrument = new AudioInstrument(this);
+            setContentView(audioInstrument);
+        } else {
+            windMeter = new AudioMeter(this);
+            setContentView(windMeter);
+        }
         
         // Restore our preferences.
         updatePreferences();
@@ -116,8 +118,10 @@ public class Audalyzer
         Log.i(TAG, "onStart()");
         
         super.onStart();
-//        windMeter.onStart();
-        audioInstrument.onStart();
+        if (INSTRUMENT)
+            audioInstrument.onStart();
+        else
+            windMeter.onStart();
     }
 
 
@@ -143,12 +147,14 @@ public class Audalyzer
         if (wakeLock != null && !wakeLock.isHeld())
             wakeLock.acquire();
 
-//        windMeter.onResume();
-        audioInstrument.onResume();
-
         // Just start straight away.
-//        windMeter.surfaceStart();
-        audioInstrument.surfaceStart();
+        if (INSTRUMENT) {
+            audioInstrument.onResume();
+            audioInstrument.surfaceStart();
+        } else {
+            windMeter.onResume();
+            windMeter.surfaceStart();
+        }
     }
 
 
@@ -179,9 +185,11 @@ public class Audalyzer
         
         super.onPause();
         
-//        windMeter.onPause();
-        audioInstrument.onPause();
-        
+        if (INSTRUMENT)
+            audioInstrument.onPause();
+        else
+            windMeter.onPause();
+
         // Let go the wake lock if we have it.
         if (wakeLock != null && wakeLock.isHeld())
             wakeLock.release();
@@ -197,9 +205,11 @@ public class Audalyzer
     protected void onStop() {
         Log.i(TAG, "onStop()");
         super.onStop();
-        
-//        windMeter.onStop();
-        audioInstrument.onStop();
+
+        if (INSTRUMENT)
+            audioInstrument.onStop();
+        else
+            windMeter.onStop();
     }
 
 
@@ -332,6 +342,8 @@ public class Audalyzer
     // Debugging tag.
     @SuppressWarnings("unused")
     private static final String TAG = "Audalyzer";
+   
+    private static final boolean INSTRUMENT = true;
     
     
     // ******************************************************************** //

@@ -52,7 +52,7 @@ public class AudioInstrument
     public AudioInstrument(Activity app) {
         super(app, OPTION_DYNAMIC);
         
-        audioAnalyser = new AudioAnalyser(app);
+        audioAnalyser = new AudioAnalyser(this);
         waveformGauge = audioAnalyser.getWaveformGauge(this);
         spectrumGauge = audioAnalyser.getSpectrumGauge(this);
         powerGauge = audioAnalyser.getPowerGauge(this);
@@ -222,6 +222,7 @@ public class AudioInstrument
      */
     @Override
     protected void doUpdate(long now) {
+        audioAnalyser.doUpdate(now);
     }
 
 
