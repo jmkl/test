@@ -90,13 +90,8 @@ public class Audalyzer
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         
         // Create the application GUI.
-        if (INSTRUMENT) {
-            audioInstrument = new AudioInstrument(this);
-            setContentView(audioInstrument);
-        } else {
-            windMeter = new AudioMeter(this);
-            setContentView(windMeter);
-        }
+        audioInstrument = new AudioInstrument(this);
+        setContentView(audioInstrument);
         
         // Restore our preferences.
         updatePreferences();
@@ -118,10 +113,7 @@ public class Audalyzer
         Log.i(TAG, "onStart()");
         
         super.onStart();
-        if (INSTRUMENT)
-            audioInstrument.onStart();
-        else
-            windMeter.onStart();
+        audioInstrument.onStart();
     }
 
 
@@ -147,14 +139,10 @@ public class Audalyzer
         if (wakeLock != null && !wakeLock.isHeld())
             wakeLock.acquire();
 
+        audioInstrument.onResume();
+
         // Just start straight away.
-        if (INSTRUMENT) {
-            audioInstrument.onResume();
-            audioInstrument.surfaceStart();
-        } else {
-            windMeter.onResume();
-            windMeter.surfaceStart();
-        }
+        audioInstrument.surfaceStart();
     }
 
 
@@ -185,10 +173,7 @@ public class Audalyzer
         
         super.onPause();
         
-        if (INSTRUMENT)
-            audioInstrument.onPause();
-        else
-            windMeter.onPause();
+        audioInstrument.onPause();
 
         // Let go the wake lock if we have it.
         if (wakeLock != null && wakeLock.isHeld())
@@ -206,10 +191,7 @@ public class Audalyzer
         Log.i(TAG, "onStop()");
         super.onStop();
 
-        if (INSTRUMENT)
-            audioInstrument.onStop();
-        else
-            windMeter.onStop();
+        audioInstrument.onStop();
     }
 
 
@@ -343,8 +325,6 @@ public class Audalyzer
     @SuppressWarnings("unused")
     private static final String TAG = "Audalyzer";
    
-    private static final boolean INSTRUMENT = true;
-    
     
     // ******************************************************************** //
     // Private Data.
@@ -352,9 +332,6 @@ public class Audalyzer
     
     // Our power manager.
     private PowerManager powerManager = null;
-
-    // The surface manager for the view.
-    private AudioMeter windMeter = null;
 
     // The surface manager for the view.
     private AudioInstrument audioInstrument = null;
