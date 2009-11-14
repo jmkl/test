@@ -21,15 +21,17 @@
 package org.hermit.android.instruments;
 
 
-import android.app.Activity;
+import org.hermit.android.core.SurfaceRunner;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
 
 /**
- * This class displays an element of the UI.  An element is a region
- * within a view, and can display text, etc.
+ * A graphical display which shows some data in a region
+ * within a view.  The data may come from an {@link Instrument} or
+ * some other source.
  */
 public class Gauge
 {
@@ -41,10 +43,10 @@ public class Gauge
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
-	 */
-	public Gauge(Activity context) {
-		appContext = context;
+     * @param   parent          Parent surface.
+     */
+	public Gauge(SurfaceRunner parent) {
+		parentSurface = parent;
 
 		// Set up our paint.
 		drawPaint = new Paint();
@@ -56,12 +58,12 @@ public class Gauge
 	/**
 	 * Set up this view.
 	 * 
-	 * @param	context			Parent application context.
+     * @param   parent          Parent surface.
      * @param	grid			Colour for drawing a data scale / grid.
      * @param	plot			Colour for drawing data plots.
 	 */
-	public Gauge(Activity context, int grid, int plot) {
-		appContext = context;
+	public Gauge(SurfaceRunner parent, int grid, int plot) {
+		parentSurface = parent;
 		gridColour = grid;
 		plotColour = plot;
 
@@ -357,12 +359,12 @@ public class Gauge
 	 * This method is called to ask the element to draw itself.
 	 * 
 	 * @param	canvas		Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	now			Nominal system time in ms. of this update.
 	 */
 	public void draw(Canvas canvas, long now) {
-		drawStart(canvas, drawPaint);
-		drawBody(canvas, drawPaint);
-		drawFinish(canvas, drawPaint);
+		drawStart(canvas, drawPaint, now);
+		drawBody(canvas, drawPaint, now);
+		drawFinish(canvas, drawPaint, now);
 	}
 
 
@@ -371,8 +373,9 @@ public class Gauge
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
-	protected void drawStart(Canvas canvas, Paint paint) {
+	protected void drawStart(Canvas canvas, Paint paint, long now) {
 		// Clip to our part of the canvas.
 		canvas.save();
 		canvas.clipRect(getBounds());
@@ -386,8 +389,9 @@ public class Gauge
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 		// If not overridden, just fill with BG colour.
 		canvas.drawColor(colBg);
 	}
@@ -398,8 +402,9 @@ public class Gauge
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
-	protected void drawFinish(Canvas canvas, Paint paint) {
+	protected void drawFinish(Canvas canvas, Paint paint, long now) {
 		canvas.restore();
 	}
 
@@ -413,19 +418,8 @@ public class Gauge
 	 * 
 	 * @return             The app context we're running in.
 	 */
-	protected Activity getContext() {
-		return appContext;
-	}
-	
-
-	/**
-	 * Get the String value of a resource.
-	 * 
-	 * @param  resid       The ID of the resource we want.
-	 * @return             The resource value.
-	 */
-	protected String getRes(int resid) {
-		return appContext.getString(resid);
+	protected SurfaceRunner getSurface() {
+		return parentSurface;
 	}
 	
 
@@ -435,7 +429,7 @@ public class Gauge
 
     // Debugging tag.
 	@SuppressWarnings("unused")
-	private static final String TAG = "tricorder";
+	private static final String TAG = "instrument";
 
     // The base size for all text, based on screen size.
     private static float baseTextSize = 0f;
@@ -456,7 +450,7 @@ public class Gauge
 	// ******************************************************************** //
 
 	// Application handle.
-	private final Activity appContext;
+	private final SurfaceRunner parentSurface;
 	
 	// The paint we use for drawing.
 	private Paint drawPaint = null;

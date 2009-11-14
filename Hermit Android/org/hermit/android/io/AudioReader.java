@@ -57,11 +57,15 @@ public class AudioReader
 
 	/**
 	 * Create a WindMeter instance.
+	 * 
+	 * @param  rate        The audio sampling rate, in samples / sec.
 	 */
-    public AudioReader() {
+    public AudioReader(int rate) {
+        sampleRate = rate;
+        
 //        audioManager = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
 
-        audioBufferBytes = AudioRecord.getMinBufferSize(SAMPLE_RATE,
+        audioBufferBytes = AudioRecord.getMinBufferSize(sampleRate,
                                      AudioFormat.CHANNEL_CONFIGURATION_MONO,
                                      AudioFormat.ENCODING_PCM_16BIT) * 2;
     }
@@ -84,13 +88,13 @@ public class AudioReader
         synchronized (this) {
             // Set up the audio input.
             audioInput = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                    SAMPLE_RATE,
+                    sampleRate,
                     AudioFormat.CHANNEL_CONFIGURATION_MONO,
                     AudioFormat.ENCODING_PCM_16BIT,
                     audioBufferBytes);
 
             inputBlockSize = block;
-            sleepTime = (long) (1000f / ((float) SAMPLE_RATE / (float) block));
+            sleepTime = (long) (1000f / ((float) sampleRate / (float) block));
             inputBuffer = new short[2][inputBlockSize];
             inputBufferWhich = 0;
             inputBufferIndex = 0;
@@ -220,14 +224,14 @@ public class AudioReader
 	@SuppressWarnings("unused")
 	private static final String TAG = "WindMeter";
 
-    // Audio sample rate, in samples/sec.
-    private static final int SAMPLE_RATE = 8000;
-
 	
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-    
+
+    // Audio sample rate, in samples/sec.
+    private final int sampleRate;
+
     // Size of the system audio buffer.
     private final int audioBufferBytes;
     

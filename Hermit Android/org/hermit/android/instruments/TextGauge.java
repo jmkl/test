@@ -21,7 +21,8 @@
 package org.hermit.android.instruments;
 
 
-import android.app.Activity;
+import org.hermit.android.core.SurfaceRunner;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -29,8 +30,8 @@ import android.graphics.Typeface;
 
 
 /**
- * This class displays an element of the UI.  An element is a region
- * within a view, and can display text, etc.
+ * A {@link Gauge} which displays data in textual form, generally as
+ * a grid of numeric values.
  */
 public class TextGauge
 	extends Gauge
@@ -50,10 +51,10 @@ public class TextGauge
      * {@link #setTextFields(String[] template, int rows)} to set the
      * table format.
      * 
-     * @param   context     Parent application context.
+     * @param   parent          Parent surface.
      */
-    public TextGauge(Activity context) {
-        super(context);
+    public TextGauge(SurfaceRunner parent) {
+        super(parent);
         textSize = getBaseTextSize();
     }
 
@@ -67,15 +68,15 @@ public class TextGauge
      * of fields.  The fields are specified by passing in sample text
      * values to be measured; we then allocate the space automatically.
      * 
-     * @param   context     Parent application context.
+     * @param   parent          Parent surface.
      * @param   template    Strings representing the columns to display.
      *                      Each one should be a sample piece of text
      *                      which will be measured to determine the
      *                      required space for each column.  Must be provided.
      * @param   rows        Number of rows of text to display.
      */
-    public TextGauge(Activity context, String[] template, int rows) {
-        super(context);
+    public TextGauge(SurfaceRunner parent, String[] template, int rows) {
+        super(parent);
         textSize = getBaseTextSize();
         
         // Set up the text fields.
@@ -330,9 +331,10 @@ public class TextGauge
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	paint		The Paint which was set up in initializePaint().
+     * @param   now         Nominal system time in ms. of this update.
 	 */
 	@Override
-	protected void drawBody(Canvas canvas, Paint paint) {
+	protected void drawBody(Canvas canvas, Paint paint, long now) {
 		// Set up the display style.
 		paint.setColor(getPlotColor());
 		paint.setTextSize(textSize);
@@ -360,7 +362,7 @@ public class TextGauge
 
     // Debugging tag.
 	@SuppressWarnings("unused")
-	private static final String TAG = "tricorder";
+	private static final String TAG = "instrument";
 
 	// Horizontal scaling of the font; used to produce a tall, thin font.
 	private static final Typeface FONT_FACE = Typeface.MONOSPACE;

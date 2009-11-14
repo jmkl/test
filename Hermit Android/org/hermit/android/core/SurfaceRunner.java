@@ -22,6 +22,7 @@ package org.hermit.android.core;
 
 import org.hermit.utils.CharFormatter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -94,9 +95,11 @@ public abstract class SurfaceRunner
      */
     public SurfaceRunner(Context app, int options) {
         super(app);
-
-        surfaceOptions = options;
         
+        appContext = app;
+        surfaceOptions = options;
+        animationDelay = 0;
+
         // Register for events on the surface.
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
@@ -107,6 +110,19 @@ public abstract class SurfaceRunner
     // ******************************************************************** //
     // State Handling.
     // ******************************************************************** //
+
+    /**
+     * Set the delay in ms in each iteration of the main loop.
+     * 
+     * @param   delay       The time in ms to sleep each time round the main
+     *                      animation loop.  If zero, we will not sleep,
+     *                      but will run continuously.
+     */
+    public void setDelay(long delay) {
+        Log.i(TAG, "setDelay " + delay);
+        animationDelay = delay;
+    }
+
 
     /**
      * This is called immediately after the surface is first created.
@@ -519,22 +535,33 @@ public abstract class SurfaceRunner
     // ******************************************************************** //
     // Client Utilities.
     // ******************************************************************** //
+    
+    /**
+     * Get the String value of a resource.
+     * 
+     * @param  resid       The ID of the resource we want.
+     * @return             The resource value.
+     */
+    public String getRes(int resid) {
+        return appContext.getString(resid);
+    }
+    
 
     /**
-     * Get a Bitmap which is the same size and format as the screen.
+     * Get a Bitmap which is the same size and format as the surface.
      * This can be used to get an off-screen rendering buffer, for
      * example.
      * 
      * @return              A Bitmap which is the same size and pixel
      *                      format as the screen.
      */
-    protected Bitmap getBitmap() {
+    public Bitmap getBitmap() {
         return Bitmap.createBitmap(canvasWidth, canvasHeight, canvasConfig);
     }
     
 
     /**
-     * Get a Bitmap of a given size, in the same format as the screen.
+     * Get a Bitmap of a given size, in the same format as the surface.
      * This can be used to get an off-screen rendering buffer, for
      * example.
      * 
@@ -543,7 +570,7 @@ public abstract class SurfaceRunner
      * @return              A Bitmap which is the same size and pixel
      *                      format as the screen.
      */
-    protected Bitmap getBitmap(int w, int h) {
+    public Bitmap getBitmap(int w, int h) {
         return Bitmap.createBitmap(w, h, canvasConfig);
     }
     
@@ -768,8 +795,7 @@ public abstract class SurfaceRunner
 	                try {
 	                    join();
 	                    retry = false;
-	                } catch (InterruptedException e) {
-	                }
+	                } catch (InterruptedException e) { }
 	            }
 	            Log.v(TAG, "Ticker: killed");
 	        } else {
@@ -783,8 +809,13 @@ public abstract class SurfaceRunner
 	     */
 	    @Override
 	    public void run() {
-	        while (enable)
+	        while (enable) {
 	            tick();
+	            
+                if (animationDelay != 0) try {
+                    sleep(animationDelay);
+                } catch (InterruptedException e) { }
+	        }
 	    }
 	    
 	    // Flag used to terminate this thread -- when false, we die.
@@ -819,10 +850,17 @@ public abstract class SurfaceRunner
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-    
+
+    // Application handle.
+    private final Context appContext;
+
     // The surface manager for the view.
     private SurfaceHolder surfaceHolder = null;
     
+    // The time in ms to sleep each time round the main animation loop.
+    // If zero, we will not sleep, but will run continuously.
+    private long animationDelay = 0;
+
     // Option flags for this instance.  A bitwise OR of OPTION_XXX constants.
     private int surfaceOptions = 0;
 
