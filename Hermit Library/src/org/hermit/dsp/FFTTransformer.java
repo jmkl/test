@@ -201,9 +201,65 @@ public final class FFTTransformer {
                                                "; given " + buffer.length);
        
         buffer[0] = (float) (Math.sqrt(xre[0]*xre[0] + xim[0]*xim[0]))/n;
-        for (int i = 1; i < n/2; i++)
-            buffer[i]= 2 * (float) (Math.sqrt(xre[i]*xre[i] + xim[i]*xim[i]))/n;
+        for (int i = 1; i < n / 2; i++)
+            buffer[i] = 2 * (float) (Math.sqrt(xre[i]*xre[i] + xim[i]*xim[i]))/n;
         return buffer;
+    }
+
+
+    /**
+     * Get the rolling average real results of the last n transformations.
+     * 
+     * @param   average     Buffer in which the averaged real part of the
+     *                      results will be maintained.  This buffer must be
+     *                      half the length of the input block.  It is
+     *                      important that this buffer is kept intact and
+     *                      undisturbed between calls, as the average
+     *                      calculation for each value depends on the
+     *                      previous average.
+     * @param   histories   Buffer in which the historical values of the
+     *                      results will be kept.  This must be a rectangular
+     *                      array, the first dimension being the same as
+     *                      average.  The second dimension determines the
+     *                      length of the history, and hence the time over
+     *                      which values are averaged.  It is
+     *                      important that this buffer is kept intact and
+     *                      undisturbed between calls.
+     * @param   index       Current history index.  The caller needs to pass
+     *                      in zero initially, and save the return value
+     *                      of this method to pass in as index next time.
+     * @return              The updated index value.  Pass this in as
+     *                      the index parameter next time around.
+     * @throws  IllegalArgumentException    Invalid buffer size.
+     */
+    public final int getResults(float[] average, float[][] histories, int index) {
+        if (average.length != n / 2)
+            throw new IllegalArgumentException("bad history buffer size in FFT:" +
+                                               " must be " + (n / 2) +
+                                               "; given " + average.length);
+        if (histories.length != n / 2)
+            throw new IllegalArgumentException("bad average buffer size in FFT:" +
+                                               " must be " + (n / 2) +
+                                               "; given " + histories.length);
+    
+        // Update the index.
+        int historyLen = histories[0].length;
+        if (++index >= historyLen)
+            index = 0;
+       
+        // Now do the rolling average of each value.
+        for (int i = 0; i < n/2; i++) {
+            final float val = (i == 0 ? 1 : 2) *
+                    (float) (Math.sqrt(xre[i]*xre[i] + xim[i]*xim[i]))/n;
+            
+            final float[] hist = histories[i];
+            final float prev = hist[index];
+            hist[index] = val;
+            average[i] -= prev / historyLen;
+            average[i] += val / historyLen;
+        }
+        
+        return index;
     }
 
 
