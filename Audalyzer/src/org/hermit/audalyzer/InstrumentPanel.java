@@ -17,15 +17,13 @@
 package org.hermit.audalyzer;
 
 
-import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.AudioAnalyser;
+import org.hermit.android.instruments.InstrumentSurface;
 import org.hermit.android.instruments.PowerGauge;
 import org.hermit.android.instruments.SpectrumGauge;
 import org.hermit.android.instruments.WaveformGauge;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -36,8 +34,8 @@ import android.view.MotionEvent;
  * The main audio analyser view.  This class relies on the parent SurfaceRunner
  * class to do the bulk of the animation control.
  */
-public class AudioInstrument
-	extends SurfaceRunner
+public class InstrumentPanel
+	extends InstrumentSurface
 {
 
     // ******************************************************************** //
@@ -49,78 +47,21 @@ public class AudioInstrument
 	 * 
 	 * @param	app			The application context we're running in.
 	 */
-    public AudioInstrument(Activity app) {
+    public InstrumentPanel(Activity app) {
         super(app, OPTION_DYNAMIC);
         
         audioAnalyser = new AudioAnalyser(this);
         waveformGauge = audioAnalyser.getWaveformGauge(this);
         spectrumGauge = audioAnalyser.getSpectrumGauge(this);
         powerGauge = audioAnalyser.getPowerGauge(this);
+        
+        addInstrument(audioAnalyser);
+        addGauge(waveformGauge);
+        addGauge(spectrumGauge);
+        addGauge(powerGauge);
 
         // On-screen debug stats display.
-        statsCreate(new String[] { "µs FFT", "µs dWav", "µs dSpe", "µs dMet", "skip/s" });
-        setDebugPerf(false);
-    }
-
-
-    // ******************************************************************** //
-    // Run Control.
-    // ******************************************************************** //
-
-    /**
-     * The application is starting.  Perform any initial set-up prior to
-     * starting the application.  We may not have a screen size yet,
-     * so this is not a good place to allocate resources which depend on
-     * that.
-     */
-    @Override
-    protected void appStart() {
-        audioAnalyser.appStart();
-    }
-
-
-    /**
-     * Set the screen size.  This is guaranteed to be called before
-     * animStart(), but perhaps not before appStart().
-     * 
-     * @param   width       The new width of the surface.
-     * @param   height      The new height of the surface.
-     * @param   config      The pixel format of the surface.
-     */
-    @Override
-    protected void appSize(int width, int height, Bitmap.Config config) {
-        layout(width, height);
-    }
-    
-
-    /**
-     * We are starting the animation loop.  The screen size is known.
-     * 
-     * <p>doUpdate() and doDraw() may be called from this point on.
-     */
-    @Override
-    protected void animStart() {
-        audioAnalyser.measureStart();
-    }
-    
-
-    /**
-     * We are stopping the animation loop, for example to pause the app.
-     * 
-     * <p>doUpdate() and doDraw() will not be called from this point on.
-     */
-    @Override
-    protected void animStop() {
-        audioAnalyser.measureStop();
-    }
-    
-
-    /**
-     * The application is closing down.  Clean up any resources.
-     */
-    @Override
-    protected void appStop() {
-        audioAnalyser.appStop();
+        setDebugPerf(true);
     }
     
 
@@ -134,7 +75,8 @@ public class AudioInstrument
      * @param   width       The new width of the surface.
      * @param   height      The new height of the surface.
      */
-    private void layout(int width, int height) {
+    @Override
+    protected void layout(int width, int height) {
         // Make up some layout parameters.
         int min = Math.min(width, height);
         int gutter = min / (min > 400 ? 15 : 20);
@@ -203,52 +145,6 @@ public class AudioInstrument
     }
     
     
-    // ******************************************************************** //
-    // Animation Rendering.
-    // ******************************************************************** //
-    
-    /**
-     * Update the state of the application for the current frame.
-     * 
-     * <p>Applications must override this, and can use it to update
-     * for example the physics of a game.  This may be a no-op in some cases.
-     * 
-     * <p>doDraw() will always be called after this method is called;
-     * however, the converse is not true, as we sometimes need to draw
-     * just to update the screen.  Hence this method is useful for
-     * updates which are dependent on time rather than frames.
-     * 
-     * @param   now         Nominal time of the current frame in ms.
-     */
-    @Override
-    protected void doUpdate(long now) {
-        audioAnalyser.doUpdate(now);
-    }
-
-
-    /**
-     * Draw the current frame of the application.
-     * 
-     * <p>Applications must override this, and are expected to draw the
-     * entire screen into the provided canvas.
-     * 
-     * <p>This method will always be called after a call to doUpdate(),
-     * and also when the screen needs to be re-drawn.
-     * 
-     * @param   canvas      The Canvas to draw into.
-     * @param   now         Nominal time of the current frame in ms.
-     */
-    @Override
-    protected void doDraw(Canvas canvas, long now) {
-        // Draw the components on to the screen.
-        canvas.drawColor(0xff000000);
-        
-        waveformGauge.draw(canvas, now);
-        spectrumGauge.draw(canvas, now);
-        powerGauge.draw(canvas, now);
-    }
-
-
 	// ******************************************************************** //
 	// Input Handling.
 	// ******************************************************************** //

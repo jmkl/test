@@ -90,7 +90,7 @@ public class Audalyzer
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         
         // Create the application GUI.
-        audioInstrument = new AudioInstrument(this);
+        audioInstrument = new InstrumentPanel(this);
         setContentView(audioInstrument);
         
         // Restore our preferences.
@@ -334,7 +334,7 @@ public class Audalyzer
     private PowerManager powerManager = null;
 
     // The surface manager for the view.
-    private AudioInstrument audioInstrument = null;
+    private InstrumentPanel audioInstrument = null;
     
     // Wake lock used to keep the screen alive.  Null if we aren't going
     // to take a lock; non-null indicates that the lock should be taken
