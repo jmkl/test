@@ -434,7 +434,7 @@ public abstract class SurfaceRunner
                     
                     // If it's time to make a new displayed total, tot up
                     // the figures and reset the running counts.
-                    if (now - perfLastTime > 1000) {
+                    if (now - perfLastTime > STATS_UPDATE) {
                         statsDraw();
                         perfLastTime = now;
                     }
@@ -727,6 +727,8 @@ public abstract class SurfaceRunner
             int c = perfCounts[i];
             if (c != 0)
                 v /= c;
+            else
+                v = v * 1000 / STATS_UPDATE;
             CharFormatter.formatInt(perfBuffers[i], 0, v, 6, false);
         }
         
@@ -846,6 +848,10 @@ public abstract class SurfaceRunner
                ENABLE_SURFACE | ENABLE_SIZE | ENABLE_RESUMED |
                ENABLE_STARTED | ENABLE_FOCUSED;
 
+    // Time in ms between stats updates.  Figures will be averaged over
+    // this time.
+    private static final int STATS_UPDATE = 5000;
+    
 	
 	// ******************************************************************** //
 	// Private Data.

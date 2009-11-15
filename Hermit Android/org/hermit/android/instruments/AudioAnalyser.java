@@ -1,11 +1,10 @@
 
 /**
  * org.hermit.android.instrument: graphical instruments for Android.
- * 
- * These classes provide input and display functions for creating on-screen
- * instruments of various kinds in Android apps.
- *
  * <br>Copyright 2009 Ian Cameron Smith
+ * 
+ * <p>These classes provide input and display functions for creating on-screen
+ * instruments of various kinds in Android apps.
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -47,7 +46,6 @@ public class AudioAnalyser
 	 */
     public AudioAnalyser(SurfaceRunner parent) {
         super(parent);
-        parentSurface = parent;
         
         audioReader = new AudioReader(SAMPLE_RATE);
         
@@ -322,9 +320,6 @@ public class AudioAnalyser
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-
-    // The SurfaceRunner we're attached to.
-    private final SurfaceRunner parentSurface;
 
     // Our audio input device.
     private final AudioReader audioReader;

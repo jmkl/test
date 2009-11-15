@@ -1,11 +1,10 @@
 
 /**
  * org.hermit.android.instrument: graphical instruments for Android.
- * 
- * These classes provide input and display functions for creating on-screen
- * instruments of various kinds in Android apps.
- *
  * <br>Copyright 2009 Ian Cameron Smith
+ * 
+ * <p>These classes provide input and display functions for creating on-screen
+ * instruments of various kinds in Android apps.
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -81,11 +80,6 @@ public class PowerGauge
 	    dispY = bounds.top;
 	    dispWidth = bounds.width();
 	    dispHeight = bounds.height();
-
-        // Create the bitmap for the power meter display,
-        // and the Canvas for drawing into it.
-        meterBitmap = getSurface().getBitmap(dispWidth, dispHeight);
-        meterCanvas = new Canvas(meterBitmap);
         
         // Do some layout within the meter.
         int mw = dispWidth;
@@ -101,8 +95,12 @@ public class PowerGauge
         meterTextY = meterLabY + meterTextSize + 4;
         meterBarMargin = meterLabSize;
         
-        // Draw in the meter background.
-        drawVuMeterBg(meterCanvas, 0, 0, dispWidth, dispHeight);
+        // Create the bitmap for the background,
+        // and the Canvas for drawing into it.
+        backgroundBitmap = getSurface().getBitmap(dispWidth, dispHeight);
+        backgroundCanvas = new Canvas(backgroundBitmap);
+        
+        drawBackgroundBody(backgroundCanvas, getPaint());
 	}
 
 
@@ -111,27 +109,30 @@ public class PowerGauge
     // ******************************************************************** //
     
     /**
-     * Draw the VU meter background into the given canvas.
+     * Do the subclass-specific parts of drawing the background
+     * for this element.  Subclasses should override
+     * this if they have significant background content which they would
+     * like to draw once only.  Whatever is drawn here will be saved in
+     * a bitmap, which will be rendered to the screen before the
+     * dynamic content is drawn.
      * 
-     * @param   canvas      The Canvas to draw into.
-     * @param   cx          X position to draw at.
-     * @param   cy          Y position to draw at.
-     * @param   w           Width to draw in.
-     * @param   h           Height to draw in.
+     * <p>Obviously, if implementing this method, don't clear the screen when
+     * drawing the dynamic part.
+     * 
+     * @param   canvas      Canvas to draw into.
+     * @param   paint       The Paint which was set up in initializePaint().
      */
-    private void drawVuMeterBg(Canvas canvas, int cx, int cy, int w, int h)
-    {
-        final Paint paint = getPaint();
-
+    @Override
+    protected void drawBackgroundBody(Canvas canvas, Paint paint) {
         canvas.drawColor(0xff000000);
         
         paint.setColor(0xffffff00);
         paint.setStyle(Style.STROKE);
-        
+
         // Draw the grid.
-        final int mx = cx + meterBarMargin;
-        final int mw = w - meterBarMargin * 2;
-        final int by = meterBarY;
+        final int mx = 0 + meterBarMargin;
+        final int mw = dispWidth - meterBarMargin * 2;
+        final int by = 0 + meterBarY;
         final int bh = meterBarHeight;
         final float bw = mw - 1f;
         final float gw = bw / 10f;
@@ -141,7 +142,7 @@ public class PowerGauge
         }
 
         // Draw the labels below the grid.
-        final int ly = meterLabY;
+        final int ly = 0 + meterLabY;
         final int ls = meterLabSize;
         paint.setTextSize(ls);
         for (int i = 0; i <= 10; ++i) {
@@ -211,9 +212,8 @@ public class PowerGauge
 	        final float gap = meterBarGap;
 	        final float bw = mw - 1f;
 	        
-	        // Draw in the background.
-	        canvas.drawBitmap(meterBitmap, dispX, dispY, null);
-
+	        canvas.drawBitmap(backgroundBitmap, dispX, dispY, paint);
+	        
 	        // Draw the average bar.
 	        final float pa = averagePower * bw;
 	        paint.setStyle(Style.FILL);
@@ -313,8 +313,8 @@ public class PowerGauge
     private static final int METER_PEAK_TIME = 4000;
 
     // Number of updates over which we average the VU meter to get
-    // a rolling average.
-    private static final int METER_AVERAGE_COUNT = 200;
+    // a rolling average.  32 is about 2 seconds.
+    private static final int METER_AVERAGE_COUNT = 32;
 
     // Colours for the meter power bar and average bar and peak marks.
     // In METER_PEAK_COL, alpha is set dynamically in the code.
@@ -332,11 +332,6 @@ public class PowerGauge
     private int dispY = 0;
 	private int dispWidth = 0;
 	private int dispHeight = 0;
-	
-    // Bitmap in which we draw the audio waveform display,
-    // and the Canvas and Paint for drawing into it.
-    private Bitmap meterBitmap = null;
-    private Canvas meterCanvas = null;
 
     // Layout parameters for the VU meter.  Position and size for the
     // bar itself; position and size for the bar labels; position
@@ -349,6 +344,11 @@ public class PowerGauge
     private int meterTextY = 0;
     private int meterTextSize = 0;
     private int meterBarMargin = 0;
+
+    // Bitmap in which we draw the audio waveform display,
+    // and the Canvas and Paint for drawing into it.
+    private Bitmap backgroundBitmap = null;
+    private Canvas backgroundCanvas = null;
 
     // Current and previous power levels.
     private float currentPower = 0f;

@@ -1,11 +1,10 @@
 
 /**
  * org.hermit.android.instrument: graphical instruments for Android.
- * 
- * These classes provide input and display functions for creating on-screen
- * instruments of various kinds in Android apps.
- *
  * <br>Copyright 2009 Ian Cameron Smith
+ * 
+ * <p>These classes provide input and display functions for creating on-screen
+ * instruments of various kinds in Android apps.
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -354,9 +353,46 @@ public class Gauge
 		return drawPaint;
 	}
 	
-	
+	   
+    /**
+     * This method is called to ask the element to draw its static
+     * content; i.e. the background / chrome.
+     * 
+     * @param   canvas      Canvas to draw into.
+     */
+    public void drawBackground(Canvas canvas) {
+        // Clip to our part of the canvas.
+        canvas.save();
+        canvas.clipRect(getBounds());
+        
+        drawBackgroundBody(canvas, drawPaint);
+        
+        canvas.restore();
+    }
+
+    
+    /**
+     * Do the subclass-specific parts of drawing the background
+     * for this element.  Subclasses should override
+     * this if they have significant background content which they would
+     * like to draw once only.  Whatever is drawn here will be saved in
+     * a bitmap, which will be rendered to the screen before the
+     * dynamic content is drawn.
+     * 
+     * <p>Obviously, if implementing this method, don't clear the screen when
+     * drawing the dynamic part.
+     * 
+     * @param   canvas      Canvas to draw into.
+     * @param   paint       The Paint which was set up in initializePaint().
+     */
+    protected void drawBackgroundBody(Canvas canvas, Paint paint) {
+        // If not overridden, just fill with BG colour.
+        canvas.drawColor(colBg);
+    }
+    
+
 	/**
-	 * This method is called to ask the element to draw itself.
+	 * This method is called to ask the element to draw its dynamic content.
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	now			Nominal system time in ms. of this update.
