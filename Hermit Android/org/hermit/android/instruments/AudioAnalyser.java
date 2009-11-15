@@ -51,8 +51,11 @@ public class AudioAnalyser
         
         fourierTransformer = new FFTTransformer(FFT_BLOCK);
         
+        // Allocate the spectrum data.
         spectrumData = new float[FFT_BLOCK / 2];
-        
+        spectrumHist = new float[FFT_BLOCK / 2][4];
+        spectrumIndex = 0;
+
         biasRange = new float[2];
     }
 
@@ -248,17 +251,12 @@ public class AudioAnalyser
         if (spectrumGauge != null) {
             // Do the (expensive) transformation.
             // The transformer has its own state, no need to lock here.
-//            long fftStart = System.currentTimeMillis();
             fourierTransformer.transform();
-//            long fftEnd = System.currentTimeMillis();
-//            parentSurface.statsTime(0, (fftEnd - fftStart) * 1000);
 
             // Get the FFT output and draw the spectrum.
-            fourierTransformer.getResults(spectrumData);
-//            long speStart = System.currentTimeMillis();
+//            fourierTransformer.getResults(spectrumData);
+            spectrumIndex = fourierTransformer.getResults(spectrumData, spectrumHist, spectrumIndex);
             spectrumGauge.update(spectrumData, NYQUIST_FREQ);
-//            long speEnd = System.currentTimeMillis();
-//            parentSurface.statsTime(2, (speEnd - speStart) * 1000);
         }
         
         // If we have a power gauge, display the signal power.
@@ -340,9 +338,12 @@ public class AudioAnalyser
     // Sequence number of the last block we processed.
     private long audioProcessed = 0;
 
-    // Analysed audio spectrum data.
+    // Analysed audio spectrum data; history data for each frequency
+    // in the spectrum; and index into the history data.
     private final float[] spectrumData;
-
+    private final float[][] spectrumHist;
+    private int spectrumIndex;
+    
     // Current signal power level.
     private float currentPower = 0f;
 
