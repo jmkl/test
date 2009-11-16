@@ -111,8 +111,10 @@ public class WaveformGauge
             scale = 0.001f;
         else if (scale > 1000f)
             scale = 1000f;
+        final float margin = dispWidth / 24;
+        final float gwidth = dispWidth - margin * 2;
         final float baseY = dispHeight / 2f;
-        final float uw = (float) dispWidth / (float) len;
+        final float uw = gwidth / (float) len;
 
         // Now actually do the drawing.
         synchronized (this) {
@@ -121,7 +123,7 @@ public class WaveformGauge
             // Draw the axes.
             paint.setColor(0xffffff00);
             paint.setStyle(Style.STROKE);
-            canvas.drawLine(0, 0, 0, dispHeight - 1, paint);
+            canvas.drawLine(margin, 0, margin, dispHeight - 1, paint);
 
             // Draw the waveform.  Drawing vertical lines up/down to the
             // waveform creates a "filled" effect, and is *much* faster
@@ -129,7 +131,7 @@ public class WaveformGauge
             paint.setColor(0xffffff00);
             paint.setStyle(Style.STROKE);
             for (int i = 0; i < len; ++i) {
-                final float x = i * uw;
+                final float x = margin + i * uw;
                 final float y = baseY - (buffer[off + i] - bias) * scale;
                 canvas.drawLine(x, baseY, x, y, paint);
             }
