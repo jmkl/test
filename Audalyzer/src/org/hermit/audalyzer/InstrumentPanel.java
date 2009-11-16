@@ -61,7 +61,7 @@ public class InstrumentPanel
         addGauge(powerGauge);
 
         // On-screen debug stats display.
-        setDebugPerf(true);
+        setDebugPerf(false);
     }
     
 
