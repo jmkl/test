@@ -137,7 +137,7 @@ public class AudioAnalyser
         if (spectrumGauge != null)
             throw new RuntimeException("Already have a SpectrumGauge" +
                                        " for this AudioAnalyser");
-        spectrumGauge = new SpectrumGauge(surface);
+        spectrumGauge = new SpectrumGauge(surface, NYQUIST_FREQ);
         return spectrumGauge;
     }
     
@@ -256,7 +256,7 @@ public class AudioAnalyser
             // Get the FFT output and draw the spectrum.
 //            fourierTransformer.getResults(spectrumData);
             spectrumIndex = fourierTransformer.getResults(spectrumData, spectrumHist, spectrumIndex);
-            spectrumGauge.update(spectrumData, NYQUIST_FREQ);
+            spectrumGauge.update(spectrumData);
         }
         
         // If we have a power gauge, display the signal power.

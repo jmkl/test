@@ -345,7 +345,7 @@ public class PowerGauge
     private int meterTextSize = 0;
     private int meterBarMargin = 0;
 
-    // Bitmap in which we draw the audio waveform display,
+    // Bitmap in which we draw the gauge background,
     // and the Canvas and Paint for drawing into it.
     private Bitmap backgroundBitmap = null;
     private Canvas backgroundCanvas = null;
