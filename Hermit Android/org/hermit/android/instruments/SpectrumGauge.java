@@ -198,8 +198,8 @@ public class SpectrumGauge
             paint.setStyle(Style.FILL);
             paintColor[1] = 1f;
             paintColor[2] = 1f;
-            final float bw = (spectGraphWidth - 2) / len;
-            final int bh = spectGraphHeight - 2;
+            final float bw = (float) (spectGraphWidth - 2) / (float) len;
+            final float bh = spectGraphHeight - 2;
             final float be = spectGraphY + spectGraphHeight - 1;
             for (int i = 0; i < len; ++i) {
                 // Cycle the hue angle from 0° to 300°; i.e. red to purple.
