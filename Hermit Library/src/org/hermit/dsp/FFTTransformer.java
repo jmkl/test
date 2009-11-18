@@ -62,10 +62,15 @@ public final class FFTTransformer {
             throw new IllegalArgumentException("size for FFT must" +
                                                " be a power of 2 (was " + size + ")");
         
-        n = size;
-        nu = (int) (Math.log(size) / Math.log(2));
-        xre = new float[n];
-        xim = new float[n];
+        blockSize = size;
+        
+        // Calculate the base 2 log of size; the number of bits in an index
+        // into the arrays.
+        blockIndexBits = (int) (Math.log(size) / Math.log(2));
+        
+        // Allocate working data arrays.
+        xre = new float[blockSize];
+        xim = new float[blockSize];
     }
     
 
@@ -89,12 +94,12 @@ public final class FFTTransformer {
      * @throws  IllegalArgumentException    Invalid data size.
      */
     public final void setInput(float[] input, int off, int count) {
-        if (count != n)
+        if (count != blockSize)
             throw new IllegalArgumentException("bad input count in FFT:" +
-                                               " constructed for " + n +
+                                               " constructed for " + blockSize +
                                                "; given " + input.length);
        
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < blockSize; i++) {
             xre[i] = input[i];
             xim[i] = 0.0f;
         }
@@ -117,12 +122,12 @@ public final class FFTTransformer {
      * @throws  IllegalArgumentException    Invalid data size.
      */
     public final void setInput(short[] input, int off, int count) {
-        if (count != n)
+        if (count != blockSize)
             throw new IllegalArgumentException("bad input count in FFT:" +
-                                               " constructed for " + n +
+                                               " constructed for " + blockSize +
                                                "; given " + input.length);
        
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < blockSize; i++) {
             xre[i] = (float) input[i] / 32768f;
             xim[i] = 0.0f;
         }
@@ -137,45 +142,44 @@ public final class FFTTransformer {
      * Transform the data provided in the last call to setInput.
      */
     public final void transform() {
-        int n2 = n / 2;
-        int nu1 = nu - 1;
-        float tr, ti, p, arg, c, s;
-        int k = 0;
+        int n2 = blockSize / 2;
+        int nu1 = blockIndexBits - 1;
 
-        for (int l = 1; l <= nu; l++) {
-            while (k < n) {
+        for (int l = 1; l <= blockIndexBits; l++) {
+            int k = 0;
+            while (k < blockSize) {
                 for (int i = 1; i <= n2; i++) {
-                    p = bitrev (k >> nu1, nu);
-                    arg = 2 * (float) Math.PI * p / n;
-                    c = (float) Math.cos (arg);
-                    s = (float) Math.sin (arg);
-                    tr = xre[k+n2]*c + xim[k+n2]*s;
-                    ti = xim[k+n2]*c - xre[k+n2]*s;
-                    xre[k+n2] = xre[k] - tr;
-                    xim[k+n2] = xim[k] - ti;
+                    final int k2 = k + n2;
+                    final float r2 = xre[k2];
+                    final float i2 = xim[k2];
+                    final float p = bitrev(k >> nu1, blockIndexBits);
+                    final float arg = 2 * (float) Math.PI * p / blockSize;
+                    final float c = (float) Math.cos (arg);
+                    final float s = (float) Math.sin (arg);
+                    final float tr = r2 * c + i2 * s;
+                    final float ti = i2 * c - r2 * s;
+                    xre[k2] = xre[k] - tr;
+                    xim[k2] = xim[k] - ti;
                     xre[k] += tr;
                     xim[k] += ti;
                     k++;
                 }
                 k += n2;
             }
-            k = 0;
-            nu1--;
-            n2 = n2/2;
+            --nu1;
+            n2 = n2 / 2;
         }
-        k = 0;
-        int r;
-        while (k < n) {
-            r = bitrev (k, nu);
+        
+        for (int k = 0; k < blockSize; ++k) {
+            final int r = bitrev(k, blockIndexBits);
             if (r > k) {
-                tr = xre[k];
-                ti = xim[k];
+                final float tr = xre[k];
+                final float ti = xim[k];
                 xre[k] = xre[r];
                 xim[k] = xim[r];
                 xre[r] = tr;
                 xim[r] = ti;
             }
-            k++;
         }
     }
 
@@ -195,14 +199,14 @@ public final class FFTTransformer {
      * @throws  IllegalArgumentException    Invalid buffer size.
      */
     public final float[] getResults(float[] buffer) {
-        if (buffer.length != n / 2)
+        if (buffer.length != blockSize / 2)
             throw new IllegalArgumentException("bad output buffer size in FFT:" +
-                                               " must be " + (n / 2) +
+                                               " must be " + (blockSize / 2) +
                                                "; given " + buffer.length);
        
-        buffer[0] = (float) (Math.sqrt(xre[0]*xre[0] + xim[0]*xim[0]))/n;
-        for (int i = 1; i < n / 2; i++)
-            buffer[i] = 2 * (float) (Math.sqrt(xre[i]*xre[i] + xim[i]*xim[i]))/n;
+        buffer[0] = (float) (Math.sqrt(xre[0]*xre[0] + xim[0]*xim[0]))/blockSize;
+        for (int i = 1; i < blockSize / 2; i++)
+            buffer[i] = 2 * (float) (Math.sqrt(xre[i]*xre[i] + xim[i]*xim[i]))/blockSize;
         return buffer;
     }
 
@@ -233,13 +237,13 @@ public final class FFTTransformer {
      * @throws  IllegalArgumentException    Invalid buffer size.
      */
     public final int getResults(float[] average, float[][] histories, int index) {
-        if (average.length != n / 2)
+        if (average.length != blockSize / 2)
             throw new IllegalArgumentException("bad history buffer size in FFT:" +
-                                               " must be " + (n / 2) +
+                                               " must be " + (blockSize / 2) +
                                                "; given " + average.length);
-        if (histories.length != n / 2)
+        if (histories.length != blockSize / 2)
             throw new IllegalArgumentException("bad average buffer size in FFT:" +
-                                               " must be " + (n / 2) +
+                                               " must be " + (blockSize / 2) +
                                                "; given " + histories.length);
     
         // Update the index.
@@ -248,9 +252,9 @@ public final class FFTTransformer {
             index = 0;
        
         // Now do the rolling average of each value.
-        for (int i = 0; i < n/2; i++) {
+        for (int i = 0; i < blockSize/2; i++) {
             final float val = (i == 0 ? 1 : 2) *
-                    (float) (Math.sqrt(xre[i]*xre[i] + xim[i]*xim[i]))/n;
+                    (float) (Math.sqrt(xre[i]*xre[i] + xim[i]*xim[i]))/blockSize;
             
             final float[] hist = histories[i];
             final float prev = hist[index];
@@ -260,6 +264,55 @@ public final class FFTTransformer {
         }
         
         return index;
+    }
+
+
+    // ******************************************************************** //
+    // Results Analysis.
+    // ******************************************************************** //
+
+    /**
+     * Given the results of an FFT, identify prominent frequencies
+     * in the spectrum.
+     * 
+     * @param   spectrum    Audio spectrum data, as returned by
+     *                      {@link #getResults(float[])}.
+     * @param   results     Buffer into which the results will be placed.
+     * @return              The parameter buffer.
+     * @throws  IllegalArgumentException    Invalid buffer size.
+     */
+    public final int findKeyFrequencies(float[] spectrum, float[] results) {
+        final int len = spectrum.length;
+        
+        // Find the average strength.
+        float average = 0f;
+        for (int i = 0; i < len; ++i) {
+            average += spectrum[i];
+        }
+        average /= len;
+        
+        // Find all excursions above 2*average.  Group adjacent highs
+        // together.
+        int count = 0;
+        for (int i = 0; i < len && count < results.length; ++i) {
+            if (spectrum[i] > 2 * average) {
+                // Compute the weighted average frequency of this peak.
+                float tot = 0f;
+                float wavg = 0f;
+                int j;
+                for (j = i; j < len && spectrum[j] > 3 * average; ++j) {
+                    tot += spectrum[j];
+                    wavg += spectrum[j] * (float) j;
+                }
+                wavg /= tot;
+                results[count++] = wavg;
+                
+                // Skip past this peak.
+                i = j;
+            }
+        }
+ 
+        return count;
     }
 
 
@@ -280,10 +333,25 @@ public final class FFTTransformer {
         int k = 0;
         for (int i = 1; i <= n; i++) {
             j2 = j1 / 2;
-            k  = 2*k + j1 - 2*j2;
+            k  = 2 * k + j1 - 2 * j2;
             j1 = j2;
         }
         return k;
+    }
+
+
+    /**
+     * Reverse the lowest n bits of j.
+     * 
+     * @param   j       Number to be reversed.
+     * @param   n       Number of low-order bits of j which are significant
+     *                  and to be reversed.
+     */
+    private static final int bitrev2(int j, int n) {
+        int r = 0;
+        for (int i = 0; i < n; ++i, j >>= 1)
+            r = (r << 1) | (j & 0x0001);
+        return r;
     }
 
     
@@ -302,8 +370,14 @@ public final class FFTTransformer {
     // Private Data.
     // ******************************************************************** //
 
-    private final int n;
-    private final int nu;
+    // The size of an input data block.
+    private final int blockSize;
+    
+    // The base 2 log of blockSize; the number of bits in an index
+    // into the arrays.
+    private final int blockIndexBits;
+    
+    // Working arrays -- real and imaginary parts of the data being processed.
     private final float[] xre;
     private final float[] xim;
 
