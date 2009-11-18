@@ -172,7 +172,7 @@ public class SpectrumGauge
      * @param   data        An array of floats defining the signal power
      *                      at each frequency in the spectrum.
 	 */
-	final void update(float[] data) {
+	final void update(float[] data, float[] peaks, int npeaks) {
         final Canvas canvas = specCanvas;
         final Paint paint = getPaint();
         
@@ -210,6 +210,16 @@ public class SpectrumGauge
                 final float x = spectGraphX + i * bw + 1;
                 final float y = be - data[i] * scale * bh;
                 canvas.drawRect(x, y, x + bw, be, paint);
+            }
+            
+            paint.setColor(0xff00ffff);
+            for (int i = 0; i < npeaks; ++i) {
+                final float j = peaks[i];
+                float f = nyquistFreq * j / len;
+                final float x = spectGraphX + j * bw + 1;
+                final float y = be - data[(int) j] * scale * bh;
+                String text = "" + f;
+                canvas.drawText(text, x, y, paint);
             }
         }
     }

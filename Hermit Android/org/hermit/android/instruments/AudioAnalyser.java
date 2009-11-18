@@ -55,6 +55,7 @@ public class AudioAnalyser
         spectrumData = new float[FFT_BLOCK / 2];
         spectrumHist = new float[FFT_BLOCK / 2][4];
         spectrumIndex = 0;
+        spectrumPeaks = new float[10];
 
         biasRange = new float[2];
     }
@@ -256,7 +257,8 @@ public class AudioAnalyser
             // Get the FFT output and draw the spectrum.
 //            fourierTransformer.getResults(spectrumData);
             spectrumIndex = fourierTransformer.getResults(spectrumData, spectrumHist, spectrumIndex);
-            spectrumGauge.update(spectrumData);
+            int n = fourierTransformer.findKeyFrequencies(spectrumData, spectrumPeaks);
+            spectrumGauge.update(spectrumData, spectrumPeaks, n);
         }
         
         // If we have a power gauge, display the signal power.
@@ -339,11 +341,13 @@ public class AudioAnalyser
     private long audioProcessed = 0;
 
     // Analysed audio spectrum data; history data for each frequency
-    // in the spectrum; and index into the history data.
+    // in the spectrum; index into the history data; and buffer for
+    // peak frequencies.
     private final float[] spectrumData;
     private final float[][] spectrumHist;
     private int spectrumIndex;
-    
+    private final float[] spectrumPeaks;
+   
     // Current signal power level.
     private float currentPower = 0f;
 
