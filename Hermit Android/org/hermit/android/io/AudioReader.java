@@ -149,14 +149,8 @@ public class AudioReader
 
         try {
             Log.i(TAG, "Reader: Get state");
-            try {
-                Thread.sleep(4000);
-            } catch (InterruptedException e1) { }
             int astate = audioInput.getState();
             Log.i(TAG, "Reader: Start Recording in " + astate);
-            try {
-                Thread.sleep(4000);
-            } catch (InterruptedException e1) { }
             audioInput.startRecording();
             Log.i(TAG, "Reader: Start Recording (" + astate +
                                 " -> " + audioInput.getState() + ")");
