@@ -16,6 +16,8 @@
 
 package org.hermit.dsp;
 
+import org.hermit.utils.Bitwise;
+
 
 /**
  * Implementation of the Cooley–Tukey FFT algorithm by Tsan-Kuang Lee,
@@ -58,7 +60,7 @@ public final class FFTTransformer {
      * @throws  IllegalArgumentException    Invalid parameter.
      */
     public FFTTransformer(int size) {
-        if (!isPowerOf2(size))
+        if (!Bitwise.isPowerOf2(size))
             throw new IllegalArgumentException("size for FFT must" +
                                                " be a power of 2 (was " + size + ")");
         
@@ -100,7 +102,7 @@ public final class FFTTransformer {
                                                "; given " + input.length);
        
         for (int i = 0; i < blockSize; i++) {
-            xre[i] = input[i];
+            xre[i] = input[off + i];
             xim[i] = 0.0f;
         }
     }
@@ -128,7 +130,7 @@ public final class FFTTransformer {
                                                "; given " + input.length);
        
         for (int i = 0; i < blockSize; i++) {
-            xre[i] = (float) input[i] / 32768f;
+            xre[i] = (float) input[off + i] / 32768f;
             xim[i] = 0.0f;
         }
     }
@@ -152,7 +154,7 @@ public final class FFTTransformer {
                     final int k2 = k + n2;
                     final float r2 = xre[k2];
                     final float i2 = xim[k2];
-                    final float p = bitrev(k >> nu1, blockIndexBits);
+                    final float p = Bitwise.bitrev(k >> nu1, blockIndexBits);
                     final float arg = 2 * (float) Math.PI * p / blockSize;
                     final float c = (float) Math.cos (arg);
                     final float s = (float) Math.sin (arg);
@@ -171,7 +173,7 @@ public final class FFTTransformer {
         }
         
         for (int k = 0; k < blockSize; ++k) {
-            final int r = bitrev(k, blockIndexBits);
+            final int r = Bitwise.bitrev(k, blockIndexBits);
             if (r > k) {
                 final float tr = xre[k];
                 final float ti = xim[k];
@@ -275,6 +277,8 @@ public final class FFTTransformer {
      * Given the results of an FFT, identify prominent frequencies
      * in the spectrum.
      * 
+     * <p><b>Note:</b> this is experimental and not very good.
+     * 
      * @param   spectrum    Audio spectrum data, as returned by
      *                      {@link #getResults(float[])}.
      * @param   results     Buffer into which the results will be placed.
@@ -313,56 +317,6 @@ public final class FFTTransformer {
         }
  
         return count;
-    }
-
-
-    // ******************************************************************** //
-    // Internal Utilities.
-    // ******************************************************************** //
-
-    /**
-     * Reverse the lowest n bits of j.
-     * 
-     * @param   j       Number to be reversed.
-     * @param   n       Number of low-order bits of j which are significant
-     *                  and to be reversed.
-     */
-    private static final int bitrev(int j, int n) {
-        int j1 = j;
-        int j2;
-        int k = 0;
-        for (int i = 1; i <= n; i++) {
-            j2 = j1 / 2;
-            k  = 2 * k + j1 - 2 * j2;
-            j1 = j2;
-        }
-        return k;
-    }
-
-
-    /**
-     * Reverse the lowest n bits of j.
-     * 
-     * @param   j       Number to be reversed.
-     * @param   n       Number of low-order bits of j which are significant
-     *                  and to be reversed.
-     */
-    private static final int bitrev2(int j, int n) {
-        int r = 0;
-        for (int i = 0; i < n; ++i, j >>= 1)
-            r = (r << 1) | (j & 0x0001);
-        return r;
-    }
-
-    
-    /**
-     * Returns true if the argument is power of 2.
-     * 
-     * @param   n       The number to test.
-     * @return          true if the argument is power of 2.
-     */
-    private static final boolean isPowerOf2(int n) {
-        return (n > 0) && ((n & (n - 1)) == 0);
     }
 
     
