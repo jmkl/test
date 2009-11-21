@@ -23,7 +23,6 @@ package org.hermit.android.instruments;
 import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.io.AudioReader;
 import org.hermit.dsp.FFTTransformer;
-import org.hermit.dsp.FHTTransformer;
 import org.hermit.dsp.SignalPower;
 
 import android.os.Bundle;
