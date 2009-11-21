@@ -34,7 +34,7 @@
 		<link>
 			<name>Hermit Android</name>
 			<type>2</type>
-			<locationURI>Workspace/Hermit%20Android</locationURI>
+			<locationURI>Workspace/Hermit%20Android/lib</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
