@@ -23,6 +23,7 @@ package org.hermit.android.instruments;
 import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.io.AudioReader;
 import org.hermit.dsp.FFTTransformer;
+import org.hermit.dsp.FHTTransformer;
 import org.hermit.dsp.SignalPower;
 
 import android.os.Bundle;
@@ -46,16 +47,16 @@ public class AudioAnalyser
 	 */
     public AudioAnalyser(SurfaceRunner parent) {
         super(parent);
+        parentSurface = parent;
         
         audioReader = new AudioReader(SAMPLE_RATE);
         
-        fourierTransformer = new FFTTransformer(FFT_BLOCK);
+        spectrumAnalyser = new FFTTransformer(FFT_BLOCK);
         
         // Allocate the spectrum data.
         spectrumData = new float[FFT_BLOCK / 2];
         spectrumHist = new float[FFT_BLOCK / 2][4];
         spectrumIndex = 0;
-        spectrumPeaks = new float[10];
 
         biasRange = new float[2];
     }
@@ -242,7 +243,7 @@ public class AudioAnalyser
 
             // If we have a spectrum analyser, set up the FFT input data.
             if (spectrumGauge != null)
-                fourierTransformer.setInput(buffer, len - FFT_BLOCK, FFT_BLOCK);
+                spectrumAnalyser.setInput(buffer, len - FFT_BLOCK, FFT_BLOCK);
 
             // Tell the reader we're done with the buffer.
             buffer.notify();
@@ -252,13 +253,15 @@ public class AudioAnalyser
         if (spectrumGauge != null) {
             // Do the (expensive) transformation.
             // The transformer has its own state, no need to lock here.
-            fourierTransformer.transform();
+          long specStart = System.currentTimeMillis();
+            spectrumAnalyser.transform();
+          long specEnd = System.currentTimeMillis();
+          parentSurface.statsTime(0, (specEnd - specStart) * 1000);
 
             // Get the FFT output and draw the spectrum.
 //            fourierTransformer.getResults(spectrumData);
-            spectrumIndex = fourierTransformer.getResults(spectrumData, spectrumHist, spectrumIndex);
-            int n = fourierTransformer.findKeyFrequencies(spectrumData, spectrumPeaks);
-            spectrumGauge.update(spectrumData, spectrumPeaks, n);
+            spectrumIndex = spectrumAnalyser.getResults(spectrumData, spectrumHist, spectrumIndex);
+            spectrumGauge.update(spectrumData);
         }
         
         // If we have a power gauge, display the signal power.
@@ -321,11 +324,14 @@ public class AudioAnalyser
 	// Private Data.
 	// ******************************************************************** //
 
+    // Our parent surface.
+    private SurfaceRunner parentSurface;
+    
     // Our audio input device.
     private final AudioReader audioReader;
     
     // Fourier Transform calculator we use for calculating the spectrum.
-    private final FFTTransformer fourierTransformer;
+    private final FFTTransformer spectrumAnalyser;
     
     // The gauges associated with this instrument.  Any may be null if not
     // in use.
@@ -346,7 +352,6 @@ public class AudioAnalyser
     private final float[] spectrumData;
     private final float[][] spectrumHist;
     private int spectrumIndex;
-    private final float[] spectrumPeaks;
    
     // Current signal power level.
     private float currentPower = 0f;
