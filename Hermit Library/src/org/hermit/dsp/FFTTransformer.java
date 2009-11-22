@@ -18,6 +18,8 @@ package org.hermit.dsp;
 
 import org.hermit.utils.Bitwise;
 
+import ca.uol.aig.fftpack.RealDoubleFFT;
+
 
 /**
  * Implementation of the Cooley–Tukey FFT algorithm by Tsan-Kuang Lee,
@@ -64,15 +66,12 @@ public final class FFTTransformer {
             throw new IllegalArgumentException("size for FFT must" +
                                                " be a power of 2 (was " + size + ")");
         
+        transformer = new RealDoubleFFT(size);
+        
         blockSize = size;
         
-        // Calculate the base 2 log of size; the number of bits in an index
-        // into the arrays.
-        blockIndexBits = (int) (Math.log(size) / Math.log(2));
-        
         // Allocate working data arrays.
-        xre = new float[blockSize];
-        xim = new float[blockSize];
+        xre = new double[blockSize];
     }
     
 
@@ -101,10 +100,8 @@ public final class FFTTransformer {
                                                " constructed for " + blockSize +
                                                "; given " + input.length);
        
-        for (int i = 0; i < blockSize; i++) {
+        for (int i = 0; i < blockSize; i++)
             xre[i] = input[off + i];
-            xim[i] = 0.0f;
-        }
     }
     
 
@@ -129,10 +126,8 @@ public final class FFTTransformer {
                                                " constructed for " + blockSize +
                                                "; given " + input.length);
        
-        for (int i = 0; i < blockSize; i++) {
+        for (int i = 0; i < blockSize; i++)
             xre[i] = (float) input[off + i] / 32768f;
-            xim[i] = 0.0f;
-        }
     }
     
 
@@ -144,45 +139,7 @@ public final class FFTTransformer {
      * Transform the data provided in the last call to setInput.
      */
     public final void transform() {
-        int n2 = blockSize / 2;
-        int nu1 = blockIndexBits - 1;
-
-        for (int l = 1; l <= blockIndexBits; l++) {
-            int k = 0;
-            while (k < blockSize) {
-                for (int i = 1; i <= n2; i++) {
-                    final int k2 = k + n2;
-                    final float r2 = xre[k2];
-                    final float i2 = xim[k2];
-                    final float p = Bitwise.bitrev(k >> nu1, blockIndexBits);
-                    final float arg = 2 * (float) Math.PI * p / blockSize;
-                    final float c = (float) Math.cos (arg);
-                    final float s = (float) Math.sin (arg);
-                    final float tr = r2 * c + i2 * s;
-                    final float ti = i2 * c - r2 * s;
-                    xre[k2] = xre[k] - tr;
-                    xim[k2] = xim[k] - ti;
-                    xre[k] += tr;
-                    xim[k] += ti;
-                    k++;
-                }
-                k += n2;
-            }
-            --nu1;
-            n2 = n2 / 2;
-        }
-        
-        for (int k = 0; k < blockSize; ++k) {
-            final int r = Bitwise.bitrev(k, blockIndexBits);
-            if (r > k) {
-                final float tr = xre[k];
-                final float ti = xim[k];
-                xre[k] = xre[r];
-                xim[k] = xim[r];
-                xre[r] = tr;
-                xim[r] = ti;
-            }
-        }
+        transformer.ft(xre);
     }
 
 
@@ -206,9 +163,12 @@ public final class FFTTransformer {
                                                " must be " + (blockSize / 2) +
                                                "; given " + buffer.length);
        
-        buffer[0] = (float) (Math.sqrt(xre[0]*xre[0] + xim[0]*xim[0]))/blockSize;
-        for (int i = 1; i < blockSize / 2; i++)
-            buffer[i] = 2 * (float) (Math.sqrt(xre[i]*xre[i] + xim[i]*xim[i]))/blockSize;
+        buffer[0] = (float) xre[0] / blockSize;
+        for (int i = 1; i < blockSize / 2; i++) {
+            float r = (float) xre[i * 2];
+            float im = (float) xre[i * 2 - 1];
+            buffer[i] = 2 * (float) (Math.sqrt(r * r + im * im)) / blockSize;
+        }
         return buffer;
     }
 
@@ -255,9 +215,10 @@ public final class FFTTransformer {
        
         // Now do the rolling average of each value.
         for (int i = 0; i < blockSize/2; i++) {
-            final float val = (i == 0 ? 1 : 2) *
-                    (float) (Math.sqrt(xre[i]*xre[i] + xim[i]*xim[i]))/blockSize;
-            
+            float r = (float) xre[i * 2];
+            float im = (float) xre[i * 2 - 1];
+            final float val = 2 * (float) (Math.sqrt(r * r + im * im)) / blockSize;
+
             final float[] hist = histories[i];
             final float prev = hist[index];
             hist[index] = val;
@@ -324,16 +285,13 @@ public final class FFTTransformer {
     // Private Data.
     // ******************************************************************** //
 
+    private RealDoubleFFT transformer;
+
     // The size of an input data block.
     private final int blockSize;
     
-    // The base 2 log of blockSize; the number of bits in an index
-    // into the arrays.
-    private final int blockIndexBits;
-    
-    // Working arrays -- real and imaginary parts of the data being processed.
-    private final float[] xre;
-    private final float[] xim;
+    // Working array -- real data being processed.
+    private final double[] xre;
 
 }
 
