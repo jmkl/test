@@ -252,13 +252,13 @@ public class AudioAnalyser
         if (spectrumGauge != null) {
             // Do the (expensive) transformation.
             // The transformer has its own state, no need to lock here.
-          long specStart = System.currentTimeMillis();
+            long specStart = System.currentTimeMillis();
             spectrumAnalyser.transform();
-          long specEnd = System.currentTimeMillis();
-          parentSurface.statsTime(0, (specEnd - specStart) * 1000);
+            long specEnd = System.currentTimeMillis();
+            parentSurface.statsTime(0, (specEnd - specStart) * 1000);
 
             // Get the FFT output and draw the spectrum.
-//            fourierTransformer.getResults(spectrumData);
+            //            spectrumAnalyser.getResults(spectrumData);
             spectrumIndex = spectrumAnalyser.getResults(spectrumData, spectrumHist, spectrumIndex);
             spectrumGauge.update(spectrumData);
         }
