@@ -316,7 +316,7 @@ public class AudioAnalyser
     // Amount by which we decimate the input for each FFT.  We read this
     // many multiples of FFT_BLOCK, but then FFT only the last FFT_BLOCK
     // samples.
-    private static final int DECIMATE = 2;
+    private static final int DECIMATE = 1;
 
 	
 	// ******************************************************************** //

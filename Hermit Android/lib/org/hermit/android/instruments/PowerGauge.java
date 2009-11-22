@@ -210,7 +210,7 @@ public class PowerGauge
 	        final int by = dispY + meterBarY;
 	        final int bh = meterBarHeight;
 	        final float gap = meterBarGap;
-	        final float bw = mw - 1f;
+	        final float bw = mw - 2f;
 	        
 	        canvas.drawBitmap(backgroundBitmap, dispX, dispY, paint);
 	        
@@ -218,13 +218,13 @@ public class PowerGauge
 	        final float pa = averagePower * bw;
 	        paint.setStyle(Style.FILL);
 	        paint.setColor(METER_AVERAGE_COL);
-	        canvas.drawRect(mx, by + 1, mx + pa + 1, by + bh - 1, paint);
+	        canvas.drawRect(mx + 1, by + 1, mx + pa + 1, by + bh - 1, paint);
 
 	        // Draw the power bar.
 	        final float p = currentPower * bw;
 	        paint.setStyle(Style.FILL);
 	        paint.setColor(METER_POWER_COL);
-	        canvas.drawRect(mx, by + gap, mx + p + 1, by + bh - gap, paint);
+	        canvas.drawRect(mx + 1, by + gap, mx + p + 1, by + bh - gap, paint);
 
 	        // Now, draw in the peaks.
 	        paint.setStyle(Style.FILL);
