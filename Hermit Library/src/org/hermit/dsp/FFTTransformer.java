@@ -127,7 +127,7 @@ public final class FFTTransformer {
                                                "; given " + input.length);
        
         for (int i = 0; i < blockSize; i++)
-            xre[i] = (float) input[off + i] / 32768f;
+            xre[i] = (double) input[off + i] / 32768.0;
     }
     
 
@@ -164,8 +164,8 @@ public final class FFTTransformer {
                                                "; given " + buffer.length);
        
         for (int i = 0; i < blockSize / 2; i++) {
-            float r = (float) xre[i * 2];
-            float im = i == 0 ? 0f : (float) xre[i * 2 - 1];
+            double r = xre[i * 2];
+            double im = i == 0 ? 0.0 : xre[i * 2 - 1];
             buffer[i] = (float) (Math.sqrt(r * r + im * im)) / blockSize;
         }
         return buffer;
@@ -214,15 +214,14 @@ public final class FFTTransformer {
        
         // Now do the rolling average of each value.
         for (int i = 0; i < blockSize/2; i++) {
-            float r = (float) xre[i * 2];
-            float im = i == 0 ? 0f : (float) xre[i * 2 - 1];
+            double r = xre[i * 2];
+            double im = i == 0 ? 0.0 : xre[i * 2 - 1];
             final float val = (float) (Math.sqrt(r * r + im * im)) / blockSize;
 
             final float[] hist = histories[i];
             final float prev = hist[index];
             hist[index] = val;
-            average[i] -= prev / historyLen;
-            average[i] += val / historyLen;
+            average[i] = average[i] - prev / historyLen + val / historyLen;
         }
         
         return index;
