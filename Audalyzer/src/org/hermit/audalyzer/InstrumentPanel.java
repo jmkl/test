@@ -62,7 +62,7 @@ public class InstrumentPanel
 
         // On-screen debug stats display.
         statsCreate(new String[] { "FFT" });
-        setDebugPerf(true);
+        setDebugPerf(false);
     }
     
 
