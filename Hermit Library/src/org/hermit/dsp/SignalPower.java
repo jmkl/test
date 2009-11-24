@@ -38,7 +38,7 @@ public final class SignalPower {
     // ******************************************************************** //
 
     /**
-     * Calculate the power of the given input signal.
+     * Calculate the bias and range of the given input signal.
      * 
      * @param   sdata       Buffer containing the input samples to process.
      * @param   off         Offset in sdata of the data of interest.
@@ -86,87 +86,65 @@ public final class SignalPower {
      * @param   sdata       Buffer containing the input samples to process.
      * @param   off         Offset in sdata of the data of interest.
      * @param   samples     Number of data samples to process.
-     * @return              The calculated power in dB; zero represents
-     *                      100dB and 1 is 0dB (maximum power).
+     * @return              The calculated power in dB relative to the maximum
+     *                      input level; hence 0dB represents maximum power,
+     *                      and minimum power is about -95dB.  Particular
+     *                      cases of interest:
+     *                      <ul>
+     *                      <li>A full-range sine wave input is about -2.55dB.
+     *                      <li>Saturated input (heavily clipped) approaches
+     *                          0dB.
+     *                      <li>A low-frequency fully saturated input can
+     *                          get above 0dB, but this would be pretty
+     *                          artificial.
+     *                      <li>A really tiny signal, which only occasionally
+     *                          deviates from zero, can get below -100dB.
+     *                      <li>A completely zero input will produce an
+     *                          output of -Infinity.
+     *                      </ul>
+     *                      <b>You must be prepared to handle this infinite
+     *                      result and results greater than zero,</b> although
+     *                      clipping them off would be quite acceptable in
+     *                      most cases.
      */
-    public final static float calculatePowerDb(short[] sdata, int off, int samples) {
-        /**
-        Calculate power of the signal depending on format.
-
-        Since the signal may not have an average value of 0 precisely,
-        we shouldn't simply calculate:
-
-        sum_for_all_samples (pulse_value²) / number_of_samples
-
-        but this formula assumes that the average is zero, which is not
-        always true (for example, in 8 bits on a Sound Blaster 64,
-        there is always a shift by one unit.
-
-        We could calculate in two passes, first the average, then the
-        power of the measure minus the average. But we can do this in
-        one pass.
-
-        Let measure = signal + bias,
-        where measure is the pulse value,
-        signal is what we want,
-        bias is a constant, such that the average of signal is zero.
-        
-        What we want is the value of: power = sum_for_all_samples (signal²)
-
-        Let's calculate in the same pass:
-        a=sum_for_all_samples (measure²)
-        and
-        b=sum_for_all_samples (measure)
-        
-        Then a and b are equivalent to:
-        a = sum_for_all_samples (measure²)
-          = sum_for_all_samples ((signal + bias)²)
-          = sum_for_all_samples (signal² + bias²)
-          = sum_for_all_samples (signal²) + number_of_samples * bias²
-      
-        and 
-        b = sum_for_all_samples (measure)
-          = bias * number_of_samples
-        that is, number_of_samples * bias² = b² / number_of_samples
-
-        So a = power + b² / number_of_samples
-
-        And power = a - b² / number_of_samples
-
-        So we've got the correct power of the signal in one pass.
-        
-      */
-
-
-
-        long b = 0;
-        long a = 0;
-        float floatPower = 0;
+    public final static double calculatePowerDb(short[] sdata, int off, int samples) {
+        // Calculate the sum of the values, and the sum of the squared values.
+        // We need longs to avoid running out of bits.
+        double sum = 0;
+        double sqsum = 0;
         for (int i = 0; i < samples; i++) {
-            /* Since we calculate the square of something that can be
-              as big as +-32767 we assume a width of at least 32 bits
-              for a signed int. Moreover, we add a thousand of these
-              to calculate power, so 32 bits aren't enough. I chose 64
-              bits unsigned int for precision. We could have switched
-              to float or double instead... */
-            final int v = sdata[off + i];
-            /* Note: we calculate max value anyway, to detect clipping */
-            a += (v * v);
-            b += v;
+            final long v = sdata[off + i];
+            sum += v;
+            sqsum += v * v;
         }
+        
+        // sqsum is the sum of all (signal+bias)², so
+        //     sqsum = sum(signal²) + samples * bias²
+        // hence
+        //     sum(signal²) = sqsum - samples * bias².
+        // Bias is simply the average value, i.e.
+        //     bias = sum / samples
+        // Since power = sum(signal²) / samples, we have
+        //     power = (sqsum - samples * sum² / samples²) / samples
+        // and
+        //     power = (sqsum - sum² / samples) / samples
+        double power = (sqsum - sum * sum / samples) / samples;
 
-        /* Ok for raw power. Now normalize it. */
-        long power = a - b * b / samples;
+        // Scale to the range 0 - 1.  The 0.9 is a fudge factor to make
+        // a fully saturated input come to 0 dB.
+        power /= MAX_16_BIT * MAX_16_BIT * 0.9;
 
-        int maxAmp = 32768;
-        floatPower = ((float) power) / ((float) maxAmp) / ((float) maxAmp) / ((float) samples);
-
-        /* we want leftmost to be 100dB
-          (though signal-to-noise ratio can't be more than 96.33dB in power)
-          and rightmost to be 0dB (maximum power) */
-        float dBvalue = 1f + (float) Math.log10(floatPower) / 10f;
-        return dBvalue;
+        // Convert to dB, with 0 being max power.
+        return Math.log10(power) * 10f;
     }
+    
+
+    // ******************************************************************** //
+    // Constants.
+    // ******************************************************************** //
+
+    // Maximum signal amplitude for 16-bit data.
+    private static final float MAX_16_BIT = 32768;
     
 }
 
