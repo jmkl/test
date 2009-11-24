@@ -91,7 +91,8 @@ public final class SignalPower {
      *                      and minimum power is about -95dB.  Particular
      *                      cases of interest:
      *                      <ul>
-     *                      <li>A full-range sine wave input is about -2.55dB.
+     *                      <li>A non-clipping full-range sine wave input is
+     *                          about -2.55dB.
      *                      <li>Saturated input (heavily clipped) approaches
      *                          0dB.
      *                      <li>A low-frequency fully saturated input can
@@ -121,12 +122,12 @@ public final class SignalPower {
         // sqsum is the sum of all (signal+bias)², so
         //     sqsum = sum(signal²) + samples * bias²
         // hence
-        //     sum(signal²) = sqsum - samples * bias².
+        //     sum(signal²) = sqsum - samples * bias²
         // Bias is simply the average value, i.e.
         //     bias = sum / samples
         // Since power = sum(signal²) / samples, we have
         //     power = (sqsum - samples * sum² / samples²) / samples
-        // and
+        // so
         //     power = (sqsum - sum² / samples) / samples
         double power = (sqsum - sum * sum / samples) / samples;
 
