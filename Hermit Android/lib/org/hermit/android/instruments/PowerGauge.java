@@ -251,8 +251,7 @@ public class PowerGauge
 	        // Draw the text below the meter.
 	        final int ty = dispY + meterTextY;
 	        final int ts = meterTextSize;
-	        final float dB = (averagePower - 1f) * 100f;
-	        CharFormatter.formatFloat(dbBuffer, 0, dB, 6, 1);
+	        CharFormatter.formatFloat(dbBuffer, 0, averagePower, 6, 1);
 	        paint.setStyle(Style.STROKE);
 	        paint.setColor(0xff00ffff);
 	        paint.setTextSize(ts);
