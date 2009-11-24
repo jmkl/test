@@ -162,21 +162,27 @@ public class PowerGauge
 	 * New data from the instrument has arrived.  This method is called
 	 * on the thread of the instrument.
 	 * 
-     * @param   power       The current instantaneous signal power level.
+     * @param   power       The current instantaneous signal power level
+     *                      in dB, from -Inf to 0+.  Typical range is
+     *                      -100dB to 0dB, 0dB representing max. input power.
 	 */
-    final void update(float power) {
+    final void update(double power) {
         synchronized (this) {
-            // Save the current level.
-            currentPower = power;
+            // Save the current level.  Clip it to a reasonable range.
+            if (power < -100.0)
+                power = -100.0;
+            else if (power > 0.0)
+                power = 0.0;
+            currentPower = (float) power;
 
             // Get the previous power value, and add the new value into the
             // history buffer.  Re-calculate the rolling average power value.
             if (++historyIndex >= powerHistory.length)
                 historyIndex = 0;
             prevPower = powerHistory[historyIndex];
-            powerHistory[historyIndex] = power;
+            powerHistory[historyIndex] = (float) power;
             averagePower -= prevPower / METER_AVERAGE_COUNT;
-            averagePower += power / METER_AVERAGE_COUNT;
+            averagePower += (float) power / METER_AVERAGE_COUNT;
         }
     }
 
@@ -215,13 +221,13 @@ public class PowerGauge
 	        canvas.drawBitmap(backgroundBitmap, dispX, dispY, paint);
 	        
 	        // Draw the average bar.
-	        final float pa = averagePower * bw;
+	        final float pa = (averagePower / 100f + 1f) * bw;
 	        paint.setStyle(Style.FILL);
 	        paint.setColor(METER_AVERAGE_COL);
 	        canvas.drawRect(mx + 1, by + 1, mx + pa + 1, by + bh - 1, paint);
 
 	        // Draw the power bar.
-	        final float p = currentPower * bw;
+	        final float p = (currentPower / 100f + 1f) * bw;
 	        paint.setStyle(Style.FILL);
 	        paint.setColor(METER_POWER_COL);
 	        canvas.drawRect(mx + 1, by + gap, mx + p + 1, by + bh - gap, paint);
@@ -236,7 +242,7 @@ public class PowerGauge
 	                int alpha = (int) (fac * 255f);
 	                paint.setColor(METER_PEAK_COL | (alpha << 24));
 	                // Draw it in.
-	                final float pp = meterPeaks[i] * bw;
+	                final float pp = (meterPeaks[i] / 100f + 1f) * bw;
 	                canvas.drawRect(mx + pp - 1, by + gap,
 	                        mx + pp + 3, by + bh - gap, paint);
 	            }
@@ -277,7 +283,7 @@ public class PowerGauge
             // First, check for a slightly-higher existing peak.  If there
             // is one, just bump its time.
             for (int i = 0; i < METER_PEAKS; ++i) {
-                if (meterPeakTimes[i] != 0 && meterPeaks[i] - power < 0.025) {
+                if (meterPeakTimes[i] != 0 && meterPeaks[i] - power < 2.5) {
                     meterPeakTimes[i] = now;
                     done = true;
                     break;

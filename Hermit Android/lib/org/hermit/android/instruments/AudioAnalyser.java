@@ -352,8 +352,8 @@ public class AudioAnalyser
     private final float[][] spectrumHist;
     private int spectrumIndex;
    
-    // Current signal power level.
-    private float currentPower = 0f;
+    // Current signal power level, in dB relative to max. input power.
+    private double currentPower = 0f;
 
     // Temp. buffer for calculated bias and range.
     private float[] biasRange = null;
