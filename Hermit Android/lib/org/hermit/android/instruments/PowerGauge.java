@@ -55,7 +55,14 @@ public class PowerGauge
         
         meterPeaks = new float[METER_PEAKS];
         meterPeakTimes = new long[METER_PEAKS];
+        
+        // Create and initialize the history buffer.
         powerHistory = new float[METER_AVERAGE_COUNT];
+        for (int i = 0; i < METER_AVERAGE_COUNT; ++i)
+            powerHistory[i] = -100.0f;
+        averagePower = -100.0f;
+        
+        // Create the buffer where the text label is formatted.
         dbBuffer = "-100.0dB".toCharArray();
 	}
 
@@ -365,7 +372,7 @@ public class PowerGauge
     private int historyIndex = 0;
     
     // Rolling average power value,  calculated from the history buffer.
-    private float averagePower = 0f;
+    private float averagePower = -100.0f;
     
     // Peak markers in the VU meter, and the times for each one.  A zero
     // time indicates a peak not set.
