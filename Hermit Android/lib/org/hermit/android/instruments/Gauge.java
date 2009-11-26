@@ -108,6 +108,16 @@ public class Gauge
 
 
     /**
+     * Get the size for header text based on this screen's size.
+     * 
+     * @return              Header text size for the app.
+     */
+    public static float getHeadTextSize() {
+        return baseTextSize * 1.2f;
+    }
+
+
+    /**
      * Get the size for mini text based on this screen's size.
      * 
      * @return              Mini text size for the app.
