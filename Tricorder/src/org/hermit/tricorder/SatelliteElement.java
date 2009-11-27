@@ -171,10 +171,11 @@ class SatelliteElement
     /**
      * Set the azimuth of the device.
      * 
-     * @param   azimuth            The new azimuth.
+     * @param   trueAz          The new true (not magnetic) azimuth in degrees.
+     * @param   dec             The new magnetic declination in degrees.
      */
-    public void setAzimuth(float azimuth) {
-        skyMap.setAzimuth(azimuth);
+    public void setAzimuth(float trueAz, float dec) {
+        skyMap.setAzimuth(trueAz, dec);
     }
 
 

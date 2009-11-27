@@ -531,12 +531,12 @@ class GeoView
         // Compute the device's orientation based on the rotation matrix.
         final float[] orient = new float[3];
         SensorManager.getOrientation(rotate, orient);
-        final float azimuth = (float) Math.toDegrees(orient[0]);
 
         // Get the azimuth of device Y from magnetic north.  Compensate for
         // magnetic declination.
+        final float azimuth = (float) Math.toDegrees(orient[0]);
         final float dec = geomagneticField.getDeclination();
-        satElement.setAzimuth(azimuth + dec);
+        satElement.setAzimuth(azimuth + dec, dec);
     }
 
 
