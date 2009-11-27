@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
@@ -309,16 +310,18 @@ public class Tricorder
 
     	// Much of the layout size is constrained by the text size.
     	// Calculate the base text size from the screen size.
-    	float baseTextSize = (float) minDim * 0.075f;
-		if (baseTextSize < 10)
-			baseTextSize = 10;
-		else if (baseTextSize > 32)
-			baseTextSize = 32;
+    	float baseTextSize = (float) minDim * 0.0635f;
+		if (baseTextSize < 12)
+			baseTextSize = 12;
+//		else if (baseTextSize > 32)
+//			baseTextSize = 32;
+		Gauge.setTextTypeface(FONT_FACE);
 		Gauge.setBaseTextSize(baseTextSize);
+		Gauge.setTextScaleX(FONT_SCALEX);
 		
 		navBarWidth = (int) ((float) minDim * 0.22f);
 		topBarHeight = (int) ((float) minDim * 0.15f);
-		topTitleHeight = (int) baseTextSize + 4;
+		topTitleHeight = (int) (Gauge.getHeadTextSize() * 1.2f);
 		Gauge.setSidebarWidth(minDim / 64);
 		Gauge.setInterPadding(minDim / 40);
 		float innerGap = minDim / 100;
@@ -660,6 +663,12 @@ public class Tricorder
 
     // Debugging tag.
 	private static final String TAG = "tricorder";
+
+    // Typeface for text.
+    private static final Typeface FONT_FACE = Typeface.MONOSPACE;
+
+    // Horizontal scaling of the font; used to produce a tall, thin font.
+    private static final float FONT_SCALEX = 0.6f;
 
 
 	// ******************************************************************** //

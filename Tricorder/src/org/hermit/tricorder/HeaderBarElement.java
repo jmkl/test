@@ -69,7 +69,7 @@ class HeaderBarElement
 	private void init() {
 		// Set the text black since we probably have a light background.
 		setTextColor(0xff000000);
-    	setTextSize(getBaseTextSize() - 4);
+    	setTextSize(getBaseTextSize());
 
 		sideBarWidth = getSidebarWidth();
 		

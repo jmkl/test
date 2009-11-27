@@ -63,7 +63,7 @@ class BargraphElement
 		
 		// Create the label.
     	headerBar = new TextGauge(parent, fields, rows);
-    	headerBar.setTextSize(getBaseTextSize() - 5);
+    	headerBar.setTextSize(getTinyTextSize());
     	headerBar.setTextColor(plotCol);
     	fieldBuffers = headerBar.getBuffer();
     	

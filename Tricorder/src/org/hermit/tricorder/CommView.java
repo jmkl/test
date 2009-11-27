@@ -103,7 +103,7 @@ class CommView
 		// Create the label.
 		String[] wsfields = { msgPoweringOff };
     	wifiStatus = new TextGauge(parent, wsfields, 1);
-    	wifiStatus.setTextSize(getMiniTextSize());
+    	wifiStatus.setTextSize(getTinyTextSize());
     	wifiStatus.setTextColor(COLOUR_PLOT);
     	wifiStatusBuffer = wifiStatus.getBuffer();
     	CharFormatter.formatString(wifiStatusBuffer[0][0], 0, "?", -1);
@@ -420,7 +420,7 @@ class CommView
 					GsmCellLocation gloc = (GsmCellLocation) location;
 					cellId = gloc.getCid();
 					updateHead();
-				}
+                }
 			}
 		}
 		

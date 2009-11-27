@@ -40,6 +40,8 @@
 	<uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
 	<uses-permission android:name="android.permission.WRITE_SETTINGS"></uses-permission>
 <uses-permission android:name="android.permission.INTERNET"></uses-permission>
-<uses-sdk android:minSdkVersion="3"></uses-sdk>
+<uses-sdk android:minSdkVersion="4"></uses-sdk>
 <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
+<supports-screens android:largeScreens="true" android:normalScreens="true" android:anyDensity="true" android:smallScreens="true" android:resizeable="true"></supports-screens>
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
 </manifest>
