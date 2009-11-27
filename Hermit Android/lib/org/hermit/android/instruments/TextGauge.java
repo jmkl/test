@@ -25,7 +25,6 @@ import org.hermit.android.core.SurfaceRunner;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.Typeface;
 
 
 /**
@@ -85,15 +84,17 @@ public class TextGauge
 
 	/**
 	 * Set up the paint for this element.  This is called during
-	 * initialization.  Subclasses can override this to do class-specific
-	 * one-time initialization.
+	 * initialisation.  Subclasses can override this to do class-specific
+	 * one-time initialisation.
 	 * 
-	 * @param paint			The paint to initialize.
+	 * @param paint			The paint to initialise.
 	 */
 	@Override
 	protected void initializePaint(Paint paint) {
-		paint.setTextScaleX(FONT_SCALEX);
-		paint.setTypeface(FONT_FACE);
+	    float scaleX = getTextScaleX();
+	    if (scaleX != 1f)
+	        paint.setTextScaleX(scaleX);
+		paint.setTypeface(getTextTypeface());
 		paint.setAntiAlias(true);
 	}
 	
@@ -362,12 +363,6 @@ public class TextGauge
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "instrument";
-
-	// Horizontal scaling of the font; used to produce a tall, thin font.
-	private static final Typeface FONT_FACE = Typeface.MONOSPACE;
-
-	// Horizontal scaling of the font; used to produce a tall, thin font.
-	private static final float FONT_SCALEX = 0.6f;
 	
 	
 	// ******************************************************************** //

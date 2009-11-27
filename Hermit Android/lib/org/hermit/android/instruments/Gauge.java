@@ -25,6 +25,7 @@ import org.hermit.android.core.SurfaceRunner;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 
 
 /**
@@ -86,14 +87,35 @@ public class Gauge
     // ******************************************************************** //
     // Global Layout Parameters.
     // ******************************************************************** //
+	
+    /**
+     * Set the default font for all text.
+     * 
+     * @param   face        The default font for all text.
+     */
+    public static void setTextTypeface(Typeface face) {
+        baseTextFace = face;
+    }
+
 
     /**
-     * Get the base size for text based on this screen's size.
+     * Get the default font for all text.
+     * 
+     * @return              The default font for all text.
+     */
+    public static Typeface getTextTypeface() {
+        return baseTextFace;
+    }
+
+
+    /**
+     * Set the base size for text based on this screen's size.
      * 
      * @param   size        Base text size for the app.
      */
 	public static void setBaseTextSize(float size) {
         baseTextSize = size;
+        effectiveBaseTextSize = size < MIN_TEXT ? MIN_TEXT : size;
     }
 
 
@@ -113,7 +135,7 @@ public class Gauge
      * @return              Header text size for the app.
      */
     public static float getHeadTextSize() {
-        return baseTextSize * 1.2f;
+        return baseTextSize * 1.3f;
     }
 
 
@@ -123,7 +145,7 @@ public class Gauge
      * @return              Mini text size for the app.
      */
 	public static float getMiniTextSize() {
-        return baseTextSize - 6;
+        return effectiveBaseTextSize * 0.97f;
     }
 
 
@@ -133,7 +155,28 @@ public class Gauge
      * @return              Tiny text size for the app.
      */
 	public static float getTinyTextSize() {
-        return baseTextSize - 7;
+        return effectiveBaseTextSize * 0.88f;
+    }
+
+
+    /**
+     * Set the horizontal scaling of the font; this can be used to
+     * produce a tall, thin font.
+     * 
+     * @param   scale       Horizontal scaling of the font.
+     */
+    public static void setTextScaleX(float scale) {
+        textScaleX = scale;
+    }
+
+
+    /**
+     * Get the base size for text based on this screen's size.
+     * 
+     * @return              Horizontal scaling of the font.
+     */
+    public static float getTextScaleX() {
+        return textScaleX;
     }
 
 
@@ -470,15 +513,33 @@ public class Gauge
 	
 
 	// ******************************************************************** //
-	// Class Data.
+	// Private Constants.
 	// ******************************************************************** //
+
+	// The minimum happy text size.
+	private static final float MIN_TEXT = 20f;
+	
+	
+    // ******************************************************************** //
+    // Class Data.
+    // ******************************************************************** //
 
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "instrument";
 
+    // The default font for all text.
+    private static Typeface baseTextFace = Typeface.MONOSPACE;
+
     // The base size for all text, based on screen size.
-    private static float baseTextSize = 0f;
+    private static float baseTextSize = MIN_TEXT;
+    
+    // Base text size used to calculate smaller sizes.
+    private static float effectiveBaseTextSize = MIN_TEXT;
+    
+    // The horizontal scaling of the font; this can be used to
+    // produce a tall, thin font.
+    private static float textScaleX = 1f;
 
     // The thickness of a side bar in a view element.
     private static int viewSidebar;
