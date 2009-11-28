@@ -61,7 +61,7 @@ public class InstrumentPanel
         addGauge(powerGauge);
 
         // On-screen debug stats display.
-        statsCreate(new String[] { "FFT", "Skip" });
+        statsCreate(new String[] { "µs FFT", "Skip/s" });
     }
     
 
