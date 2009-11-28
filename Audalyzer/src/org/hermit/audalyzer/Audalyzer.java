@@ -285,6 +285,41 @@ public class Audalyzer
         SharedPreferences prefs =
                         PreferenceManager.getDefaultSharedPreferences(this);
 
+        // Get the desired sample rate.
+        int sampleRate = 8000;
+        try {
+            String srate = prefs.getString("sampleRate", null);
+            sampleRate = Integer.valueOf(srate);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad sampleRate");
+        }
+        if (sampleRate < 8000)
+            sampleRate = 8000;
+        Log.i(TAG, "Prefs: sampleRate " + sampleRate);
+        audioInstrument.setSampleRate(sampleRate);
+
+        // Get the desired decimation.
+        int decimateRate = 2;
+        try {
+            String drate = prefs.getString("decimateRate", null);
+            decimateRate = Integer.valueOf(drate);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad decimateRate");
+        }
+        Log.i(TAG, "Prefs: decimateRate " + decimateRate);
+        audioInstrument.setDecimation(decimateRate);
+        
+        // Get the desired histogram smoothing window.
+        int averageLen = 4;
+        try {
+            String alen = prefs.getString("averageLen", null);
+            averageLen = Integer.valueOf(alen);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad averageLen");
+        }
+        Log.i(TAG, "Prefs: averageLen " + averageLen);
+        audioInstrument.setAverageLen(averageLen);
+
         // Get the desired orientation.
         int orientMode = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         try {
@@ -314,6 +349,15 @@ public class Audalyzer
                 wakeLock.release();
             wakeLock = null;
         }
+
+        boolean debugStats = false;
+        try {
+            debugStats = prefs.getBoolean("debugStats", false);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad debugStats");
+        }
+        Log.i(TAG, "Prefs: debugStats " + debugStats);
+        audioInstrument.setShowStats(debugStats);
     }
     
 

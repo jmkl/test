@@ -61,11 +61,55 @@ public class InstrumentPanel
         addGauge(powerGauge);
 
         // On-screen debug stats display.
-        statsCreate(new String[] { "FFT" });
-        setDebugPerf(false);
+        statsCreate(new String[] { "FFT", "Skip" });
     }
     
 
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Set the sample rate for this instrument.
+     * 
+     * @param   rate        The desired rate, in samples/sec.
+     */
+    public void setSampleRate(int rate) {
+        audioAnalyser.setSampleRate(rate);
+    }
+    
+
+    /**
+     * Set the decimation rate for this instrument.
+     * 
+     * @param   rate        The desired decimation.  Only 1 in rate blocks
+     *                      will actually be processed.
+     */
+    public void setDecimation(int rate) {
+        audioAnalyser.setDecimation(rate);
+    }
+    
+
+    /**
+     * Set the histogram averaging window for this instrument.
+     * 
+     * @param   rate        The averaging interval.  1 means no averaging.
+     */
+    public void setAverageLen(int rate) {
+        audioAnalyser.setAverageLen(rate);
+    }
+    
+
+    /**
+     * Enable or disable stats display.
+     * 
+     * @param   enable        True to display performance stats.
+     */
+    public void setShowStats(boolean enable) {
+        setDebugPerf(enable);
+    }
+    
+   
     // ******************************************************************** //
     // Layout Processing.
     // ******************************************************************** //
@@ -146,9 +190,9 @@ public class InstrumentPanel
     }
     
     
-	// ******************************************************************** //
-	// Input Handling.
-	// ******************************************************************** //
+    // ******************************************************************** //
+    // Input Handling.
+    // ******************************************************************** //
 
     /**
 	 * Handle key input.

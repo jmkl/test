@@ -2,8 +2,39 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <PreferenceCategory android:title="@string/prefs_cat_audio">
+
+        <ListPreference
+                android:key="sampleRate"
+                android:title="@string/prefs_sample"
+                android:summary="@string/prefs_sample_summary"
+                android:entries="@array/prefs_sample_entries"
+                android:entryValues="@array/prefs_sample_values"
+                android:dialogTitle="@string/prefs_sample_title"
+                android:defaultValue="8000" />
+
+        <ListPreference
+                android:key="decimateRate"
+                android:title="@string/prefs_decimate"
+                android:summary="@string/prefs_decimate_summary"
+                android:entries="@array/prefs_decimate_entries"
+                android:entryValues="@array/prefs_decimate_values"
+                android:dialogTitle="@string/prefs_decimate_title"
+                android:defaultValue="2" />
+
+        <ListPreference
+                android:key="averageLen"
+                android:title="@string/prefs_average"
+                android:summary="@string/prefs_average_summary"
+                android:entries="@array/prefs_average_entries"
+                android:entryValues="@array/prefs_average_values"
+                android:dialogTitle="@string/prefs_average_title"
+                android:defaultValue="4" />
+
+    </PreferenceCategory>
+  
     <PreferenceCategory android:title="@string/prefs_cat_display">
-                           
+
         <ListPreference
                 android:key="orientationMode"
                 android:title="@string/prefs_orient"
@@ -12,14 +43,25 @@
                 android:entryValues="@array/prefs_orient_values"
                 android:dialogTitle="@string/prefs_orient_title"
                 android:defaultValue="1" />
-                                    
+
         <CheckBoxPreference
                 android:key="keepAwake"
                 android:title="@string/prefs_wakelock"
                 android:summaryOff="@string/prefs_wakelock_summary_off"
                 android:summaryOn="@string/prefs_wakelock_summary_on"
                 android:defaultValue="false" />
-            
+
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="@string/prefs_cat_debug">
+
+        <CheckBoxPreference
+                android:key="debugStats"
+                android:title="@string/prefs_stats"
+                android:summaryOff="@string/prefs_stats_summary_off"
+                android:summaryOn="@string/prefs_stats_summary_on"
+                android:defaultValue="false" />
+
     </PreferenceCategory>
   
 </PreferenceScreen>

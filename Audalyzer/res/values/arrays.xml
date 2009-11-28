@@ -2,6 +2,50 @@
 
 <resources>
     
+    <!-- Entry names for the sample rate menu. -->
+    <string-array name="prefs_sample_entries">
+        <item>Standard</item>
+        <item>Medium</item>
+        <item>High</item>  
+    </string-array>
+
+    <!-- Values for the sample rate menu. -->
+    <string-array name="prefs_sample_values">
+        <item>8000</item>  
+        <item>12000</item>
+        <item>16000</item>
+    </string-array>
+    
+    <!-- Entry names for the decimation menu. -->
+    <string-array name="prefs_decimate_entries">
+        <item>Process all</item>
+        <item>Process 1 in 2</item>
+        <item>Process 1 in 3</item>  
+        <item>Process 1 in 4</item>  
+    </string-array>
+
+    <!-- Values for the decimation menu. -->
+    <string-array name="prefs_decimate_values">
+        <item>1</item>  
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    
+    <!-- Entry names for the histogram averaging menu. -->
+    <string-array name="prefs_average_entries">
+        <item>None</item>
+        <item>Fast</item>
+        <item>Slow</item>  
+    </string-array>
+
+    <!-- Values for the histogram averaging menu. -->
+    <string-array name="prefs_average_values">
+        <item>1</item>
+        <item>4</item>  
+        <item>12</item>
+    </string-array>
+    
     <!-- Entry names for the screen orientation menu. -->
     <string-array name="prefs_orient_entries">
         <item>System default</item>
@@ -11,7 +55,7 @@
         <item>Device orientation</item>  
     </string-array>
 
-    <!-- Values for the sound preferences menu. -->
+    <!-- Values for the screen orientation menu. -->
     <string-array name="prefs_orient_values">
         <item>-1</item>
         <item>1</item>  

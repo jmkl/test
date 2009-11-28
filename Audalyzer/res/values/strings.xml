@@ -56,6 +56,16 @@ for more details.\n</string>
     
     <!-- Preferences strings. -->
     <string name="prefs_title">Settings</string>
+    <string name="prefs_cat_audio">Audio Analysis Settings</string>
+    <string name="prefs_sample">Sample rate</string>
+    <string name="prefs_sample_summary">Determine the sample rate, and hence frequency range</string>
+    <string name="prefs_sample_title">Sample Rate</string>
+    <string name="prefs_decimate">Decimation</string>
+    <string name="prefs_decimate_summary">Improve performance by processing only a portion of the input</string>
+    <string name="prefs_decimate_title">Decimation</string>
+    <string name="prefs_average">Histogram averaging</string>
+    <string name="prefs_average_summary">Determine amount of smoothing in the histogram</string>
+    <string name="prefs_average_title">Histogram Averaging</string>
     <string name="prefs_cat_display">Display Settings</string>
     <string name="prefs_orient">Screen orientation</string>
     <string name="prefs_orient_summary">Set your desired screen rotation behaviour</string>
@@ -63,6 +73,10 @@ for more details.\n</string>
     <string name="prefs_wakelock">Keep device awake</string>
     <string name="prefs_wakelock_summary_off">The device will sleep normally after the screen times out.</string>
     <string name="prefs_wakelock_summary_on">The device will stay awake while the app is running.  Warning: battery drain!</string>
+    <string name="prefs_cat_debug">Debug Settings</string>
+    <string name="prefs_stats">Show performance stats</string>
+    <string name="prefs_stats_summary_off">Performance stats are not displayed.</string>
+    <string name="prefs_stats_summary_on">Performance stats are displayed.</string>
         
     <!-- Button strings. -->
     <string name="button_ok">OK</string>
