@@ -48,18 +48,60 @@ public class AudioAnalyser
         super(parent);
         parentSurface = parent;
         
-        audioReader = new AudioReader(SAMPLE_RATE);
+        audioReader = new AudioReader();
         
         spectrumAnalyser = new FFTTransformer(FFT_BLOCK);
         
         // Allocate the spectrum data.
         spectrumData = new float[FFT_BLOCK / 2];
-        spectrumHist = new float[FFT_BLOCK / 2][4];
+        spectrumHist = new float[FFT_BLOCK / 2][historyLen];
         spectrumIndex = 0;
 
         biasRange = new float[2];
     }
 
+
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Set the sample rate for this instrument.
+     * 
+     * @param   rate        The desired rate, in samples/sec.
+     */
+    public void setSampleRate(int rate) {
+        sampleRate = rate;
+        
+        // The spectrum gauge needs to know this.
+        spectrumGauge.setSampleRate(sampleRate);
+    }
+    
+
+    /**
+     * Set the decimation rate for this instrument.
+     * 
+     * @param   rate        The desired decimation.  Only 1 in rate blocks
+     *                      will actually be processed.
+     */
+    public void setDecimation(int rate) {
+        sampleDecimate = rate;
+    }
+    
+    
+    /**
+     * Set the histogram averaging window for this instrument.
+     * 
+     * @param   len         The averaging interval.  1 means no averaging.
+     */
+    public void setAverageLen(int len) {
+        historyLen = len;
+        
+        // Set up the history buffer.
+        spectrumHist = new float[FFT_BLOCK / 2][historyLen];
+        spectrumIndex = 0;
+    }
+    
 
     // ******************************************************************** //
     // Run Control.
@@ -83,7 +125,7 @@ public class AudioAnalyser
     public void measureStart() {
         audioProcessed = audioSequence = 0;
         
-        audioReader.startReader(FFT_BLOCK * DECIMATE, new AudioReader.Listener() {
+        audioReader.startReader(sampleRate, FFT_BLOCK * sampleDecimate, new AudioReader.Listener() {
             @Override
             public final void onReadComplete(short[] buffer) {
                 receiveAudio(buffer);
@@ -138,7 +180,7 @@ public class AudioAnalyser
         if (spectrumGauge != null)
             throw new RuntimeException("Already have a SpectrumGauge" +
                                        " for this AudioAnalyser");
-        spectrumGauge = new SpectrumGauge(surface, NYQUIST_FREQ);
+        spectrumGauge = new SpectrumGauge(surface, sampleRate);
         return spectrumGauge;
     }
     
@@ -197,7 +239,7 @@ public class AudioAnalyser
         short[] buffer = null;
         synchronized (this) {
             if (audioData != null && audioSequence > audioProcessed) {
-//                parentSurface.statsCount(4, (int) (audioSequence - audioProcessed - 1));
+                parentSurface.statsCount(1, (int) (audioSequence - audioProcessed - 1));
                 audioProcessed = audioSequence;
                 buffer = audioData;
             }
@@ -258,11 +300,15 @@ public class AudioAnalyser
             parentSurface.statsTime(0, (specEnd - specStart) * 1000);
 
             // Get the FFT output and draw the spectrum.
-            //            spectrumAnalyser.getResults(spectrumData);
-            spectrumIndex = spectrumAnalyser.getResults(spectrumData, spectrumHist, spectrumIndex);
+            if (historyLen <= 1)
+                spectrumAnalyser.getResults(spectrumData);
+            else
+                spectrumIndex = spectrumAnalyser.getResults(spectrumData,
+                                                            spectrumHist,
+                                                            spectrumIndex);
             spectrumGauge.update(spectrumData);
         }
-        
+
         // If we have a power gauge, display the signal power.
         if (powerGauge != null)
             powerGauge.update(currentPower);
@@ -304,19 +350,8 @@ public class AudioAnalyser
 	@SuppressWarnings("unused")
 	private static final String TAG = "instrument";
 
-    // Audio sample rate, in samples/sec.
-    private static final int SAMPLE_RATE = 8000;
-
-    // The Nyquist frequency -- the highest frequency we can sample.
-    private static final int NYQUIST_FREQ = SAMPLE_RATE / 2;
-
     // Audio buffer size, in samples.
     private static final int FFT_BLOCK = 256;
-
-    // Amount by which we decimate the input for each FFT.  We read this
-    // many multiples of FFT_BLOCK, but then FFT only the last FFT_BLOCK
-    // samples.
-    private static final int DECIMATE = 1;
 
 	
 	// ******************************************************************** //
@@ -338,6 +373,16 @@ public class AudioAnalyser
     private SpectrumGauge spectrumGauge = null;
     private PowerGauge powerGauge = null;
     
+    // The desired sampling rate for this analyser, in samples/sec.
+    private int sampleRate = 8000;
+    
+    // The desired decimation rate for this analyser.  Only 1 in
+    // sampleDecimate blocks will actually be processed.
+    private int sampleDecimate = 1;
+   
+    // The desired histogram averaging window.  1 means no averaging.
+    private int historyLen = 4;
+
     // Buffered audio data, and sequence number of the latest block.
     private short[] audioData;
     private long audioSequence = 0;
@@ -348,8 +393,8 @@ public class AudioAnalyser
     // Analysed audio spectrum data; history data for each frequency
     // in the spectrum; index into the history data; and buffer for
     // peak frequencies.
-    private final float[] spectrumData;
-    private final float[][] spectrumHist;
+    private float[] spectrumData;
+    private float[][] spectrumHist;
     private int spectrumIndex;
    
     // Current signal power level, in dB relative to max. input power.

@@ -49,15 +49,32 @@ public class SpectrumGauge
 	 * public users get these from an {@link AudioAnalyser} instrument.
 	 * 
 	 * @param	parent		Parent surface.
-     * @param   nyquist     The Nyquist frequency -- the highest frequency
-     *                      represented in the spectrum data we will be
-     *                      plotting.
+     * @param   rate        The input sample rate, in samples/sec.
 	 */
-	SpectrumGauge(SurfaceRunner parent, int nyquist) {
+	SpectrumGauge(SurfaceRunner parent, int rate) {
 	    super(parent);
-	    nyquistFreq = nyquist;
+	    nyquistFreq = rate / 2;
 	}
 
+
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Set the sample rate for this instrument.
+     * 
+     * @param   rate        The desired rate, in samples/sec.
+     */
+    public void setSampleRate(int rate) {
+        nyquistFreq = rate / 2;
+        
+        // If we have a size, then we have a background.  Re-draw it
+        // to show the new frequency scale.
+        if (haveBounds())
+            drawBackgroundBody(backgroundCanvas, getPaint());
+    }
+    
 
 	// ******************************************************************** //
 	// Geometry.

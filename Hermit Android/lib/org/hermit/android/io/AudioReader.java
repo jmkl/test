@@ -28,8 +28,8 @@ import android.util.Log;
 
 
 /**
- * The main wind meter view.  This class relies on the parent SurfaceRunner
- * class to do the bulk of the animation control.
+ * A class which reads audio input from the mic in a background thread and
+ * passes it to the caller when ready.
  */
 public class AudioReader
     implements Runnable
@@ -56,18 +56,10 @@ public class AudioReader
     // ******************************************************************** //
 
 	/**
-	 * Create a WindMeter instance.
-	 * 
-	 * @param  rate        The audio sampling rate, in samples / sec.
+	 * Create an AudioReader instance.
 	 */
-    public AudioReader(int rate) {
-        sampleRate = rate;
-        
+    public AudioReader() {
 //        audioManager = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
-
-        audioBufferBytes = AudioRecord.getMinBufferSize(sampleRate,
-                                     AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                                     AudioFormat.ENCODING_PCM_16BIT) * 2;
     }
 
 
@@ -78,23 +70,29 @@ public class AudioReader
     /**
      * Start this reader.
      * 
+     * @param   rate        The audio sampling rate, in samples / sec.
      * @param   block       Number of samples of input to read at a time.
      *                      This is different from the system audio
      *                      buffer size.
      * @param   listener    Listener to be notified on each completed read.
      */
-    public void startReader(int block, Listener listener) {
+    public void startReader(int rate, int block, Listener listener) {
         Log.i(TAG, "Reader: Start Thread");
         synchronized (this) {
+            // Calculate the required I/O buffer size.
+            int audioBuf = AudioRecord.getMinBufferSize(rate,
+                                         AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                                         AudioFormat.ENCODING_PCM_16BIT) * 2;
+
             // Set up the audio input.
             audioInput = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                    sampleRate,
+                    rate,
                     AudioFormat.CHANNEL_CONFIGURATION_MONO,
                     AudioFormat.ENCODING_PCM_16BIT,
-                    audioBufferBytes);
+                    audioBuf);
 
             inputBlockSize = block;
-            sleepTime = (long) (1000f / ((float) sampleRate / (float) block));
+            sleepTime = (long) (1000f / ((float) rate / (float) block));
             inputBuffer = new short[2][inputBlockSize];
             inputBufferWhich = 0;
             inputBufferIndex = 0;
@@ -231,12 +229,6 @@ public class AudioReader
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-
-    // Audio sample rate, in samples/sec.
-    private final int sampleRate;
-
-    // Size of the system audio buffer.
-    private final int audioBufferBytes;
     
     // Our audio input device.
     private AudioRecord audioInput;

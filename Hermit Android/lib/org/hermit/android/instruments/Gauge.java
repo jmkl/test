@@ -281,6 +281,16 @@ public class Gauge
 	}
 	
 
+    /**
+     * Determine whether we have the bounding rect of this Element.
+     * 
+     * @return              True if our geometry has been set up.
+     */
+    public final boolean haveBounds() {
+        return getWidth() > 0 && getHeight() > 0;
+    }
+
+
 	/**
 	 * Get the bounding rect of this Element.
 	 * 
