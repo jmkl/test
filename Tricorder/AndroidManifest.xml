@@ -4,7 +4,7 @@
 	android:versionCode="21" android:versionName="4.0">
 	<application android:label="@string/app_name"
 		android:description="@string/description"
-		android:icon="@drawable/tricorder" android:debuggable="true">
+		android:icon="@drawable/tricorder" android:debuggable="false">
 		
 		<activity android:name=".Tricorder"
 			android:label="@string/app_name" android:launchMode="singleTop"
