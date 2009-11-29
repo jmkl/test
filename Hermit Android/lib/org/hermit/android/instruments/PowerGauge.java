@@ -62,8 +62,9 @@ public class PowerGauge
             powerHistory[i] = -100.0f;
         averagePower = -100.0f;
         
-        // Create the buffer where the text label is formatted.
+        // Create the buffer where the text labels are formatted.
         dbBuffer = "-100.0dB".toCharArray();
+        pkBuffer = "-100.0dB peak".toCharArray();
 	}
 
 
@@ -83,6 +84,8 @@ public class PowerGauge
     public void setGeometry(Rect bounds) {
 	    super.setGeometry(bounds);
 	    
+	    Paint paint = getPaint();
+	    
 	    dispX = bounds.left;
 	    dispY = bounds.top;
 	    dispWidth = bounds.width();
@@ -101,13 +104,15 @@ public class PowerGauge
             meterTextSize = 64;
         meterTextY = meterLabY + meterTextSize + 4;
         meterBarMargin = meterLabSize;
+        paint.setTextSize(meterTextSize);
+        meterTextWidth = (int) paint.measureText("-100.0dB");
         
         // Create the bitmap for the background,
         // and the Canvas for drawing into it.
         backgroundBitmap = getSurface().getBitmap(dispWidth, dispHeight);
         backgroundCanvas = new Canvas(backgroundBitmap);
         
-        drawBackgroundBody(backgroundCanvas, getPaint());
+        drawBackgroundBody(backgroundCanvas, paint);
 	}
 
 
@@ -257,13 +262,16 @@ public class PowerGauge
 
 	        // Draw the text below the meter.
 	        final int ty = dispY + meterTextY;
-	        final int ts = meterTextSize;
 	        CharFormatter.formatFloat(dbBuffer, 0, averagePower, 6, 1);
 	        paint.setStyle(Style.STROKE);
 	        paint.setColor(0xff00ffff);
-	        paint.setTextSize(ts);
-
+	        paint.setTextSize(meterTextSize);
 	        canvas.drawText(dbBuffer, 0, dbBuffer.length, mx, ty, paint);
+	        
+	        final int px = mx + meterTextWidth + 10;
+            CharFormatter.formatFloat(pkBuffer, 0, meterPeakMax, 6, 1);
+            paint.setTextSize(meterLabSize);
+            canvas.drawText(pkBuffer, 0, pkBuffer.length, px, ty, paint);
 	    }
 	}
 	
@@ -307,6 +315,12 @@ public class PowerGauge
                 }
             }
         }
+        
+        // Find the highest peak value.
+        meterPeakMax = -100f;
+        for (int i = 0; i < METER_PEAKS; ++i)
+            if (meterPeakTimes[i] != 0 && meterPeaks[i] > meterPeakMax)
+                meterPeakMax = meterPeaks[i];
     }
     
 
@@ -355,6 +369,7 @@ public class PowerGauge
     private int meterLabSize = 0;
     private int meterTextY = 0;
     private int meterTextSize = 0;
+    private int meterTextWidth = 0;
     private int meterBarMargin = 0;
 
     // Bitmap in which we draw the gauge background,
@@ -378,9 +393,11 @@ public class PowerGauge
     // time indicates a peak not set.
     private float[] meterPeaks = null;
     private long[] meterPeakTimes = null;
+    private float meterPeakMax = 0f;
 
-    // Buffer for displayed dB value text.
+    // Buffer for displayed dB value text and peak value text.
     private char[] dbBuffer = null;
+    private char[] pkBuffer = null;
 
 }
 
