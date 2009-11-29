@@ -30,6 +30,8 @@ import android.util.Log;
 /**
  * A class which reads audio input from the mic in a background thread and
  * passes it to the caller when ready.
+ * 
+ * <p>To use this class, your application must have permission RECORD_AUDIO.
  */
 public class AudioReader
     implements Runnable
@@ -171,6 +173,12 @@ public class AudioReader
                     boolean done = false;
                     if (!running)
                         break;
+                    
+                    if (nread < 0) {
+                        Log.e(TAG, "Audio read failed: error " + nread);
+                        running = false;
+                        break;
+                    }
                     int end = inputBufferIndex + nread;
                     if (end >= inputBlockSize) {
                         inputBufferWhich = (inputBufferWhich + 1) % 2;

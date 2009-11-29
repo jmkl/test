@@ -30,6 +30,8 @@ import android.os.Bundle;
 
 /**
  * An {@link Instrument} which analyses an audio stream in various ways.
+ * 
+ * <p>To use this class, your application must have permission RECORD_AUDIO.
  */
 public class AudioAnalyser
 	extends Instrument
@@ -74,7 +76,8 @@ public class AudioAnalyser
         sampleRate = rate;
         
         // The spectrum gauge needs to know this.
-        spectrumGauge.setSampleRate(sampleRate);
+        if (spectrumGauge != null)
+            spectrumGauge.setSampleRate(sampleRate);
     }
     
 
