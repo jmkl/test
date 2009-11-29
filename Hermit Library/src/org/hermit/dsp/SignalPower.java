@@ -92,7 +92,7 @@ public final class SignalPower {
      *                      cases of interest:
      *                      <ul>
      *                      <li>A non-clipping full-range sine wave input is
-     *                          about -2.55dB.
+     *                          about -2.41dB.
      *                      <li>Saturated input (heavily clipped) approaches
      *                          0dB.
      *                      <li>A low-frequency fully saturated input can
@@ -131,12 +131,12 @@ public final class SignalPower {
         //     power = (sqsum - sum² / samples) / samples
         double power = (sqsum - sum * sum / samples) / samples;
 
-        // Scale to the range 0 - 1.  The 0.9 is a fudge factor to make
-        // a fully saturated input come to 0 dB.
-        power /= MAX_16_BIT * MAX_16_BIT * 0.9;
+        // Scale to the range 0 - 1.
+        power /= MAX_16_BIT * MAX_16_BIT;
 
-        // Convert to dB, with 0 being max power.
-        return Math.log10(power) * 10f;
+        // Convert to dB, with 0 being max power.  Add a fudge factor to make
+        // a "real" fully saturated input come to 0 dB.
+        return Math.log10(power) * 10f + FUDGE;
     }
     
 
@@ -147,5 +147,13 @@ public final class SignalPower {
     // Maximum signal amplitude for 16-bit data.
     private static final float MAX_16_BIT = 32768;
     
+    // This fudge factor is added to the output to make a realistically
+    // fully-saturated signal come to 0dB.  Without it, the signal would
+    // have to be solid samples of -32768 to read zero, which is not
+    // realistic.  This really is a fudge, because the best value depends
+    // on the input frequency and sampling rate.  We optimise here for
+    // a 1kHz signal at 16,000 samples/sec.
+    private static final float FUDGE = 0.6f;
+  
 }
 

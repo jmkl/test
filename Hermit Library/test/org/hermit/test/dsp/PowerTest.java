@@ -56,6 +56,44 @@ public class PowerTest {
     
     
     // ******************************************************************** //
+    // Testing.
+    // ******************************************************************** //
+    
+    private static void runTest(String name, double max, int rate, float freq, float len) {
+        // Test on a buffer of all zeroes.
+        short[] buf = makeSine(max, rate, freq, len);
+        double power = SignalPower.calculatePowerDb(buf, 0, buf.length);
+        System.out.format("%-8s@ %5d: %10.5f\n", name, rate, power);
+    }
+    
+    
+    private static void runAll(int rate, float freq) {
+        // Test on a buffer of all zeroes.
+        runTest("Zero", 0f, rate, freq, 0.1f);
+        
+        // A truly miniscule signal; every 40th sample is 1, all others
+        // are zero.
+        runTest("Tiny", 0.5f, rate, freq, 0.1f);
+        
+        // A very small signal; 5 1s, 15 0s, 5 -1s, 15 0s.
+        runTest("Small", 0.55f, rate, freq, 0.1f);
+        
+        // Minimum "real" signal, oscillating between 1 and -1.
+        runTest("Min", 1, rate, freq, 0.1f);
+        
+        // A full-range sine wave, from -32768 to 32767.
+        runTest("Full", 32768, rate, freq, 0.1f);
+        
+        // Maximum saturated signal.
+        runTest("Sat", 10000000, rate, freq, 0.1f);
+        
+        // Maximum saturated signal at a low frequency to reduce the small
+        // values.  This is an unrealistically over-saturated signal.
+        runTest("Oversat", 10000000, rate, 80f, 0.1f);
+    }
+    
+
+    // ******************************************************************** //
     // Main.
     // ******************************************************************** //
     
@@ -63,29 +101,9 @@ public class PowerTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-        short[] zero = makeSine(0f, 8000, 400f, 0.1f);
-        double zerop = SignalPower.calculatePowerDb(zero, 0, zero.length);
-        System.out.format("Zero: %10.5f\n", zerop);
-        
-        short[] one = makeSine(0.5f, 8000, 400f, 0.1f);
-        double onep = SignalPower.calculatePowerDb(one, 0, one.length);
-        System.out.format("One: %10.5f\n", onep);
-        
-        short[] tiny = makeSine(0.55f, 8000, 400f, 0.1f);
-        double tinyp = SignalPower.calculatePowerDb(tiny, 0, tiny.length);
-        System.out.format("Tiny: %10.5f\n", tinyp);
-        
-	    short[] min = makeSine(1, 8000, 400f, 0.1f);
-	    double minp = SignalPower.calculatePowerDb(min, 0, min.length);
-	    System.out.format("Min: %10.5f\n", minp);
-        
-        short[] full = makeSine(32768, 8000, 400f, 0.1f);
-        double fullp = SignalPower.calculatePowerDb(full, 0, full.length);
-        System.out.format("Full: %10.5f\n", fullp);
-	    
-        short[] max = makeSine(200000, 8000, 80f, 0.1f);
-        double maxp = SignalPower.calculatePowerDb(max, 0, max.length);
-        System.out.format("Max: %10.5f\n", maxp);
+	    // Run the tests at a couple of different sample rates.
+	    runAll(8000, 1000);
+        runAll(16000, 1000);
 	}
 	
 	
