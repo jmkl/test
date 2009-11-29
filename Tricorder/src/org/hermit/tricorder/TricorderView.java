@@ -57,7 +57,7 @@ class TricorderView
 	public static enum ViewDefinition {
 		GRA(R.string.nav_gra, R.string.title_gra, 0, 0xffdbae6b),
 		MAG(R.string.nav_mag, R.string.title_mag, 0, 0xff5dc0d3),
-		ENV(R.string.nav_env, R.string.title_env, 0, 0xff9c6b6e),
+		AUD(R.string.nav_aud, R.string.title_aud, 0, 0xff9c6b6e),
 		GEO(R.string.nav_geo, R.string.title_geo, 0, 0xffb9a9c4),
 		COM(R.string.nav_com, R.string.title_com, R.string.lab_wifi_power, 0xffff9c63),
 		SOL(R.string.nav_sol, R.string.title_sol, R.string.lab_alt_mode, 0xffff9900);
@@ -131,8 +131,8 @@ class TricorderView
 										  0xffcc6666, 0xffffcc00);
                 vdef.view = magView;
     	    	break;
-    		case ENV:
-    	    	vdef.view = new MultiGraphView(context, this, sm);
+    		case AUD:
+    	    	vdef.view = new AudioView(context, this);
     	        break;
     		case GEO:
     	    	vdef.view = new GeoView(context, this, sm);
@@ -149,8 +149,22 @@ class TricorderView
 
 
 	// ******************************************************************** //
-	// App State Management.
+	// Accessors.
 	// ******************************************************************** //
+    
+    /**
+     * Get the app's audio view.
+     * 
+     * @return          The audio view.
+     */
+    AudioView getAudioView() {
+        return (AudioView) ViewDefinition.AUD.view;
+    }
+
+
+    // ******************************************************************** //
+    // App State Management.
+    // ******************************************************************** //
 
     /**
      * The application is starting.  Perform any initial set-up prior to

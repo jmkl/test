@@ -189,17 +189,27 @@ for more details.\n</string>
     <string name="prefs_cat_data">Data Settings</string>
     <string name="prefs_fake">Simulate missing</string>
     <string name="prefs_fake_summary">Use simulated data for missing sensors</string>
+    <string name="prefs_cat_audio">Audio Analysis Settings</string>
+    <string name="prefs_sample">Sample rate</string>
+    <string name="prefs_sample_summary">Determine the sample rate, and hence frequency range</string>
+    <string name="prefs_sample_title">Sample Rate</string>
+    <string name="prefs_decimate">Decimation</string>
+    <string name="prefs_decimate_summary">Improve performance by processing only a portion of the input</string>
+    <string name="prefs_decimate_title">Decimation</string>
+    <string name="prefs_average">Histogram averaging</string>
+    <string name="prefs_average_summary">Determine amount of smoothing in the histogram</string>
+    <string name="prefs_average_title">Histogram Averaging</string>
     
     <string name="nav_gra">GRAV</string>
     <string name="nav_mag">MAG</string>
-    <string name="nav_env">ENV</string>
+    <string name="nav_aud">ACO</string>
     <string name="nav_geo">GEO</string>
     <string name="nav_com">EMS</string>
     <string name="nav_sol">SOL</string>
     
     <string name="title_gra">Acceleration</string>
     <string name="title_mag">Magnetic Flux</string>
-    <string name="title_env">Environmental</string>
+    <string name="title_aud">Acoustic</string>
     <string name="title_geo">Geographic</string>
     <string name="title_com">EM Spectrum</string>
     <string name="title_sol">Solar Activity</string>
@@ -221,9 +231,9 @@ for more details.\n</string>
     <string name="lab_azi">Az</string>
     <string name="lab_alt">Alt</string>
     <string name="lab_mag">Mag</string>
-    <string name="lab_light">Light</string>
-    <string name="lab_prox">Proxim</string>
-    <string name="lab_temp">Temp</string>
+    <string name="lab_aco_wave">Waveform</string>
+    <string name="lab_aco_spec">Spectrum</string>
+    <string name="lab_aco_power">Power</string>
     <string name="lab_acc">Acc</string>
     <string name="lab_head">Head</string>
     <string name="lab_speed">Spd</string>

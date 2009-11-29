@@ -815,7 +815,7 @@ class SolarView
 	};
 	
 	// Grid and plot colours.
-	private static final int COLOUR_GRID = 0xffdfb682;
+	private static final int COLOUR_GRID = 0xfff0a082;
 	private static final int COLOUR_PLOT = 0xffd09cd0;
 
 	

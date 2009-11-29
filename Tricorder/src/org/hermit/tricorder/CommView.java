@@ -91,13 +91,13 @@ class CommView
         // Create the section header bars.
 		String[] cfields = { parent.getRes(R.string.lab_cell) , "", "999 days 23h" };
 		cellHead = new HeaderBarElement(parent, cfields);
-		cellHead.setBarColor(0xffdfb682);
+		cellHead.setBarColor(COLOUR_HEAD);
 		cellHead.setText(0, 0, parent.getRes(R.string.lab_cell));
 		String[] wfields = {
 		        parent.getRes(R.string.lab_wifi), "xx", "999 days 23h"
 		};
 		wifiHead = new HeaderBarElement(parent, wfields);
-		wifiHead.setBarColor(0xffdfb682);
+		wifiHead.setBarColor(COLOUR_HEAD);
 		wifiHead.setText(0, 0, parent.getRes(R.string.lab_wifi));
 		
 		// Create the label.
@@ -117,14 +117,14 @@ class CommView
 		// We'll assume an ASU range from 0 to 31.
 		String[] ctext = { "000000000", "#", "T - Mobile X", "00" };
 		cellBar = new BargraphElement(parent, 5f, 6.2f,
-									  COLOUR_GRID, COLOUR_PLOT, ctext, 1);
+									  COLOUR_GRID, COLOUR_PLOT_HI, ctext, 1);
         cellBar.clearCid();
         cellBar.setLabel(msgNoData);
         cellBar.clearAsu();
 		cellBars = new BargraphElement[MAX_CELL];
 		for (int c = 0; c < MAX_CELL; ++c) {
 			cellBars[c] = new BargraphElement(parent, 5f, 6.2f,
-					                          COLOUR_GRID, COLOUR_GRID, ctext, 1);
+					                          COLOUR_GRID, COLOUR_PLOT, ctext, 1);
 	        cellBars[c].clearCid();
 	        cellBars[c].setLabel(msgNoData);
 	        cellBars[c].clearAsu();
@@ -142,9 +142,9 @@ class CommView
     	
     	// Create the right-side bars.
     	cRightBar = new Gauge(parent);
-    	cRightBar.setBackgroundColor(COLOUR_GRID);
-    	wLeftBar = new Gauge(parent);
-    	wLeftBar.setBackgroundColor(COLOUR_GRID);
+    	cRightBar.setBackgroundColor(COLOUR_HEAD);
+    	wRightBar = new Gauge(parent);
+    	wRightBar.setBackgroundColor(COLOUR_HEAD);
 	}
 
 
@@ -251,12 +251,12 @@ class CommView
         int wbarHeight = wifiStatus.getPreferredHeight();
         int gap = getInnerGap();
         int y = sy;
-        
+
         wifiHead.setGeometry(new Rect(sx, y, ex, y + wheadHeight));
         y += wheadHeight + gap;
-        
+
         // Now set up the right bar.
-        wLeftBar.setGeometry(new Rect(ex - bar, y, ex, ey));
+        wRightBar.setGeometry(new Rect(ex - bar, y, ex, ey));
         ex -= bar + pad;
 
         // Place the WiFi status field.
@@ -269,7 +269,7 @@ class CommView
             wifiBars[i].setGeometry(new Rect(sx, y, ex, y + bh));
             y += bh + gap;
         }
-        
+
         return y - gap;
 	}
 
@@ -753,9 +753,11 @@ class CommView
 				bar.setFreq(scan.frequency / 1000f);
                 bar.setLabel(scan.SSID);
                 bar.setAsu(asu);
-				bar.setDataColors(COLOUR_GRID,wifiConnection != null && 
-						scan.BSSID.equals(wifiConnection.getBSSID())?
-						COLOUR_PLOT:COLOUR_GRID);
+                int col = COLOUR_PLOT;
+                if (wifiConnection != null &&
+                                scan.BSSID.equals(wifiConnection.getBSSID()))
+                    col = COLOUR_PLOT_HI;
+				bar.setDataColors(COLOUR_GRID, col);
 
 				bar.setValue(asu);
 			}
@@ -789,7 +791,7 @@ class CommView
 		cRightBar.draw(canvas, now);
 		cellBar.draw(canvas, now);
 		wifiHead.draw(canvas, now);
-		wLeftBar.draw(canvas, now);
+		wRightBar.draw(canvas, now);
 		wifiStatus.draw(canvas, now);
 
 		// Draw the WiFi bars, as many as we have.
@@ -859,8 +861,10 @@ class CommView
 	private static final int WIFI_SCAN_INTERVAL = 3;
 	
 	// Grid and plot colours.
-	private static final int COLOUR_GRID = 0xffdfb682;
-	private static final int COLOUR_PLOT = 0xffd09cd0;
+    private static final int COLOUR_HEAD = 0xffb682df;
+	private static final int COLOUR_GRID = 0xffc090f0;
+	private static final int COLOUR_PLOT = 0xffc0a000;
+    private static final int COLOUR_PLOT_HI = 0xffff6060;
 
 	
 	// ******************************************************************** //
@@ -896,7 +900,7 @@ class CommView
 	
 	// The left-side bars for cell and wifi (just solid colour bars).
 	private Gauge cRightBar;
-	private Gauge wLeftBar;
+	private Gauge wRightBar;
 
 	// Current cell state, operator, cell ID and signal strength.
 	private int cellState = ServiceState.STATE_OUT_OF_SERVICE;
