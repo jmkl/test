@@ -50,18 +50,17 @@ you are in free fall.\n\
 can be used like a compass; keep the altitude at zero to see exactly which
 way the magnetic field is pointing.  The values displayed are in micro-Tesla.\n\
 \n\
-<b>ENV</b> shows some environmental sensor readouts, if your device
-has the appropriate sensors fitted: light level, object
-proximity, and temperature.  Each graph\'s header shows the current value
-in numeric form.  Light readings are in lux; proximity is measured in metres;
-temperature is in degrees celsius.\n\
+<b>ACO</b> performs an analysis of the local acoustic environment.  Displays
+a waveform diagram, a frequency spectrum, and power level of the sound
+as received by the device\'s microphone.\n\
 \n\
-Note that the values of these sensors can only be displayed
-if your device actually has the sensors equipped (the G1 phone, sadly,
-does not, but other devices do).  If the sensors are missing, simulated data
-can be displayed; see
-the preferences for this option.  A blue indicator in the header for each
-sensor indicates when it is in simulation mode.\n\
+The waveform and spectrum graphs auto-scale, so loud and quiet sounds can
+both be displayed in a useful way.  The Power meter shows the power level
+relative to the maximum possible input from the microphone, in dB; so
+0dB is the maximum the device can register, -10dB is 1/10th of this, -20dB
+is 1/100th of the max, etc.  The power meter also shows peak markers, and
+a background bar displays a rolling average.  The rolling average is also
+displayed numerically.\n\
 \n\
 <b>GEO</b> shows geographic information from the various providers which
 your device has.  \"Cellular\" displays location from the cellular phone network;
@@ -130,8 +129,7 @@ help screen (this one), and the about box.  In settings, you can set the
 basic sound level to off, quiet, or loud (note that you can also control the
 sound volume using the hardware volume keys).  You can enable WiFi ping;
 see \"EMS\" above.  You can set your preferences for how the display
-rotates, or not.  And you can enable simulation of data for missing
-sensors; see \"ENV\" above.\n\
+rotates, or not.\n\
 \n\
 <b>GENERAL</b>\n\
 \n\
