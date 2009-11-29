@@ -23,6 +23,7 @@ import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.MotionEvent;
 
 
@@ -143,5 +144,27 @@ abstract class DataView
 		return false;
     }
 
+
+    // ******************************************************************** //
+    // Save and Restore.
+    // ******************************************************************** //
+
+    /**
+     * Save the state of the application in the provided Bundle.
+     * 
+     * @param   icicle      The Bundle in which we should save our state.
+     */
+    protected void saveState(Bundle icicle) {
+    }
+
+
+    /**
+     * Restore the application state from the given Bundle.
+     * 
+     * @param   icicle      The Bundle containing the saved state.
+     */
+    protected void restoreState(Bundle icicle) {
+    }
+    
 }
 

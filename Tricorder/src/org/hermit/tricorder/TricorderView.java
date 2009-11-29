@@ -29,6 +29,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 
@@ -344,6 +345,36 @@ class TricorderView
         currentView.view.draw(canvas, now);
     }
 
+
+    // ******************************************************************** //
+    // Save and Restore.
+    // ******************************************************************** //
+
+    /**
+     * Save the state of the application in the provided Bundle.
+     * 
+     * @param   icicle      The Bundle in which we should save our state.
+     */
+    protected void saveState(Bundle icicle) {
+        // The current view is saved and restored at the top level.
+        
+        for (ViewDefinition vdef : ViewDefinition.values())
+            vdef.view.saveState(icicle);
+    }
+
+
+    /**
+     * Restore the application state from the given Bundle.
+     * 
+     * @param   icicle      The Bundle containing the saved state.
+     */
+    protected void restoreState(Bundle icicle) {
+        // The current view is saved and restored at the top level.
+        
+        for (ViewDefinition vdef : ViewDefinition.values())
+            vdef.view.restoreState(icicle);
+    }
+    
 
     // ******************************************************************** //
     // Class Data.

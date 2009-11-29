@@ -190,6 +190,7 @@ public class Tricorder
         Log.i(TAG, "onRestoreInstanceState()");
         
         super.onRestoreInstanceState(inState);
+        restoreState(inState);
     }
     
     
@@ -232,6 +233,7 @@ public class Tricorder
         Log.i(TAG, "onSaveInstanceState()");
         
         super.onSaveInstanceState(outState);
+        saveState(outState);
     }
 
     
@@ -695,6 +697,38 @@ public class Tricorder
 		public boolean running;
 	}
 	
+
+    // ******************************************************************** //
+    // Save and Restore.
+    // ******************************************************************** //
+
+    /**
+     * Save the state of the application in the provided Bundle.
+     * 
+     * @param   icicle      The Bundle in which we should save our state.
+     */
+    protected void saveState(Bundle icicle) {
+        icicle.putString("currentView", currentView.toString());
+        
+        mainView.saveState(icicle);
+    }
+
+
+    /**
+     * Restore the application state from the given Bundle.
+     * 
+     * @param   icicle      The Bundle containing the saved state.
+     */
+    protected void restoreState(Bundle icicle) {
+        String v = icicle.getString("currentView");
+        try {
+            ViewDefinition vdef = ViewDefinition.valueOf(v);
+            selectDataView(vdef);
+        } catch (IllegalArgumentException e) { }
+        
+        mainView.restoreState(icicle);
+    }
+    
 
 	// ******************************************************************** //
 	// Class Data.

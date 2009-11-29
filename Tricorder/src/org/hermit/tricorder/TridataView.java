@@ -548,14 +548,14 @@ class TridataView
 	private Num3DElement numView;
     private Rect numBounds;
     private MagnitudeElement xyzView;
-    
+
     // Do we show the XYZ display?  If not, it's numView.
     private boolean showXyz = false;
-	
+
 	// Simulate missing sensors.  If not null, sensors that aren't equipped
 	// will have simulated data generated using this generator.
 	private DataGenerator dataGenerator = null;
-	
+
 	// Some useful strings.
     private String title_vect_abs;
     private String title_mag_abs;
