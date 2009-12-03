@@ -14,6 +14,15 @@
                 android:defaultValue="8000" />
 
         <ListPreference
+                android:key="blockSize"
+                android:title="@string/prefs_block"
+                android:summary="@string/prefs_block_summary"
+                android:entries="@array/prefs_block_entries"
+                android:entryValues="@array/prefs_block_values"
+                android:dialogTitle="@string/prefs_block_title"
+                android:defaultValue="256" />
+
+        <ListPreference
                 android:key="decimateRate"
                 android:title="@string/prefs_decimate"
                 android:summary="@string/prefs_decimate_summary"

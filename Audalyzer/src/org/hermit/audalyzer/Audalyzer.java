@@ -297,7 +297,18 @@ public class Audalyzer
             sampleRate = 8000;
         Log.i(TAG, "Prefs: sampleRate " + sampleRate);
         audioInstrument.setSampleRate(sampleRate);
-
+        
+        // Get the desired block size.
+        int blockSize = 256;
+        try {
+            String bsize = prefs.getString("blockSize", null);
+            blockSize = Integer.valueOf(bsize);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad blockSize");
+        }
+        Log.i(TAG, "Prefs: blockSize " + blockSize);
+        audioInstrument.setBlockSize(blockSize);
+        
         // Get the desired decimation.
         int decimateRate = 2;
         try {

@@ -80,6 +80,16 @@ public class InstrumentPanel
     
 
     /**
+     * Set the input block size for this instrument.
+     * 
+     * @param   size        The desired block size, in samples.
+     */
+    public void setBlockSize(int size) {
+        audioAnalyser.setBlockSize(size);
+    }
+    
+
+    /**
      * Set the decimation rate for this instrument.
      * 
      * @param   rate        The desired decimation.  Only 1 in rate blocks

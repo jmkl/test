@@ -4,16 +4,30 @@
     
     <!-- Entry names for the sample rate menu. -->
     <string-array name="prefs_sample_entries">
-        <item>Standard</item>
-        <item>Medium</item>
-        <item>High</item>  
+        <item>8,000 (4 kHz)</item>
+        <item>16,000 (8 kHz)</item>
+        <item>22,050 (11 kHz)</item>
     </string-array>
 
     <!-- Values for the sample rate menu. -->
     <string-array name="prefs_sample_values">
         <item>8000</item>  
-        <item>12000</item>
         <item>16000</item>
+        <item>22050</item>
+    </string-array>
+    
+    <!-- Entry names for the block size menu. -->
+    <string-array name="prefs_block_entries">
+        <item>256 samples</item>
+        <item>512 samples</item>
+        <item>1024 samples</item>  
+    </string-array>
+
+    <!-- Values for the block size menu. -->
+    <string-array name="prefs_block_values">
+        <item>256</item>  
+        <item>512</item>
+        <item>1024</item>
     </string-array>
     
     <!-- Entry names for the decimation menu. -->
