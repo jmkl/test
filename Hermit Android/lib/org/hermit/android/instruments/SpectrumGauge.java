@@ -170,7 +170,9 @@ public class SpectrumGauge
         paint.setTextSize(ls);
         for (int i = 0; i <= 10; ++i) {
             int f = nyquistFreq * i / 10;
-            String text = (f >= 1000 ? "" + (f / 1000) + "." + (f / 100 % 10) + "k" : "" + f);
+            String text = f >= 10000 ? "" + (f / 1000) + "k" :
+                          f >= 1000 ? "" + (f / 1000) + "." + (f / 100 % 10) + "k" :
+                          "" + f;
             float tw = paint.measureText(text);
             float lx = sx + i * (float) bw / 10f + 1 - (tw / 2);
             canvas.drawText(text, lx, ly, paint);
@@ -226,7 +228,10 @@ public class SpectrumGauge
                 // Draw the bar.
                 final float x = spectGraphX + i * bw + 1;
                 final float y = be - data[i] * scale * bh;
-                canvas.drawRect(x, y, x + bw, be, paint);
+                if (bw <= 1.0f)
+                    canvas.drawLine(x, y, x, be, paint);
+                else
+                    canvas.drawRect(x, y, x + bw, be, paint);
             }
         }
     }
