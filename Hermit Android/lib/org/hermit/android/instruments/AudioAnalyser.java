@@ -52,11 +52,11 @@ public class AudioAnalyser
         
         audioReader = new AudioReader();
         
-        spectrumAnalyser = new FFTTransformer(FFT_BLOCK);
+        spectrumAnalyser = new FFTTransformer(inputBlockSize);
         
         // Allocate the spectrum data.
-        spectrumData = new float[FFT_BLOCK / 2];
-        spectrumHist = new float[FFT_BLOCK / 2][historyLen];
+        spectrumData = new float[inputBlockSize / 2];
+        spectrumHist = new float[inputBlockSize / 2][historyLen];
         spectrumIndex = 0;
 
         biasRange = new float[2];
@@ -82,6 +82,28 @@ public class AudioAnalyser
     
 
     /**
+     * Set the input block size for this instrument.
+     * 
+     * @param   size        The desired block size, in samples.  Typical
+     *                      values would be 256, 512, or 1024.  Larger block
+     *                      sizes will mean more work to analyse the spectrum.
+     */
+    public void setBlockSize(int size) {
+        inputBlockSize = size;
+
+        spectrumAnalyser = new FFTTransformer(inputBlockSize);
+
+        // Allocate the spectrum data.
+        spectrumData = new float[inputBlockSize / 2];
+        spectrumHist = new float[inputBlockSize / 2][historyLen];
+
+        // The spectrum gauge needs to know this.
+//        if (spectrumGauge != null)
+//            spectrumGauge.setBlockSize(size);
+    }
+    
+
+    /**
      * Set the decimation rate for this instrument.
      * 
      * @param   rate        The desired decimation.  Only 1 in rate blocks
@@ -101,7 +123,7 @@ public class AudioAnalyser
         historyLen = len;
         
         // Set up the history buffer.
-        spectrumHist = new float[FFT_BLOCK / 2][historyLen];
+        spectrumHist = new float[inputBlockSize / 2][historyLen];
         spectrumIndex = 0;
     }
     
@@ -128,7 +150,7 @@ public class AudioAnalyser
     public void measureStart() {
         audioProcessed = audioSequence = 0;
         
-        audioReader.startReader(sampleRate, FFT_BLOCK * sampleDecimate, new AudioReader.Listener() {
+        audioReader.startReader(sampleRate, inputBlockSize * sampleDecimate, new AudioReader.Listener() {
             @Override
             public final void onReadComplete(short[] buffer) {
                 receiveAudio(buffer);
@@ -269,14 +291,14 @@ public class AudioAnalyser
 
             // Draw the waveform now, while we have the raw data.
             if (waveformGauge != null) {
-                SignalPower.biasAndRange(buffer, len - FFT_BLOCK, FFT_BLOCK, biasRange);
+                SignalPower.biasAndRange(buffer, len - inputBlockSize, inputBlockSize, biasRange);
                 final float bias = biasRange[0];
                 float range = biasRange[1];
                 if (range < 1f)
                     range = 1f;
                 
 //                long wavStart = System.currentTimeMillis();
-                waveformGauge.update(buffer, len - FFT_BLOCK, FFT_BLOCK, bias, range);
+                waveformGauge.update(buffer, len - inputBlockSize, inputBlockSize, bias, range);
 //                long wavEnd = System.currentTimeMillis();
 //                parentSurface.statsTime(1, (wavEnd - wavStart) * 1000);
             }
@@ -287,7 +309,7 @@ public class AudioAnalyser
 
             // If we have a spectrum analyser, set up the FFT input data.
             if (spectrumGauge != null)
-                spectrumAnalyser.setInput(buffer, len - FFT_BLOCK, FFT_BLOCK);
+                spectrumAnalyser.setInput(buffer, len - inputBlockSize, inputBlockSize);
 
             // Tell the reader we're done with the buffer.
             buffer.notify();
@@ -353,9 +375,6 @@ public class AudioAnalyser
 	@SuppressWarnings("unused")
 	private static final String TAG = "instrument";
 
-    // Audio buffer size, in samples.
-    private static final int FFT_BLOCK = 256;
-
 	
 	// ******************************************************************** //
 	// Private Data.
@@ -368,7 +387,7 @@ public class AudioAnalyser
     private final AudioReader audioReader;
     
     // Fourier Transform calculator we use for calculating the spectrum.
-    private final FFTTransformer spectrumAnalyser;
+    private FFTTransformer spectrumAnalyser;
     
     // The gauges associated with this instrument.  Any may be null if not
     // in use.
@@ -378,7 +397,10 @@ public class AudioAnalyser
     
     // The desired sampling rate for this analyser, in samples/sec.
     private int sampleRate = 8000;
-    
+
+    // Audio input block size, in samples.
+    private int inputBlockSize = 256;
+
     // The desired decimation rate for this analyser.  Only 1 in
     // sampleDecimate blocks will actually be processed.
     private int sampleDecimate = 1;
