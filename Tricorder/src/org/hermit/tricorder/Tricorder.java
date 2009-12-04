@@ -128,9 +128,8 @@ public class Tricorder
         super.onCreate(icicle);
         
         createMessageBox(R.string.button_close);
-        setAboutInfo(R.string.about_text, R.string.help_text);
+        setAboutInfo(R.string.about_text);
         setHomeInfo(R.string.button_homepage, R.string.url_homepage);
-        setManualInfo(R.string.button_manual, R.string.url_manual);
         setLicenseInfo(R.string.button_license, R.string.url_license);
 
         // We don't want a title bar or status bar.
@@ -448,7 +447,10 @@ public class Tricorder
             });
         	break;
     	case R.id.menu_help:
-    	    showHelp();
+            // Launch the help activity as a subactivity.
+            Intent hIntent = new Intent();
+            hIntent.setClass(this, Help.class);
+            startActivity(hIntent);
     	    break;
     	case R.id.menu_about:
     	    showAbout();
