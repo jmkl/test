@@ -24,12 +24,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
 for more details.\n</string>
 
-       
-    <string name="help_text">Audalyzer displays your ambient audio
-environment in three forms: as a waveform display, as a frequency spectrum,
-and as a dB meter.\n\
-</string>
-
 
     <string name="about_text"><b>Audalyzer</b> by Ian Cameron Smith
 (headstay).\n\

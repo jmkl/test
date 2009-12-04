@@ -78,5 +78,30 @@
         <item>4</item>  
     </string-array>
     
+    
+    <!-- Help section titles. -->
+    <string-array name="help_titles">
+        <item>Introduction</item>
+        <item>Display</item>
+        <item>Preferences</item>  
+    </string-array>
+
+    <!-- Help section texts. -->
+    <string-array name="help_texts">
+        <item>This is a simple audio analyser for Android. It displays sound
+        	  readings from the microphone as a waveform display, as a
+        	  frequency spectrum, and as a dB meter. dB levels are relative
+        	  to the maximum input level of your device.\n\
+			  \n\
+			  Since microphone sensitivity varies between individual devices,
+			  let alone models, it\'s impossible to generate accurate sound
+			  level readings with this app; so all data should be taken
+			  with a pinch of salt.  Still, it may be interesting when used
+			  to compare sound readings at different locations.</item>
+        <item>The display shows an audio waveform, a spectrum analysis
+              if the input audio, and a dB meter.</item>  
+        <item>In the preferences, you can select block size and stuff.</item>
+    </string-array>
+    
 </resources>
 

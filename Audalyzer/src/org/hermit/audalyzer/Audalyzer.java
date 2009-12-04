@@ -74,7 +74,7 @@ public class Audalyzer
 
         // Set up the standard dialogs.
         createMessageBox(R.string.button_close);
-        setAboutInfo(R.string.about_text, R.string.help_text);
+        setAboutInfo(R.string.about_text);
         setHomeInfo(R.string.button_homepage, R.string.url_homepage);
         setLicenseInfo(R.string.button_license, R.string.url_license);
 
@@ -255,7 +255,10 @@ public class Audalyzer
             });
             break;
         case R.id.menu_help:
-            showHelp();
+            // Launch the help activity as a subactivity.
+            Intent hIntent = new Intent();
+            hIntent.setClass(this, Help.class);
+            startActivity(hIntent);
             break;
         case R.id.menu_about:
             showAbout();
