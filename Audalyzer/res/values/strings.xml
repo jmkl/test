@@ -74,6 +74,9 @@ for more details.\n</string>
     <string name="prefs_stats">Show performance stats</string>
     <string name="prefs_stats_summary_off">Performance stats are not displayed.</string>
     <string name="prefs_stats_summary_on">Performance stats are displayed.</string>
+            
+    <!-- Help strings. -->
+    <string name="help_title">Audalyzer User\'s Manual</string>
         
     <!-- Button strings. -->
     <string name="button_ok">OK</string>

@@ -81,26 +81,126 @@
     
     <!-- Help section titles. -->
     <string-array name="help_titles">
-        <item>Introduction</item>
-        <item>Display</item>
-        <item>Preferences</item>  
+		<item>Introduction</item>
+		<item>Display</item>
+		<item>Menu</item>
+		<item>Settings</item>  
+		<item>@array/help_prefs_titles</item>
+		<item>The Project</item>
     </string-array>
 
     <!-- Help section texts. -->
     <string-array name="help_texts">
-        <item>This is a simple audio analyser for Android. It displays sound
-        	  readings from the microphone as a waveform display, as a
-        	  frequency spectrum, and as a dB meter. dB levels are relative
-        	  to the maximum input level of your device.\n\
-			  \n\
-			  Since microphone sensitivity varies between individual devices,
-			  let alone models, it\'s impossible to generate accurate sound
-			  level readings with this app; so all data should be taken
-			  with a pinch of salt.  Still, it may be interesting when used
-			  to compare sound readings at different locations.</item>
-        <item>The display shows an audio waveform, a spectrum analysis
-              if the input audio, and a dB meter.</item>  
-        <item>In the preferences, you can select block size and stuff.</item>
+    
+<item>This is a simple audio analyser for Android. It displays sound
+readings from the microphone as a waveform display, as a
+frequency spectrum, and as a dB meter. dB levels are relative
+to the maximum input level of your device.\n\
+\n\
+Since microphone sensitivity varies between individual devices,
+let alone models, it\'s impossible to generate accurate sound
+level readings with this app; so all data should be taken
+with a pinch of salt.  Still, it may be interesting when used
+to compare sound readings at different locations.</item>
+			  
+<item>The display shows an analysis of the local acoustic environment.  The
+first section shows a waveform display of the sound picked up by the
+microphone; this display auto-scales to handle a wide range of sound levels.\n\
+\n\
+Below this a frequency spectrum is displayed.  The horizontal scale shows the
+frequencies displayed; the maximum frequency will depend on the selected
+sampling rate (see \"Settings\").  Again, this display auto-scales to
+handle a wide range of sound levels.\n\
+\n\
+The third section displays the absolute power level of the sound as received
+by the device\'s microphone.  This is displayed as decibels (dB) relative
+to the maximum possible input from the microphone; so 0dB is the maximum
+the device can register, -10dB is 1/10th of this, -20dB is 1/100th of the
+max, etc.  Each 10 dB multiplies or divides the level by 10.\n\
+\n\
+The power meter also shows peak markers, and
+a background bar displays a rolling average.  The rolling average is also
+displayed numerically.</item>
+              
+<item>The device\'s \"menu\" button pops up a menu containing a number
+of options:\n\
+• <b>Settings</b> takes you to the settings screen; see \"Settings\" below.\n\
+• <b>Help</b> displays this help.\n\
+• <b>About</b> displays an about box, with links to the license and
+the project home page.\n\
+• <b>Disclaimer</b> re-displays the one-time warning screen.\n\
+• <b>Exit</b> stops the application.</item>
+              
+<item>Audalyzer has a number of user-configurable options in its Settings
+screen.  This screen is reached through the menu, as described under \"Menu\"
+above.  The available settings are detailed in the following sections.</item>
+
+<item>@array/help_prefs_texts</item>
+
+<item>You\'ll see a link to the project home page in the about box; check it
+out for more info on Audalyzer.  There is a discussion board where you
+can suggest ideas.  If you want to report a bug, use the Issue tracker
+on this page.\n\
+\n\
+Audalyzer is an open project, so if you
+want to join in and make contributions, you can.  See the project page for
+information.</item>
+
+    </string-array>
+        
+        
+    <!-- Section titles for the settings help. -->
+    <string-array name="help_prefs_titles">
+
+<item>Audio Analysis</item>  
+
+<item>Display</item>
+
+<item>Debug</item>  
+
+    </string-array>
+
+    <!-- Section contents for the screens help. -->
+    <string-array name="help_prefs_texts">
+
+<item><b>Sample rate</b> sets the audio sampling rate in samples/second.  A
+higher rate will require more processing power.  The
+frequency range of the spectrum analyser is half the sample rate;
+this frequency range is displayed alongside the sample rate.\n\
+\n\
+<b>Block size</b> sets the size in samples of the data block processed
+by the spectrum analyser.  A larger block size provides finer frequency
+resolution but with more delay and more processing power required.\n\
+\n\
+<b>Decimation</b> reduces the processing workload by only analysing a subset
+of the input data blocks.\n\
+\n\
+<b>Histogram averaging</b> sets the averaging interval of the spectrum analyser.
+\"None\" tells it to display instantaneous values; \"Fast\" displays the rolling
+average over a few samples; and \"Slow\" displays a longer-term rolling
+average.</item>
+
+<item><b>Screen orientation</b> determines whether and how the application
+will switch its display between portrait and landscape:\n\
+• <b>System default</b> -- the system will determine the orientation based
+on the task context.\n\
+• <b>Portrait</b> -- lock to portrait mode.\n\
+• <b>Landscape</b> -- lock to landscape mode.\n\
+• <b>User preference</b> -- the app will switch orientation according to
+the global device settings.\n\
+• <b>Device orientation</b> -- follow the physical orientation of the device.\n\
+\n\
+<b>Keep device awake</b> tells the application to keep the screen active
+until the user manually leaves the application.  This is useful if you want
+to set Audalyzer up to continually display your sound level over a long
+period; however, be aware that it will quickly drain your battery.</item>
+
+<item><b>Show performance stats</b> tells Audalyzer to display certain
+performance statistics on-screen.  These stats are updated every 5
+seconds and include frames per second, computation time, drawing time, and
+the average time taken to perform frequency analysis (FFT) of a block of
+data.</item>
+
     </string-array>
     
 </resources>

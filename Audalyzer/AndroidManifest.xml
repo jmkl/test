@@ -8,7 +8,7 @@
 		android:debuggable="true">
 
 		<activity android:name=".Audalyzer" android:label="@string/app_name"
-			android:launchMode="singleTop" android:configChanges="keyboardHidden|orientation">
+			android:launchMode="singleTop" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -21,7 +21,7 @@
 			</intent-filter>
 		</activity>
 
-		<activity android:name=".Help">
+		<activity android:name=".Help" android:launchMode="singleTop" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout" android:label="@string/help_title">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"></action>
 			</intent-filter>
