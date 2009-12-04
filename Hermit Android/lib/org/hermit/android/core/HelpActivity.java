@@ -287,7 +287,7 @@ public class HelpActivity
             setOrientation(VERTICAL);
             
             TextView bt = new TextView(parent);
-            bt.setPadding(level * 32, 0, 0, 0);
+            bt.setPadding((level + 1) * 32, 0, 0, 0);
             bt.setText(text);
             LayoutParams lp = new LayoutParams(FPAR, WCON);
             addView(bt, lp);
