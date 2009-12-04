@@ -313,12 +313,10 @@ public class Tricorder
     	// Much of the layout size is constrained by the text size.
     	// Calculate the base text size from the screen size.
     	float baseTextSize = (float) minDim * 0.0635f;
-		if (baseTextSize < 12)
-			baseTextSize = 12;
-//		else if (baseTextSize > 32)
-//			baseTextSize = 32;
 		Gauge.setTextTypeface(FONT_FACE);
 		Gauge.setBaseTextSize(baseTextSize);
+        Gauge.setMiniTextSize(baseTextSize * 0.85f);
+        Gauge.setTinyTextSize(baseTextSize * 0.7f);
 		Gauge.setTextScaleX(FONT_SCALEX);
 		
 		navBarWidth = (int) ((float) minDim * 0.22f);

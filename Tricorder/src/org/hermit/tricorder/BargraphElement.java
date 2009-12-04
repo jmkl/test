@@ -63,7 +63,6 @@ class BargraphElement
 		
 		// Create the label.
     	headerBar = new TextGauge(parent, fields, rows);
-    	headerBar.setTextSize(getTinyTextSize());
     	headerBar.setTextColor(plotCol);
     	fieldBuffers = headerBar.getBuffer();
     	
@@ -93,6 +92,7 @@ class BargraphElement
 		int y = bounds.top;
 		
 		// First position the header bar.
+        headerBar.setTextSize(getMiniTextSize());
 		int headHeight = headerBar.getPreferredHeight();
 		headerBar.setGeometry(new Rect(bounds.left, y,
 									   bounds.right, y + headHeight));
