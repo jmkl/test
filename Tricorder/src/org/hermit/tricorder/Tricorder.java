@@ -526,6 +526,17 @@ public class Tricorder
             sampleRate = 8000;
         Log.i(TAG, "Prefs: sampleRate " + sampleRate);
         analyser.setSampleRate(sampleRate);
+        
+        // Get the desired block size.
+        int blockSize = 256;
+        try {
+            String bsize = prefs.getString("blockSize", null);
+            blockSize = Integer.valueOf(bsize);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad blockSize");
+        }
+        Log.i(TAG, "Prefs: blockSize " + blockSize);
+        analyser.setBlockSize(blockSize);
 
         // Get the desired decimation.
         int decimateRate = 2;

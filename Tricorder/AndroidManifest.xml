@@ -15,13 +15,13 @@
 		</activity>
 
 
-		<activity android:name=".Preferences" android:label="@string/prefs_title">
+		<activity android:name=".Preferences" android:label="@string/prefs_title" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 			</intent-filter>
 		</activity>
 
-		<activity android:name=".Help">
+		<activity android:name=".Help" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout" android:label="@string/help_title">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"></action>
 			</intent-filter>

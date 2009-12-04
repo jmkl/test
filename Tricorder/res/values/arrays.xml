@@ -33,19 +33,34 @@
         <item>2</item>  
         <item>4</item>  
     </string-array>
-        
+    
+    
     <!-- Entry names for the sample rate menu. -->
     <string-array name="prefs_sample_entries">
-        <item>Standard</item>
-        <item>Medium</item>
-        <item>High</item>  
+        <item>8,000 (4 kHz)</item>
+        <item>16,000 (8 kHz)</item>
+        <item>22,050 (11 kHz)</item>
     </string-array>
 
     <!-- Values for the sample rate menu. -->
     <string-array name="prefs_sample_values">
         <item>8000</item>  
-        <item>12000</item>
         <item>16000</item>
+        <item>22050</item>
+    </string-array>
+    
+    <!-- Entry names for the block size menu. -->
+    <string-array name="prefs_block_entries">
+        <item>256 samples</item>
+        <item>512 samples</item>
+        <item>1024 samples</item>  
+    </string-array>
+
+    <!-- Values for the block size menu. -->
+    <string-array name="prefs_block_values">
+        <item>256</item>  
+        <item>512</item>
+        <item>1024</item>
     </string-array>
     
     <!-- Entry names for the decimation menu. -->
@@ -86,7 +101,10 @@
 		<item>Views</item>
 		<item>@array/help_screens_titles</item>
 		<item>Menu</item>
-		<item>General</item>
+		<item>Settings</item>
+		<item>@array/help_prefs_titles</item>
+		<item>Caveats</item>
+		<item>The Project</item>
 	</string-array>
 
     <!-- Section contents for the top-level help. -->
@@ -95,26 +113,28 @@
 <item>Tricorder displays real data from the sensors built into your device.\n\
 \n\
 The following sections describe how to use Tricorder, and how to interpret
-the displays.  For further information, see the "About" box, which contains
+the displays.  For further information, see the \"About\" box, which contains
 a link to the project home page.</item>
 
-<item>Select between the available data views (see Views below) using the buttons
-on the left.\n\
+<item>The main controls in Tricorder are the buttons down the left hand side
+of the screen.  These allow you to select between the available data views
+(see \"Views\" below).  Additionally, some views have their own controls:\n\
 \n\
-In the GRAV and MAG views:\n\
-• touch the X/Y axis plot to switch between absolute and relative modes.
-When you enter relative mode, the current values are stored; the plot
-starts displaying changes relative to those values.\n\
-• touch the numeric data display to toggle it to an X/Y/Z graph plot; red
-is X, green is Y, and blue is Z.\n\
+In the <b>GRAV</b> and <b>MAG</b> views:\n\
+• touch the X/Y axis plot to switch between absolute and relative modes.\n\
+• touch the numeric data display to toggle it to an X/Y/Z graph plot.\n\
 \n\
-In the GEO view, touch the satellite display to change its mode.\n\
+In the <b>GEO</b> view, touch the satellite display to change its mode.\n\
 \n\
-In the EMS view, touch the \"WiFi Pwr\" button at the top-right to turn the
-WiFi on and off.\n\
+In the <b>EMS</b> view, touch the \"WiFi Pwr\" button at the top-right to
+turn the WiFi on and off.\n\
 \n\
-In the SOL view, touch the \"Mode Alt\" button at the top-right to display
-different information; tap the Sun image to see different Sun views.</item>
+In the <b>SOL</b> view, touch the \"Mode Alt\" button at the top-right
+to display different information; tap the Sun image to see different Sun
+views.\n\
+\n\
+More detail on controls within the views is provided in their help
+sections below.</item>
 
 <item>Tricorder has multiple views, which you can switch between
 using the buttons on the left.  Each view displays a particular type of
@@ -122,23 +142,34 @@ information, as detailed in the sections below.</item>
 
 <item>@array/help_screens_texts</item>
 
-<item>The \"menu\" button gets you to the program settings, the
-help screen (this one), and the about box.  In settings, you can set the
-basic sound level to off, quiet, or loud (note that you can also control the
-sound volume using the hardware volume keys).  You can enable WiFi ping;
-see \"EMS\" above.  You can set your preferences for how the display
-rotates, or not.</item>
+<item>The device\'s \"menu\" button pops up a menu containing a number
+of options:\n\
+• <b>Settings</b> takes you to the settings screen; see \"Settings\" below.\n\
+• <b>Help</b> displays this help.\n\
+• <b>About</b> displays an about box, with links to the license and
+the project home page.\n\
+• <b>Exit</b> stops the Tricorder application.</item>
+
+<item>Tricorder has a number of user-configurable options in its Settings
+screen.  This screen is reached through the menu, as described under \"Menu\"
+above.  The available settings are detailed in the following sections.</item>
+
+<item>@array/help_prefs_texts</item>
 
 <item>Note that the availability and accuracy of the information
-presented depends
-on the underlying hardware.  In particular the magnetic field data is known
-to be unreliable on some currently available devices, and the gravity reading
-can be affected by playing music.\n\
+presented depends on the underlying hardware.  In particular the magnetic
+field data is known to be unreliable on some currently available devices,
+and the gravity reading can be affected by any vibration, including
+playing music.</item>
+
+<item>You\'ll see a link to the project home page in the about box; check it
+out for more info on Tricorder.  There is a discussion board where you
+can suggest ideas.  If you want to report a bug, use the Issue tracker
+on this page.\n\
 \n\
-You\'ll see a link to the project
-home page at the bottom of this screen; check it out for more info on
-Tricorder.  Tricorder is an open project, so if you want to join in and
-make contributions, you can.  See the project page for information.</item>
+Tricorder is an open project, so if you
+want to join in and make contributions, you can.  See the project page for
+information.</item>
 
     </string-array>
     
@@ -154,7 +185,7 @@ make contributions, you can.  See the project page for information.</item>
 
 <item>The GEO Screen</item>  
 
-<item>The EMS Screen</item>  
+<item>The EMS Screen</item>
 
 <item>The SOL Screen</item>  
 
@@ -166,42 +197,80 @@ make contributions, you can.  See the project page for information.</item>
 <item><b>GRAV</b> shows the local gravitational field, showing the individual
 components on an X/Y plot and a vertical gauge for the Z axis.  Additionally
 an altitude gauge shows the angle above or below the tricorder\'s horizontal
-plane.  Below this the absolute magnitude of the gravitational field
-is graphed, and then the raw numeric data is displayed, in units of m/s²:
-\"X\", \"Y\" and \"Z\" are the acceleration values in each of the three
-dimensions; \"Az\" is the direction of the gravitational field in the X-Y
-plane; \"Alt\" is the elevation of the gravitation pull above or below
-the horizontal, in degrees; and \"Mag\" is the absolute magnitude of the
-gravitational field, in units of m/s².  When this becomes zero,
-you are in free fall.</item>
-
-<item><b>MAG</b> shows the local magnetic field, in the same format.  The X-Y plot
-can be used like a compass; keep the altitude at zero to see exactly which
-way the magnetic field is pointing.  The values displayed are in micro-Tesla.</item>
-    
-<item><b>ACO</b> performs an analysis of the local acoustic environment.  Displays
-a waveform diagram, a frequency spectrum, and power level of the sound
-as received by the device\'s microphone.\n\
+plane.  The scale lines show multiples of 1g.  Note that gravity is equivalent
+to an upwards acceleration; Tricorder shows the direction of this
+acceleration.\n\
 \n\
-The waveform and spectrum graphs auto-scale, so loud and quiet sounds can
-both be displayed in a useful way.  The Power meter shows the power level
-relative to the maximum possible input from the microphone, in dB; so
+Below this the absolute magnitude of the gravitational field
+is graphed.  Again, the scale lines show multiples of 1g.  The graph
+automatically adjusts to show the range of measured values.\n\
+\n\
+The third section displays the raw numeric data: \"X\", \"Y\"
+and \"Z\" are the acceleration values in each of the three dimensions, in
+m/s²; \"Az\" is the direction of the gravitational field in the X-Y
+plane, in degrees relative to the top of the device; \"Alt\" is the elevation
+of the acceleration above or below the horizontal, in degrees; and \"Mag\"
+is the absolute magnitude of the gravitational field, in m/s².  When this
+becomes zero, you are in free fall.\n\
+\n\
+You can touch the X/Y axis plot to switch between absolute and relative modes.
+When you enter relative mode, the current values are stored; the plot
+starts displaying changes relative to those values.\n\
+\n\
+Touch the numeric data display to toggle it to an X/Y/Z graph plot; red
+is X, green is Y, and blue is Z.\n\
+</item>
+
+<item><b>MAG</b> shows the local magnetic field, showing the individual
+components on an X/Y plot and a vertical gauge for the Z axis.  Additionally
+an altitude gauge shows the angle above or below the tricorder\'s horizontal
+plane.  The scale lines show multiples of 60 micro-tesla, the maximum
+magnetic field on Earth\'s surface.  The X-Y plot
+can be used like a compass; keep the altitude at zero to see exactly which
+way the magnetic field is pointing.\n\
+\n\
+Below this the absolute magnitude of the magnetic field is graphed.  Again,
+the scale lines show multiples of 60 micro-tesla.  The graph
+automatically adjusts to show the range of measured values.\n\
+\n\
+The third section displays the raw numeric data: \"X\", \"Y\"
+and \"Z\" are the field values in each of the three dimensions, in
+micro-tesla; \"Az\" is the direction of the magnetic field in the X-Y
+plane, in degrees relative to the top of the device; \"Alt\" is the elevation
+of the field above or below the horizontal, in degrees; and \"Mag\"
+is the absolute magnitude of the magnetic field, in micro-tesla.\n\
+\n\
+You can touch the X/Y axis plot to switch between absolute and relative modes.
+When you enter relative mode, the current values are stored; the plot
+starts displaying changes relative to those values.\n\
+\n\
+Touch the numeric data display to toggle it to an X/Y/Z graph plot; red
+is X, green is Y, and blue is Z.\n\
+</item>
+    
+<item><b>ACO</b> displays an analysis of the local acoustic environment.  The
+first section shows a waveform display of the sound picked up by the
+microphone; this display auto-scales to handle a wide range of sound levels.\n\
+\n\
+Below this a frequency spectrum is displayed.  The horizontal scale shows the
+frequencies displayed; the maximum frequency will depend on the selected
+sampling rate (see \"Settings\").  Again, this display auto-scales to
+handle a wide range of sound levels.\n\
+\n\
+The third section displays the absolute power level of the sound as received
+by the device\'s microphone.  This is displayed as decibels (dB) relative
+to the maximum possible input from the microphone; so
 0dB is the maximum the device can register, -10dB is 1/10th of this, -20dB
-is 1/100th of the max, etc.  The power meter also shows peak markers, and
+is 1/100th of the max, etc.  Each 10 dB multiplies or divides the level by 10.
+The power meter also shows peak markers, and
 a background bar displays a rolling average.  The rolling average is also
 displayed numerically.</item>
 
 <item><b>GEO</b> shows geographic information from the various providers which
 your device has.  \"Cellular\" displays location from the cellular phone network;
-\"GPS\" is the GPS location, if GPS is enabled.  Below these an indication
-of the satellites in view is displayed; tap it to toggle between a sky diagram
-and signal strength bars.  The sky diagram also indicates true north (not
-magnetic north, although the accuracy still depends on your device\'s
-magnetometer, which may not be great).\n\
-\n\
-Locations are shown in latitude and longitude degrees and minutes, with
-fractional minutes.  \"Alt\" is the altitude in metres, and \"Acc\" is the
-estimated accuracy of
+\"GPS\" is the reported GPS location, if GPS is enabled.  Locations are shown
+in latitude and longitude degrees and minutes, with fractional minutes.
+\"Alt\" is the altitude in metres, and \"Acc\" is the estimated accuracy of
 the fix in metres.  If the location provider provides course data,
 then \"Head\" is the direction you are moving in, and \"Spd\" is your speed
 in metres per second.\n\
@@ -209,7 +278,13 @@ in metres per second.\n\
 The latest available fix data, if there is any, will always be displayed.
 Note that this data may be old.  The data is coloured to indicate its
 age, and the age is also shown in the header bar for each location
-provider.</item>
+provider.\n\
+\n\
+Below these an indication of the satellites in view is displayed; tap it to
+toggle between a sky diagram and signal strength bars.  The sky diagram also
+indicates true north, with magnetic north drawn as a compass needle.  Note
+that the accuracy of the north indication depends on your device\'s
+magnetometer, which can be very poor.</item>
 
 <item><b>EMS</b> scans the electromagnetic spectrum for
 radio signals (as supported by hardware).  Detected signals are shown
@@ -250,6 +325,65 @@ The Sun images are downloaded directly from SOHO.  If you see banner text
 on the image, like \"CCD Bakeout\", this generally indicates that images
 are unavailable as the satellite is doing a maintenance routine on the
 camera.  Google \"CCD Bakeout\" for more (it\'s interesting).</item>
+
+    </string-array>
+    
+    
+    <!-- Section titles for the settings help. -->
+    <string-array name="help_prefs_titles">
+    
+<item>Sound</item>
+
+<item>Display</item>
+
+<item>Data</item>  
+
+<item>Audio Analysis</item>  
+
+    </string-array>
+
+    <!-- Section contents for the screens help. -->
+    <string-array name="help_prefs_texts">
+    
+<item><b>Sound level</b> adjusts the base volume of Tricorder\'s sound
+effects: off, quiet, or normal.  The actual volume level is controlled
+by the device\'s \"Media Volume\" setting; inside Tricorder,
+the hardware volume keys can be used to adjust this.\n\
+\n\
+<b>WiFi ping</b> turns the WiFi ping mode on or off.  When enabled,
+in the EMS screen an audible ping will be used to indicate the strength
+of the strongest available WiFi signal.</item>
+
+<item><b>Screen orientation</b> determines whether and how Tricorder will
+switch its display between portrait and landscape:\n\
+• <b>System default</b> -- the system will determine the orientation based
+on the task context.\n\
+• <b>Portrait</b> -- lock to portrait mode.\n\
+• <b>Landscape</b> -- lock to landscape mode.\n\
+• <b>User preference</b> -- Tricorder will switch orientation according to
+the global device settings.\n\
+• <b>Device orientation</b> -- follow the physical orientation of the device.</item>
+
+<item><b>Simulate missing</b> tells Tricorder to display simulated data
+for any sensor which is not equipped.  Currently this setting has no
+effect.</item>
+
+<item><b>Sample rate</b> sets the audio sampling rate in samples/second.  A
+higher rate will require more processing power.  The
+frequency range of the spectrum analyser is half the sample rate;
+this frequency range is displayed alongside the sample rate.\n\
+\n\
+<b>Block size</b> sets the size in samples of the data block processed
+by the spectrum analyser.  A larger block size provides finer frequency
+resolution but with more delay and more processing power required.\n\
+\n\
+<b>Decimation</b> reduces the processing workload by only analysing a subset
+of the input data blocks.\n\
+\n\
+<b>Histogram averaging</b> sets the averaging interval of the spectrum analyser.
+\"None\" tells it to display instantaneous values; \"Fast\" displays the rolling
+average over a few samples; and \"Slow\" displays a longer-term rolling
+average.</item>
 
     </string-array>
     
