@@ -42,6 +42,9 @@ import android.widget.TextView;
  * <p>To use: subclass this activity, and have the subclass call
  * {@link #addHelpFromArrays(int, int)}.  Then start this activity when
  * you need to display help.
+ * 
+ * <p>It is recommended that you configure this activity to handle orientation
+ * and keyboardHidden configuration changes in your app manifest.
  */
 public class HelpActivity
     extends Activity
@@ -65,6 +68,47 @@ public class HelpActivity
         // Create a scrolling panel as the main view.
         mainView = new ScrollView(this);
         setContentView(mainView);
+    }
+
+
+    /**
+     * This method is called after onStart() when the activity is being
+     * re-initialized from a previously saved state, given here in state.
+     * Most implementations will simply use onCreate(Bundle) to restore
+     * their state, but it is sometimes convenient to do it here after
+     * all of the initialization has been done or to allow subclasses
+     * to decide whether to use your default implementation.  The default
+     * implementation of this method performs a restore of any view
+     * state that had previously been frozen by onSaveInstanceState(Bundle).
+     * 
+     * This method is called between onStart() and onPostCreate(Bundle).
+     * 
+     * @param   inState         The data most recently supplied in
+     *                          onSaveInstanceState(Bundle).
+     */
+    @Override
+    protected void onRestoreInstanceState(Bundle inState) {
+        super.onRestoreInstanceState(inState);
+        restoreState(inState);
+    }
+    
+
+    /**
+     * Called to retrieve per-instance state from an activity before being
+     * killed so that the state can be restored in onCreate(Bundle) or
+     * onRestoreInstanceState(Bundle) (the Bundle populated by this method
+     * will be passed to both).
+     * 
+     * If called, this method will occur before onStop().  There are no
+     * guarantees about whether it will occur before or after onPause().
+     * 
+     * @param   outState        A Bundle in which to place any state
+     *                          information you wish to save.
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        saveState(outState);
     }
 
 
@@ -260,7 +304,14 @@ public class HelpActivity
             expandView.setText(bodyVis ? "–" : "+");
             bodyView.setVisibility(bodyVis ? VISIBLE : GONE);
         }
-    
+        
+        /**
+         * Check whether this section is expanded or not.
+         */
+        private boolean isExpanded() {
+            return bodyVis;
+        }
+   
         private TextView expandView = null;
         private TextView textView = null;
         private View bodyView = null;
@@ -295,7 +346,83 @@ public class HelpActivity
         
     }
     
+
+    // ******************************************************************** //
+    // Save and Restore.
+    // ******************************************************************** //
+
+    /**
+     * Save our state to the given Bundle.
+     * 
+     * @param   outState        A Bundle in which to place any state
+     *                          information you wish to save.
+     */
+    private void saveState(Bundle outState) {
+        saveViewState(mainView, outState, "");
+    }
+
+
+    /**
+     * Save the state of a view and its contents to the given Bundle.
+     * 
+     * @param   view            The view to save.
+     * @param   outState        A Bundle in which to place any state
+     *                          information you wish to save.
+     * @param   prefix          Prefix for the saved info keys.
+     */
+    private void saveViewState(ViewGroup view, Bundle outState, String prefix) {
+        if (view instanceof TitleView)
+            outState.putBoolean(prefix + "expanded", ((TitleView) view).isExpanded());
+
+        int nkids = view.getChildCount();
+        for (int i = 0; i < nkids; ++i) {
+            View v = view.getChildAt(i);
+            if (v instanceof HelpView)
+                saveViewState((HelpView) v, outState, prefix + "H" + i + ".");
+            else if (v instanceof TitleView)
+                saveViewState((TitleView) v, outState, prefix + "T" + i + ".");
+            else if (v instanceof BodyView)
+                saveViewState((BodyView) v, outState, prefix + "B" + i + ".");
+        }
+    }
+
+
+    /**
+     * Restore our state from the given Bundle.
+     * 
+     * @param   inState         The state to restore.
+     */
+    private void restoreState(Bundle inState) {
+        restoreViewState(mainView, inState, "");
+    }
     
+
+    /**
+     * Restore our state from the given Bundle.
+     * 
+     * @param   view            The view to restore.
+     * @param   inState         The state to restore.
+     * @param   prefix          Prefix for the saved info keys.
+     */
+    private void restoreViewState(ViewGroup view, Bundle inState, String prefix) {
+        if (view instanceof TitleView) {
+            boolean exp = inState.getBoolean(prefix + "expanded", false);
+            ((TitleView) view).setExpanded(exp);
+        }
+
+        int nkids = view.getChildCount();
+        for (int i = 0; i < nkids; ++i) {
+            View v = view.getChildAt(i);
+            if (v instanceof HelpView)
+                restoreViewState((HelpView) v, inState, prefix + "H" + i + ".");
+            else if (v instanceof TitleView)
+                restoreViewState((TitleView) v, inState, prefix + "T" + i + ".");
+            else if (v instanceof BodyView)
+                restoreViewState((BodyView) v, inState, prefix + "B" + i + ".");
+        }
+    }
+    
+
     // ******************************************************************** //
     // Private Constants.
     // ******************************************************************** //
