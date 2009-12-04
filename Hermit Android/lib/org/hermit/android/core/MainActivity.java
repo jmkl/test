@@ -253,12 +253,24 @@ public class MainActivity
 
 
     /**
+     * Set up the about info for dialogs.  See
+     * {@link #createMessageBox(int)}.
+     * 
+     * @param   about        Resource ID of the about text.
+     */
+    public void setAboutInfo(int about) {
+        aboutText = about;
+    }
+
+
+    /**
      * Set up the help / about info for dialogs.  See
      * {@link #createMessageBox(int)}.
      * 
      * @param   about        Resource ID of the about text.
      * @param   help         Resource ID of the help text.
      */
+    @Deprecated
     public void setAboutInfo(int about, int help) {
         aboutText = about;
         helpText = help;
@@ -285,6 +297,7 @@ public class MainActivity
      * @param   button       Resource ID of the button text.
      * @param   link         Resource ID of the URL the button links to.
      */
+    @Deprecated
     public void setManualInfo(int button, int link) {
         manButton = button;
         manLink = link;
@@ -324,6 +337,7 @@ public class MainActivity
      * calling {@link #setAboutInfo(int, int)}, {@link #setHomeInfo(int, int)}
      * and {@link #setManualInfo(int, int)}.
      */
+    @Deprecated
     public void showHelp() {
         messageDialog.setLinkButton(1, homeButton, homeLink);
         if (manButton != 0 && manLink != 0)
@@ -442,12 +456,15 @@ public class MainActivity
     // IDs of the button strings and URLs for "Home", "Manual", and "License".
     private int homeButton = 0;
     private int homeLink = 0;
+    @Deprecated
     private int manButton = 0;
+    @Deprecated
     private int manLink = 0;
     private int licButton = 0;
     private int licLink = 0;
 
     // ID of the help and about text.
+    @Deprecated
     private int helpText = 0;
     private int aboutText = 0;
 
