@@ -109,18 +109,20 @@ public class Gauge
 
 
     /**
-     * Set the base size for text based on this screen's size.
+     * Set the base size for text.
      * 
      * @param   size        Base text size for the app.
      */
 	public static void setBaseTextSize(float size) {
         baseTextSize = size;
-        effectiveBaseTextSize = size < MIN_TEXT ? MIN_TEXT : size;
+        headTextSize = baseTextSize * 1.3f;
+        miniTextSize = baseTextSize * 0.9f;
+        tinyTextSize = baseTextSize * 0.8f;
     }
 
 
     /**
-     * Get the base size for text based on this screen's size.
+     * Get the base size for text.
      * 
      * @return              Base text size for the app.
      */
@@ -130,22 +132,52 @@ public class Gauge
 
 
     /**
-     * Get the size for header text based on this screen's size.
+     * Set the size for header text.
      * 
-     * @return              Header text size for the app.
+     * @param   size        Header text size for the app.
      */
-    public static float getHeadTextSize() {
-        return baseTextSize * 1.3f;
+    public static void setHeadTextSize(float size) {
+        headTextSize = size;
     }
 
 
     /**
-     * Get the size for mini text based on this screen's size.
+     * Get the size for header text.
+     * 
+     * @return              Header text size for the app.
+     */
+    public static float getHeadTextSize() {
+        return headTextSize;
+    }
+
+
+    /**
+     * Set the size for mini text.
+     * 
+     * @param   size        Mini text size for the app.
+     */
+    public static void setMiniTextSize(float size) {
+        miniTextSize = size;
+    }
+
+
+    /**
+     * Get the size for mini text.
      * 
      * @return              Mini text size for the app.
      */
 	public static float getMiniTextSize() {
-        return effectiveBaseTextSize * 0.97f;
+        return miniTextSize;
+    }
+
+
+    /**
+     * Set the size for tiny text.
+     * 
+     * @param   size        Tiny text size for the app.
+     */
+    public static void setTinyTextSize(float size) {
+        tinyTextSize = size;
     }
 
 
@@ -155,7 +187,7 @@ public class Gauge
      * @return              Tiny text size for the app.
      */
 	public static float getTinyTextSize() {
-        return effectiveBaseTextSize * 0.88f;
+        return tinyTextSize;
     }
 
 
@@ -527,7 +559,7 @@ public class Gauge
 	// ******************************************************************** //
 
 	// The minimum happy text size.
-	private static final float MIN_TEXT = 20f;
+	private static final float MIN_TEXT = 22f;
 	
 	
     // ******************************************************************** //
@@ -544,8 +576,10 @@ public class Gauge
     // The base size for all text, based on screen size.
     private static float baseTextSize = MIN_TEXT;
     
-    // Base text size used to calculate smaller sizes.
-    private static float effectiveBaseTextSize = MIN_TEXT;
+    // Various other text sizes.
+    private static float headTextSize = MIN_TEXT * 1.3f;
+    private static float miniTextSize = MIN_TEXT * 0.9f;
+    private static float tinyTextSize = MIN_TEXT * 0.8f;
     
     // The horizontal scaling of the font; this can be used to
     // produce a tall, thin font.

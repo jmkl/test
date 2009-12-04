@@ -62,15 +62,49 @@ public class PowerGauge
             powerHistory[i] = -100.0f;
         averagePower = -100.0f;
         
-        // Create the buffer where the text labels are formatted.
+        // Create the buffers where the text labels are formatted.
         dbBuffer = "-100.0dB".toCharArray();
         pkBuffer = "-100.0dB peak".toCharArray();
 	}
 
 
 	// ******************************************************************** //
-	// Geometry.
+	// Configuration.
 	// ******************************************************************** //
+
+	/**
+	 * Set the overall thickness of the bar.
+	 * 
+	 * @param  width       Overall width in pixels of the bar.
+	 */
+	public void setBarWidth(int width) {
+	    barWidth = width;
+	}
+	
+
+    /**
+     * Set the size for the label text.
+     * 
+     * @param   size        Label text size for the gauge.
+     */
+    public void setLabelSize(float size) {
+        labelSize = size;
+    }
+
+
+    /**
+     * Get the size for the label text.
+     * 
+     * @return              Label text size for the gauge.
+     */
+    public float getLabelSize() {
+        return labelSize;
+    }
+
+
+    // ******************************************************************** //
+    // Geometry.
+    // ******************************************************************** //
 
     /**
      * This is called during layout when the size of this element has
@@ -94,25 +128,67 @@ public class PowerGauge
         // Do some layout within the meter.
         int mw = dispWidth;
         int mh = dispHeight;
-        meterBarY = 0;
-        meterBarHeight = (int) (mh / 6f + 16f);
-        meterBarGap = meterBarHeight / 4;
-        meterLabSize = Math.min(meterBarHeight / 2, mw / 24);
-        meterLabY = meterBarY + meterBarHeight + meterLabSize + 2;
-        meterTextSize = Math.min(mh - (meterBarHeight + meterLabSize + 2), mw / 6);
-        if (meterTextSize > 64)
-            meterTextSize = 64;
-        meterTextY = meterLabY + meterTextSize + 4;
-        meterBarMargin = meterLabSize;
-        paint.setTextSize(meterTextSize);
-        meterTextWidth = (int) paint.measureText("-100.0dB");
+        if (labelSize == 0f)
+            labelSize = mw / 24f;
+       
+        // The bar and labels.
+        meterBarTop = 0;
+        meterBarGap = barWidth / 4;
+        meterLabY = meterBarTop + barWidth + labelSize;
         
+        // Horizontal margins.
+        meterBarMargin = labelSize;
+        
+        // Text readouts.  First try putting them side by side.
+        float th = mh - meterLabY;
+        float subWidth = (mw - meterBarMargin * 2) / 2;
+
+        meterTextSize = findTextSize(subWidth, th, "-100.0dB", paint);
+        paint.setTextSize(meterTextSize);
+        meterTextX = meterBarMargin;
+        meterTextY = mh - paint.descent();
+
+        meterSubTextSize = findTextSize(subWidth, th, "-100.0dB peak", paint);
+        paint.setTextSize(meterSubTextSize);
+        meterSubTextX = meterTextX + subWidth;
+        meterSubTextY = mh - paint.descent();
+
+        // If we have tons of empty space, stack the text readouts vertically.
+        if (meterTextSize <= th / 2) {
+            float split = th * 1f / 3f;
+            meterTextSize = (th - split) * 0.9f;
+            paint.setTextSize(meterTextSize);
+            float tw = paint.measureText("-100.0dB");
+            meterTextX = (mw - tw) / 2f;
+            meterTextY = mh - split - paint.descent();
+            
+            meterSubTextSize = (th - meterTextSize) * 0.9f;
+            paint.setTextSize(meterSubTextSize);
+            float pw = paint.measureText("-100.0dB peak");
+            meterSubTextX = (mw - pw) / 2f;
+            meterSubTextY = mh - paint.descent();
+        }
+     
         // Create the bitmap for the background,
         // and the Canvas for drawing into it.
         backgroundBitmap = getSurface().getBitmap(dispWidth, dispHeight);
         backgroundCanvas = new Canvas(backgroundBitmap);
         
         drawBackgroundBody(backgroundCanvas, paint);
+	}
+	
+	
+	private float findTextSize(float w, float h, String template, Paint paint) {
+        float size = h;
+        do {
+            paint.setTextSize(size);
+            int sw = (int) paint.measureText(template);
+            if (sw <= w)
+                break;
+            --size;
+        } while (size > 12);
+        
+        return size;
 	}
 
 
@@ -142,10 +218,10 @@ public class PowerGauge
         paint.setStyle(Style.STROKE);
 
         // Draw the grid.
-        final int mx = 0 + meterBarMargin;
-        final int mw = dispWidth - meterBarMargin * 2;
-        final int by = 0 + meterBarY;
-        final int bh = meterBarHeight;
+        final float mx = 0 + meterBarMargin;
+        final float mw = dispWidth - meterBarMargin * 2;
+        final float by = 0 + meterBarTop;
+        final float bh = barWidth;
         final float bw = mw - 1f;
         final float gw = bw / 10f;
         canvas.drawRect(mx, by, mx + bw - 1, by + bh - 1, paint);
@@ -154,8 +230,8 @@ public class PowerGauge
         }
 
         // Draw the labels below the grid.
-        final int ly = 0 + meterLabY;
-        final int ls = meterLabSize;
+        final float ly = 0 + meterLabY;
+        final float ls = labelSize;
         paint.setTextSize(ls);
         for (int i = 0; i <= 10; ++i) {
             String text = "" + (i * 10 - 100);
@@ -223,10 +299,10 @@ public class PowerGauge
 	        paint.setStyle(Style.STROKE);
 
 	        // Position parameters.
-	        final int mx = dispX + meterBarMargin;
-	        final int mw = dispWidth - meterBarMargin * 2;
-	        final int by = dispY + meterBarY;
-	        final int bh = meterBarHeight;
+	        final float mx = dispX + meterBarMargin;
+	        final float mw = dispWidth - meterBarMargin * 2;
+	        final float by = dispY + meterBarTop;
+	        final float bh = barWidth;
 	        final float gap = meterBarGap;
 	        final float bw = mw - 2f;
 	        
@@ -261,17 +337,19 @@ public class PowerGauge
 	        }
 
 	        // Draw the text below the meter.
-	        final int ty = dispY + meterTextY;
+            final float tx = dispX + meterTextX;
+	        final float ty = dispY + meterTextY;
 	        CharFormatter.formatFloat(dbBuffer, 0, averagePower, 6, 1);
 	        paint.setStyle(Style.STROKE);
 	        paint.setColor(0xff00ffff);
 	        paint.setTextSize(meterTextSize);
-	        canvas.drawText(dbBuffer, 0, dbBuffer.length, mx, ty, paint);
+	        canvas.drawText(dbBuffer, 0, dbBuffer.length, tx, ty, paint);
 	        
-	        final int px = mx + meterTextWidth + 10;
+            final float px = dispX + meterSubTextX;
+            final float py = dispY + meterSubTextY;
             CharFormatter.formatFloat(pkBuffer, 0, meterPeakMax, 6, 1);
-            paint.setTextSize(meterLabSize);
-            canvas.drawText(pkBuffer, 0, pkBuffer.length, px, ty, paint);
+            paint.setTextSize(meterSubTextSize);
+            canvas.drawText(pkBuffer, 0, pkBuffer.length, px, py, paint);
 	    }
 	}
 	
@@ -353,24 +431,31 @@ public class PowerGauge
 	// Private Data.
 	// ******************************************************************** //
     
+    // Configured meter bar thickness.
+    private int barWidth = 32;
+    
 	// Display position and size within the parent view.
     private int dispX = 0;
     private int dispY = 0;
 	private int dispWidth = 0;
 	private int dispHeight = 0;
+    
+    // Label text size for the gauge.  Zero if not set yet.
+    private float labelSize = 0f;
 
     // Layout parameters for the VU meter.  Position and size for the
     // bar itself; position and size for the bar labels; position
     // and size for the main readout text.
-    private int meterBarY = 0;
-    private int meterBarHeight = 0;
-    private int meterBarGap = 0;
-    private int meterLabY = 0;
-    private int meterLabSize = 0;
-    private int meterTextY = 0;
-    private int meterTextSize = 0;
-    private int meterTextWidth = 0;
-    private int meterBarMargin = 0;
+    private float meterBarTop = 0;
+    private float meterBarGap = 0;
+    private float meterLabY = 0;
+    private float meterTextX = 0;
+    private float meterTextY = 0;
+    private float meterTextSize = 0;
+    private float meterSubTextX = 0;
+    private float meterSubTextY = 0;
+    private float meterSubTextSize = 0;
+    private float meterBarMargin = 0;
 
     // Bitmap in which we draw the gauge background,
     // and the Canvas and Paint for drawing into it.
@@ -395,7 +480,7 @@ public class PowerGauge
     private long[] meterPeakTimes = null;
     private float meterPeakMax = 0f;
 
-    // Buffer for displayed dB value text and peak value text.
+    // Buffer for displayed average and peak dB value texts.
     private char[] dbBuffer = null;
     private char[] pkBuffer = null;
 

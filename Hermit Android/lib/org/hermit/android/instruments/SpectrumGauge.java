@@ -76,6 +76,26 @@ public class SpectrumGauge
     }
     
 
+    /**
+     * Set the size for the label text.
+     * 
+     * @param   size        Label text size for the gauge.
+     */
+    public void setLabelSize(float size) {
+        labelSize = size;
+    }
+
+
+    /**
+     * Get the size for the label text.
+     * 
+     * @return              Label text size for the gauge.
+     */
+    public float getLabelSize() {
+        return labelSize;
+    }
+
+
 	// ******************************************************************** //
 	// Geometry.
 	// ******************************************************************** //
@@ -100,13 +120,15 @@ public class SpectrumGauge
         // Do some layout within the meter.
         int mw = dispWidth;
         int mh = dispHeight;
-        spectLabSize = mw / 24;
+        if (labelSize == 0f)
+            labelSize = mw / 24f;
+        
         spectLabY = mh - 4;
-        spectGraphMargin = spectLabSize;
+        spectGraphMargin = labelSize;
         spectGraphX = spectGraphMargin;
         spectGraphY = 0;
-        spectGraphWidth = dispWidth - spectGraphMargin * 2;
-        spectGraphHeight = mh - spectLabSize - 6;
+        spectGraphWidth = mw - spectGraphMargin * 2;
+        spectGraphHeight = mh - labelSize - 6;
 
         // Create the bitmap for the spectrum display,
         // and the Canvas for drawing into it.
@@ -148,12 +170,12 @@ public class SpectrumGauge
         paint.setStyle(Style.STROKE);
 
         // Draw the grid.
-        final int sx = 0 + spectGraphX;
-        final int sy = 0 + spectGraphY;
-        final int ex = sx + spectGraphWidth - 1;
-        final int ey = sy + spectGraphHeight - 1;
-        final int bw = spectGraphWidth - 1;
-        final int bh = spectGraphHeight - 1;
+        final float sx = 0 + spectGraphX;
+        final float sy = 0 + spectGraphY;
+        final float ex = sx + spectGraphWidth - 1;
+        final float ey = sy + spectGraphHeight - 1;
+        final float bw = spectGraphWidth - 1;
+        final float bh = spectGraphHeight - 1;
         canvas.drawRect(sx, sy, ex, ey, paint);
         for (int i = 1; i < 10; ++i) {
             final float x = (float) i * (float) bw / 10f;
@@ -165,9 +187,8 @@ public class SpectrumGauge
         }
         
         // Draw the labels below the grid.
-        final int ly = 0 + spectLabY;
-        final int ls = spectLabSize;
-        paint.setTextSize(ls);
+        final float ly = 0 + spectLabY;
+        paint.setTextSize(labelSize);
         for (int i = 0; i <= 10; ++i) {
             int f = nyquistFreq * i / 10;
             String text = f >= 10000 ? "" + (f / 1000) + "k" :
@@ -283,17 +304,19 @@ public class SpectrumGauge
     private int dispY = 0;
 	private int dispWidth = 0;
 	private int dispHeight = 0;
+    
+    // Label text size for the gauge.  Zero means not set yet.
+    private float labelSize = 0f;
 
     // Layout parameters for the VU meter.  Position and size for the
     // bar itself; position and size for the bar labels; position
     // and size for the main readout text.
-    private int spectGraphX = 0;
-    private int spectGraphY = 0;
-    private int spectGraphWidth = 0;
-    private int spectGraphHeight = 0;
-    private int spectLabY = 0;
-    private int spectLabSize = 0;
-    private int spectGraphMargin = 0;
+    private float spectGraphX = 0;
+    private float spectGraphY = 0;
+    private float spectGraphWidth = 0;
+    private float spectGraphHeight = 0;
+    private float spectLabY = 0;
+    private float spectGraphMargin = 0;
 
     // Bitmap in which we draw the gauge background,
     // and the Canvas and Paint for drawing into it.
