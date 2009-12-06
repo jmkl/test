@@ -48,7 +48,7 @@ public class InstrumentPanel
 	 * @param	app			The application context we're running in.
 	 */
     public InstrumentPanel(Activity app) {
-        super(app, OPTION_DYNAMIC);
+        super(app, SURFACE_DYNAMIC);
         
         audioAnalyser = new AudioAnalyser(this);
         waveformGauge = audioAnalyser.getWaveformGauge(this);
