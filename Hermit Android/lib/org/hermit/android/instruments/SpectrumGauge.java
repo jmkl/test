@@ -72,7 +72,7 @@ public class SpectrumGauge
         // If we have a size, then we have a background.  Re-draw it
         // to show the new frequency scale.
         if (haveBounds())
-            drawBackgroundBody(backgroundCanvas, getPaint());
+            drawBackgroundBody(bgCanvas, getPaint());
     }
     
 
@@ -137,10 +137,10 @@ public class SpectrumGauge
         
         // Create the bitmap for the background,
         // and the Canvas for drawing into it.
-        backgroundBitmap = getSurface().getBitmap(dispWidth, dispHeight);
-        backgroundCanvas = new Canvas(backgroundBitmap);
+        bgBitmap = getSurface().getBitmap(dispWidth, dispHeight);
+        bgCanvas = new Canvas(bgBitmap);
         
-        drawBackgroundBody(backgroundCanvas, getPaint());
+        drawBg(bgCanvas, getPaint());
 	}
 
 
@@ -162,8 +162,7 @@ public class SpectrumGauge
      * @param   canvas      Canvas to draw into.
      * @param   paint       The Paint which was set up in initializePaint().
      */
-    @Override
-    protected void drawBackgroundBody(Canvas canvas, Paint paint) {
+    private void drawBg(Canvas canvas, Paint paint) {
         canvas.drawColor(0xff000000);
         
         paint.setColor(0xffffff00);
@@ -229,7 +228,7 @@ public class SpectrumGauge
         synchronized (this) {
 //            canvas.drawColor(0xff000000);
             
-            canvas.drawBitmap(backgroundBitmap, 0, 0, paint);
+            canvas.drawBitmap(bgBitmap, 0, 0, paint);
 
             //        paint.setColor(0xffff0000);
             //        paint.setStyle(Style.STROKE);
@@ -320,8 +319,8 @@ public class SpectrumGauge
 
     // Bitmap in which we draw the gauge background,
     // and the Canvas and Paint for drawing into it.
-    private Bitmap backgroundBitmap = null;
-    private Canvas backgroundCanvas = null;
+    private Bitmap bgBitmap = null;
+    private Canvas bgCanvas = null;
 
     // Bitmap in which we draw the audio spectrum display,
     // and the Canvas and Paint for drawing into it.

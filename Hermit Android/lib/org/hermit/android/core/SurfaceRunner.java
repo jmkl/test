@@ -68,7 +68,7 @@ public abstract class SurfaceRunner
      * will be passed up to the app; otherwise, it is assumed that we
      * will re-start for these.
      */
-    public static final int OPTION_DYNAMIC = 0x0001;
+    public static final int SURFACE_DYNAMIC = 0x0001;
     
     
     // ******************************************************************** //
@@ -90,7 +90,7 @@ public abstract class SurfaceRunner
      * 
      * @param   app         The application context we're running in.
      * @param   options     Options for this SurfaceRunner.  A bitwise OR of
-     *                      OPTION_XXX constants.
+     *                      SURFACE_XXX constants.
      */
     public SurfaceRunner(Context app, int options) {
         super(app);
@@ -104,6 +104,21 @@ public abstract class SurfaceRunner
         surfaceHolder.addCallback(this);
         setFocusable(true);
         setFocusableInTouchMode(true);
+    }
+    
+
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Check whether the given option flag is set on this surface.
+     * 
+     * @param   option      The option flag to test; one of SURFACE_XXX.
+     * @return              true iff the option is set.
+     */
+    public boolean optionSet(int option) {
+        return (surfaceOptions & option) != 0;
     }
     
 
@@ -157,7 +172,7 @@ public abstract class SurfaceRunner
         // On Droid (at least) this can get called after a rotation,
         // which shouldn't happen as we should get shut down first.
         // Ignore that, unless we're handling config changes dynamically.
-        if ((surfaceOptions & OPTION_DYNAMIC) == 0 && isEnable(ENABLE_SIZE)) {
+        if (!optionSet(SURFACE_DYNAMIC) && isEnable(ENABLE_SIZE)) {
             Log.e(TAG, "ignored surfaceChanged " + width + "x" + height);
             return;
         }
@@ -168,7 +183,7 @@ public abstract class SurfaceRunner
         setEnable(ENABLE_SIZE);
     }
 
-    
+
     /**
      * This is called immediately before a surface is destroyed.
      * After returning from this call, you should no longer try to
@@ -867,7 +882,7 @@ public abstract class SurfaceRunner
     // If zero, we will not sleep, but will run continuously.
     private long animationDelay = 0;
 
-    // Option flags for this instance.  A bitwise OR of OPTION_XXX constants.
+    // Option flags for this instance.  A bitwise OR of SURFACE_XXX constants.
     private int surfaceOptions = 0;
 
     // Enablement flags; see comment above.

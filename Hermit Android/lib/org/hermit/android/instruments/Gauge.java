@@ -22,6 +22,7 @@ package org.hermit.android.instruments;
 
 import org.hermit.android.core.SurfaceRunner;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -32,6 +33,67 @@ import android.graphics.Typeface;
  * A graphical display which shows some data in a region
  * within a view.  The data may come from an {@link Instrument} or
  * some other source.
+ * 
+ * <h2>Configuration</h2>
+ * 
+ * <p>Your gauge will be notified of its geometry by a call to
+ * {@link #setGeometry(Rect)}.  This is where you should note your position
+ * and size and perform any internal layout you need to do.
+ * 
+ * <p>Note that if you are running in an app which handles screen
+ * configuration changes, {@link #setGeometry(Rect)} will be called any
+ * time the screen changes size or shape (e.g. on an orientation change).
+ * You should be prepared to handle these subsequent calls by re-creating
+ * data structures, re-doing layout, etc., as required.
+ * 
+ * <h2>Data Updating</h2>
+ * 
+ * <p>It is assumed that your gauge has some kind of data source, but
+ * how this works is up to you.
+ * 
+ * <h2>Drawing Sequence -- User</h2>
+ * 
+ * <p>A gauge may have a background which is rendered separately from
+ * its content, for performance reasons.  Hence, a Gauge user must request
+ * the background to be drawn, and then the gauge content to be drawn.  If
+ * the caller is going to cache the background, the background need be
+ * requested only when the geometry changes.
+ * 
+ * <p>There are two options.  In the non-caching case, the caller may
+ * simply call {@link #draw(Canvas, long, boolean)}, passing true
+ * as the last argument.  This asks the Gauge to draw its background and
+ * its content.
+ * 
+ * <p>In the caching case, the caller should call
+ * {@link #drawBackground(Canvas)} to ask the gauge to draw its
+ * background into the given canvas.  Since the gauge will use the same
+ * co-ordinates that it uses to draw to the screen, the canvas will need
+ * to be the size of the screen (or you can translate the co-ordinates).
+ * Then, to draw the gauge, the caller should render the stored background
+ * and then call {@link #draw(Canvas, long)}.
+ * 
+ * <h2>Drawing Sequence -- Implementor</h2>
+ * 
+ * <p>From the Gauge implementor's point of view, there are two routines
+ * to implement: {@link #drawBackgroundBody(Canvas, Paint)} (optional), and
+ * {@link #drawBody(Canvas, Paint, long)}.
+ * 
+ * <p>If your implementation of {@link #drawBody(Canvas, Paint, long)}
+ * draws a complete, opaque rendition of the gauge, that's all you need;
+ * there's no need to provide an implementation of drawBackgroundBody().
+ * But if your gauge has a separate, persistent background appearance,
+ * you may reap a performance benefit by separating out its drawing.
+ * Do this by implementing {@link #drawBackgroundBody(Canvas, Paint)}.
+ * This routine should draw the gauge background at the gauge's
+ * configured position in the specified Canvas.
+ * 
+ * <p>A facility is provided for caching background images.  To use this,
+ * call {@link #cacheBackground()} once your layout is set up -- for example
+ * at the end of {@link #setGeometry(Rect)}.  At that point, your background
+ * will be fetched (by calling your implementation of drawBackgroundBody())
+ * and stored; then when someone asks us to draw our background, the request
+ * will be satisfied using the stored bitmap, without calling your
+ * drawBackgroundBody() again.
  */
 public class Gauge
 {
@@ -46,13 +108,26 @@ public class Gauge
      * @param   parent          Parent surface.
      */
 	public Gauge(SurfaceRunner parent) {
-		parentSurface = parent;
-
-		// Set up our paint.
-		drawPaint = new Paint();
-
-		initializePaint(drawPaint);
+		this(parent, 0);
 	}
+
+
+    /**
+     * Set up this view.
+     * 
+     * @param   parent          Parent surface.
+     * @param   options         Options for this SurfaceRunner.  A bitwise OR of
+     *                          GAUGE_XXX constants.
+     */
+    public Gauge(SurfaceRunner parent, int options) {
+        parentSurface = parent;
+        gaugeOptions = options;
+        
+        // Set up our paint.
+        drawPaint = new Paint();
+
+        initializePaint(drawPaint);
+    }
 
 	
 	/**
@@ -63,15 +138,30 @@ public class Gauge
      * @param	plot			Colour for drawing data plots.
 	 */
 	public Gauge(SurfaceRunner parent, int grid, int plot) {
-		parentSurface = parent;
-		gridColour = grid;
-		plotColour = plot;
-
-		// Set up our paint.
-		drawPaint = new Paint();
-
-		initializePaint(drawPaint);
+        this(parent, 0, grid, plot);
 	}
+
+    
+    /**
+     * Set up this view.
+     * 
+     * @param   parent          Parent surface.
+     * @param   options         Options for this SurfaceRunner.  A bitwise OR of
+     *                          GAUGE_XXX constants.
+     * @param   grid            Colour for drawing a data scale / grid.
+     * @param   plot            Colour for drawing data plots.
+     */
+    public Gauge(SurfaceRunner parent, int options, int grid, int plot) {
+        parentSurface = parent;
+        gaugeOptions = options;
+        gridColour = grid;
+        plotColour = plot;
+     
+        // Set up our paint.
+        drawPaint = new Paint();
+
+        initializePaint(drawPaint);
+    }
 
 
 	/**
@@ -83,6 +173,21 @@ public class Gauge
 	 */
 	protected void initializePaint(Paint paint) { }
 	
+
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Check whether the given option flag is set on this surface.
+     * 
+     * @param   option      The option flag to test; one of GAUGE_XXX.
+     * @return              true iff the option is set.
+     */
+    public boolean optionSet(int option) {
+        return (gaugeOptions & option) != 0;
+    }
+    
 
     // ******************************************************************** //
     // Global Layout Parameters.
@@ -288,6 +393,34 @@ public class Gauge
      */
 	public void setGeometry(Rect bounds) {
 		elemBounds = bounds;
+		
+		// Any cached background we may have is now invalid.
+		backgroundBitmap = null;
+		backgroundCanvas = null;
+	}
+	
+	
+	/**
+	 * Fetch and cache an image of the background now, then use that
+	 * to draw the background on future draw requests.  The cached image
+	 * is invalidated the next time the geometry changes.
+	 * 
+	 * <p>Implementations should call this method once their layout is
+	 * set -- for example at the end of {@link #setGeometry(Rect)} --
+	 * if they have a significant static background that they wish
+	 * to have cached.
+	 */
+	protected void cacheBackground() {
+        // Create the bitmap for the background,
+        // and the Canvas for drawing into it.
+        backgroundBitmap = getSurface().getBitmap(elemBounds.width(),
+                                                  elemBounds.height());
+        backgroundCanvas = new Canvas(backgroundBitmap);
+        
+        // Because the element is going to draw its BG at its proper
+        // location, and this bitmap is local to the element, we need
+        // to translate the drawing co-ordinates.
+        drawBackground(backgroundCanvas, -elemBounds.left, -elemBounds.top);
 	}
 
 	
@@ -456,8 +589,25 @@ public class Gauge
      * @param   canvas      Canvas to draw into.
      */
     public void drawBackground(Canvas canvas) {
+        if (backgroundBitmap != null)
+            canvas.drawBitmap(backgroundBitmap, elemBounds.left, elemBounds.top, null);
+        else
+            drawBackground(canvas, 0, 0);
+    }
+
+    
+    /**
+     * This internal method is used to get the gauge implementation to
+     * render its background at a specific location.
+     * 
+     * @param   canvas      Canvas to draw into.
+     * @param   dx          X co-ordinate translation to apply.
+     * @param   dy          Y co-ordinate translation to apply.
+     */
+    private void drawBackground(Canvas canvas, int dx, int dy) {
         // Clip to our part of the canvas.
         canvas.save();
+        canvas.translate(dx, dy);
         canvas.clipRect(getBounds());
         
         drawBackgroundBody(canvas, drawPaint);
@@ -465,7 +615,7 @@ public class Gauge
         canvas.restore();
     }
 
-    
+   
     /**
      * Do the subclass-specific parts of drawing the background
      * for this element.  Subclasses should override
@@ -481,19 +631,42 @@ public class Gauge
      * @param   paint       The Paint which was set up in initializePaint().
      */
     protected void drawBackgroundBody(Canvas canvas, Paint paint) {
-        // If not overridden, just fill with BG colour.
-        canvas.drawColor(colBg);
+        // If not overridden, we shouldn't need anything, as the overall
+        // background is cleared each time.
     }
     
 
 	/**
 	 * This method is called to ask the element to draw its dynamic content.
+	 * The gauge will not be asked to draw its background.
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	now			Nominal system time in ms. of this update.
 	 */
 	public void draw(Canvas canvas, long now) {
+	    draw(canvas, now, false);
+    }
+    
+
+    /**
+     * This method is called to ask the element to draw its dynamic content.
+     * 
+     * @param   canvas      Canvas to draw into.
+     * @param   now         Nominal system time in ms. of this update.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.  This is cheaper than calling
+     *                      {@link #drawBackground(Canvas)} before
+     *                      this method.
+     */
+    public void draw(Canvas canvas, long now, boolean bg) {
 		drawStart(canvas, drawPaint, now);
+		if (bg) {
+	        if (backgroundBitmap != null)
+	            canvas.drawBitmap(backgroundBitmap,
+	                              elemBounds.left, elemBounds.top, null);
+	        else
+	            drawBackgroundBody(canvas, drawPaint);
+		}
 		drawBody(canvas, drawPaint, now);
 		drawFinish(canvas, drawPaint, now);
 	}
@@ -602,7 +775,10 @@ public class Gauge
 
 	// Application handle.
 	private final SurfaceRunner parentSurface;
-	
+
+    // Option flags for this instance.  A bitwise OR of GAUGE_XXX constants.
+    private int gaugeOptions = 0;
+
 	// The paint we use for drawing.
 	private Paint drawPaint = null;
 
@@ -615,6 +791,11 @@ public class Gauge
 	// Colour of the graph grid and plot.
 	private int gridColour = 0xff00ff00;
 	private int plotColour = 0xffff0000;
+
+    // Bitmap in which we draw the gauge background, if we're caching it,
+    // and the Canvas for drawing into it.
+    private Bitmap backgroundBitmap = null;
+    private Canvas backgroundCanvas = null;
 
 }
 

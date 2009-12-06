@@ -52,7 +52,20 @@ import android.graphics.Canvas;
 public abstract class InstrumentSurface
 	extends SurfaceRunner
 {
+
+    // ******************************************************************** //
+    // Public Constants.
+    // ******************************************************************** //
+
+    /**
+     * Instrument Surface runner option: cache a background bitmap.  If set,
+     * we will ask all the gauges to draw their backgrounds into a full-
+     * screen bitmap; this bitmap will then be drawn prior to drawing the
+     * gauge contents each frame.
+     */
+    public static final int SURFACE_CACHE_BG = 0x0100;
     
+
     // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
@@ -73,7 +86,7 @@ public abstract class InstrumentSurface
      * 
      * @param   app         The application context we're running in.
      * @param   options     Options for this SurfaceRunner.  A bitwise OR of
-     *                      OPTION_XXX constants.
+     *                      SURFACE_XXX constants.
      */
     public InstrumentSurface(Context app, int options) {
         super(app, options);
@@ -244,14 +257,20 @@ public abstract class InstrumentSurface
      * @param   height      The height of the surface.
      */
     private void setBackground(int width, int height) {
-        // Create the bitmap for the background,
-        // and the Canvas for drawing into it.
-        backgroundBitmap = getBitmap(width, height);
-        backgroundCanvas = new Canvas(backgroundBitmap);
+        if (optionSet(SURFACE_CACHE_BG)) {
+            // Create the bitmap for the background,
+            // and the Canvas for drawing into it.
+            backgroundBitmap = getBitmap(width, height);
+            backgroundCanvas = new Canvas(backgroundBitmap);
 
-        // Get the gauges to draw their backgrounds in to the bitmap.
-        for (Gauge g : gauges)
-            g.drawBackground(backgroundCanvas);
+            // Get the gauges to draw their backgrounds in to the bitmap.
+            backgroundCanvas.drawColor(0xff000000);
+            for (Gauge g : gauges)
+                g.drawBackground(backgroundCanvas);
+        } else {
+            backgroundBitmap = null;
+            backgroundCanvas = null;
+        }
     }
 
     
@@ -295,14 +314,16 @@ public abstract class InstrumentSurface
     @Override
     protected void doDraw(Canvas canvas, long now) {
         // Draw the background on to the screen.
-//        canvas.drawBitmap(backgroundBitmap, 0, 0, null);
-
-//        canvas.drawColor(0xff000000);
+        if (backgroundBitmap != null)
+            canvas.drawBitmap(backgroundBitmap, 0, 0, null);
+        else
+            canvas.drawColor(0xff000000);
+        final boolean needBg = backgroundBitmap == null;
         
         // Draw the gauges over the background.
         final int gl = gaugeArray.length;
         for (int g = 0; g < gl; ++g)
-            gaugeArray[g].draw(canvas, now);
+            gaugeArray[g].draw(canvas, now, needBg);
     }
 
 
@@ -328,7 +349,8 @@ public abstract class InstrumentSurface
     private Gauge[] gaugeArray = null;
     
     // Bitmap in which we draw the audio waveform display,
-    // and the Canvas and Paint for drawing into it.
+    // and the Canvas and Paint for drawing into it.  Only used if
+    // OPTION_CACHE_BG is set; otherwise null.
     private Bitmap backgroundBitmap = null;
     private Canvas backgroundCanvas = null;
 

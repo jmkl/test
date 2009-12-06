@@ -23,7 +23,6 @@ package org.hermit.android.instruments;
 import org.hermit.android.core.SurfaceRunner;
 import org.hermit.utils.CharFormatter;
 
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -116,9 +115,9 @@ public class PowerGauge
      */
 	@Override
     public void setGeometry(Rect bounds) {
-	    super.setGeometry(bounds);
-	    
-	    Paint paint = getPaint();
+        super.setGeometry(bounds);
+
+        Paint paint = getPaint();
 	    
 	    dispX = bounds.left;
 	    dispY = bounds.top;
@@ -168,13 +167,9 @@ public class PowerGauge
             meterSubTextX = (mw - pw) / 2f;
             meterSubTextY = mh - paint.descent();
         }
-     
-        // Create the bitmap for the background,
-        // and the Canvas for drawing into it.
-        backgroundBitmap = getSurface().getBitmap(dispWidth, dispHeight);
-        backgroundCanvas = new Canvas(backgroundBitmap);
         
-        drawBackgroundBody(backgroundCanvas, paint);
+        // Cache our background image.
+        cacheBackground();
 	}
 	
 	
@@ -218,9 +213,9 @@ public class PowerGauge
         paint.setStyle(Style.STROKE);
 
         // Draw the grid.
-        final float mx = 0 + meterBarMargin;
+        final float mx = dispX + meterBarMargin;
         final float mw = dispWidth - meterBarMargin * 2;
-        final float by = 0 + meterBarTop;
+        final float by = dispY + meterBarTop;
         final float bh = barWidth;
         final float bw = mw - 1f;
         final float gw = bw / 10f;
@@ -230,7 +225,7 @@ public class PowerGauge
         }
 
         // Draw the labels below the grid.
-        final float ly = 0 + meterLabY;
+        final float ly = dispY + meterLabY;
         final float ls = labelSize;
         paint.setTextSize(ls);
         for (int i = 0; i <= 10; ++i) {
@@ -305,8 +300,6 @@ public class PowerGauge
 	        final float bh = barWidth;
 	        final float gap = meterBarGap;
 	        final float bw = mw - 2f;
-	        
-	        canvas.drawBitmap(backgroundBitmap, dispX, dispY, paint);
 	        
 	        // Draw the average bar.
 	        final float pa = (averagePower / 100f + 1f) * bw;
@@ -456,11 +449,6 @@ public class PowerGauge
     private float meterSubTextY = 0;
     private float meterSubTextSize = 0;
     private float meterBarMargin = 0;
-
-    // Bitmap in which we draw the gauge background,
-    // and the Canvas and Paint for drawing into it.
-    private Bitmap backgroundBitmap = null;
-    private Canvas backgroundCanvas = null;
 
     // Current and previous power levels.
     private float currentPower = 0f;
