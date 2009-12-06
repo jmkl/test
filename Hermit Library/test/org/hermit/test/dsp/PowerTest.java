@@ -20,6 +20,7 @@
 
 package org.hermit.test.dsp;
 
+import org.hermit.dsp.FFTTransformer;
 import org.hermit.dsp.SignalPower;
 
 
@@ -32,16 +33,15 @@ public class PowerTest {
     // Signal generation.
     // ******************************************************************** //
 
-    private static short[] makeSine(double max, int rate, float freq, float len) {
+    private static short[] makeSine(double max, int rate, float freq, int buflen) {
         // Make a buffer of the right length.
-        int n = (int) (rate * len);
-        short[] buf = new short[n];
+        short[] buf = new short[buflen];
         
         // The length of 1 cycle in samples.
         int c = (int) (rate / freq);
         
         // Fill it with a sine wave.
-        for (int i = 0; i < n; ++i) {
+        for (int i = 0; i < buflen; ++i) {
             long val = Math.round(Math.sin((double) i / c * Math.PI * 2) * max);
             if (val < Short.MIN_VALUE)
                 buf[i] = Short.MIN_VALUE;
@@ -56,40 +56,94 @@ public class PowerTest {
     
     
     // ******************************************************************** //
-    // Testing.
+    // Power Meter Testing.
     // ******************************************************************** //
     
-    private static void runTest(String name, double max, int rate, float freq, float len) {
+    private static void runPowerTest(String name, double max, int rate, float freq, int buflen) {
         // Test on a buffer of all zeroes.
-        short[] buf = makeSine(max, rate, freq, len);
+        short[] buf = makeSine(max, rate, freq, buflen);
         double power = SignalPower.calculatePowerDb(buf, 0, buf.length);
-        System.out.format("%-8s@ %5d: %10.5f\n", name, rate, power);
+        System.out.format("%-8s@ %5dHz %5d/s: %10.5f\n", name, (int) freq, rate, power);
     }
     
     
-    private static void runAll(int rate, float freq) {
+    private static void runPowerAll(int rate, float freq) {
+        int buflen = (int) (rate * 1f);
+
         // Test on a buffer of all zeroes.
-        runTest("Zero", 0f, rate, freq, 0.1f);
+        runPowerTest("Zero", 0f, rate, freq, buflen);
         
         // A truly miniscule signal; every 40th sample is 1, all others
         // are zero.
-        runTest("Tiny", 0.5f, rate, freq, 0.1f);
+        runPowerTest("Tiny", 0.5f, rate, freq, buflen);
         
         // A very small signal; 5 1s, 15 0s, 5 -1s, 15 0s.
-        runTest("Small", 0.55f, rate, freq, 0.1f);
+        runPowerTest("Small", 0.55f, rate, freq, buflen);
         
         // Minimum "real" signal, oscillating between 1 and -1.
-        runTest("Min", 1, rate, freq, 0.1f);
+        runPowerTest("Min", 1, rate, freq, buflen);
         
         // A full-range sine wave, from -32768 to 32767.
-        runTest("Full", 32768, rate, freq, 0.1f);
+        runPowerTest("Full", 32768, rate, freq, buflen);
         
         // Maximum saturated signal.
-        runTest("Sat", 10000000, rate, freq, 0.1f);
+        runPowerTest("Sat", 10000000, rate, freq, buflen);
         
         // Maximum saturated signal at a low frequency to reduce the small
         // values.  This is an unrealistically over-saturated signal.
-        runTest("Oversat", 10000000, rate, 80f, 0.1f);
+        runPowerTest("Oversat", 10000000, rate, 80f, buflen);
+    }
+    
+
+    // ******************************************************************** //
+    // Spectrum Analyser Testing.
+    // ******************************************************************** //
+    
+    private static void runFftTest(String name, double max, int rate, float freq,
+                                   int buflen, FFTTransformer fft, float[] out)
+    {
+        // Test on a buffer of all zeroes.
+        short[] buf = makeSine(max, rate, freq, buflen);
+        fft.setInput(buf, 0, out.length * 2);
+        fft.transform();
+        fft.getResults(out);
+        
+        float minv = Float.MAX_VALUE;
+        float maxv = Float.MIN_VALUE;
+        for (int i = 0; i < out.length; ++i) {
+            if (out[i] < minv)
+                minv = out[i];
+            if (out[i] > maxv)
+                maxv = out[i];
+        }
+        
+        System.out.format("%-8s@ %5dHz %5d/s: MIN %10.5f  MAX %10.5f\n", name, (int) freq, rate, minv, maxv);
+    }
+
+
+    private static void runFftAll(int rate, float freq, int fftBlock) {
+        int buflen = (int) (rate * 1f);
+        FFTTransformer fft = new FFTTransformer(fftBlock);
+        float[] out = new float[fftBlock / 2];
+
+        // Test on a buffer of all zeroes.
+        runFftTest("Zero", 0f, rate, freq, buflen, fft, out);
+
+        // A truly miniscule signal; every 40th sample is 1, all others
+        // are zero.
+        runFftTest("Tiny", 0.5f, rate, freq, buflen, fft, out);
+
+        // A very small signal; 5 1s, 15 0s, 5 -1s, 15 0s.
+        runFftTest("Small", 0.55f, rate, freq, buflen, fft, out);
+
+        // Minimum "real" signal, oscillating between 1 and -1.
+        runFftTest("Min", 1, rate, freq, buflen, fft, out);
+
+        // A full-range sine wave, from -32768 to 32767.
+        runFftTest("Full", 32768, rate, freq, buflen, fft, out);
+
+        // Maximum saturated signal.
+        runFftTest("Sat", 10000000, rate, freq, buflen, fft, out);
     }
     
 
@@ -102,8 +156,14 @@ public class PowerTest {
 	 */
 	public static void main(String[] args) {
 	    // Run the tests at a couple of different sample rates.
-	    runAll(8000, 1000);
-        runAll(16000, 1000);
+	    runPowerAll(8000, 1000);
+        runPowerAll(16000, 1000);
+        
+        runFftAll(8000, 250, 512);
+        runFftAll(16000, 250, 512);
+        runFftAll(16000, 500, 512);
+        runFftAll(16000, 1000, 512);
+        runFftAll(16000, 2000, 512);
 	}
 	
 	

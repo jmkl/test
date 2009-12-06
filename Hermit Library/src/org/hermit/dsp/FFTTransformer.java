@@ -163,10 +163,11 @@ public final class FFTTransformer {
                                                " must be " + (blockSize / 2) +
                                                "; given " + buffer.length);
        
+        final float scale = blockSize * FUDGE;
         for (int i = 0; i < blockSize / 2; i++) {
             double r = xre[i * 2];
             double im = i == 0 ? 0.0 : xre[i * 2 - 1];
-            buffer[i] = (float) (Math.sqrt(r * r + im * im)) / blockSize;
+            buffer[i] = (float) (Math.sqrt(r * r + im * im)) / scale;
         }
         return buffer;
     }
@@ -213,10 +214,11 @@ public final class FFTTransformer {
             index = 0;
        
         // Now do the rolling average of each value.
-        for (int i = 0; i < blockSize/2; i++) {
+        final float scale = blockSize * FUDGE;
+        for (int i = 0; i < blockSize / 2; i++) {
             double r = xre[i * 2];
             double im = i == 0 ? 0.0 : xre[i * 2 - 1];
-            final float val = (float) (Math.sqrt(r * r + im * im)) / blockSize;
+            final float val = (float) (Math.sqrt(r * r + im * im)) / scale;
 
             final float[] hist = histories[i];
             final float prev = hist[index];
@@ -278,6 +280,14 @@ public final class FFTTransformer {
         return count;
     }
 
+    
+    // ******************************************************************** //
+    // Private Data.
+    // ******************************************************************** //
+
+    // Fudge factor to scale the FFT output to the range 0-1.
+    private static final float FUDGE = 0.63610f;
+    
     
     // ******************************************************************** //
     // Private Data.
