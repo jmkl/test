@@ -548,23 +548,25 @@ class SolarView
 	 * This method is called to ask the view to draw itself.
 	 * 
 	 * @param	canvas		Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	now			Current system time in ms.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.
 	 */
 	@Override
-	public void draw(Canvas canvas, long now) {
-		super.draw(canvas, now);
+	public void draw(Canvas canvas, long now, boolean bg) {
+		super.draw(canvas, now, bg);
 		
 		if (!altMode) {
-			sunImage.draw(canvas, now);
-			sunCaption.draw(canvas, now);
-			sunData.draw(canvas, now);
-			swindGraph.draw(canvas, now);
-			epamGraph.draw(canvas, now);
+			sunImage.draw(canvas, now, bg);
+			sunCaption.draw(canvas, now, bg);
+			sunData.draw(canvas, now, bg);
+			swindGraph.draw(canvas, now, bg);
+			epamGraph.draw(canvas, now, bg);
 		} else {
-			sunBigImage.draw(canvas, now);
-			sunCaption.draw(canvas, now);
-			sunData.draw(canvas, now);
-			solGraph.draw(canvas, now);
+			sunBigImage.draw(canvas, now, bg);
+			sunCaption.draw(canvas, now, bg);
+			sunData.draw(canvas, now, bg);
+			solGraph.draw(canvas, now, bg);
 		}
 	}
 

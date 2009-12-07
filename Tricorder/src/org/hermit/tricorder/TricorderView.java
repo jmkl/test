@@ -342,7 +342,7 @@ class TricorderView
     @Override
     protected void doDraw(Canvas canvas, long now) {
         canvas.drawColor(Tricorder.COL_BG);
-        currentView.view.draw(canvas, now);
+        currentView.view.draw(canvas, now, true);
     }
 
 

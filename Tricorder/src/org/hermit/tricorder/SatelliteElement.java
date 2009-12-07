@@ -229,23 +229,25 @@ class SatelliteElement
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 * @param	now			Current system time in ms.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.
 	 */
 	@Override
-	public void draw(Canvas canvas, long now) {
-		super.draw(canvas, now);
+	public void draw(Canvas canvas, long now, boolean bg) {
+		super.draw(canvas, now, bg);
 		
-		headerBar.draw(canvas, now);
+		headerBar.draw(canvas, now, bg);
 
 		// In normal mode, draw the sky map.  In bars mode, draw the
 		// GPS satellite signal bars, as many as we have.
 		if (!barsMode) {
-		    skyMap.draw(canvas, now);
+		    skyMap.draw(canvas, now, bg);
 		} else {
 		    for (int g = 1; g <= GeoView.NUM_SATS; ++g)
-		        gpsBars[g].draw(canvas, now);
+		        gpsBars[g].draw(canvas, now, bg);
 		}
         
-        sideBar.draw(canvas, now);
+        sideBar.draw(canvas, now, bg);
 	}
 	
     

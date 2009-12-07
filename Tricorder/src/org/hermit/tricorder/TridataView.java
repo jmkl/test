@@ -464,24 +464,26 @@ class TridataView
 	/**
 	 * This method is called to ask the view to draw itself.
 	 * 
-	 * @param	canvas			Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	canvas		Canvas to draw into.
+	 * @param	now			Current system time in ms.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.
 	 */
 	@Override
-	public void draw(Canvas canvas, long now) {
-		super.draw(canvas, now);
+	public void draw(Canvas canvas, long now, boolean bg) {
+		super.draw(canvas, now, bg);
 		
     	// If the sensor is not equipped, fake the data if requested to.
     	if (dataGenerator != null)
     		dataGenerator.generateValues();
     		
 		// Draw the elements.
-		plotView.draw(canvas, now);
-		chartView.draw(canvas, now);
+		plotView.draw(canvas, now, bg);
+		chartView.draw(canvas, now, bg);
 		if (showXyz)
-			xyzView.draw(canvas, now);
+			xyzView.draw(canvas, now, bg);
 		else
-			numView.draw(canvas, now);
+			numView.draw(canvas, now, bg);
 	}
 
 

@@ -355,21 +355,23 @@ class AxisElement
 	 * This method is called to ask the element to draw itself.
 	 * 
 	 * @param	canvas		Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	now			Current system time in ms.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.
 	 */
 	@Override
-	public void draw(Canvas canvas, long now) {
-		super.draw(canvas, now);
+	public void draw(Canvas canvas, long now, boolean bg) {
+		super.draw(canvas, now, bg);
 		
-		ell.draw(canvas, now);
-		headerBar.draw(canvas, now);
-		zLabel.draw(canvas, now);
-		altLabel.draw(canvas, now);
-		xGauge.draw(canvas, now);
-		yGauge.draw(canvas, now);
-		zGauge.draw(canvas, now);
-		xyAxes.draw(canvas, now);
-		altDial.draw(canvas, now);
+		ell.draw(canvas, now, bg);
+		headerBar.draw(canvas, now, bg);
+		zLabel.draw(canvas, now, bg);
+		altLabel.draw(canvas, now, bg);
+		xGauge.draw(canvas, now, bg);
+		yGauge.draw(canvas, now, bg);
+		zGauge.draw(canvas, now, bg);
+		xyAxes.draw(canvas, now, bg);
+		altDial.draw(canvas, now, bg);
 	}
 	
 	

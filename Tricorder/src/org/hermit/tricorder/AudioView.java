@@ -206,16 +206,18 @@ class AudioView
 	 * This method is called to ask the view to draw itself.
 	 * 
 	 * @param	canvas		Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	now			Current system time in ms.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.
 	 */
 	@Override
-	public void draw(Canvas canvas, long now) {
-		super.draw(canvas, now);
+	public void draw(Canvas canvas, long now, boolean bg) {
+		super.draw(canvas, now, bg);
 		
 		audioAnalyser.doUpdate(now);
-		waveformWindow.draw(canvas, now);
-		spectrumWindow.draw(canvas, now);
-		powerWindow.draw(canvas, now);
+		waveformWindow.draw(canvas, now, bg);
+		spectrumWindow.draw(canvas, now, bg);
+		powerWindow.draw(canvas, now, bg);
 	}
 
 

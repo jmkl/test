@@ -780,33 +780,35 @@ class CommView
 	/**
 	 * This method is called to ask the view to draw itself.
 	 * 
-	 * @param	canvas			Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	canvas		Canvas to draw into.
+	 * @param	now			Current system time in ms.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.
 	 */
 	@Override
-	public void draw(Canvas canvas, long now) {
-		super.draw(canvas, now);
+	public void draw(Canvas canvas, long now, boolean bg) {
+		super.draw(canvas, now, bg);
 		
 		// Draw the graph views.
-		cellHead.draw(canvas, now);
-		cRightBar.draw(canvas, now);
-		cellBar.draw(canvas, now);
-		wifiHead.draw(canvas, now);
-		wRightBar.draw(canvas, now);
-		wifiStatus.draw(canvas, now);
+		cellHead.draw(canvas, now, bg);
+		cRightBar.draw(canvas, now, bg);
+		cellBar.draw(canvas, now, bg);
+		wifiHead.draw(canvas, now, bg);
+		wRightBar.draw(canvas, now, bg);
+		wifiStatus.draw(canvas, now, bg);
 
 		// Draw the WiFi bars, as many as we have.
 		synchronized (this) {
 		    if (wifiSignals != null) {
 		        for (int w = 0; w < wifiSignals.size() && w < MAX_WIFI; ++w)
-		            wifiBars[w].draw(canvas, now);
+		            wifiBars[w].draw(canvas, now, bg);
 		    }
 		}
 
 		synchronized (this) {
 		    if (cellSignals != null) {
 		        for (int w = 0; w < cellSignals.size() && w < MAX_CELL; ++w)
-		            cellBars[w].draw(canvas, now);
+		            cellBars[w].draw(canvas, now, bg);
 		    }
 		}
 	}

@@ -579,17 +579,19 @@ class GeoView
 	/**
 	 * This method is called to ask the view to draw itself.
 	 * 
-	 * @param	canvas			Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	canvas		Canvas to draw into.
+	 * @param	now			Current system time in ms.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.
 	 */
 	@Override
-	public void draw(Canvas canvas, long now) {
-		super.draw(canvas, now);
+	public void draw(Canvas canvas, long now, boolean bg) {
+		super.draw(canvas, now, bg);
 		
 		// Draw the data views.
-		netElement.draw(canvas, now);
-		gpsElement.draw(canvas, now);
-		satElement.draw(canvas, now);
+		netElement.draw(canvas, now, bg);
+		gpsElement.draw(canvas, now, bg);
+		satElement.draw(canvas, now, bg);
 	}
 
 	

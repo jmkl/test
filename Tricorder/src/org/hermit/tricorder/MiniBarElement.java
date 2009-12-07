@@ -188,14 +188,16 @@ class MiniBarElement
 	 * This method is called to ask the element to draw itself.
 	 * 
 	 * @param	canvas		Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	now			Current system time in ms.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.
 	 */
 	@Override
-	public void draw(Canvas canvas, long now) {
-		super.draw(canvas, now);
+	public void draw(Canvas canvas, long now, boolean bg) {
+		super.draw(canvas, now, bg);
 		
-		barLabel.draw(canvas, now);
-		magBar.draw(canvas, now);
+		barLabel.draw(canvas, now, bg);
+		magBar.draw(canvas, now, bg);
 	}
 	
 

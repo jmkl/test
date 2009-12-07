@@ -152,15 +152,17 @@ class ElementWrapper
 	 * This method is called to ask the element to draw itself.
 	 * 
 	 * @param	canvas		Canvas to draw into.
-	 * @param	now				Current system time in ms.
+	 * @param	now			Current system time in ms.
+     * @param   bg          Iff true, tell the gauge to draw its background
+     *                      first.
 	 */
 	@Override
-	public void draw(Canvas canvas, long now) {
-		super.draw(canvas, now);
+	public void draw(Canvas canvas, long now, boolean bg) {
+		super.draw(canvas, now, bg);
 		
-		headerBar.draw(canvas, now);
-		sideBar.draw(canvas, now);
-		childView.draw(canvas, now);
+		headerBar.draw(canvas, now, bg);
+		sideBar.draw(canvas, now, bg);
+		childView.draw(canvas, now, bg);
 	}
 	
 
