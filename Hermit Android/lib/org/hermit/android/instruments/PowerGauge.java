@@ -216,12 +216,13 @@ public class PowerGauge
         final float mx = dispX + meterBarMargin;
         final float mw = dispWidth - meterBarMargin * 2;
         final float by = dispY + meterBarTop;
-        final float bh = barWidth;
-        final float bw = mw - 1f;
+        final float bw = mw - 1;
+        final float bh = barWidth - 1;
         final float gw = bw / 10f;
-        canvas.drawRect(mx, by, mx + bw - 1, by + bh - 1, paint);
-        for (float i = 0f; i < bw; i += gw) {
-            canvas.drawLine(mx + i + 1, by, mx + i + 1, by + bh - 1, paint);
+        canvas.drawRect(mx, by, mx + bw, by + bh, paint);
+        for (int i = 1; i < 10; ++i) {
+            final float x = (float) i * (float) bw / 10f;
+            canvas.drawLine(mx + x, by, mx + x, by + bh, paint);
         }
 
         // Draw the labels below the grid.

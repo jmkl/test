@@ -70,7 +70,7 @@ import android.graphics.Typeface;
  * co-ordinates that it uses to draw to the screen, the canvas will need
  * to be the size of the screen (or you can translate the co-ordinates).
  * Then, to draw the gauge, the caller should render the stored background
- * and then call {@link #draw(Canvas, long)}.
+ * and then call {@link #draw(Canvas, long, boolean)}.
  * 
  * <h2>Drawing Sequence -- Implementor</h2>
  * 
@@ -633,18 +633,6 @@ public class Gauge
     protected void drawBackgroundBody(Canvas canvas, Paint paint) {
         // If not overridden, we shouldn't need anything, as the overall
         // background is cleared each time.
-    }
-    
-
-	/**
-	 * This method is called to ask the element to draw its dynamic content.
-	 * The gauge will not be asked to draw its background.
-	 * 
-	 * @param	canvas		Canvas to draw into.
-	 * @param	now			Nominal system time in ms. of this update.
-	 */
-	public void draw(Canvas canvas, long now) {
-	    draw(canvas, now, false);
     }
     
 

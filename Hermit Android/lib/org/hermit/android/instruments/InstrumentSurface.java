@@ -134,7 +134,7 @@ public abstract class InstrumentSurface
      * {@link #addInstrument(Instrument)}.
      * 
      * <p>All gauges added here will have their
-     * {@link Gauge#draw(Canvas, long)} method called each
+     * {@link Gauge#draw(Canvas, long, boolean)} method called each
      * time round the main animation loop.
      * 
      * <p>All gauges must be added before the application starts running.

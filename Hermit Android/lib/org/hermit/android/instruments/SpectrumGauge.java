@@ -180,8 +180,8 @@ public class SpectrumGauge
             final float x = (float) i * (float) bw / 10f;
             canvas.drawLine(sx + x, sy, sx + x, sy + bh, paint);
         }
-        for (int i = 1; i < 10; ++i) {
-            final float y = (float) i * (float) bh / 10f;
+        for (int i = 1; i < RANGE_BELS; ++i) {
+            final float y = (float) i * (float) bh / RANGE_BELS;
             canvas.drawLine(sx, sy + y, sx + bw, sy + y, paint);
         }
         
@@ -215,28 +215,14 @@ public class SpectrumGauge
         final Canvas canvas = specCanvas;
         final Paint paint = getPaint();
         
-        // Calculate a scaling factor.  We want a degree of AGC, but not
-        // so much that the spectrum is always the same height.
-        final int len = data.length;
-        float max = 0f;
-        for (int i = 1; i < len; ++i)
-            if (data[i] > max)
-                max = data[i];
-        final float scale = (float) Math.pow(1f / (max / 0.2f), 0.8) * 5;
-        
         // Now actually do the drawing.
         synchronized (this) {
-//            canvas.drawColor(0xff000000);
-            
             canvas.drawBitmap(bgBitmap, 0, 0, paint);
-
-            //        paint.setColor(0xffff0000);
-            //        paint.setStyle(Style.STROKE);
-            //        canvas.drawLine(x, y - 256f, x + 256f, y - 256f, paint);
 
             paint.setStyle(Style.FILL);
             paintColor[1] = 1f;
             paintColor[2] = 1f;
+            final int len = data.length;
             final float bw = (float) (spectGraphWidth - 2) / (float) len;
             final float bh = spectGraphHeight - 2;
             final float be = spectGraphY + spectGraphHeight - 1;
@@ -247,7 +233,11 @@ public class SpectrumGauge
 
                 // Draw the bar.
                 final float x = spectGraphX + i * bw + 1;
-                final float y = be - data[i] * scale * bh;
+                float y = be - (float) (Math.log10(data[i]) / RANGE_BELS + 1f) * bh;
+//                if (y > be)
+//                    y = be;
+//                else if (y < spectGraphY)
+//                    y = spectGraphY;
                 if (bw <= 1.0f)
                     canvas.drawLine(x, y, x, be, paint);
                 else
@@ -288,6 +278,9 @@ public class SpectrumGauge
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "instrument";
+	
+	// Vertical range of the graph in bels.
+	private static final float RANGE_BELS = 6f;
 
 
 	// ******************************************************************** //
