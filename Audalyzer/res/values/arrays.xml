@@ -83,6 +83,7 @@
     <string-array name="help_titles">
 		<item>Introduction</item>
 		<item>Display</item>
+		<item>Interpreting</item>
 		<item>Menu</item>
 		<item>Settings</item>  
 		<item>@array/help_prefs_titles</item>
@@ -121,6 +122,30 @@ max, etc.  Each 10 dB multiplies or divides the level by 10.\n\
 The power meter also shows peak markers, and
 a background bar displays a rolling average.  The rolling average is also
 displayed numerically.</item>
+			  
+<item>The dB Meter shows the noise level, as received by the audio input
+device, on a logarithmic scale, relative to the maximum audio level the
+device can process.  So the maximum possible input is 0dB; and every 10dB
+below this represents a reduction by a factor of 10.  Hence, -20dB represents
+a signal 1,000 times as powerful as -50dB.\n\
+\n\
+Since every device\'s microphone has different sensitivity, there\'s no way to
+relate this to actual noise levels.\n\
+\n\
+In practice, this means that:\n\
+• Full-on noise, totally distorting the input, should register 0dB.\n\
+• It\'s very hard to get this in practice.  However, traffic noise on the
+Golden Gate Bridge peaked up to 1dB.\n\
+• A pure tone at the maximum non-distorting level is about -2.41dB.\n\
+• A miniscule, almost-not-there signal would be -100dB.  However, due to
+electrical noise inside the device, it\'s about impossible in practice to get
+close to this.\n\
+• With my Droid in a soundproof chamber I got a reading of
+-68.4dB, so that\'s a realistic representation of what \"very quiet\" would
+register as.\n\
+\n\
+The spectrum analyser also displays a log scale.  Here, the output range tends
+to be more limited, so we display levels down to -60dB from the maximum.</item>
               
 <item>The device\'s \"menu\" button pops up a menu containing a number
 of options:\n\
