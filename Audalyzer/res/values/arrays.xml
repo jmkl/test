@@ -109,8 +109,8 @@ microphone; this display auto-scales to handle a wide range of sound levels.\n\
 \n\
 Below this a frequency spectrum is displayed.  The horizontal scale shows the
 frequencies displayed; the maximum frequency will depend on the selected
-sampling rate (see \"Settings\").  Again, this display auto-scales to
-handle a wide range of sound levels.\n\
+sampling rate (see \"Settings\").  The vertical scale is logarithmic, with
+a range from -60dB to 0dB.  Scale lines are drawn every 10dB.\n\
 \n\
 The third section displays the absolute power level of the sound as received
 by the device\'s microphone.  This is displayed as decibels (dB) relative
