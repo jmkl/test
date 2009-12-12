@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.text.util.Linkify;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -337,7 +338,10 @@ public class HelpActivity
             super(parent);
             setOrientation(VERTICAL);
             
+            // Create the body text view, and make URLs active.
             TextView bt = new TextView(parent);
+            bt.setAutoLinkMask(Linkify.WEB_URLS);
+            bt.setLinksClickable(true);
             bt.setPadding((level + 1) * 32, 0, 0, 0);
             bt.setText(text);
             LayoutParams lp = new LayoutParams(FPAR, WCON);
