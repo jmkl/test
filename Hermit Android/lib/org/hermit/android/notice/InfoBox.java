@@ -103,9 +103,12 @@ public class InfoBox
     	tscroll.setLayoutParams(new LinearLayout.LayoutParams(WCON, WCON, 1));
     	layout.addView(tscroll);
 
-    	// Now create the text view and add it to the scroller.
-    	textView = new TextView(parentApp);
+    	// Now create the text view and add it to the scroller.  Note: when
+        // we use Linkify, it's necessary to call setTextColor() to
+        // avoid all the text blacking out on click.
+        textView = new TextView(parentApp);
     	textView.setTextSize(16);
+    	textView.setTextColor(0xffffffff);
     	textView.setAutoLinkMask(Linkify.WEB_URLS);
     	textView.setLayoutParams(new LinearLayout.LayoutParams(FPAR, FPAR));
     	tscroll.addView(textView);

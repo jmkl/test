@@ -338,10 +338,13 @@ public class HelpActivity
             super(parent);
             setOrientation(VERTICAL);
             
-            // Create the body text view, and make URLs active.
+            // Create the body text view, and make URLs active.  Note: when
+            // we use Linkify, it's necessary to call setTextColor() to
+            // avoid all the text blacking out on click.
             TextView bt = new TextView(parent);
             bt.setAutoLinkMask(Linkify.WEB_URLS);
             bt.setLinksClickable(true);
+            bt.setTextColor(0xffc0c0ff);
             bt.setPadding((level + 1) * 32, 0, 0, 0);
             bt.setText(text);
             LayoutParams lp = new LayoutParams(FPAR, WCON);
