@@ -104,6 +104,7 @@ public final class Window {
         }
     }
     
+    
     private void makeGauss(double[] buf, int len) {
         final double k = (double) (len - 1) / 2;
         
@@ -171,7 +172,7 @@ public final class Window {
     // ******************************************************************** //
 
     // Default window function.
-    private static final Function DEFAULT_FUNC = Function.GAUSS;
+    private static final Function DEFAULT_FUNC = Function.BLACKMAN_HARRIS;
     
     // Blackman-Harris coefficients.  These sum to 1.0.
     private static final double BH_A0 = 0.35875;
