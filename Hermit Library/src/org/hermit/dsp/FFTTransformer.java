@@ -62,10 +62,28 @@ public final class FFTTransformer {
      * @throws  IllegalArgumentException    Invalid parameter.
      */
     public FFTTransformer(int size) {
+        this(size, null);
+    }
+    
+
+    /**
+     * Create an FFT transformer for a given sample size.  This preallocates
+     * resources appropriate to that block size.  A specified window
+     * function will be applied to all input data.
+     * 
+     * @param   size        The number of samples in a block that we will
+     *                      be asked to transform.  Must be a power of 2.
+     * @param   window      Window function to apply to all input data.
+     *                      Its block size must be the same as the size
+     *                      parameter.
+     * @throws  IllegalArgumentException    Invalid parameter.
+     */
+    public FFTTransformer(int size, Window window) {
         if (!Bitwise.isPowerOf2(size))
             throw new IllegalArgumentException("size for FFT must" +
                                                " be a power of 2 (was " + size + ")");
         
+        windowFunc = window;
         transformer = new RealDoubleFFT(size);
         
         blockSize = size;
@@ -100,6 +118,7 @@ public final class FFTTransformer {
                                                " constructed for " + blockSize +
                                                "; given " + input.length);
        
+        // Copy and transform the samples into our internal data buffer.
         for (int i = 0; i < blockSize; i++)
             xre[i] = input[off + i];
     }
@@ -125,11 +144,12 @@ public final class FFTTransformer {
             throw new IllegalArgumentException("bad input count in FFT:" +
                                                " constructed for " + blockSize +
                                                "; given " + input.length);
-       
+
+        // Copy and transform the samples into our internal data buffer.
         for (int i = 0; i < blockSize; i++)
             xre[i] = (double) input[off + i] / 32768.0;
     }
-    
+
 
     // ******************************************************************** //
     // Transform.
@@ -139,6 +159,11 @@ public final class FFTTransformer {
      * Transform the data provided in the last call to setInput.
      */
     public final void transform() {
+        // If we have a window function, apply it now.
+        if (windowFunc != null)
+            windowFunc.transform(xre);
+
+        // Do the FFT.
         transformer.ft(xre);
     }
 
@@ -292,7 +317,11 @@ public final class FFTTransformer {
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
+    
+    // Window function to apply to all input data.  If null, no windowing.
+    private Window windowFunc = null;
 
+    // The FFT transformer.
     private RealDoubleFFT transformer;
 
     // The size of an input data block.
