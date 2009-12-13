@@ -24,6 +24,7 @@ import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.io.AudioReader;
 import org.hermit.dsp.FFTTransformer;
 import org.hermit.dsp.SignalPower;
+import org.hermit.dsp.Window;
 
 import android.os.Bundle;
 
@@ -52,7 +53,8 @@ public class AudioAnalyser
         
         audioReader = new AudioReader();
         
-        spectrumAnalyser = new FFTTransformer(inputBlockSize);
+        inputWindow = new Window(inputBlockSize);
+        spectrumAnalyser = new FFTTransformer(inputBlockSize, inputWindow);
         
         // Allocate the spectrum data.
         spectrumData = new float[inputBlockSize / 2];
@@ -91,7 +93,8 @@ public class AudioAnalyser
     public void setBlockSize(int size) {
         inputBlockSize = size;
 
-        spectrumAnalyser = new FFTTransformer(inputBlockSize);
+        inputWindow = new Window(inputBlockSize);
+        spectrumAnalyser = new FFTTransformer(inputBlockSize, inputWindow);
 
         // Allocate the spectrum data.
         spectrumData = new float[inputBlockSize / 2];
@@ -385,7 +388,10 @@ public class AudioAnalyser
     
     // Our audio input device.
     private final AudioReader audioReader;
-    
+
+    // Window function to apply to all input data.
+    private Window inputWindow = null;
+
     // Fourier Transform calculator we use for calculating the spectrum.
     private FFTTransformer spectrumAnalyser;
     
