@@ -57,6 +57,9 @@ for more details.\n</string>
     <string name="prefs_block">Block size</string>
     <string name="prefs_block_summary">Set the input block size -- larger is slower but finer</string>
     <string name="prefs_block_title">Block Size</string>
+    <string name="prefs_window">Window function</string>
+    <string name="prefs_window_summary">Set spectrum windowing (to eliminate spurious frequencies)</string>
+    <string name="prefs_window_title">Window Function</string>
     <string name="prefs_decimate">Decimation</string>
     <string name="prefs_decimate_summary">Improve performance by processing only a portion of the input</string>
     <string name="prefs_decimate_title">Decimation</string>

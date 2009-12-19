@@ -22,6 +22,7 @@ import org.hermit.android.instruments.InstrumentSurface;
 import org.hermit.android.instruments.PowerGauge;
 import org.hermit.android.instruments.SpectrumGauge;
 import org.hermit.android.instruments.WaveformGauge;
+import org.hermit.dsp.Window;
 
 import android.app.Activity;
 import android.graphics.Rect;
@@ -86,6 +87,18 @@ public class InstrumentPanel
      */
     public void setBlockSize(int size) {
         audioAnalyser.setBlockSize(size);
+    }
+    
+
+    /**
+     * Set the spectrum analyser windowing function for this instrument.
+     * 
+     * @param   func        The desired windowing function.
+     *                      Window.Function.BLACKMAN_HARRIS is a good option.
+     *                      Window.Function.RECTANGULAR turns off windowing.
+     */
+    public void setWindowFunc(Window.Function func) {
+        audioAnalyser.setWindowFunc(func);
     }
     
 

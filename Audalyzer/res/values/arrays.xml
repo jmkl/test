@@ -29,6 +29,22 @@
         <item>512</item>
         <item>1024</item>
     </string-array>
+      
+    <!-- Entry names for the window function menu. -->
+    <string-array name="prefs_window_entries">
+        <item>No windowing</item>
+        <item>Blackman-Harris (dflt)</item>
+        <item>Gauss</item>  
+        <item>Weedon-Gauss</item>  
+    </string-array>
+
+    <!-- Values for the window function menu. -->
+    <string-array name="prefs_window_values">
+        <item>RECTANGULAR</item>  
+        <item>BLACKMAN_HARRIS</item>
+        <item>GAUSS</item>
+        <item>WEEDON_GAUSS</item>
+    </string-array>
     
     <!-- Entry names for the decimation menu. -->
     <string-array name="prefs_decimate_entries">
@@ -195,6 +211,11 @@ this frequency range is displayed alongside the sample rate.\n\
 <b>Block size</b> sets the size in samples of the data block processed
 by the spectrum analyser.  A larger block size provides finer frequency
 resolution but with more delay and more processing power required.\n\
+\n\
+<b>Window function</b> sets the spectrum analyser windowing function.
+Windowing eliminates spurious frequencies caused by the blocking of
+the input, at the cost of making peaks a little wider.  Blackman-Harris is
+a good bet.\n\
 \n\
 <b>Decimation</b> reduces the processing workload by only analysing a subset
 of the input data blocks.\n\

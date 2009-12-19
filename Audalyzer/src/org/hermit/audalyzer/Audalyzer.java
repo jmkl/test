@@ -312,6 +312,18 @@ public class Audalyzer
         Log.i(TAG, "Prefs: blockSize " + blockSize);
         audioInstrument.setBlockSize(blockSize);
         
+        // Get the desired window function.
+        org.hermit.dsp.Window.Function windowFunc =
+                            org.hermit.dsp.Window.Function.BLACKMAN_HARRIS;
+        try {
+            String func = prefs.getString("windowFunc", null);
+            windowFunc = org.hermit.dsp.Window.Function.valueOf(func);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad windowFunc");
+        }
+        Log.i(TAG, "Prefs: windowFunc " + windowFunc);
+        audioInstrument.setWindowFunc(windowFunc);
+        
         // Get the desired decimation.
         int decimateRate = 2;
         try {
