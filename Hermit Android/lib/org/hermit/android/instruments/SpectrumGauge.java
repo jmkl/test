@@ -234,10 +234,10 @@ public class SpectrumGauge
                 // Draw the bar.
                 final float x = spectGraphX + i * bw + 1;
                 float y = be - (float) (Math.log10(data[i]) / RANGE_BELS + 1f) * bh;
-//                if (y > be)
-//                    y = be;
-//                else if (y < spectGraphY)
-//                    y = spectGraphY;
+                if (y > be)
+                    y = be;
+                else if (y < spectGraphY)
+                    y = spectGraphY;
                 if (bw <= 1.0f)
                     canvas.drawLine(x, y, x, be, paint);
                 else

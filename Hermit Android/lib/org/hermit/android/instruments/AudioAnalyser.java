@@ -53,8 +53,7 @@ public class AudioAnalyser
         
         audioReader = new AudioReader();
         
-        inputWindow = new Window(inputBlockSize);
-        spectrumAnalyser = new FFTTransformer(inputBlockSize, inputWindow);
+        spectrumAnalyser = new FFTTransformer(inputBlockSize, windowFunction);
         
         // Allocate the spectrum data.
         spectrumData = new float[inputBlockSize / 2];
@@ -93,16 +92,24 @@ public class AudioAnalyser
     public void setBlockSize(int size) {
         inputBlockSize = size;
 
-        inputWindow = new Window(inputBlockSize);
-        spectrumAnalyser = new FFTTransformer(inputBlockSize, inputWindow);
+        spectrumAnalyser = new FFTTransformer(inputBlockSize, windowFunction);
 
         // Allocate the spectrum data.
         spectrumData = new float[inputBlockSize / 2];
         spectrumHist = new float[inputBlockSize / 2][historyLen];
+    }
+    
 
-        // The spectrum gauge needs to know this.
-//        if (spectrumGauge != null)
-//            spectrumGauge.setBlockSize(size);
+    /**
+     * Set the spectrum analyser windowing function for this instrument.
+     * 
+     * @param   func        The desired windowing function.
+     *                      Window.Function.BLACKMAN_HARRIS is a good option.
+     *                      Window.Function.RECTANGULAR turns off windowing.
+     */
+    public void setWindowFunc(Window.Function func) {
+        windowFunction = func;
+        spectrumAnalyser.setWindowFunc(func);
     }
     
 
@@ -385,12 +392,25 @@ public class AudioAnalyser
 
     // Our parent surface.
     private SurfaceRunner parentSurface;
+
+    // The desired sampling rate for this analyser, in samples/sec.
+    private int sampleRate = 8000;
+
+    // Audio input block size, in samples.
+    private int inputBlockSize = 256;
     
+    // The selected windowing function.
+    private Window.Function windowFunction = Window.Function.BLACKMAN_HARRIS;
+
+    // The desired decimation rate for this analyser.  Only 1 in
+    // sampleDecimate blocks will actually be processed.
+    private int sampleDecimate = 1;
+   
+    // The desired histogram averaging window.  1 means no averaging.
+    private int historyLen = 4;
+
     // Our audio input device.
     private final AudioReader audioReader;
-
-    // Window function to apply to all input data.
-    private Window inputWindow = null;
 
     // Fourier Transform calculator we use for calculating the spectrum.
     private FFTTransformer spectrumAnalyser;
@@ -401,19 +421,6 @@ public class AudioAnalyser
     private SpectrumGauge spectrumGauge = null;
     private PowerGauge powerGauge = null;
     
-    // The desired sampling rate for this analyser, in samples/sec.
-    private int sampleRate = 8000;
-
-    // Audio input block size, in samples.
-    private int inputBlockSize = 256;
-
-    // The desired decimation rate for this analyser.  Only 1 in
-    // sampleDecimate blocks will actually be processed.
-    private int sampleDecimate = 1;
-   
-    // The desired histogram averaging window.  1 means no averaging.
-    private int historyLen = 4;
-
     // Buffered audio data, and sequence number of the latest block.
     private short[] audioData;
     private long audioSequence = 0;
