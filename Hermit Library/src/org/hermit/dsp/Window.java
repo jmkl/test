@@ -33,6 +33,10 @@ public final class Window {
      * Definitions of the available window functions.
      */
     public enum Function {
+        /** A simple rectangular window function.  This is equivalent to
+         * doing no windowing. */
+        RECTANGULAR,
+        
         /** The Blackman-Harris window function. */
         BLACKMAN_HARRIS,
         
@@ -66,16 +70,21 @@ public final class Window {
      * 
      * @param   size        The number of samples in a block that we will
      *                      be asked to transform.
-     * @param   function    The window function to use.
+     * @param   function    The window function to use.  Function.RECTANGULAR
+     *                      effectively means no transformation.
      */
     public Window(int size, Function function) {
         blockSize = size;
 
         // Create the window function as an array, so we do the
-        // calculations once only.
-        kernel = new double[size];
+        // calculations once only.  For RECTANGULAR, leave the kernel as
+        // null, signalling no transformation.
+        kernel = function == Function.RECTANGULAR ? null : new double[size];
 
         switch (function) {
+        case RECTANGULAR:
+            // Nothing to do.
+            break;
         case BLACKMAN_HARRIS:
             makeBlackmanHarris(kernel, size);
             break;
@@ -161,9 +170,9 @@ public final class Window {
             throw new IllegalArgumentException("bad input count in Window:" +
                                                " constructed for " + blockSize +
                                                "; given " + input.length);
-       
-        for (int i = 0; i < blockSize; i++)
-            input[off + i] *= kernel[i];
+        if (kernel != null)
+            for (int i = 0; i < blockSize; i++)
+                input[off + i] *= kernel[i];
     }
     
     
@@ -189,6 +198,7 @@ public final class Window {
     private final int blockSize;
     
     // The window function, as a pre-computed array of multiplication factors.
+    // If null, do no transformation -- this is a unity rectangular window.
     private final double[] kernel;
 
 }

@@ -62,7 +62,22 @@ public final class FFTTransformer {
      * @throws  IllegalArgumentException    Invalid parameter.
      */
     public FFTTransformer(int size) {
-        this(size, null);
+        this(size, (Window) null);
+    }
+    
+
+    /**
+     * Create an FFT transformer for a given sample size.  This preallocates
+     * resources appropriate to that block size.  A specified window
+     * function will be applied to all input data.
+     * 
+     * @param   size        The number of samples in a block that we will
+     *                      be asked to transform.  Must be a power of 2.
+     * @param   winfunc     Window function to apply to all input data.
+     * @throws  IllegalArgumentException    Invalid parameter.
+     */
+    public FFTTransformer(int size, Window.Function winfunc) {
+        this(size, new Window(size, winfunc));
     }
     
 
@@ -93,6 +108,20 @@ public final class FFTTransformer {
     }
     
 
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Set a new windowing function for this analyser.
+     * 
+     * @param   func        The desired windowing function.
+     */
+    public void setWindowFunc(Window.Function func) {
+        windowFunc = new Window(blockSize, func);
+    }
+
+    
     // ******************************************************************** //
     // Data Setup.
     // ******************************************************************** //
