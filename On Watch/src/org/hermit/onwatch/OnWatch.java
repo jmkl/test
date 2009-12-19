@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -68,8 +69,8 @@ public class OnWatch
     		soundRes = res;
     	}
     	
-     	/** Resource ID for the sound file. */
-     	int soundRes;
+    	private int soundRes;           // Resource ID for the sound file.
+        private int soundId = 0;        // Sound ID for playing.
     }
 
 
@@ -98,18 +99,14 @@ public class OnWatch
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        
-        // We want the audio controls to control our sound volume.
-        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        
+
         // Create our EULA box.
         createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);       
 
         // Set up the standard dialogs.
         createMessageBox(R.string.button_close);
-        setAboutInfo(R.string.about_text, R.string.help_text);
+        setAboutInfo(R.string.about_text);
         setHomeInfo(R.string.button_homepage, R.string.url_homepage);
-        setManualInfo(R.string.button_manual, R.string.url_manual);
         setLicenseInfo(R.string.button_license, R.string.url_license);
 
         // Create the time and location models.
@@ -130,6 +127,12 @@ public class OnWatch
 		        viewController.tick(time);
 			}
 		};
+        
+        // We want the audio controls to control our sound volume.
+        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        
+        // Load the sounds.
+        soundPool = createSoundPool();
 
 		// Create the sound queue and a handler to launch sounds.
 		soundQueue = new LinkedList<Sound>();
@@ -361,7 +364,10 @@ public class OnWatch
         	});
         	break;
     	case R.id.menu_help:
-            showHelp();
+            // Launch the help activity as a subactivity.
+            Intent hIntent = new Intent();
+            hIntent.setClass(this, Help.class);
+            startActivity(hIntent);
     		break;
     	case R.id.menu_about:
             showAbout();
@@ -472,6 +478,18 @@ public class OnWatch
 	// ******************************************************************** //
 	// Sound.
 	// ******************************************************************** //
+    
+    /**
+     * Create a SoundPool containing the app's sound effects.
+     */
+    private SoundPool createSoundPool() {
+        SoundPool pool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
+        for (Sound sound : Sound.values())
+            sound.soundId = pool.load(this, sound.soundRes, 1);
+        
+        return pool;
+    }
+
 
     /**
      * Sound watch bells.
@@ -536,7 +554,6 @@ public class OnWatch
     			});
 
     			mp.prepareAsync();
-    			//			mp.start();
     		} catch (Exception e) {
     			Log.d(TAG, "Sound queue play error: " + e.getMessage());
     		}
@@ -550,20 +567,8 @@ public class OnWatch
      * @param	which			ID of the sound to play.
      */
     void makeSound(Sound which) {
-		try {
-			MediaPlayer mp = MediaPlayer.create(this, which.soundRes);
-			mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-				public void onPrepared(MediaPlayer mp) { mp.start(); }
-			});
-			mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-				public void onCompletion(MediaPlayer mp) { mp.release(); }
-			});
-			
-			mp.prepareAsync();
-//			mp.start();
-		} catch (Exception e) {
-            Log.d(TAG, "Sound play error: " + e.getMessage());
-		}
+        float vol = 1.0f;
+        soundPool.play(which.soundId, vol, vol, 1, 0, 1f);
 	}
 	
 
@@ -642,6 +647,9 @@ public class OnWatch
 	// Queue of sounds to be played.
 	private LinkedList<Sound> soundQueue;
     
+    // Sound pool used for sound effects.
+    private SoundPool soundPool;
+
     // Log whether we showed the splash screen yet this run.
     private boolean shownSplash = false;
 

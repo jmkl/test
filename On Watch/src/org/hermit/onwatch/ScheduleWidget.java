@@ -79,7 +79,7 @@ public class ScheduleWidget
 		timeModel = TimeModel.getInstance(context);
 		timeModel.listen(TimeModel.Field.MINUTE, new TimeModel.Listener() {
 			@Override
-			public void change(Field field, long time, int value) {
+			public void change(Field field, int value, long time) {
 				reDrawContent();
 			}
 		});

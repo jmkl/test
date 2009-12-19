@@ -30,8 +30,19 @@
 		<activity android:name="org.hermit.android.core.SplashActivity">
 		</activity>
 
-		<activity android:name=".Preferences" android:label="@string/prefs_title"
-			android:launchMode="singleTop">
+		<activity android:name=".Preferences"
+				  android:label="@string/prefs_title"
+				  android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout"
+				  android:launchMode="singleTop">
+		</activity>
+
+		<activity android:name=".Help"
+				  android:launchMode="singleTop"
+				  android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout"
+				  android:label="@string/help_title">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"></action>
+			</intent-filter>
 		</activity>
 
 	</application>
@@ -40,8 +51,9 @@
 	<uses-permission android:name="android.permission.WRITE_SETTINGS"/>
 	<uses-permission android:name="android.permission.SET_TIME_ZONE"/>
 	
-	<uses-sdk android:minSdkVersion="3"/>
+	<uses-sdk android:minSdkVersion="4"/>
 
 
+<supports-screens android:smallScreens="false" android:resizeable="true" android:largeScreens="false" android:normalScreens="true" android:anyDensity="true"></supports-screens>
 </manifest> 
 

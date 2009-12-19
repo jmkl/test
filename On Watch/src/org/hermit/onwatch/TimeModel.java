@@ -107,7 +107,7 @@ public class TimeModel
 		public String name;
 		
 		// Flag whether we've set up the watch names yet.
-	    static boolean watchNamesSet = false;
+		private static boolean watchNamesSet = false;
 	    
 	    // Array of all the Watch values; for converting an ordinal to
 	    // a Watch.
@@ -174,7 +174,20 @@ public class TimeModel
 	 * changes.
 	 */
 	public static interface Listener {
-		public void change(Field field, long time, int value);
+	    /**
+	     * This method is called when the time changes.  It is called
+	     * for each field on which this listener is registered that has changed.
+	     * 
+	     * <p>Note that a change in a high-order field is assumed to affect
+	     * all lower-order fields; so a change in the hour will cause the
+	     * seconds to be considered changed, even if the numeric value is
+	     * unchanged.
+	     * 
+	     * @param  field       The field that has changed.
+	     * @param  value       The new field value.
+	     * @param  time        The new time in ms.
+	     */
+		public void change(Field field, int value, long time);
 	}
 	
 	
@@ -592,7 +605,7 @@ public class TimeModel
     			ArrayList<Listener> lists = timeListeners[i];
     			if (lists != null)
     				for (Listener list : lists)
-    					list.change(f, milliTime, val);
+    					list.change(f, val, milliTime);
     		}
     	}
     }

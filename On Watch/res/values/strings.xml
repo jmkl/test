@@ -24,20 +24,6 @@ GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
 for more details.\n</string>
 
 
-    <string name="help_text"><b>On Watch</b>\n\
-\n\
-On Watch displays a selection of useful information for a sailing
-watchkeeper, and sounds chimes and alerts to keep you on your toes.
-It also lets you know about interesting astronomical phenomena to look
-out for on those long night watches.\n\
-\n\
-You\'ll see a link to the project
-home page at the bottom of this screen; check it out for more info on
-On Watch.  On Watch is an open project, so if you want to join in and
-make contributions, you can.  See the project page for information.\n\
-</string>
-
-
     <string name="about_title">About</string>
     <string name="about_text"><b>On Watch</b> by Ian Cameron Smith
 (headstay).\n\
@@ -56,6 +42,9 @@ GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
 for more details.\n</string>
 
 
+    <string name="help_title">On Watch User\'s Manual</string>
+
+
     <!-- Menu strings. -->
     <string name="menu_prefs">Settings</string>
     <string name="menu_help">Help</string>
@@ -69,12 +58,6 @@ for more details.\n</string>
     
     <!-- Preferences strings. -->
     <string name="prefs_title">Settings</string>
-<!--    <string name="prefs_cat_sound">Sound Settings</string>-->
-<!--    <string name="prefs_chime_watch">Sound watch chimes</string>-->
-<!--    <string name="prefs_chime_watch_summary">Sound traditional chimes for the watches</string>-->
-<!--    <string name="prefs_alert">Repeating alert</string>-->
-<!--    <string name="prefs_alert_summary">Configure a repeating wake-up alarm</string>-->
-<!--    <string name="prefs_alert_title">Repeating Alert</string>-->
     <string name="prefs_cat_time">Time Settings</string>
     <string name="prefs_naut_time">Use Nautical Time</string>
     <string name="prefs_naut_time_summary">Set the timezone automatically by longitude</string>
@@ -89,12 +72,10 @@ for more details.\n</string>
     <string name="button_close">OK</string>
     <string name="button_license">License</string>
     <string name="button_homepage">Project</string>
-    <string name="button_manual">Manual</string>
 
     <!-- URLs. -->
     <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
     <string name="url_homepage">http://code.google.com/p/tricorder/</string>
-    <string name="url_manual">http://code.google.com/p/tricorder/wiki/UserManual</string>
 
     <!-- Names of the watch plans.  -->
     <string name="wplan_ninety_s">90 min double</string>

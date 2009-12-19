@@ -88,7 +88,7 @@ public class AstroCalendarWidget
         timeModel = TimeModel.getInstance(context);
         timeModel.listen(TimeModel.Field.HOUR, new TimeModel.Listener() {
             @Override
-            public void change(Field field, long time, int value) {
+            public void change(Field field, int value, long time) {
                 Log.v(TAG, "Astro: time change");
                 update();
             }
@@ -137,6 +137,17 @@ public class AstroCalendarWidget
 
     
     /**
+     * Get this widget's desired minimum width.
+     * 
+     * @return                  Desired minimum width.
+     */
+    @Override
+    protected int getSuggestedMinimumWidth() {
+        return (CALC_HOURS - 2) * 16;
+    }
+    
+    
+    /**
      * This is called during layout when the size of this view has
      * changed.  This is where we first discover our window size, so set
      * our geometry to match.
@@ -155,13 +166,25 @@ public class AstroCalendarWidget
     	if (width <= 0 || height <= 0)
     		return;
 
+        // Label text size, for regular and small labels.
+        labelSize = (int) (height / 32f);
+        labelSmSize = (int) (height / 44f);
+
+        // Size of the margin below the planet bars, where we show rise
+        // and set times.
+        barMargin = labelSize + 3;
+
+        // Size of the overall bottom margin, where the time labels go.
+        marginBot = (labelSize + 3) * 2;
+
     	dispWidth = width;
-    	dispHeight = height - MARGIN_BOT;
-    	hourWidth = (float) dispWidth / (float) DISPLAY_HOURS;
+    	dispHeight = height - marginBot;
+    	hourWidth = 16;
     	bodyHeight = (float) dispHeight / (float) NUM_DISP_BODIES;
-        
+    	bodyBarHeight = bodyHeight - barMargin;
+    	
     	backingBitmap = Bitmap.createBitmap(width, height,
-    	        Bitmap.Config.RGB_565);
+    	                                    Bitmap.Config.RGB_565);
     	backingCanvas = new Canvas(backingBitmap);
     	reDrawContent();
 	}
@@ -246,7 +269,7 @@ public class AstroCalendarWidget
                 }
 
                 try {
-                    Thread.sleep(250);
+                    Thread.sleep(25);
                 } catch (InterruptedException e) { }
             }
             
@@ -278,9 +301,9 @@ public class AstroCalendarWidget
         // Draw in the body labels.  We do this at the current scroll
         // X position, so they stay in the same place on screen.
         graphPaint.setStyle(Paint.Style.STROKE);
-        graphPaint.setTextSize(LABEL_SIZE);
+        graphPaint.setTextSize(labelSize);
         graphPaint.setColor(MAIN_LABEL_COL);
-        float textOff = bodyHeight - 18;
+        float textOff = labelSize + 6;
         float x = parentScroller.getScrollX();
         float bodyY = 0;
         for (Body.Name n : DISP_BODIES) {
@@ -292,12 +315,9 @@ public class AstroCalendarWidget
     
     /**
      * This method is called when some data has changed.  Re-draw the
-     * widget to the backing bitmap.
+     * widget's content to the backing bitmap.
      */
     private void reDrawContent() {
-		// Get the timezone, as decimal hours.
-//		double tz = (double) watchCalendar.getTimezoneOffset() / 1000.0 / 3600.0;
-
         // If we haven't been set up yet, do nothing.
         if (backingCanvas == null || altitudeTable == null)
             return;
@@ -323,57 +343,6 @@ public class AstroCalendarWidget
         }
     }
 
-
-    /**
-     * Draw in the grid and axis labels.
-     */
-    private void drawGrid(Canvas canvas) {
-        // Draw the vertical lines and the hour labels.
-        graphPaint.setStyle(Paint.Style.STROKE);
-        graphPaint.setTextSize(LABEL_SIZE);
-        float hourY = dispHeight + MARGIN_BOT - LABEL_SIZE - 8;
-        float dayY = dispHeight + MARGIN_BOT - 6;
-        Calendar time = (Calendar) leftTime.clone();
-        for (int hour = 0; hour < CALC_HOURS; ++hour) {
-            float x = (float) (hour - 1) * (float) hourWidth;
-            int h = time.get(Calendar.HOUR_OF_DAY);
-
-            // Verticals, with a heavy line every 4.
-            graphPaint.setStrokeWidth(h % 4 == 0 ? 2 : 1);
-            graphPaint.setColor(GRID_COL);
-            canvas.drawLine(x, 0, x, dispHeight, graphPaint);
-            graphPaint.setStrokeWidth(0);
-            
-            // Hour labels every 4 hours.
-            if (h % 4 == 0) {
-                int count = formatTime(h, 0);
-                float dx = -count * 4;
-                graphPaint.setColor(MAIN_LABEL_COL);
-                canvas.drawText(charBuf, 0, count, x + dx, hourY, graphPaint);
-                
-                // Day labels every noon and midnight.
-                if (h % 12 == 0) {
-                    int wd = time.get(Calendar.DAY_OF_WEEK);
-                    graphPaint.setColor(MAIN_LABEL_COL);
-                    String name = TimeModel.weekdayName(wd);
-                    canvas.drawText(name, x + dx, dayY, graphPaint);
-                }
-            }
-            
-            time.add(Calendar.HOUR_OF_DAY, 1);
-        }
-
-        // Draw in the baselines.
-        graphPaint.setStyle(Paint.Style.STROKE);
-        graphPaint.setColor(GRID_COL);
-        graphPaint.setStrokeWidth(2);
-        float bodyY = 0;
-        for (int i = 0; i < NUM_DISP_BODIES; ++i) {
-            canvas.drawLine(0, bodyY + bodyHeight, dispWidth, bodyY + bodyHeight, graphPaint);
-            bodyY += bodyHeight;
-        }
-    }
-    
     
     /**
      * Draw in the daylight hours.
@@ -400,7 +369,13 @@ public class AstroCalendarWidget
                     riseX = baseX + dx;
                 else {
                     float setX = baseX + dx;
-                    canvas.drawRect(riseX, 0, setX, dispHeight, graphPaint);
+                    float bodyY = 0;
+                    for (int i = 0; i < NUM_DISP_BODIES; ++i) {
+                        canvas.drawRect(riseX, bodyY,
+                                        setX, bodyY + bodyBarHeight,
+                                        graphPaint);
+                        bodyY += bodyHeight;
+                    }
                 }
             }
 
@@ -408,10 +383,95 @@ public class AstroCalendarWidget
         }
 
         // If the sun is still up, draw the last day.
-        if (prevAlt >= 0f)
-            canvas.drawRect(riseX, 0, dispWidth + hourWidth, dispHeight, graphPaint);
+        if (prevAlt >= 0f) {
+            float bodyY = 0;
+            for (int i = 0; i < NUM_DISP_BODIES; ++i) {
+                canvas.drawRect(riseX, bodyY,
+                                dispWidth + hourWidth, bodyY + bodyBarHeight,
+                                graphPaint);
+                bodyY += bodyHeight;
+            }
+        }
     }
 
+
+    /**
+     * Draw in the grid and axis labels.
+     */
+    private void drawGrid(Canvas canvas) {
+        // Draw the vertical lines and the hour labels.
+        graphPaint.setStyle(Paint.Style.STROKE);
+        float hourY = dispHeight + marginBot - labelSize - 8;
+        float dayY = dispHeight + marginBot - 6;
+        Calendar time = (Calendar) leftTime.clone();
+        for (int hour = 0; hour < CALC_HOURS; ++hour) {
+            float x = (float) (hour - 1) * (float) hourWidth;
+            int h = time.get(Calendar.HOUR_OF_DAY);
+
+            // Verticals, with a heavy line every 4.
+            drawVertical(canvas, GRID_COL, x, h % 4 == 0 ? 2 : 1);
+            
+            // Hour labels every 4 hours.
+            graphPaint.setStrokeWidth(0);
+            if (h % 4 == 0) {
+                int count = formatTime(h, 0);
+                float dx = -count * 4;
+                graphPaint.setColor(MAIN_LABEL_COL);
+                graphPaint.setTextSize(labelSmSize);
+                canvas.drawText(charBuf, 0, count, x + dx, hourY, graphPaint);
+                
+                // Day labels every noon and midnight.
+                if (h % 12 == 0) {
+                    int wd = time.get(Calendar.DAY_OF_WEEK);
+                    graphPaint.setColor(MAIN_LABEL_COL);
+                    graphPaint.setTextSize(labelSize);
+                    String name = TimeModel.weekdayName(wd);
+                    canvas.drawText(name, x + dx, dayY, graphPaint);
+                }
+            }
+            
+            time.add(Calendar.HOUR_OF_DAY, 1);
+        }
+
+        // Draw in the baselines.
+        graphPaint.setStyle(Paint.Style.STROKE);
+        graphPaint.setColor(GRID_COL);
+        graphPaint.setStrokeWidth(2);
+        float bodyY = 0;
+        for (int i = 0; i < NUM_DISP_BODIES; ++i) {
+            canvas.drawLine(0, bodyY + bodyHeight, dispWidth, bodyY + bodyHeight, graphPaint);
+            bodyY += bodyHeight;
+        }
+
+        // Draw in the altitude 30° lines.
+        graphPaint.setStrokeWidth(1);
+        bodyY = 0;
+        for (int i = 0; i < NUM_DISP_BODIES; ++i) {
+            float y = bodyY + bodyBarHeight * 1f / 3f;
+            canvas.drawLine(0, y, dispWidth, y, graphPaint);
+            y = bodyY + bodyBarHeight * 2f / 3f;
+            canvas.drawLine(0, y, dispWidth, y, graphPaint);
+            y = bodyY + bodyBarHeight;
+            canvas.drawLine(0, y, dispWidth, y, graphPaint);
+            bodyY += bodyHeight;
+        }
+    }
+    
+    
+    /**
+     * Draw in a vertical grid line.
+     */
+    private void drawVertical(Canvas canvas, int col, float x, int width) {
+        graphPaint.setStrokeWidth(width);
+        graphPaint.setColor(col);
+
+        float bodyY = 0;
+        for (int i = 0; i < NUM_DISP_BODIES; ++i) {
+            canvas.drawLine(x, bodyY, x, bodyY + bodyBarHeight, graphPaint);
+            bodyY += bodyHeight;
+        }
+    }
+    
     
     /**
      * Draw in the altitude curves.
@@ -423,7 +483,7 @@ public class AstroCalendarWidget
         float bodyY = 0;
         for (Body.Name n : DISP_BODIES) {
             canvas.save();
-            canvas.clipRect(0, bodyY, dispWidth, bodyY + bodyHeight);
+            canvas.clipRect(0, bodyY, dispWidth, bodyY + bodyBarHeight);
 
             float px = -hourWidth;
             float py = bodyY + bodyHeight;
@@ -433,7 +493,7 @@ public class AstroCalendarWidget
 
                 // Hour 0 is off-screen to the left.
                 float x = (float) (hour - 1) * (float) hourWidth;
-                float y = bodyY + bodyHeight - alt * bodyHeight;
+                float y = bodyY + bodyBarHeight - alt * bodyBarHeight;
                 canvas.drawLine(px, py, x, y, graphPaint);
                 px = x;
                 py = y;
@@ -453,14 +513,13 @@ public class AstroCalendarWidget
         graphPaint.setStyle(Paint.Style.STROKE);
         graphPaint.setColor(DATA_LABEL_COL);
         graphPaint.setStrokeWidth(0);
-        graphPaint.setTextSize(LABEL_SM_SIZE);
+        graphPaint.setTextSize(labelSmSize);
         float bodyY = 0f;
         for (Body.Name n : DISP_BODIES) {
             float prevAlt = altitudeTable[n.ordinal()][0];
             float prevAz = azimuthTable[n.ordinal()][0];
-            float labY0 = bodyY + bodyHeight - 4;
-            float labY1 = bodyY + bodyHeight - 8;
-            float labY2 = bodyY + bodyHeight - 30;
+            float labY1 = bodyY + bodyHeight - 6;
+            float labY2 = bodyY + bodyBarHeight - 6;
             
             Calendar time = (Calendar) leftTime.clone();
             for (int hour = 0; hour < CALC_HOURS; ++hour) {
@@ -484,19 +543,21 @@ public class AstroCalendarWidget
                     if (alt > prevAlt && alt > nextAlt) {
                         int count = formatMag(magnitudeTable[n.ordinal()][hour]);
                         float dx = -count * 3;
-                        canvas.drawText(charBuf, 0, count, labX + dx, labY0, graphPaint);
+                        canvas.drawText(charBuf, 0, count, labX + dx, labY1, graphPaint);
                     }
                 }
 
-                // If we're above the horizon, see if we passed a main azimuth.
-                // This doesn't do north, but who cares.
-                if (prevAlt > 0f || alt > 0f) {
-                    for (int aName = 0; aName < 8; ++aName) {
-                        float aAz = (float) Math.toRadians(aName * 45f);
+                // If we're above the horizon, or if we're not north of East
+                // or West, see if we passed a main azimuth.  This doesn't do
+                // north, but who cares.
+                for (int aName = 0; aName < 8; ++aName) {
+                    float aAz = (float) Math.toRadians(aName * 45f);
+                    if (prevAlt > 0f || alt > 0f || (aName >= 2 && aName <= 6)) {
                         if (prevAz < aAz && az >= aAz) {
                             float frac = (aAz - prevAz) / (az - prevAz) - 1f;
                             String lab = AZIMUTH_NAMES[aName];
-                            float dx = frac * (float) hourWidth - 3 * lab.length();
+                            float tw = graphPaint.measureText(lab);
+                            float dx = frac * (float) hourWidth - tw / 2;
                             canvas.drawText(lab, labX + dx, labY2, graphPaint);
                         }
                     }
@@ -562,6 +623,7 @@ public class AstroCalendarWidget
 
     // The names of all the celestial bodies we display.
 	private static final Body.Name[] DISP_BODIES = {
+        Body.Name.SUN,
 	    Body.Name.MOON,
 	    Body.Name.MERCURY,
 	    Body.Name.VENUS,
@@ -579,28 +641,20 @@ public class AstroCalendarWidget
     // The number of hours to calculate and store.  We don't display the
 	// first and last hours; their data is only used for the off-screen
 	// endpoints of altitude curves, interpolating rise/set, etc.
-    private static final int CALC_HOURS = 50;
-    private static final int DISPLAY_HOURS = CALC_HOURS - 2;
+    private static final int CALC_HOURS = 100;
 
     // Colour to draw the grid.
-    private static final int GRID_COL = 0xff704040;
+    private static final int GRID_COL = 0xff407040;
 
     // Colour to draw the daylight hours.
-	private static final int DAY_COL = 0x80ffff00;
+	private static final int DAY_COL = 0x50ffff00;
 
     // Colour to draw the object bars.
 	private static final int ALTITUDE_COL = 0xff9060d0;
 
     // Colour to draw the labels.
 	private static final int MAIN_LABEL_COL = 0xffffffff;
-    private static final int DATA_LABEL_COL = 0xffb0c050;
-
-    // Label text size, for regular and small labels.
-    private static final int LABEL_SIZE = 16;
-    private static final int LABEL_SM_SIZE = 12;
-
-    // Bottom margin size, where the time labels go.
-    private static final int MARGIN_BOT = (LABEL_SIZE + 5) * 2;
+    private static final int DATA_LABEL_COL = 0xffe00080;
 
     // Names of the compass directions.  Order is from North clockwise in
     // 45° increments.
@@ -625,12 +679,26 @@ public class AstroCalendarWidget
 	private int dispWidth = 0;
 	private int dispHeight = 0;
 
+    // Label text size, for regular and small labels.
+    private int labelSize = 16;
+    private int labelSmSize = 12;
+
+    // Size of the margin below the planet bars, where we show rise
+    // and set times.
+    private int barMargin = labelSize + 5;
+
+    // Size of the overall bottom margin, where the time labels go.
+    private int marginBot = (labelSize + 5) * 2;
+
     // Width of one hour on the display, 1/24 of the total width.
 	private float hourWidth;
 	
-	// Height of one body's bar on the display.
+	// Height of one body's display on the display.
 	private float bodyHeight;
     
+    // Height of one body's altitude bar on the display.
+    private float bodyBarHeight;
+
     // Bitmap we draw the widget into, and the Canvas we draw with.
     private Bitmap backingBitmap;
     private Canvas backingCanvas;

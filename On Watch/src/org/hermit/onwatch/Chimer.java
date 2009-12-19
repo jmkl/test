@@ -48,7 +48,7 @@ public class Chimer
 		timeModel = TimeModel.getInstance(context);
 		timeModel.listen(TimeModel.Field.BELLS, new TimeModel.Listener() {
 			@Override
-			public void change(Field field, long time, int bells) {
+			public void change(Field field, int bells, long time) {
 		    	// Sound bells on a new half hour.  Note: on startup, this field
 		    	// will always have changed, so only sound if we're in the first
 		    	// minute of the half hour.
@@ -62,7 +62,7 @@ public class Chimer
 		
 		timeModel.listen(TimeModel.Field.MINUTE, new TimeModel.Listener() {
 			@Override
-			public void change(Field field, long time, int min) {
+			public void change(Field field, int min, long time) {
 		    	// Only alert if we're not chiming the half-hour.
 				boolean bells = timeModel.changed(TimeModel.Field.BELLS);
 		    	if (alertInterval > 0 && !bells && min % alertInterval == 0)

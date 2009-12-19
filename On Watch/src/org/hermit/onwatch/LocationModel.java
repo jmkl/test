@@ -54,16 +54,26 @@ public class LocationModel
 	 * Enumeration of the possible states of the GPS.
 	 */
 	public enum GpsState {
+	    /** GPS state: unknown. */
 		UNKNOWN(R.string.gps_unknown),
+		
+        /** GPS state: enabled. */
 		ENABLED(R.string.gps_enabled),
+        
+        /** GPS state: disabled. */
 		DISABLED(R.string.gps_disabled),
+        
+        /** GPS state: out of service. */
 		OUT_OF_SERVICE(R.string.gps_oos),
+        
+        /** GPS state: temporarily out of service. */
 		TEMP_OOS(R.string.gps_temp_oos);
 		
 		GpsState(int id) {
 			messageId = id;
 		}
 		
+		/** Message ID of the message associated with this state. */
 		public final int messageId;
 	}
 	
