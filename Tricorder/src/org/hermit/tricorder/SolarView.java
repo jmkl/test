@@ -742,21 +742,36 @@ class SolarView
         @Override
         protected void process(ContentValues rec) {
             // Make up protons summaries.  Scale to ~1000.
-            float pro1 = rec.getAsFloat("protons47") / 8f;
-            pro1 /= 1f;
-            float pro2 = rec.getAsFloat("protons115") * 2.5f +
-                         rec.getAsFloat("protons310") * 50f;
-            pro2 /= 2f;
-            float pro3 = rec.getAsFloat("protons761") * 1000f +
-                         rec.getAsFloat("protons1060") * 2500f;
-            pro3 /= 2f;
+            float pro1 = 0f;
+            try {
+                pro1 = rec.getAsFloat("protons47") / 8f;
+                pro1 /= 1f;
+            } catch (NullPointerException e) { }
+            float pro2 = 0f;
+            try {
+                pro2 = rec.getAsFloat("protons115") * 2.5f +
+                       rec.getAsFloat("protons310") * 50f;
+                pro2 /= 2f;
+            } catch (NullPointerException e) { }
+            float pro3 = 0f;
+            try {
+                pro3 = rec.getAsFloat("protons761") * 1000f +
+                       rec.getAsFloat("protons1060") * 2500f;
+                pro3 /= 2f;
+            } catch (NullPointerException e) { }
             rec.put("protonsL", pro1);
             rec.put("protonsM", pro2);
             rec.put("protonsH", pro3);
-            
+
             // Make up electrons summaries.  Scale to ~1000.
-            float elec1 = rec.getAsFloat("electrons38") * 1.66f;
-            float elec2 = rec.getAsFloat("electrons175") * 33.33f;
+            float elec1 = 0f;
+            try {
+                elec1 = rec.getAsFloat("electrons38") * 1.66f;
+            } catch (NullPointerException e) { }
+            float elec2 = 0f;
+            try {
+                elec2 = rec.getAsFloat("electrons175") * 33.33f;
+            } catch (NullPointerException e) { }
             rec.put("electronsL", elec1);
             rec.put("electronsH", elec2);
         }
@@ -789,17 +804,28 @@ class SolarView
 						 24 * 3600000, false, FIELDS_DSD) {
 		@Override
 		protected void process(ContentValues rec) {
-				// Make up flares totals.
-				int xflares = rec.getAsInteger("flaresxc") +
-							  rec.getAsInteger("flaresxm") +
-							  rec.getAsInteger("flaresxx") +
-							  rec.getAsInteger("flaresxs");
-				int oflares = rec.getAsInteger("flareso1") +
-							  rec.getAsInteger("flareso2") +
-							  rec.getAsInteger("flareso3");
-				rec.put("xflares", xflares);
-				rec.put("oflares", oflares);
-				rec.put("flares", xflares + oflares);
+		    // Make up flares totals.  Use try to protect against missing
+		    // fields.
+		    int xflares = 0;
+		    try {
+		        xflares = rec.getAsInteger("flaresxc") +
+		                  rec.getAsInteger("flaresxm") +
+		                  rec.getAsInteger("flaresxx") +
+		                  rec.getAsInteger("flaresxs");
+		    } catch (NullPointerException e) { }
+		    int oflares = 0;
+		    try {
+		        oflares += rec.getAsInteger("flareso1");
+		    } catch (NullPointerException e) { }
+            try {
+                oflares += rec.getAsInteger("flareso2");
+            } catch (NullPointerException e) { }
+            try {
+                oflares += rec.getAsInteger("flareso3");
+            } catch (NullPointerException e) { }
+		    rec.put("xflares", xflares);
+		    rec.put("oflares", oflares);
+		    rec.put("flares", xflares + oflares);
 		}
 	};
 	private static final String[] DSD_PLOT_FIELDS = {
