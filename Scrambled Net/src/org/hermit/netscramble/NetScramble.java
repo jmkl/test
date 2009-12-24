@@ -39,6 +39,7 @@ import org.hermit.netscramble.BoardView.Skill;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -81,7 +82,7 @@ public class NetScramble
      * Current state of the game.
      */
     static enum State {
-        NEW, RESTORED, INIT, PAUSED, HELP, RUNNING, SOLVED, ABORTED;
+        NEW, RESTORED, INIT, PAUSED, RUNNING, SOLVED, ABORTED;
         
         static State getValue(int ordinal) {
             return states[ordinal];
@@ -156,7 +157,7 @@ public class NetScramble
 
         // Set up the standard dialogs.
         createMessageBox(R.string.button_close);
-        setAboutInfo(R.string.about_text, R.string.help_text);
+        setAboutInfo(R.string.about_text);
         setHomeInfo(R.string.button_homepage, R.string.url_homepage);
         setLicenseInfo(R.string.button_license, R.string.url_license);
 
@@ -651,22 +652,6 @@ public class NetScramble
     
     
     // ******************************************************************** //
-    // Sound Setup.
-    // ******************************************************************** //
-    
-    /**
-     * Create a SoundPool containing the app's sound effects.
-     */
-    private SoundPool createSoundPool() {
-        SoundPool pool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        for (Sound sound : Sound.values())
-            sound.soundId = pool.load(this, sound.soundRes, 1);
-        
-        return pool;
-    }
-    
-    
-    // ******************************************************************** //
     // Menu Management.
     // ******************************************************************** //
     
@@ -748,8 +733,12 @@ public class NetScramble
     		setState(State.PAUSED);
     		break;
     	case R.id.menu_help:
-    		setState(State.HELP);
-    		break;
+            // Launch the help activity as a subactivity.
+            setState(State.PAUSED);
+            Intent hIntent = new Intent();
+            hIntent.setClass(this, Help.class);
+            startActivity(hIntent);
+            break;
     	case R.id.menu_about:
  			showAbout();
     		break;
@@ -828,7 +817,7 @@ public class NetScramble
     private void wakeUp() {
     	// If we are paused, just go to running.  Otherwise (in the
     	// welcome or game over screen), start a new game.
-        if (gameState == State.PAUSED || gameState == State.HELP)
+        if (gameState == State.PAUSED)
         	setState(State.RUNNING);
         else
         	startGame(null);
@@ -965,14 +954,9 @@ public class NetScramble
             gameTimer.stop();
         	showSplashText(R.string.pause_text);
             break;
-        case HELP:
-            gameTimer.stop();
-        	showSplashText(R.string.help_text);
-            break;
         case RUNNING:
             // Set us going, if this is a new game.
-        	if (prev != State.RESTORED &&
-        					prev != State.PAUSED && prev != State.HELP) {
+        	if (prev != State.RESTORED && prev != State.PAUSED) {
                 boardView.setupBoard(gameSkill);
         		clickCount = 0;
         		prevClickedCell = null;
@@ -1112,6 +1096,18 @@ public class NetScramble
     // Sound.
     // ******************************************************************** //
     
+    /**
+     * Create a SoundPool containing the app's sound effects.
+     */
+    private SoundPool createSoundPool() {
+        SoundPool pool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
+        for (Sound sound : Sound.values())
+            sound.soundId = pool.load(this, sound.soundRes, 1);
+
+        return pool;
+    }
+    
+
     /**
      * Post a sound to be played on the main app thread.
      * 
