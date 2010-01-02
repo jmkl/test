@@ -8,6 +8,7 @@
 		<item>Introduction</item>
 		<item>Playing the Game</item>
 		<item>@array/help_play_titles</item>
+		<item>Skill Levels</item>
 		<item>Menu</item>
 		<item>More Information</item>
 		<item>@array/help_info_titles</item>
@@ -36,6 +37,31 @@ game.</item>
 or a combination of both:</item>
 
 <item>@array/help_play_texts</item>
+
+<item>Scrambled Net has five levels of difficulty.  Higher skill levels
+have larger boards, and the most advanced levels have some special features:\n\
+\n\
+• <b>Novice</b> gives you a small board to play with.\n\
+\n\
+• <b>Normal</b> level has a somewhat larger board.\n\
+\n\
+• <b>Expert</b> level uses a large board.\n\
+\n\
+• <b>Master</b> level also uses a large board; but as an added challenge,
+the board \"wraps around\".  This means that a connection can go off the right
+edge, for example, and connect to the corresponding tile on the left edge;
+the same applies to the top and bottom edges.  Also, you\'ll find some 4-way
+connections thrown in to the mix.\n\
+\n\
+• <b>Insane</b> level is the same as Master, but with the wrinkle that all
+3-way and 4-way connections are invisible!  You\'ll find that you need to
+figure out a whole new set of deductions to complete an insane puzzle.  Be
+assured, though, that it <i>can</i> be done!\n\
+\n\
+One last note: to take full advantage of your device\'s capabilities, the
+actual number of tiles in a board is different for different devices.
+This means that Droid owners, for example, will find the game just a wee
+bit more challenging than it is on the Hero.</item>
 
 <item>The device\'s \"menu\" button pops up a menu containing a number
 of options:\n\
