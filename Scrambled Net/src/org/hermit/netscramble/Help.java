@@ -1,16 +1,23 @@
 
 /**
- * Audalyzer: an audio analyzer for Android.
- * <br>Copyright 2009 Ian Cameron Smith
- *
- * <p>This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation (see COPYING).
+ * NetScramble: unscramble a network and connect all the terminals.
+ * The player is given a network diagram with the parts of the network
+ * randomly rotated; he/she must rotate them to connect all the terminals
+ * to the server.
  * 
- * <p>This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This is an Android implementation of the KDE game "knetwalk" by
+ * Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.
+ *
+ * © 2007-2010 Ian Cameron Smith <johantheghost@yahoo.com>
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License version 2
+ *   as published by the Free Software Foundation (see COPYING).
+ * 
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
  */
 
 
@@ -23,7 +30,7 @@ import android.os.Bundle;
 
 
 /**
- * Simple help activity for Audalyzer.
+ * Simple help activity for NetScramble.
  */
 public class Help
 	extends HelpActivity

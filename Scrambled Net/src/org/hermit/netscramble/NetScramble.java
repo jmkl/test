@@ -1,23 +1,14 @@
 
 /**
  * NetScramble: unscramble a network and connect all the terminals.
- * 
- * This is an Android implementation of the KDE game "knetwalk".
  * The player is given a network diagram with the parts of the network
  * randomly rotated; he/she must rotate them to connect all the terminals
  * to the server.
  * 
- * Original author:
- *   QNetwalk, Copyright (C) 2004, Andi Peredri <andi@ukr.net>
+ * This is an Android implementation of the KDE game "knetwalk" by
+ * Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.
  *
- * Ported to kde by:
- *   Thomas Nagy <tnagyemail-mail@yahoo@fr>
- *
- * Cell-locking implemented by:
- *   Reinhold Kainhofer <reinhold@kainhofer.com>
- *
- * Ported to Android by:
- *   Ian Cameron Smith <johantheghost@yahoo.com>
+ * © 2007-2010 Ian Cameron Smith <johantheghost@yahoo.com>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License version 2
@@ -732,6 +723,13 @@ public class NetScramble
     	case R.id.menu_pause:
     		setState(State.PAUSED);
     		break;
+        case R.id.menu_scores:
+            // Launch the high scores activity as a subactivity.
+            setState(State.PAUSED);
+            Intent sIntent = new Intent();
+            sIntent.setClass(this, ScoreList.class);
+            startActivity(sIntent);
+            break;
     	case R.id.menu_help:
             // Launch the help activity as a subactivity.
             setState(State.PAUSED);
@@ -886,7 +884,7 @@ public class NetScramble
 			setState(State.RUNNING);
     }
 
-   
+
 	// ******************************************************************** //
 	// Game State.
 	// ******************************************************************** //
@@ -991,28 +989,37 @@ public class NetScramble
     private void reportWin(int unused) {
     	// Format the win message.
 		long time = gameTimer.getTime();
+		int titleId = R.string.win_title;
 		String msg;
 		
 		if (unused != 0) {
-			CharSequence fmt = appResources.getText(R.string.win_spares_text);
-			msg = String.format((String) fmt,
-							    time / 60000, time / 1000 % 60,
+		    String fmt = appResources.getString(R.string.win_spares_text);
+			msg = String.format(fmt, time / 60000, time / 1000 % 60,
 							    clickCount, unused);
 		} else {
-			CharSequence fmt = appResources.getText(R.string.win_text);
-			msg = String.format((String) fmt, time / 60000,
+		    String fmt = appResources.getString(R.string.win_text);
+			msg = String.format(fmt, time / 60000,
 								time / 1000 % 60, clickCount);
 		}
 		
+		// See if we have a new high score.
+		String score = registerScore(gameSkill, clickCount, (int) (time / 1000));
+		if (score != null) {
+		    msg += "\n\n" + score;
+		    titleId = R.string.win_pbest_title;
+		}
+		
 		// Display the dialog.
+	    String finish = appResources.getString(R.string.win_finish);
+        msg += "\n\n" + finish;
 		new AlertDialog.Builder(this)
-			.setTitle(R.string.win_title)
+			.setTitle(titleId)
 			.setMessage(msg)
 			.setPositiveButton(R.string.win_new, newGameListener)
 			.setNegativeButton(R.string.win_continue, null)
 			.show();
     }
-
+    
     
     // ******************************************************************** //
     // Status Display.
@@ -1091,6 +1098,52 @@ public class NetScramble
         }
 	};
 	
+
+    // ******************************************************************** //
+    // High Scores.
+    // ******************************************************************** //
+
+    /**
+     * Check to see if we need to register a new "high score" (personal
+     * best).
+     * 
+     * @param   skill       The skill level of the completed puzzle.
+     * @param   clicks      The user's click count.
+     * @param   seconds     The user's time in SECONDS.
+     * @return              Message to display to the user.  Null if nothing
+     *                      to report.
+     */
+    private String registerScore(BoardView.Skill skill, int clicks, int seconds) {
+        // Get the names of the prefs for the counts for this skill level.
+        String clickName = "clicks" + skill.toString();
+        String timeName = "time" + skill.toString();
+        
+        // Get the best to date for this skill level.
+        SharedPreferences scorePrefs = getSharedPreferences("scores", MODE_PRIVATE);
+        int bestClicks = scorePrefs.getInt(clickName, -1);
+        int bestTime = scorePrefs.getInt(timeName, -1);
+
+        // See if we have a new best click count or time.
+        SharedPreferences.Editor editor = scorePrefs.edit();
+        String msg = null;
+        if (bestClicks < 0 || clicks < bestClicks) {
+            editor.putInt(clickName, clicks);
+            msg = appResources.getString(R.string.best_clicks_text);
+        }
+        if (bestTime < 0 || seconds < bestTime) {
+            editor.putInt(timeName, seconds);
+            if (msg == null)
+                msg = appResources.getString(R.string.best_time_text);
+            else
+                msg = appResources.getString(R.string.best_both_text);
+        }
+    
+        if (msg != null)
+            editor.commit();
+        
+        return msg;
+    }
+
 
     // ******************************************************************** //
     // Sound.

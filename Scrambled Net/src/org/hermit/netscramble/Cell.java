@@ -1,23 +1,14 @@
 
 /**
  * NetScramble: unscramble a network and connect all the terminals.
- * 
- * This is an Android implementation of the KDE game "knetwalk".
  * The player is given a network diagram with the parts of the network
  * randomly rotated; he/she must rotate them to connect all the terminals
  * to the server.
  * 
- * Original author:
- *   QNetwalk, Copyright (C) 2004, Andi Peredri <andi@ukr.net>
+ * This is an Android implementation of the KDE game "knetwalk" by
+ * Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.
  *
- * Ported to kde by:
- *   Thomas Nagy <tnagyemail-mail@yahoo@fr>
- *
- * Cell-locking implemented by:
- *   Reinhold Kainhofer <reinhold@kainhofer.com>
- *
- * Ported to Android by:
- *   Ian Cameron Smith <johantheghost@yahoo.com>
+ * © 2007-2010 Ian Cameron Smith <johantheghost@yahoo.com>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License version 2

@@ -1,6 +1,7 @@
-This is Scrambled Net, a port of the KDE game "knetwalk", by Andi Peredri,
-Thomas Nagy, and Reinhold Kainhofer.  Ported to Android by Ian Cameron
-Smith (headstay); released under GPL.  See "COPYING" for license information.
+This is Scrambled Net, an Android implementation of the KDE game
+"knetwalk" by Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.
+
+© 2007-2010 Ian Cameron Smith <johantheghost@yahoo.com>
 
 Includes MTRandom by David Beaumont, released under LGPL.  See
 "COPYING-MTRandom" for license information.

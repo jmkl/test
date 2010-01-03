@@ -29,10 +29,10 @@ cells on the right edge connect to those on the left edge, and vice
 versa.  Similarly for the top and bottom edges.  But in addition, in
 cells with 3 or 4 connections, the wiring is invisible.  Good luck!</string>
        
-    <string name="about_text"><b>Scrambled Net</b> based on KNetwalk by
-Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.  Includes MTRandom
-by David Beaumont.  Ported to Android by Ian Cameron Smith
-(headstay).\n\
+    <string name="about_text"><b>Scrambled Net</b>, and Android puzzle
+game by Ian Cameron Smith.
+Inspired by KNetwalk by Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.
+Includes MTRandom by David Beaumont.\n\
 \n\
 For information and source code see the project home page.\n\
 \n\
@@ -51,6 +51,13 @@ for more details.\n</string>
     <string name="help_title">Scrambled Net User\'s Manual</string>
         
 
+    <!-- Scores list strings. -->
+    <string name="scores_title">Personal Bests</string>
+    <string name="scores_skill">Skill Level</string>
+    <string name="scores_clicks">Best Clicks</string>
+    <string name="scores_time">Best Time</string>
+        
+
     <!-- Text displayed in pause mode. -->
     <string name="pause_text">\n\n<b>Game Paused</b>\n\n\n\n<b>Tap
 the screen to continue.</b></string>
@@ -58,13 +65,16 @@ the screen to continue.</b></string>
 
     <!-- Win dialog strings. -->
     <string name="win_title"><b>You win!</b></string>
+    <string name="win_pbest_title"><b>New Personal Best!</b></string>
     <string name="win_text">Congratulations!  You solved the puzzle
-in %1$d:%2$02d, using %3$d clicks.\n\nClick "New Game" for a new game,
-or "Continue" to experiment with this layout.</string>
+in %1$d:%2$02d, using %3$d clicks.</string>
     <string name="win_spares_text">Congratulations!  You solved the puzzle
-in %1$d:%2$02d, using %3$d clicks, and with %4$d pieces left over!\n\nClick
-"New Game" for a new game, or "Continue" to experiment with
-this layout.</string>
+in %1$d:%2$02d, using %3$d clicks, and with %4$d pieces left over!</string>
+    <string name="best_clicks_text">That\'s your best click count yet at this level!</string>
+    <string name="best_time_text">That\'s your fastest time yet at this level!</string>
+    <string name="best_both_text">That\'s your best click count and fastest time yet at this level!</string>
+    <string name="win_finish">Click "New Game" for a new game,
+or "Continue" to experiment with this layout.</string>
     <string name="win_new">New Game</string>
     <string name="win_continue">Continue</string>
 
@@ -80,6 +90,7 @@ this layout.</string>
     <!-- Menu strings. -->
     <string name="menu_game_new">New game</string>
     <string name="menu_game_pause">Pause</string>
+    <string name="menu_show_scores">High scores</string>
     <string name="menu_set_skill">Skill level</string>
     <string name="menu_sound">Sound...</string>
     <string name="menu_help">Help</string>

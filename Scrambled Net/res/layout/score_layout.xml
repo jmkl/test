@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:id="@+id/scoreTable" android:stretchColumns="*">
+
+	<TableRow android:id="@+id/headerRow"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" >
+		
+		<TextView android:id="@+id/labelSkill"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/scores_skill" android:textSize="18dp" android:textColor="#ffffffff" android:textStyle="bold" android:typeface="normal"/>
+		
+		<TextView android:id="@+id/labelClicks"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/scores_clicks" android:textSize="18dp" android:textStyle="bold" android:typeface="normal" android:textColor="#ffffffff"/>
+		
+		<TextView android:id="@+id/labelTime"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/scores_time" android:textSize="18dp" android:textColor="#ffffffff" android:typeface="normal" android:textStyle="bold"/>
+			
+	</TableRow>
+	
+</TableLayout>
+
