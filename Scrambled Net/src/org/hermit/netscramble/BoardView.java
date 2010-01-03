@@ -64,39 +64,7 @@ public class BoardView
 	// ******************************************************************** //
 	// Configuration Constants.
 	// ******************************************************************** //
-
-	/**
-	 * This enum defines the supported screen layouts.  We choose either
-	 * SMALL, MEDIUM, or LARGE based on the physical screen size.  Then,
-	 * sizes[skill][0] is the major grid size for that skill, and
-	 * sizes[skill][1] is the minor grid size for that skill.
-	 */
-	private enum Screen {
-	    SMALL(9, 6, 9, 6, 5, 6, 5, 4),         // Like HVGA.
-	    MEDIUM(11, 7, 11, 7, 9, 7, 5, 5),      // VGA plus.
-        WMEDIUM(12, 7, 10, 7, 8, 7, 6, 5),     // Wide VGA plus.
-	    HUGE(17, 10, 15, 8, 11, 8, 7, 6);      // WSVGA etc.
-	    
-	    Screen(int ml, int ms, int el, int es, int nl, int ns, int vl, int vs) {
-	        major = ml;
-	        minor = ms;
-	        sizes[Skill.INSANE.ordinal()][0] = ml;
-            sizes[Skill.INSANE.ordinal()][1] = ms;
-            sizes[Skill.MASTER.ordinal()][0] = ml;
-            sizes[Skill.MASTER.ordinal()][1] = ms;
-            sizes[Skill.EXPERT.ordinal()][0] = el;
-            sizes[Skill.EXPERT.ordinal()][1] = es;
-            sizes[Skill.NORMAL.ordinal()][0] = nl;
-            sizes[Skill.NORMAL.ordinal()][1] = ns;
-            sizes[Skill.NOVICE.ordinal()][0] = vl;
-            sizes[Skill.NOVICE.ordinal()][1] = vs;
-	    }
-	    
-	    private final int major;
-	    private final int minor;
-	    private final int[][] sizes = new int[Skill.values().length][2];
-	}
-
+    
 	/**
 	 * The minimum cell size in pixels.
 	 */
@@ -154,6 +122,53 @@ public class BoardView
 		public final int blind;       // Squares with this many or more
 		                              // connections are blind.
 	}
+
+
+    /**
+     * This enum defines the supported screen layouts.  We choose either
+     * SMALL, MEDIUM, or LARGE based on the physical screen size.  Then,
+     * sizes[skill][0] is the major grid size for that skill, and
+     * sizes[skill][1] is the minor grid size for that skill.
+     */
+    enum Screen {
+        SMALL(9, 6, 9, 6, 5, 6, 5, 4),         // Like HVGA.
+        MEDIUM(11, 7, 11, 7, 9, 7, 5, 5),      // VGA plus.
+        WMEDIUM(12, 7, 10, 7, 8, 7, 6, 5),     // Wide VGA plus.
+        HUGE(17, 10, 15, 8, 11, 8, 7, 6);      // WSVGA etc.
+        
+        Screen(int ml, int ms, int el, int es, int nl, int ns, int vl, int vs) {
+            major = ml;
+            minor = ms;
+            sizes[Skill.INSANE.ordinal()][0] = ml;
+            sizes[Skill.INSANE.ordinal()][1] = ms;
+            sizes[Skill.MASTER.ordinal()][0] = ml;
+            sizes[Skill.MASTER.ordinal()][1] = ms;
+            sizes[Skill.EXPERT.ordinal()][0] = el;
+            sizes[Skill.EXPERT.ordinal()][1] = es;
+            sizes[Skill.NORMAL.ordinal()][0] = nl;
+            sizes[Skill.NORMAL.ordinal()][1] = ns;
+            sizes[Skill.NOVICE.ordinal()][0] = vl;
+            sizes[Skill.NOVICE.ordinal()][1] = vs;
+        }
+        
+        int getBoardWidth(Skill sk, int gw, int gh) {
+            if (gw > gh)
+                return sizes[sk.ordinal()][0];
+            else
+                return sizes[sk.ordinal()][1];
+        }
+        
+        int getBoardHeight(Skill sk, int gw, int gh) {
+            if (gw > gh)
+                return sizes[sk.ordinal()][1];
+            else
+                return sizes[sk.ordinal()][0];
+        }
+
+        private final int major;
+        private final int minor;
+        private final int[][] sizes = new int[Skill.values().length][2];
+    }
 
 
 	// ******************************************************************** //
@@ -395,13 +410,8 @@ public class BoardView
     private void resetBoard(Skill sk) {
     	// Save the width and height of the playing board for this skill
     	// level, and the board placement within the overall cell grid.
-    	if (gridWidth > gridHeight) {
-    		boardWidth = screenConfig.sizes[sk.ordinal()][0];
-    		boardHeight = screenConfig.sizes[sk.ordinal()][1];
-    	} else {
-    		boardWidth = screenConfig.sizes[sk.ordinal()][1];
-    		boardHeight = screenConfig.sizes[sk.ordinal()][0];
-    	}
+    	boardWidth = screenConfig.getBoardWidth(sk, gridWidth, gridHeight);
+    	boardHeight = screenConfig.getBoardHeight(sk, gridWidth, gridHeight);
         boardStartX = (gridWidth - boardWidth) / 2;
         boardEndX = boardStartX + boardWidth;
         boardStartY = (gridHeight - boardHeight) / 2;
@@ -432,6 +442,26 @@ public class BoardView
     }
     
     
+    /**
+     * Get the current playing area width.  This varies with the skill level.
+     * 
+     * @return                  Playing area width in tiles.
+     */
+    int getBoardWidth() {
+        return boardWidth;
+    }
+    
+    
+    /**
+     * Get the current playing area height.  This varies with the skill level.
+     * 
+     * @return                  Playing area height in tiles.
+     */
+    int getBoardHeight() {
+        return boardHeight;
+    }
+    
+   
     /**
      * Create a network layout.  This function may be called multiple times
      * after resetBoard(), to get a network with enough cells.

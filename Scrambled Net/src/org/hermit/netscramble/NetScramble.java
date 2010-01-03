@@ -1003,7 +1003,9 @@ public class NetScramble
 		}
 		
 		// See if we have a new high score.
-		String score = registerScore(gameSkill, clickCount, (int) (time / 1000));
+		int ntiles = boardView.getBoardWidth() * boardView.getBoardHeight();
+		String score = registerScore(gameSkill, ntiles,
+		                             clickCount, (int) (time / 1000));
 		if (score != null) {
 		    msg += "\n\n" + score;
 		    titleId = R.string.win_pbest_title;
@@ -1108,13 +1110,19 @@ public class NetScramble
      * best).
      * 
      * @param   skill       The skill level of the completed puzzle.
+     * @param   ntiles      The actual number of tiles in the board.  This
+     *                      indicates the actual difficulty level on the
+     *                      specific device.
      * @param   clicks      The user's click count.
      * @param   seconds     The user's time in SECONDS.
      * @return              Message to display to the user.  Null if nothing
      *                      to report.
      */
-    private String registerScore(BoardView.Skill skill, int clicks, int seconds) {
+    private String registerScore(BoardView.Skill skill, int ntiles,
+                                 int clicks, int seconds)
+    {
         // Get the names of the prefs for the counts for this skill level.
+        String sizeName = "size" + skill.toString();
         String clickName = "clicks" + skill.toString();
         String timeName = "time" + skill.toString();
         
@@ -1127,10 +1135,12 @@ public class NetScramble
         SharedPreferences.Editor editor = scorePrefs.edit();
         String msg = null;
         if (bestClicks < 0 || clicks < bestClicks) {
+            editor.putInt(sizeName, ntiles);
             editor.putInt(clickName, clicks);
             msg = appResources.getString(R.string.best_clicks_text);
         }
         if (bestTime < 0 || seconds < bestTime) {
+            editor.putInt(sizeName, ntiles);
             editor.putInt(timeName, seconds);
             if (msg == null)
                 msg = appResources.getString(R.string.best_time_text);

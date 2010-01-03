@@ -70,6 +70,7 @@ public class ScoreList
         BoardView.Skill[] values = BoardView.Skill.values();
         for (BoardView.Skill skill : values) {
             // Get the best to date for this skill level.
+            int size = scorePrefs.getInt("size" + skill.toString(), -1);
             int clicks = scorePrefs.getInt("clicks" + skill.toString(), -1);
             int time = scorePrefs.getInt("time" + skill.toString(), -1);
 
@@ -80,7 +81,10 @@ public class ScoreList
             // Add a label field to display the skill level.
             TextView skillLab = new TextView(this);
             skillLab.setTextSize(16);
-            skillLab.setText(skill.label);
+            String stext = getString(skill.label);
+            if (size > 0)
+                stext += " (" + size + " tiles)";
+            skillLab.setText(stext);
             row.addView(skillLab);
 
             // Add a field to display the clicks count.
@@ -93,7 +97,7 @@ public class ScoreList
             TextView timeLab = new TextView(this);
             timeLab.setTextSize(16);
             timeLab.setText(time < 0 ? "--" :
-            		         String.format("%2d:%02d", time / 60, time % 60));
+            		        String.format("%2d:%02d", time / 60, time % 60));
             row.addView(timeLab);
         }
     }
