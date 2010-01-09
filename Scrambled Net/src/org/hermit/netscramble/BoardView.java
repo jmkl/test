@@ -553,21 +553,11 @@ public class BoardView
         // List the adjacent cells which are free.
         EnumMap<Cell.Dir, Cell> freecells =
         						new EnumMap<Cell.Dir, Cell>(Cell.Dir.class);
-        Cell ucell = cell.next(Cell.Dir.U___);
-        if (ucell != null && ucell.dirs() == Cell.Dir.FREE)
-            freecells.put(Cell.Dir.U___, ucell);
-        
-        Cell rcell = cell.next(Cell.Dir._R__);
-        if (rcell != null && rcell.dirs() == Cell.Dir.FREE)
-            freecells.put(Cell.Dir._R__, rcell);
-        
-        Cell dcell = cell.next(Cell.Dir.__D_);
-        if (dcell != null && dcell.dirs() == Cell.Dir.FREE)
-            freecells.put(Cell.Dir.__D_, dcell);
-        
-        Cell lcell = cell.next(Cell.Dir.___L);
-        if (lcell != null && lcell.dirs() == Cell.Dir.FREE)
-            freecells.put(Cell.Dir.___L, lcell);
+        for (Cell.Dir d : Cell.Dir.cardinals) {
+            Cell ucell = cell.next(d);
+            if (ucell != null && ucell.dirs() == Cell.Dir.FREE)
+                freecells.put(d, ucell);
+        }
         
         if (freecells.isEmpty()) {
 //        	Log.d(TAG, "addRandomDir: no free adjacents");
@@ -581,7 +571,7 @@ public class BoardView
         
         // Make a link to that cell, and a corresponding link back.
         cell.addDir(key);
-        dest.addDir(contrdirs.get(key));
+        dest.addDir(key.reverse);
         
         // Add the new cell to the outstanding connectingCells.
         list.add(dest);
@@ -674,7 +664,7 @@ public class BoardView
     private boolean hasNewConnection(Cell cell, Cell.Dir dir, boolean got[][]) {
     	// Find the cell we're going to, if any.
     	Cell other = cell.next(dir);
-    	Cell.Dir otherdir = contrdirs.get(dir);
+    	Cell.Dir otherdir = dir.reverse;
 
     	// If there's no cell there, then there's no connection.  If we
     	// have already marked it connected, we're done.
@@ -783,6 +773,20 @@ public class BoardView
                 if (cellMatrix[x][y].doUpdate(now))
                     changedCell = cellMatrix[x][y];
 
+        // Update all the data blips.
+        if (now - blipsLastAdvance >= BLIPS_TIME) {
+            for (int x = 0; x < gridWidth; ++x)
+                for (int y = 0; y < gridHeight; ++y)
+                    cellMatrix[x][y].advanceBlips(blipCount);
+            ++blipCount;
+            for (int x = 0; x < gridWidth; ++x)
+                for (int y = 0; y < gridHeight; ++y)
+                    cellMatrix[x][y].transferBlips();
+            blipsLastAdvance += BLIPS_TIME;
+            if (blipsLastAdvance < now)
+                blipsLastAdvance = now;
+        }
+
         // If the connection state changed, update the network.
         if (changedCell != null) {
             if (updateConnections())
@@ -827,6 +831,14 @@ public class BoardView
         
         // Now push the backing bitmap to the screen.
         canvas.drawBitmap(backingBitmap, 0, 0, null);
+
+        // Draw the data blips in a separate pass so they can overlap
+        // adjacent cells without getting overdrawn.  We draw directly
+        // to the screen.
+        float frac = (float) (now - blipsLastAdvance) / (float) BLIPS_TIME;
+        for (int x = 0; x < gridWidth; ++x)
+            for (int y = 0; y < gridHeight; ++y)
+                cellMatrix[x][y].doDrawBlips(canvas, now, frac);
     }
 
 
@@ -1334,16 +1346,9 @@ public class BoardView
 	
 	// Time in ms for a long screen or centre-button press.
 	private static final int LONG_PRESS = 650;
-
-	// A mapping from each of the main directions to the contrary direction.
-	private static final EnumMap<Cell.Dir, Cell.Dir> contrdirs =
-							new EnumMap<Cell.Dir, Cell.Dir>(Cell.Dir.class);
-	static {
-		contrdirs.put(Cell.Dir.U___, Cell.Dir.__D_);
-		contrdirs.put(Cell.Dir._R__, Cell.Dir.___L);
-		contrdirs.put(Cell.Dir.__D_, Cell.Dir.U___);
-		contrdirs.put(Cell.Dir.___L, Cell.Dir._R__);
-	}
+    
+    // Time a blip takes to cross half a cell, in ms.
+    private static final long BLIPS_TIME = 300;
 
     // Random number generator for the game.  We use a Mersenne Twister,
 	// which is a high-quality and fast implementation of java.util.Random.
@@ -1417,6 +1422,12 @@ public class BoardView
     // press has been detected, so the subsequent up event can be ignored.
     private Handler longPressHandler = new Handler();
     private boolean longPressed = false;
+
+    // The time in ms at which we last completed a data blip move cycle.
+    private long blipsLastAdvance = 0;
+    
+    // Count of data blip generations.
+    private int blipCount = 0;
 
 }
 

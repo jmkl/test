@@ -82,8 +82,24 @@ class Cell
 		}
 		
 		
-		private static final Dir[] dirs = values();
-		
+		static final Dir[] dirs = values();
+        static final Dir[] cardinals = { ___L, __D_, _R__, U___ };
+        static final int[][] cardinalOffs = {
+            { -1,  0 },          // ___L
+            {  0,  1 },          // __D_
+            {  1,  0 },          // _R__
+            {  0, -1 },          // U___
+        };
+        
+        // The direction which is the reverse of this one.
+        Dir reverse = null;
+        static {
+            U___.reverse = __D_;
+            _R__.reverse = ___L;
+            __D_.reverse = U___;
+            ___L.reverse = _R__;
+        }
+
 		final int imageId;
 		
 		private Bitmap normalImg = null;
@@ -212,6 +228,9 @@ class Cell
 	    highlightOn = false;
 	    highlightStart = 0;
 		highlightPos = 0;
+		blipsIncoming = 0;
+		blipsOutgoing = 0;
+		blipsTransfer = 0;
 		haveFocus = false;
 
 		invalidate();
@@ -470,6 +489,14 @@ class Cell
 	void setConnected(boolean b) {
 		if (isConnected == b) return;
 		isConnected = b;
+		
+        // All data blips are lost when we get disconnected.
+		if (!isConnected) {
+		    blipsIncoming = 0;
+		    blipsOutgoing = 0;
+		    blipsTransfer = 0;
+		}
+
 		invalidate();
 	}
 
@@ -502,6 +529,19 @@ class Cell
     }
 
 
+    /**
+     * Add a data blip on the incoming connection in the given
+     * direction, if we have one.
+     * 
+     * @param   d           Direction the blip is in, from our point
+     *                      of view.
+     */
+    void setBlip(Dir d) {
+        if (hasConnection(d))
+            blipsIncoming |= d.ordinal();
+    }
+
+
     // ******************************************************************** //
     // Animation Handling.
     // ******************************************************************** //
@@ -526,6 +566,11 @@ class Cell
 
         // Add the given rotation in.
         rotateTarget += a;
+        
+        // All data blips are lost.
+        blipsIncoming = 0;
+        blipsOutgoing = 0;
+        blipsTransfer = 0;
     }
 
 
@@ -625,7 +670,73 @@ class Cell
         return changed;
     }
 
-   
+    
+    /**
+     * Move on all the data blips one step, i.e. half a cell width.
+     * This steps them from whichever connection leg they're on to the
+     * next one.
+     * 
+     * @param   count       Blip generation count.
+     */
+    void advanceBlips(int count) {
+        // See which outgoing blips need to be transferred onto the next
+        // cell.  Accumulate their directions in blipsTransfer.
+        blipsTransfer = 0;
+        for (int c = 0; c < Dir.cardinals.length; ++c) {
+            Dir d = Dir.cardinals[c];
+            int ord = d.ordinal();
+            if ((blipsOutgoing & ord) != 0 && hasConnection(d))
+                blipsTransfer |= ord;
+        }
+        blipsOutgoing = 0;
+        
+        // All incoming blips get deleted, and become outgoing blips on
+        // whatever directions did not have incoming blips.
+        if (blipsIncoming != 0) {
+            for (int c = 0; c < Dir.cardinals.length; ++c) {
+                Dir d = Dir.cardinals[c];
+                int ord = d.ordinal();
+                if ((blipsIncoming & ord) == 0 && hasConnection(d))
+                    blipsOutgoing |= ord;
+            }
+        }
+        blipsIncoming = 0;
+        
+        // If we're the server, create new outgoing blips once in a while.
+        if (isRoot && count % 8 == 0) {
+            for (int c = 0; c < Dir.cardinals.length; ++c) {
+                Dir d = Dir.cardinals[c];
+                int ord = d.ordinal();
+                if (hasConnection(d))
+                    blipsOutgoing |= ord;
+            }
+        }
+        
+        // Note that we don't invalidate().  Blips are drawn directly to
+        // the screen in a separate pass.
+    }
+    
+    
+    /**
+     * Pass on all blips which were outgoing onto their next cell.
+     */
+    void transferBlips() {
+        for (int c = 0; c < Dir.cardinals.length; ++c) {
+            Dir d = Dir.cardinals[c];
+            int ord = d.ordinal();
+            if ((blipsTransfer & ord) != 0) {
+                Cell n = next(d);
+                if (n != null)
+                    n.setBlip(d.reverse);
+            }
+        }
+        blipsTransfer = 0;
+        
+        // Note that we don't invalidate().  Blips are drawn directly to
+        // the screen in a separate pass.
+    }
+    
+
 	// ******************************************************************** //
 	// Cell Drawing.
 	// ******************************************************************** //
@@ -639,7 +750,8 @@ class Cell
 	
 	
 	/**
-	 * This method is called to ask the cell to draw itself.
+	 * This method is called to ask the cell to draw itself.  Note that this
+	 * draws the cell but not any data blips, which are drawn separately.
 	 * 
 	 * @param	canvas		Canvas to draw into.
      * @param   now         Current time in ms.
@@ -653,7 +765,9 @@ class Cell
         final int sy = cellTop;
         final int ex = sx + cellWidth;
         final int ey = sy + cellHeight;
-    
+        final int midx = sx + cellWidth / 2;
+        final int midy = sy + cellHeight / 2;
+
         canvas.save();
 	    canvas.clipRect(sx, sy, ex, ey);
     
@@ -695,11 +809,8 @@ class Cell
 				// We need to rotate the drawing matrix if the cable is
 				// rotated.
 				canvas.save();
-				if (rotateTarget != 0) {
-					int midx = sx + cellWidth / 2;
-					int midy = sy + cellHeight / 2;
+				if (rotateTarget != 0)
 					canvas.rotate(rotateAngle, midx, midy);
-				}
 
 				// Draw the cable pixmap.
 				Bitmap pixmap = isConnected ? connectedDirs.normalImg :
@@ -736,13 +847,58 @@ class Cell
 
 			canvas.drawRect(sx, sy, ex - 1, ey - 1, cellPaint);
 		}
-		
-		canvas.restore();
+
+        canvas.restore();
 		
 		stateValid = true;
 	}
 
+    
+    /**
+     * This method is called to ask the cell to draw its active data
+     * blips.  This happens in a separate pass, so that blips which are
+     * in transition from one cell to another don't get cropped by
+     * the drawing of the next cell.
+     * 
+     * @param   canvas      Canvas to draw into.
+     * @param   now         Current time in ms.
+     * @param   frac        Fractional position of the data blips, if
+     *                      any, along whatever connection leg they're on.
+     */
+    protected void doDrawBlips(Canvas canvas, long now, float frac) {
+        // We don't check stateValid.  Blips are always drawn.
+        
+        final int midx = cellLeft + cellWidth / 2;
+        final int midy = cellTop + cellHeight / 2;
 
+        // Note that we don't do any clipping.  A blip which is passing
+        // from one cell to another needs to be drawn overlapping both
+        // cells.
+        
+        // Now draw in all blips.
+        cellPaint.setStyle(Paint.Style.FILL);
+        cellPaint.setColor(Color.GREEN);
+        for (int c = 0; c < Dir.cardinals.length; ++c) {
+            Dir d = Dir.cardinals[c];
+            int ord = d.ordinal();
+            final int xoff = Dir.cardinalOffs[c][0];
+            final int yoff = Dir.cardinalOffs[c][1];
+            if ((blipsIncoming & ord) != 0) {
+                final float inp = (1.0f - frac) * cellWidth / 2f;
+                final float x = midx + xoff * inp;
+                final float y = midy + yoff * inp;
+                canvas.drawCircle(x, y, 10, cellPaint);
+            }
+            if ((blipsOutgoing & ord) != 0) {
+                final float outp = frac * cellWidth / 2f;
+                final float x = midx + xoff * outp;
+                final float y = midy + yoff * outp;
+                canvas.drawCircle(x, y, 10, cellPaint);
+            }
+        }
+    }
+
+	
     // ******************************************************************** //
     // State Save/Restore.
     // ******************************************************************** //
@@ -778,6 +934,7 @@ class Cell
      * Restore the game state of this cell from the given Bundle, as
      * part of restoring the overall game state.
      * 
+     
      * @param	map			A Bundle containing the saved state.
      */
     void restoreState(Bundle map) {
@@ -876,6 +1033,20 @@ class Cell
     private long highlightStart = 0;
 	private int highlightPos;
 
+	// Blips drawn over the network to indicate the flow of data.  A
+	// blip moving in towards the centre of the cell is incoming; one
+	// moving out is outgoing.  An incoming blip becomes outgoing when
+	// it hits the centre.  Each connection direction can have one
+	// blip on it, so we use bitmasks to track where blips are: each of
+	// these values is just a bitmaps of which directions have a blip,
+	// incoming or outgoing respectively.
+	private int blipsIncoming = 0;
+    private int blipsOutgoing = 0;
+    
+    // During a blip calculation pass, this value accumulates the data
+    // blips that need to be passed on to other cells.
+    private int blipsTransfer = 0;
+    
 	// True iff the cell is currently isConnected (directly or not)
 	// to the server.  This causes it to be displayed dark (not grey).
 	private boolean isConnected;
