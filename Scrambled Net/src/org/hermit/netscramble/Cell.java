@@ -864,18 +864,31 @@ class Cell
      * @param   now         Current time in ms.
      * @param   frac        Fractional position of the data blips, if
      *                      any, along whatever connection leg they're on.
+     * @param   count       Blip counter, used to sequence the blip images.
+     * @return              Updated blip counter.
      */
-    protected void doDrawBlips(Canvas canvas, long now, float frac) {
+    protected int doDrawBlips(Canvas canvas, long now, float frac, int count) {
         // We don't check stateValid.  Blips are always drawn.
         
-        final int midx = cellLeft + cellWidth / 2;
-        final int midy = cellTop + cellHeight / 2;
+        // But if this cell's wiring is invisible, then its blips need
+        // to be too.
+        if (isBlind)
+            return count;
+        
+        final int sx = cellLeft;
+        final int sy = cellTop;
 
         // Note that we don't do any clipping.  A blip which is passing
         // from one cell to another needs to be drawn overlapping both
         // cells.
         
         // Now draw in all blips.
+        final boolean isTerm = numDirs() == 1 && !isRoot;
+        final Image[] blips = isTerm ? BLIP_T_IMAGES : BLIP_IMAGES;
+        final int nblips = blips.length;
+        int index = isTerm ? Math.round((float) nblips * frac) : count;
+        if (index < 0)
+            index = 0;
         cellPaint.setStyle(Paint.Style.FILL);
         cellPaint.setColor(Color.GREEN);
         for (int c = 0; c < Dir.cardinals.length; ++c) {
@@ -885,17 +898,21 @@ class Cell
             final int yoff = Dir.cardinalOffs[c][1];
             if ((blipsIncoming & ord) != 0) {
                 final float inp = (1.0f - frac) * cellWidth / 2f;
-                final float x = midx + xoff * inp;
-                final float y = midy + yoff * inp;
-                canvas.drawCircle(x, y, 10, cellPaint);
+                final float x = sx + xoff * inp;
+                final float y = sy + yoff * inp;
+                Image blipImage = blips[index++ % nblips];
+                canvas.drawBitmap(blipImage.bitmap, x, y, cellPaint);
             }
             if ((blipsOutgoing & ord) != 0) {
                 final float outp = frac * cellWidth / 2f;
-                final float x = midx + xoff * outp;
-                final float y = midy + yoff * outp;
-                canvas.drawCircle(x, y, 10, cellPaint);
+                final float x = sx + xoff * outp;
+                final float y = sy + yoff * outp;
+                Image blipImage = blips[index++ % nblips];
+                canvas.drawBitmap(blipImage.bitmap, x, y, cellPaint);
             }
         }
+        
+        return index;
     }
 
 	
@@ -968,13 +985,45 @@ class Cell
 		COMP1(R.drawable.computer1),
 		COMP2(R.drawable.computer2),
 		SERVER(R.drawable.server),
-		SERVER1(R.drawable.server1);
+		SERVER1(R.drawable.server1),
+		BLIP_01(R.drawable.blip01),
+        BLIP_02(R.drawable.blip02),
+        BLIP_03(R.drawable.blip03),
+        BLIP_04(R.drawable.blip04),
+        BLIP_05(R.drawable.blip05),
+        BLIP_06(R.drawable.blip06),
+        BLIP_T01(R.drawable.blip_t01),
+        BLIP_T02(R.drawable.blip_t02),
+        BLIP_T03(R.drawable.blip_t03),
+        BLIP_T04(R.drawable.blip_t04),
+        BLIP_T05(R.drawable.blip_t05),
+        BLIP_T06(R.drawable.blip_t06),
+        BLIP_T07(R.drawable.blip_t07),
+        BLIP_T08(R.drawable.blip_t08),
+        BLIP_T09(R.drawable.blip_t09),
+        BLIP_T10(R.drawable.blip_t10),
+        BLIP_T11(R.drawable.blip_t11),
+        BLIP_T12(R.drawable.blip_t12);
 
 		private Image(int r) { resid = r; }
 		
 		public final int resid;
         public Bitmap bitmap = null;
 	}
+	
+	// Images to show network data blips.
+	private static final Image[] BLIP_IMAGES = {
+	    Image.BLIP_01, Image.BLIP_02, Image.BLIP_03,
+        Image.BLIP_04, Image.BLIP_05, Image.BLIP_06,
+	};
+
+    // Images to show network data blips arriving at a terminal.
+    private static final Image[] BLIP_T_IMAGES = {
+        Image.BLIP_T11, Image.BLIP_T12, Image.BLIP_T01, Image.BLIP_T02, Image.BLIP_T03,
+        Image.BLIP_T04, Image.BLIP_T05, Image.BLIP_T06,
+        Image.BLIP_T07, Image.BLIP_T08, Image.BLIP_T09,
+        Image.BLIP_T10, Image.BLIP_T10,
+    };
 
 	
     // ******************************************************************** //
@@ -1051,8 +1100,9 @@ class Cell
 	// to the server.  This causes it to be displayed dark (not grey).
 	private boolean isConnected;
 
-	// True iff the cell is currently part of a fully connected network.
-	// This causes it to be displayed differently.
+	// True iff the cell is currently part of a fully connected network --
+	// in other words, a solved puzzle.  This may cause it to be displayed
+	// differently; e.g. the server shows green LEDs.
 	private boolean isFullyConnected;
 	
 	// True iff the cell is blind; ie. doesn't display its connections.
