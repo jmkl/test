@@ -1027,7 +1027,26 @@ public class NetScramble
 			.show();
     }
     
+
+    // ******************************************************************** //
+    // User Input.
+    // ******************************************************************** //
+
+    /**
+     * Called when the activity has detected the user's press of the
+     * back key.  The default implementation simply finishes the current
+     * activity, but you can override this to do whatever you want.
+     * 
+     * Note: this is only called automatically on Android 2.0 on.  On earlier
+     * versions, we call this ourselves from BoardView.onKeyDown().
+     */
+    @Override
+    public void onBackPressed() {
+        // Just ignore it.
+        return;
+    }
     
+
     // ******************************************************************** //
     // Status Display.
     // ******************************************************************** //

@@ -903,7 +903,10 @@ class Cell
                 Image blipImage = blips[index++ % nblips];
                 canvas.drawBitmap(blipImage.bitmap, x, y, cellPaint);
             }
-            if ((blipsOutgoing & ord) != 0) {
+            
+            // For outgoing blips on the server, only draw them from
+            // the edge of the server.
+            if ((blipsOutgoing & ord) != 0 && (!isRoot || frac >= 0.6f)) {
                 final float outp = frac * cellWidth / 2f;
                 final float x = sx + xoff * outp;
                 final float y = sy + yoff * outp;

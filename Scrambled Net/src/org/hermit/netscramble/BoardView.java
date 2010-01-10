@@ -857,7 +857,16 @@ public class BoardView
 	 */
     @Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		switch (keyCode) {
+        // Take care of calling onBackPressed() on earlier versions of
+        // the platform where it doesn't exist.
+        // TODO: delete this code when no longer supporting pre-2.0.
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.ECLAIR &&
+                keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            parentApp.onBackPressed();
+            return true;
+        }
+
+        switch (keyCode) {
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		    // DPAD_CENTER is special: handle like a screen press, and check
 		    // for a long press.
@@ -902,7 +911,7 @@ public class BoardView
 		return false;
 	}
 	
-
+    
     /**
      * Handle key input.
      * 
