@@ -131,7 +131,7 @@ public class BoardView
      * sizes[skill][1] is the minor grid size for that skill.
      */
     enum Screen {
-        SMALL(9, 6, 9, 6, 5, 6, 5, 4),         // Like HVGA.
+        SMALL(9, 7, 9, 7, 7, 5, 5, 5),         // Like HVGA.
         MEDIUM(11, 7, 11, 7, 9, 7, 5, 5),      // VGA plus.
         WMEDIUM(12, 7, 10, 7, 8, 7, 6, 5),     // Wide VGA plus.
         HUGE(17, 10, 15, 8, 11, 8, 7, 6);      // WSVGA etc.

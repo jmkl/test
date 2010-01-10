@@ -10,12 +10,10 @@
 
     <!-- Splash screen / help text. -->
     <string name="splash_text"><b>Scrambled Net</b>\n\nConnect the
-terminals to the server by rotating the tiles.  Touch a tile to rotate it,
-or select and click with the trackball; press and hold a tile to lock
-it when you think it\'s correct.\n\n
-Tiles which are connected are shown highlighted.  Use the menu to
-select different skill levels, pause the game, or start a new
-game.\n\n
+terminals to the server by rotating the tiles.  Touch a tile to rotate
+it; press and hold a tile to lock it when you think it\'s correct.
+Use the menu to select different skill levels, pause the game, or start
+a new game.\n\n
 See the help in the menu for a full user\'s guide.\n\n
 <b>Tap the screen to start.</b></string>
              
