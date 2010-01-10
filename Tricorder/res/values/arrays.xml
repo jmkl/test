@@ -96,7 +96,7 @@
         
     <!-- Section titles for the top-level help. -->
 	<string-array name="help_titles">
-		<item>Introduction</item>
+		<item></item>
 		<item>Controls</item>
 		<item>Views</item>
 		<item>@array/help_screens_titles</item>
@@ -111,7 +111,8 @@
     <!-- Section contents for the top-level help. -->
     <string-array name="help_texts">
     
-<item>Tricorder displays real data from the sensors built into your device.\n\
+<item><b>Tricorder</b> displays real data from the sensors built into
+your device.\n\
 \n\
 The following sections describe how to use Tricorder, and how to interpret
 the displays.  For further information, see the \"About\" box, which contains
