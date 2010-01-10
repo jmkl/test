@@ -13,11 +13,11 @@
 terminals to the server by rotating the tiles.  Touch a tile to rotate it,
 or select and click with the trackball; press and hold a tile to lock
 it when you think it\'s correct.\n\n
-With a keyboard, you can press Z, N or 4 to rotate a tile left;
-M, X or 6 to rotate right; and press space or 0 to lock.\n\n
 Tiles which are connected are shown highlighted.  Use the menu to
 select different skill levels, pause the game, or start a new
-game.\n\n<b>Tap the screen to start.</b></string>
+game.\n\n
+See the help in the menu for a full user\'s guide.\n\n
+<b>Tap the screen to start.</b></string>
              
     <!-- Help texts for specific skill levels. -->
     <string name="help_master">At Master level, the board edges wrap around;

@@ -5,11 +5,13 @@
     
     <!-- Help section titles. -->
     <string-array name="help_titles">
-		<item>Introduction</item>
+		<item></item>
 		<item>Playing the Game</item>
 		<item>@array/help_play_titles</item>
 		<item>Skill Levels</item>
 		<item>Menu</item>
+		<item>Hints</item>
+		<item>@array/help_hint_titles</item>
 		<item>More Information</item>
 		<item>@array/help_info_titles</item>
     </string-array>
@@ -17,10 +19,11 @@
     <!-- Help section texts. -->
     <string-array name="help_texts">
 
-<item>Scrambled Net is a simple puzzle game which requires you to sort out
-the connections in a computer network, so that all the terminals are connected
-to the server.  The network is made up of tiles, and while all the tiles
-are in the right place, they have been rotated randomly into a useless mess.\n\
+<item><b>Scrambled</b> Net is a simple puzzle game which requires you to sort
+out the connections in a computer network, so that all the terminals are
+connected to the server.  The network is made up of tiles, and while all
+the tiles are in the right place, they have been rotated randomly into a
+useless mess.\n\
 \n\
 You need to rotate individual tiles to re-connect the network.
 Tiles which are connected to the server are shown highlighted.  When all
@@ -28,7 +31,8 @@ terminals are connected, you\'ve won.\n\
 \n\
 It may seem simple at first, but try working your way up through the five
 difficulty levels.  You may think the novice level is a blast, but
-I guarantee it gets more challenging when some of the tiles are invisible!\n\
+I guarantee it gets more challenging when some of the tiles are invisible!
+If it gets too hard, try the hints below.\n\
 \n\
 Use the menu to select different skill levels, pause the game, or start a new
 game.</item>
@@ -77,6 +81,11 @@ the buttons.\n\
 • <b>Help</b> displays this help.\n\
 • <b>About</b> displays version and license information.</item>
 
+<item>Here are some hints that may prove useful
+as you work through the difficulty levels.</item>
+
+<item>@array/help_hint_texts</item>
+
 <item>If you would like more information and help with Scrambled Net, or if you
 want to to report a bug, there are some on-line resources which may be of
 interest, as described in the following sections.</item>
@@ -123,6 +132,62 @@ flashing highlight.  You can unlock it again by pressing space or
 0 (zero).\n\
 \n\
 Bear in mind that locking a tile is no indication that it is correct.</item>
+
+    </string-array>
+    
+    <!-- Section titles for the hints help. -->
+    <string-array name="help_hint_titles">
+
+<item>Novice</item>
+
+<item>Normal</item>
+
+<item>Expert</item>
+
+<item>Master</item>
+
+<item>Insane</item>
+
+    </string-array>
+
+    <!-- Section contents for the hints help. -->
+    <string-array name="help_hint_texts">
+
+<item>The edges are a good place to start -- remember that a connection
+can never go off the edge of the board, so any tile which connects
+that way must be wrong.  If a tile connects out to the right, then the
+next tile to the right must connect back to the left.  In this way,
+once you have figured out one tile, you know something about the
+adjacent tiles.\n\
+\n\
+A tile which does <b>not</b> connect in a given direction also
+tells you something about the next tile in that direction.</item>
+
+<item>You can <i>sometimes</i> finish a level without using all the tiles;
+but you can <b>always</b> finish a level by using all the tiles.  So you
+may assume that all tiles must have a valid connection.\n\
+\n\
+Keep track of which tiles you <b>know</b> are correct by locking
+them -- press and hold a tile to lock it (see \"Playing the Game\"
+above).  But be sure that you really have them correct.</item>
+
+<item>Expert mode is just the same as before, only larger -- don\'t be
+discouraged!\n\
+\n\
+Terminals always have exactly one connection, and all terminals have to
+connect to the server.  If two terminals connect together without a
+branch, there\'s no way to hook them to the server; so that must be
+wrong.</item>
+
+<item>In Master level, the edges no longer help you.  Look for blocks of
+terminals together, and remember that two terminals can\'t be connected
+directly together.  When you figure out one tile, look for all possible
+deductions you can make based on it.</item>
+
+<item>In Insane level, you will need to make use of all the deductions you
+have figured out, plus at least one new one.  Remember that only 3-way
+and 4-way tiles are invisible; so an invisible tile can often tell you
+something about its neighbours.</item>
 
     </string-array>
     

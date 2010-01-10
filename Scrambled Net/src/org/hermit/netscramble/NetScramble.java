@@ -305,10 +305,10 @@ public class NetScramble
         // at the welcome screen.
         if (gameState == State.NEW) {
             Log.d(TAG, "onResume() NEW: init");
-        	setState(State.INIT);
+        	setState(State.INIT, true);
         } else if (gameState == State.RESTORED) {
             Log.d(TAG, "onResume() RESTORED: set " + restoredGameState);
-        	setState(restoredGameState);
+        	setState(restoredGameState, true);
         	
         	// If we restored an aborted state, that means we were starting
         	// a game.  Kick it off again.
@@ -318,7 +318,7 @@ public class NetScramble
         	}
         } else if (gameState == State.PAUSED) {
         	// We just paused without closing down.  Resume.
-    	    setState(State.RUNNING);
+    	    setState(State.RUNNING, true);
         } else {
             Log.e(TAG, "onResume() !!" + gameState + "!!: init");
     	    // setState(State.INIT);		// Shouldn't get here.
@@ -408,9 +408,10 @@ public class NetScramble
         
         boardView.onPause();
         
-        // Pause the game.
+        // Pause the game.  Don't show a splash screen because the
+        // game is going away.
         if (gameState == State.RUNNING)
-        	setState(State.PAUSED);
+        	setState(State.PAUSED, false);
     }
 
     
@@ -633,9 +634,9 @@ public class NetScramble
         text.setFocusable(true);
         text.setFocusableInTouchMode(true);
         text.setGravity(Gravity.CENTER);
-        text.setBackgroundColor(Color.WHITE);
-        text.setTextColor(Color.argb(255, 100, 100, 255));
-        text.setTextSize(14f);
+        text.setBackgroundResource(R.drawable.splash_bg);
+        text.setTextColor(0xff000000);
+        text.setTextSize(20f);
         text.setText("Wait...");
 
         return text;
@@ -721,18 +722,18 @@ public class NetScramble
     		startGame(null);
     		break;
     	case R.id.menu_pause:
-    		setState(State.PAUSED);
+    		setState(State.PAUSED, true);
     		break;
         case R.id.menu_scores:
             // Launch the high scores activity as a subactivity.
-            setState(State.PAUSED);
+            setState(State.PAUSED, false);
             Intent sIntent = new Intent();
             sIntent.setClass(this, ScoreList.class);
             startActivity(sIntent);
             break;
     	case R.id.menu_help:
             // Launch the help activity as a subactivity.
-            setState(State.PAUSED);
+            setState(State.PAUSED, false);
             Intent hIntent = new Intent();
             hIntent.setClass(this, Help.class);
             startActivity(hIntent);
@@ -816,7 +817,7 @@ public class NetScramble
     	// If we are paused, just go to running.  Otherwise (in the
     	// welcome or game over screen), start a new game.
         if (gameState == State.PAUSED)
-        	setState(State.RUNNING);
+        	setState(State.RUNNING, true);
         else
         	startGame(null);
     }
@@ -826,7 +827,7 @@ public class NetScramble
 	private final DialogInterface.OnClickListener startGameListener =
 								new DialogInterface.OnClickListener() {
 		public void onClick(DialogInterface arg0, int arg1) {
-			setState(State.RUNNING);
+			setState(State.RUNNING, true);
 		}
 	};
 	
@@ -841,7 +842,7 @@ public class NetScramble
      */
     public void startGame(BoardView.Skill sk) {
     	// Abort any existing game, so we know we're not just continuing.
-		setState(State.ABORTED);
+		setState(State.ABORTED, false);
 
     	// Sort out the previous and new skills.  If we aren't
     	// given a new skill, default to previous.
@@ -881,7 +882,7 @@ public class NetScramble
 				.setPositiveButton(R.string.button_ok, startGameListener)
 				.show();
 		else
-			setState(State.RUNNING);
+			setState(State.RUNNING, true);
     }
 
 
@@ -890,9 +891,9 @@ public class NetScramble
 	// ******************************************************************** //
     
     /**
-     * Post a sound to be played on the main app thread.
+     * Post a state change.
      * 
-     * @param   which           ID of the sound to play.
+     * @param   which        The state we want to go into.
      */
     void postState(final State which) {
         stateHandler.sendEmptyMessage(which.ordinal());
@@ -902,7 +903,7 @@ public class NetScramble
     private Handler stateHandler = new Handler() {
         @Override
         public void handleMessage(Message m) {
-            setState(State.getValue(m.what));
+            setState(State.getValue(m.what), true);
         }
     };
 
@@ -912,8 +913,10 @@ public class NetScramble
      * clock as appropriate.
      * 
      * @param	state		The state to go into.
+     * @param   showSplash  If true, show the "pause" screen if appropriate.
+     *                      Otherwise don't.
      */
-    void setState(State state) {
+    private void setState(State state, boolean showSplash) {
         Log.i(TAG, "setState: " + state + " (was " + gameState + ")");
 
     	// If we're not changing state, don't bother.
@@ -932,7 +935,8 @@ public class NetScramble
             break;
         case INIT:
             gameTimer.stop();
-        	showSplashText(R.string.splash_text);
+            if (showSplash)
+                showSplashText(R.string.splash_text);
             break;
         case SOLVED:
             gameTimer.stop();
@@ -950,7 +954,8 @@ public class NetScramble
         	break;
         case PAUSED:
             gameTimer.stop();
-        	showSplashText(R.string.pause_text);
+            if (showSplash)
+                showSplashText(R.string.pause_text);
             break;
         case RUNNING:
             // Set us going, if this is a new game.
@@ -1059,7 +1064,7 @@ public class NetScramble
      * 
      * @param	msgId			Resource ID of the message to set.
      */
-	void showSplashText(int msgId) {
+	private void showSplashText(int msgId) {
 		splashText.setText(msgId);
 		if (viewSwitcher.getDisplayedChild() != 1) {
 	        // Stop the game.

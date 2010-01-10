@@ -1119,7 +1119,7 @@ public class BoardView
 	/**
 	 * Pause the game.
 	 */
-	void pauseGame() {
+	private void pauseGame() {
 		parentApp.postState(State.PAUSED);
 	}
 
