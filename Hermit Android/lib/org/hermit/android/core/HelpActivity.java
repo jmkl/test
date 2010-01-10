@@ -189,7 +189,10 @@ public class HelpActivity
                             " must be the same type (item " + t + ")");
                 switch (title.type) {
                 case TypedValue.TYPE_STRING:
-                    addSection(level, title, text);
+                    if (title.string.length() == 0)
+                        addSimple(level, text);
+                    else
+                        addSection(level, title, text);
                     break;
                 case TypedValue.TYPE_REFERENCE:
                     addSubs(level, title, text);
@@ -202,14 +205,25 @@ public class HelpActivity
             
         }
         
-        private void addSection(int level, TypedValue title, TypedValue text) {
+        private void addSimple(int level, TypedValue text) {
             LinearLayout.LayoutParams lp;
             
             ViewGroup body = new BodyView(HelpActivity.this, level, text.string);
+
+            lp = new LinearLayout.LayoutParams(FPAR, WCON);
+            addView(body, lp);
+            
+            prevBody = body;
+        }
+
+        private void addSection(int level, TypedValue title, TypedValue text) {
+            LinearLayout.LayoutParams lp;
+            
+            ViewGroup body = new BodyView(HelpActivity.this, level + 1, text.string);
             ViewGroup head = new TitleView(HelpActivity.this, level, title.string, body);
 
             lp = new LinearLayout.LayoutParams(FPAR, WCON);
-            lp.topMargin = 2;
+            lp.topMargin = 8;
             lp.leftMargin = level * 32;
             addView(head, lp);
             lp = new LinearLayout.LayoutParams(FPAR, WCON);
@@ -345,7 +359,7 @@ public class HelpActivity
             bt.setAutoLinkMask(Linkify.WEB_URLS);
             bt.setLinksClickable(true);
             bt.setTextColor(0xffc0c0ff);
-            bt.setPadding((level + 1) * 32, 0, 0, 0);
+            bt.setPadding(level * 32, 0, 0, 0);
             bt.setText(text);
             LayoutParams lp = new LayoutParams(FPAR, WCON);
             addView(bt, lp);
