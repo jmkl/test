@@ -223,7 +223,7 @@ public class HelpActivity
             ViewGroup head = new TitleView(HelpActivity.this, level, title.string, body);
 
             lp = new LinearLayout.LayoutParams(FPAR, WCON);
-            lp.topMargin = 8;
+            lp.topMargin = 6;
             lp.leftMargin = level * 32;
             addView(head, lp);
             lp = new LinearLayout.LayoutParams(FPAR, WCON);
@@ -358,6 +358,7 @@ public class HelpActivity
             TextView bt = new TextView(parent);
             bt.setAutoLinkMask(Linkify.WEB_URLS);
             bt.setLinksClickable(true);
+            bt.setTextSize(16);
             bt.setTextColor(0xffc0c0ff);
             bt.setPadding(level * 32, 0, 0, 0);
             bt.setText(text);
