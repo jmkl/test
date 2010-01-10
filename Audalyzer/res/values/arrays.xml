@@ -97,7 +97,7 @@
     
     <!-- Help section titles. -->
     <string-array name="help_titles">
-		<item>Introduction</item>
+		<item></item>
 		<item>Display</item>
 		<item>Interpreting</item>
 		<item>Menu</item>
@@ -110,9 +110,9 @@
     <!-- Help section texts. -->
     <string-array name="help_texts">
     
-<item>This is a simple audio analyser for Android. It displays sound
-readings from the microphone as a waveform display, as a
-frequency spectrum, and as a dB meter. dB levels are relative
+<item><b>Audalyzer</b> is a simple audio analyser for Android.  It
+displays sound readings from the microphone as a waveform display, as a
+frequency spectrum, and as a dB meter.  dB levels are relative
 to the maximum input level of your device.\n\
 \n\
 Since microphone sensitivity varies between individual devices,
