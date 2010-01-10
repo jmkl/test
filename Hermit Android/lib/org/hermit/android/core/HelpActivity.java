@@ -288,8 +288,10 @@ public class HelpActivity
             expandView = new TextView(parent);
             expandView.setTextColor(0xff0000ff);
             expandView.setTextSize(38 - level * 4);
-            expandView.setGravity(Gravity.CENTER);
-            lp = new LayoutParams(64, FPAR);
+            int s = (int) expandView.getTextSize();
+            expandView.setPadding(s / 4, 0, 0, 0);
+            expandView.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
+            lp = new LayoutParams(s, FPAR);
             addView(expandView, lp);
    
             // Create the title text view.
