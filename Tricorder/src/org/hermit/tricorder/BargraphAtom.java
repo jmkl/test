@@ -201,46 +201,68 @@ class BargraphAtom
 		// Background color.
 		Rect bounds = getBounds();
 
-		// Draw the outline and scale lines.
+		// Draw the outlines.
 		paint.setColor(getGridColor());
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(SCALE_WIDTH);
-		for (int off = 0; off < plotRange * unitScale; off += unitScale) {
-			switch (orientation) {
-			case LEFT:
-				canvas.drawLine(bounds.left, bounds.top,
-								bounds.right, bounds.top, paint);
-				canvas.drawLine(bounds.left, bounds.bottom - 1,
-								bounds.right, bounds.bottom - 1, paint);
-				canvas.drawLine(bounds.left + off, bounds.top,
-								bounds.left + off, bounds.bottom, paint);
-				break;
-			case TOP:
-				canvas.drawLine(bounds.left, bounds.top,
-								bounds.left, bounds.bottom, paint);
-				canvas.drawLine(bounds.right - 1, bounds.top,
-								bounds.right - 1, bounds.bottom, paint);
-				canvas.drawLine(bounds.left, bounds.top + off,
-								bounds.right, bounds.top + off, paint);
-				break;
-			case RIGHT:
-				canvas.drawLine(bounds.left, bounds.top,
-								bounds.right, bounds.top, paint);
-				canvas.drawLine(bounds.left, bounds.bottom - 1,
-								bounds.right, bounds.bottom - 1, paint);
-				canvas.drawLine(bounds.right - off, bounds.top,
-								bounds.right - off, bounds.bottom, paint);
-				break;
-			case BOTTOM:
-				canvas.drawLine(bounds.left, bounds.top,
-								bounds.left, bounds.bottom, paint);
-				canvas.drawLine(bounds.right - 1, bounds.top,
-								bounds.right - 1, bounds.bottom, paint);
-				canvas.drawLine(bounds.left, bounds.bottom - off - 1,
-								bounds.right, bounds.bottom - off - 1, paint);
-				break;
-			}
-		}
+        switch (orientation) {
+        case LEFT:
+            canvas.drawLine(bounds.left, bounds.top,
+                            bounds.right, bounds.top, paint);
+            canvas.drawLine(bounds.left, bounds.bottom - 1,
+                            bounds.right, bounds.bottom - 1, paint);
+            canvas.drawLine(bounds.left, bounds.top,
+                            bounds.left, bounds.bottom, paint);
+            break;
+        case TOP:
+            canvas.drawLine(bounds.left, bounds.top,
+                            bounds.left, bounds.bottom, paint);
+            canvas.drawLine(bounds.right - 1, bounds.top,
+                            bounds.right - 1, bounds.bottom, paint);
+            canvas.drawLine(bounds.left, bounds.top,
+                            bounds.right, bounds.top, paint);
+            break;
+        case RIGHT:
+            canvas.drawLine(bounds.left, bounds.top,
+                            bounds.right, bounds.top, paint);
+            canvas.drawLine(bounds.left, bounds.bottom - 1,
+                            bounds.right, bounds.bottom - 1, paint);
+            canvas.drawLine(bounds.right, bounds.top,
+                            bounds.right, bounds.bottom, paint);
+            break;
+        case BOTTOM:
+            canvas.drawLine(bounds.left, bounds.top,
+                            bounds.left, bounds.bottom, paint);
+            canvas.drawLine(bounds.right - 1, bounds.top,
+                            bounds.right - 1, bounds.bottom, paint);
+            canvas.drawLine(bounds.left, bounds.bottom - 1,
+                            bounds.right, bounds.bottom - 1, paint);
+            break;
+        }
+
+        // Draw the scale lines, if the bar is big enough.
+        if (unitScale >= 3) {
+            for (float off = unitScale; off < plotRange * unitScale; off += unitScale) {
+                switch (orientation) {
+                case LEFT:
+                    canvas.drawLine(bounds.left + off, bounds.top,
+                            bounds.left + off, bounds.bottom, paint);
+                    break;
+                case TOP:
+                    canvas.drawLine(bounds.left, bounds.top + off,
+                            bounds.right, bounds.top + off, paint);
+                    break;
+                case RIGHT:
+                    canvas.drawLine(bounds.right - off, bounds.top,
+                            bounds.right - off, bounds.bottom, paint);
+                    break;
+                case BOTTOM:
+                    canvas.drawLine(bounds.left, bounds.bottom - off - 1,
+                            bounds.right, bounds.bottom - off - 1, paint);
+                    break;
+                }
+            }
+        }
 
 		// If we have valid data, draw the data value as a bar.
 		// REMEMBER THE SCREEN Y-AXIS is NEGATIVE UP.

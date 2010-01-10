@@ -92,6 +92,7 @@ class SatelliteElement
 		super.setGeometry(bounds);
 	      
         int bar = getSidebarWidth();
+        int gap = getInnerGap();
         int pad = getInterPadding();
         
         // Lay out the displays.
@@ -103,7 +104,7 @@ class SatelliteElement
 		int headHeight = headerBar.getPreferredHeight();
 		headerBar.setGeometry(new Rect(sx, y, ex, y + headHeight));
         
-        y += headHeight + getInnerGap();
+        y += headHeight + gap;
 
         // Set up the position of the right-side bar.
         sideBar.setGeometry(new Rect(ex - bar, y, ex, bounds.bottom));
@@ -122,7 +123,7 @@ class SatelliteElement
         sx += (tw - (bw * cols)) / 2;
 
         // Bar height is easy.  Allow for some padding between rows.
-        int bh = (bounds.bottom - y - pad * (rows - 1)) / rows;
+        int bh = (bounds.bottom - y - gap * (rows - 1)) / rows;
 
         // Place all the GPS signal bars.
         for (int r = 0; r < rows; ++r) {
@@ -132,7 +133,7 @@ class SatelliteElement
                 gpsBars[b].setGeometry(new Rect(x, y, x + bw, y + bh));
                 x += bw;
             }
-            y += bh + pad;
+            y += bh + gap;
         }
 	}
 

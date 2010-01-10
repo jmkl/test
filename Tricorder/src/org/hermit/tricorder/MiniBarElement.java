@@ -87,6 +87,7 @@ class MiniBarElement
 	public void setGeometry(Rect bounds) {
 		super.setGeometry(bounds);
 		
+        int gap = getInnerGap();
 		int x = bounds.left;
         int y = bounds.bottom;
         int w = bounds.right - bounds.left;
@@ -94,10 +95,10 @@ class MiniBarElement
 		
 		// First position the label.
 		int lw = barLabel.getPreferredWidth();
-        int lh = barLabel.getPreferredHeight() - 4;
+        int lh = barLabel.getPreferredHeight() - 3;
 		barLabel.setGeometry(new Rect(cx - lw / 2, y - lh,
 		                              cx + lw / 2, y));
-		y -= lh + PADDING;
+		y -= lh + gap;
 		
 		// Position the magnitude bar.
 		magBar.setGeometry(new Rect(cx - 4, bounds.top, cx + 4, y));
@@ -209,9 +210,6 @@ class MiniBarElement
 	@SuppressWarnings("unused")
 	private static final String TAG = "tricorder";
 	
-	// Padding under the head.
-	private static final int PADDING = 3;
-
 	
 	// ******************************************************************** //
 	// Private Data.
