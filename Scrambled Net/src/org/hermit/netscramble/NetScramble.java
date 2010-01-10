@@ -724,13 +724,13 @@ public class NetScramble
     	case R.id.menu_pause:
     		setState(State.PAUSED, true);
     		break;
-        case R.id.menu_scores:
-            // Launch the high scores activity as a subactivity.
-            setState(State.PAUSED, false);
-            Intent sIntent = new Intent();
-            sIntent.setClass(this, ScoreList.class);
-            startActivity(sIntent);
-            break;
+//        case R.id.menu_scores:
+//            // Launch the high scores activity as a subactivity.
+//            setState(State.PAUSED, false);
+//            Intent sIntent = new Intent();
+//            sIntent.setClass(this, ScoreList.class);
+//            startActivity(sIntent);
+//            break;
     	case R.id.menu_help:
             // Launch the help activity as a subactivity.
             setState(State.PAUSED, false);
@@ -1008,13 +1008,13 @@ public class NetScramble
 		}
 		
 		// See if we have a new high score.
-		int ntiles = boardView.getBoardWidth() * boardView.getBoardHeight();
-		String score = registerScore(gameSkill, ntiles,
-		                             clickCount, (int) (time / 1000));
-		if (score != null) {
-		    msg += "\n\n" + score;
-		    titleId = R.string.win_pbest_title;
-		}
+//		int ntiles = boardView.getBoardWidth() * boardView.getBoardHeight();
+//		String score = registerScore(gameSkill, ntiles,
+//		                             clickCount, (int) (time / 1000));
+//		if (score != null) {
+//		    msg += "\n\n" + score;
+//		    titleId = R.string.win_pbest_title;
+//		}
 		
 		// Display the dialog.
 	    String finish = appResources.getString(R.string.win_finish);
@@ -1158,12 +1158,12 @@ public class NetScramble
         // See if we have a new best click count or time.
         SharedPreferences.Editor editor = scorePrefs.edit();
         String msg = null;
-        if (bestClicks < 0 || clicks < bestClicks) {
+        if (clicks > 0 && (bestClicks < 0 || clicks < bestClicks)) {
             editor.putInt(sizeName, ntiles);
             editor.putInt(clickName, clicks);
             msg = appResources.getString(R.string.best_clicks_text);
         }
-        if (bestTime < 0 || seconds < bestTime) {
+        if (seconds > 0 && (bestTime < 0 || seconds < bestTime)) {
             editor.putInt(sizeName, ntiles);
             editor.putInt(timeName, seconds);
             if (msg == null)

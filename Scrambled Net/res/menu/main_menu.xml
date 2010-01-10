@@ -11,8 +11,8 @@
     	  android:icon="@drawable/ic_menu_pause"/>
 
     <!-- "High scores". -->
-    <item android:id="@+id/menu_scores" android:title="@string/menu_show_scores" 
-    	  android:icon="@drawable/ic_menu_show_list"/>
+    <!-- <item android:id="@+id/menu_scores" android:title="@string/menu_show_scores" 
+    	  android:icon="@drawable/ic_menu_show_list"/> -->
 
      <!-- "Set skill level...". -->
     <item android:id="@+id/skill_menu" android:title="@string/menu_set_skill"

@@ -774,17 +774,19 @@ public class BoardView
                     changedCell = cellMatrix[x][y];
 
         // Update all the data blips.
-        if (now - blipsLastAdvance >= BLIPS_TIME) {
-            for (int x = 0; x < gridWidth; ++x)
-                for (int y = 0; y < gridHeight; ++y)
-                    cellMatrix[x][y].advanceBlips(blipCount);
-            ++blipCount;
-            for (int x = 0; x < gridWidth; ++x)
-                for (int y = 0; y < gridHeight; ++y)
-                    cellMatrix[x][y].transferBlips();
-            blipsLastAdvance += BLIPS_TIME;
-            if (blipsLastAdvance < now)
-                blipsLastAdvance = now;
+        if (DRAW_BLIPS) {
+            if (now - blipsLastAdvance >= BLIPS_TIME) {
+                for (int x = 0; x < gridWidth; ++x)
+                    for (int y = 0; y < gridHeight; ++y)
+                        cellMatrix[x][y].advanceBlips(blipCount);
+                ++blipCount;
+                for (int x = 0; x < gridWidth; ++x)
+                    for (int y = 0; y < gridHeight; ++y)
+                        cellMatrix[x][y].transferBlips();
+                blipsLastAdvance += BLIPS_TIME;
+                if (blipsLastAdvance < now)
+                    blipsLastAdvance = now;
+            }
         }
 
         // If the connection state changed, update the network.
@@ -835,11 +837,13 @@ public class BoardView
         // Draw the data blips in a separate pass so they can overlap
         // adjacent cells without getting overdrawn.  We draw directly
         // to the screen.
-        float frac = (float) (now - blipsLastAdvance) / (float) BLIPS_TIME;
-        int count = (int) (now % 1000);
-        for (int x = 0; x < gridWidth; ++x)
-            for (int y = 0; y < gridHeight; ++y)
-                count = cellMatrix[x][y].doDrawBlips(canvas, now, frac, count);
+        if (DRAW_BLIPS) {
+            float frac = (float) (now - blipsLastAdvance) / (float) BLIPS_TIME;
+            int count = (int) (now % 1000);
+            for (int x = 0; x < gridWidth; ++x)
+                for (int y = 0; y < gridHeight; ++y)
+                    count = cellMatrix[x][y].doDrawBlips(canvas, now, frac, count);
+        }
     }
 
 
@@ -1353,6 +1357,9 @@ public class BoardView
 
     // Debugging tag.
 	private static final String TAG = "netscramble";
+	
+	// Iff true, draw blips representing data moving through the network.
+	private static final boolean DRAW_BLIPS = false;
 	
 	// Time in ms for a long screen or centre-button press.
 	private static final int LONG_PRESS = 650;
