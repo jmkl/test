@@ -229,7 +229,8 @@ public class PowerGauge
         final float ly = dispY + meterLabY;
         final float ls = labelSize;
         paint.setTextSize(ls);
-        for (int i = 0; i <= 10; ++i) {
+        int step = paint.measureText("-99") > bw / 10f - 1 ? 2 : 1;
+        for (int i = 0; i <= 10; i += step) {
             String text = "" + (i * 10 - 100);
             float tw = paint.measureText(text);
             float lx = mx + i * gw + 1 - (tw / 2);

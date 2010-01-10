@@ -188,7 +188,8 @@ public class SpectrumGauge
         // Draw the labels below the grid.
         final float ly = 0 + spectLabY;
         paint.setTextSize(labelSize);
-        for (int i = 0; i <= 10; ++i) {
+        int step = paint.measureText("8.8k") > bw / 10f - 1 ? 2 : 1;
+        for (int i = 0; i <= 10; i += step) {
             int f = nyquistFreq * i / 10;
             String text = f >= 10000 ? "" + (f / 1000) + "k" :
                           f >= 1000 ? "" + (f / 1000) + "." + (f / 100 % 10) + "k" :
