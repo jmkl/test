@@ -21,7 +21,7 @@
     
     <!-- Help section titles. -->
     <string-array name="help_titles">
-		<item>Introduction</item>
+		<item></item>
 		<item>Display</item>
 		<item>@array/help_disp_titles</item>
 		<item>Menu</item>
@@ -34,7 +34,7 @@
     <!-- Help section texts. -->
     <string-array name="help_texts">
     
-<item>On Watch displays a selection of useful information for a sailing
+<item><b>On Watch</b> displays a selection of useful information for a sailing
 watchkeeper, and sounds chimes and alerts to keep you on your toes.
 It also lets you know about interesting astronomical phenomena to look
 out for on those long night watches.</item>
@@ -141,7 +141,7 @@ other users, and generally waffle.  Please note that this group
 is shared with the other Moonblink projects, so mention
 On Watch when you post:\n\
 \n\
-• http://groups.google.com/group/moonblink/topics</item>
+• http://groups.google.com/group/moonblink</item>
 
 <item>If you want to report a bug, you can use the Moonblink Issue tracker.
 Before you post, <b>please</b> look through the existing issues -- including
