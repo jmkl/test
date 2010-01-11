@@ -28,6 +28,7 @@ import org.hermit.android.core.MainActivity;
 import org.hermit.netscramble.BoardView.Skill;
 
 import android.app.AlertDialog;
+import android.app.LauncherActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -1042,7 +1043,12 @@ public class NetScramble
      */
     @Override
     public void onBackPressed() {
-        // Just ignore it.
+        // Go to the home screen.  This causes our state to be saved, whereas
+        // the default of finish() discards it.
+        Intent homeIntent = new Intent();
+        homeIntent.setAction(Intent.ACTION_MAIN);
+        homeIntent.addCategory(Intent.CATEGORY_HOME);
+        this.startActivity(homeIntent);
         return;
     }
     
