@@ -131,7 +131,8 @@ public class BoardView
      * sizes[skill][1] is the minor grid size for that skill.
      */
     enum Screen {
-        SMALL(9, 7, 9, 7, 7, 5, 5, 5),         // Like HVGA.
+        SMALL(8, 6, 8, 6, 6, 6, 6, 4),         // Like HVGA.
+        WSMALL(9, 6, 9, 6, 5, 6, 5, 4),         // Like HVGA.
         MEDIUM(11, 7, 11, 7, 9, 7, 5, 5),      // VGA plus.
         WMEDIUM(12, 7, 10, 7, 8, 7, 6, 5),     // Wide VGA plus.
         HUGE(17, 10, 15, 8, 11, 8, 7, 6);      // WSVGA etc.
@@ -227,10 +228,13 @@ public class BoardView
     	int min = width < height ? width : height;
         int max = width > height ? width : height;
     	float aspect = (float) max / (float) min;
-    	
-        if (min <= 400)
-            screenConfig = Screen.SMALL;
-        else if (min <= 500) {
+        
+        if (min <= 400) {
+            if (aspect > 1.4f)
+                screenConfig = Screen.WSMALL;
+            else
+                screenConfig = Screen.SMALL;
+        } else if (min <= 500) {
             if (aspect > 1.5f)
                 screenConfig = Screen.WMEDIUM;
             else
