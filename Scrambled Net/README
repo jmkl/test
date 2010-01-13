@@ -9,7 +9,8 @@ Includes MTRandom by David Beaumont, released under LGPL.  See
 The player is given a network diagram with the parts of the network randomly
 rotated; he/she must rotate them to connect all the terminals to the server. 
 
-For full information, please see the project home page:
+For full information, including all source code, please see the project
+home page:
 
 	http://code.google.com/p/netscramble/
 
