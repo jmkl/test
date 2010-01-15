@@ -21,14 +21,13 @@
  */
 
 
-package org.hermit.netscramble;
+package org.hermit.netscramblefull;
 
 
 import org.hermit.android.core.MainActivity;
-import org.hermit.netscramble.BoardView.Skill;
+import org.hermit.netscramblefull.BoardView.Skill;
 
 import android.app.AlertDialog;
-import android.app.LauncherActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -725,13 +724,13 @@ public class NetScramble
     	case R.id.menu_pause:
     		setState(State.PAUSED, true);
     		break;
-//        case R.id.menu_scores:
-//            // Launch the high scores activity as a subactivity.
-//            setState(State.PAUSED, false);
-//            Intent sIntent = new Intent();
-//            sIntent.setClass(this, ScoreList.class);
-//            startActivity(sIntent);
-//            break;
+        case R.id.menu_scores:
+            // Launch the high scores activity as a subactivity.
+            setState(State.PAUSED, false);
+            Intent sIntent = new Intent();
+            sIntent.setClass(this, ScoreList.class);
+            startActivity(sIntent);
+            break;
     	case R.id.menu_help:
             // Launch the help activity as a subactivity.
             setState(State.PAUSED, false);
@@ -1009,13 +1008,13 @@ public class NetScramble
 		}
 		
 		// See if we have a new high score.
-//		int ntiles = boardView.getBoardWidth() * boardView.getBoardHeight();
-//		String score = registerScore(gameSkill, ntiles,
-//		                             clickCount, (int) (time / 1000));
-//		if (score != null) {
-//		    msg += "\n\n" + score;
-//		    titleId = R.string.win_pbest_title;
-//		}
+		int ntiles = boardView.getBoardWidth() * boardView.getBoardHeight();
+		String score = registerScore(gameSkill, ntiles,
+		                             clickCount, (int) (time / 1000));
+		if (score != null) {
+		    msg += "\n\n" + score;
+		    titleId = R.string.win_pbest_title;
+		}
 		
 		// Display the dialog.
 	    String finish = appResources.getString(R.string.win_finish);

@@ -21,7 +21,7 @@
  */
 
 
-package org.hermit.netscramble;
+package org.hermit.netscramblefull;
 
 
 import android.os.Bundle;

@@ -21,7 +21,7 @@
  */
 
 
-package org.hermit.netscramble;
+package org.hermit.netscramblefull;
 
 
 import android.content.res.Resources;
@@ -489,13 +489,6 @@ class Cell
 	void setConnected(boolean b) {
 		if (isConnected == b) return;
 		isConnected = b;
-		
-        // All data blips are lost when we get disconnected.
-		if (!isConnected) {
-		    blipsIncoming = 0;
-		    blipsOutgoing = 0;
-		    blipsTransfer = 0;
-		}
 
 		invalidate();
 	}
@@ -864,16 +857,14 @@ class Cell
      * @param   now         Current time in ms.
      * @param   frac        Fractional position of the data blips, if
      *                      any, along whatever connection leg they're on.
-     * @param   count       Blip counter, used to sequence the blip images.
-     * @return              Updated blip counter.
      */
-    protected int doDrawBlips(Canvas canvas, long now, float frac, int count) {
+    protected void doDrawBlips(Canvas canvas, long now, float frac) {
         // We don't check stateValid.  Blips are always drawn.
         
         // But if this cell's wiring is invisible, then its blips need
         // to be too.
         if (isBlind)
-            return count;
+            return;
         
         final int sx = cellLeft;
         final int sy = cellTop;
@@ -882,15 +873,18 @@ class Cell
         // from one cell to another needs to be drawn overlapping both
         // cells.
         
-        // Now draw in all blips.
-        final boolean isTerm = numDirs() == 1 && !isRoot;
-        final Image[] blips = isTerm ? BLIP_T_IMAGES : BLIP_IMAGES;
+        // Now draw in all blips.  We use "glow-in" / "glow-out" images
+        // for the server and terminals.
+        final boolean isTerm = numDirs() == 1 || isRoot;
+        final Image[] blips = isTerm ? BLIP_T_IMAGES :
+                              isConnected ? BLIP_IMAGES : BLIP_G_IMAGES;
         final int nblips = blips.length;
-        int index = isTerm ? Math.round((float) nblips * frac) : count;
-        if (index < 0)
-            index = 0;
-        cellPaint.setStyle(Paint.Style.FILL);
-        cellPaint.setColor(Color.GREEN);
+        int indexIn = Math.round((float) (nblips - 1) * frac) % nblips;
+        if (indexIn < 0)
+            indexIn = 0;
+        int indexOut = Math.round((float) (nblips - 1) * (1 - frac)) % nblips;
+        if (indexOut < 0)
+            indexOut = 0;
         for (int c = 0; c < Dir.cardinals.length; ++c) {
             Dir d = Dir.cardinals[c];
             int ord = d.ordinal();
@@ -900,22 +894,17 @@ class Cell
                 final float inp = (1.0f - frac) * cellWidth / 2f;
                 final float x = sx + xoff * inp;
                 final float y = sy + yoff * inp;
-                Image blipImage = blips[index++ % nblips];
+                Image blipImage = blips[indexIn];
                 canvas.drawBitmap(blipImage.bitmap, x, y, cellPaint);
             }
-            
-            // For outgoing blips on the server, only draw them from
-            // the edge of the server.
-            if ((blipsOutgoing & ord) != 0 && (!isRoot || frac >= 0.6f)) {
+            if ((blipsOutgoing & ord) != 0) {
                 final float outp = frac * cellWidth / 2f;
                 final float x = sx + xoff * outp;
                 final float y = sy + yoff * outp;
-                Image blipImage = blips[index++ % nblips];
+                Image blipImage = blips[indexOut];
                 canvas.drawBitmap(blipImage.bitmap, x, y, cellPaint);
             }
         }
-        
-        return index;
     }
 
 	
@@ -976,59 +965,66 @@ class Cell
     // Private Types.
     // ******************************************************************** //
 
-	/**
-	 * This enumeration defines the images, other than the cable images,
-	 * which we use.
-	 */
-	private enum Image {
-		NOTHING(R.drawable.nothing),
-		EMPTY(R.drawable.empty),
-		LOCKED(R.drawable.background_locked),
-		BG(R.drawable.background),
-		COMP1(R.drawable.computer1),
-		COMP2(R.drawable.computer2),
-		SERVER(R.drawable.server),
-		SERVER1(R.drawable.server1),
-		BLIP_01(R.drawable.blip01),
-        BLIP_02(R.drawable.blip02),
-        BLIP_03(R.drawable.blip03),
-        BLIP_04(R.drawable.blip04),
-        BLIP_05(R.drawable.blip05),
-        BLIP_06(R.drawable.blip06),
+    /**
+     * This enumeration defines the images, other than the cable images,
+     * which we use.
+     */
+    private enum Image {
+        NOTHING(R.drawable.nothing),
+        EMPTY(R.drawable.empty),
+        LOCKED(R.drawable.background_locked),
+        BG(R.drawable.background),
+        COMP1(R.drawable.computer1),
+        COMP2(R.drawable.computer2),
+        SERVER(R.drawable.server),
+        SERVER1(R.drawable.server1),
         BLIP_T01(R.drawable.blip_t01),
-        BLIP_T02(R.drawable.blip_t02),
         BLIP_T03(R.drawable.blip_t03),
-        BLIP_T04(R.drawable.blip_t04),
         BLIP_T05(R.drawable.blip_t05),
-        BLIP_T06(R.drawable.blip_t06),
         BLIP_T07(R.drawable.blip_t07),
         BLIP_T08(R.drawable.blip_t08),
         BLIP_T09(R.drawable.blip_t09),
         BLIP_T10(R.drawable.blip_t10),
-        BLIP_T11(R.drawable.blip_t11),
-        BLIP_T12(R.drawable.blip_t12);
-
-		private Image(int r) { resid = r; }
-		
-		public final int resid;
+        BLOB_14(R.drawable.blob_14),
+        BLOB_15(R.drawable.blob_15),
+        BLOB_16(R.drawable.blob_16),
+        BLOB_17(R.drawable.blob_17),
+        BLOB_18(R.drawable.blob_18),
+        BLOB_19(R.drawable.blob_19),
+        BLOB_20(R.drawable.blob_20),
+        BLOBG_14(R.drawable.blob_g_14),
+        BLOBG_15(R.drawable.blob_g_15),
+        BLOBG_16(R.drawable.blob_g_16),
+        BLOBG_17(R.drawable.blob_g_17),
+        BLOBG_18(R.drawable.blob_g_18),
+        BLOBG_19(R.drawable.blob_g_19),
+        BLOBG_20(R.drawable.blob_g_20);
+        
+        private Image(int r) { resid = r; }
+        
+        public final int resid;
         public Bitmap bitmap = null;
-	}
-	
-	// Images to show network data blips.
-	private static final Image[] BLIP_IMAGES = {
-	    Image.BLIP_01, Image.BLIP_02, Image.BLIP_03,
-        Image.BLIP_04, Image.BLIP_05, Image.BLIP_06,
-	};
+    }
+    
+    // Images to show network data blips.
+    private static final Image[] BLIP_IMAGES = {
+        Image.BLOB_14, Image.BLOB_15, Image.BLOB_16, Image.BLOB_17,
+        Image.BLOB_18, Image.BLOB_19, Image.BLOB_20,
+    };
+    
+    // Images to show network data blips.
+    private static final Image[] BLIP_G_IMAGES = {
+        Image.BLOBG_14, Image.BLOBG_15, Image.BLOBG_16, Image.BLOBG_17,
+        Image.BLOBG_18, Image.BLOBG_19, Image.BLOBG_20,
+    };
 
     // Images to show network data blips arriving at a terminal.
     private static final Image[] BLIP_T_IMAGES = {
-        Image.BLIP_T11, Image.BLIP_T12, Image.BLIP_T01, Image.BLIP_T02, Image.BLIP_T03,
-        Image.BLIP_T04, Image.BLIP_T05, Image.BLIP_T06,
-        Image.BLIP_T07, Image.BLIP_T08, Image.BLIP_T09,
-        Image.BLIP_T10, Image.BLIP_T10,
+        Image.BLIP_T01, Image.BLIP_T03, Image.BLIP_T05, Image.BLIP_T07,
+        Image.BLIP_T08, Image.BLIP_T09, Image.BLIP_T10,
     };
 
-	
+
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //

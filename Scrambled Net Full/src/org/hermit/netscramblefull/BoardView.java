@@ -21,7 +21,7 @@
  */
 
 
-package org.hermit.netscramble;
+package org.hermit.netscramblefull;
 
 
 import java.util.EnumMap;
@@ -32,8 +32,8 @@ import java.util.Vector;
 import net.goui.util.MTRandom;
 
 import org.hermit.android.core.SurfaceRunner;
-import org.hermit.netscramble.NetScramble.Sound;
-import org.hermit.netscramble.NetScramble.State;
+import org.hermit.netscramblefull.NetScramble.Sound;
+import org.hermit.netscramblefull.NetScramble.State;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -843,10 +843,9 @@ public class BoardView
         // to the screen.
         if (DRAW_BLIPS) {
             float frac = (float) (now - blipsLastAdvance) / (float) BLIPS_TIME;
-            int count = (int) (now % 1000);
             for (int x = 0; x < gridWidth; ++x)
                 for (int y = 0; y < gridHeight; ++y)
-                    count = cellMatrix[x][y].doDrawBlips(canvas, now, frac, count);
+                    cellMatrix[x][y].doDrawBlips(canvas, now, frac);
         }
     }
 
@@ -1363,7 +1362,7 @@ public class BoardView
 	private static final String TAG = "netscramble";
 	
 	// Iff true, draw blips representing data moving through the network.
-	private static final boolean DRAW_BLIPS = false;
+	private static final boolean DRAW_BLIPS = true;
 	
 	// Time in ms for a long screen or centre-button press.
 	private static final int LONG_PRESS = 650;
