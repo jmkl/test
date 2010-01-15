@@ -1161,16 +1161,19 @@ public class NetScramble
         int bestTime = scorePrefs.getInt(timeName, -1);
 
         // See if we have a new best click count or time.
+        long now = System.currentTimeMillis();
         SharedPreferences.Editor editor = scorePrefs.edit();
         String msg = null;
         if (clicks > 0 && (bestClicks < 0 || clicks < bestClicks)) {
             editor.putInt(sizeName, ntiles);
             editor.putInt(clickName, clicks);
+            editor.putLong(clickName + "Date", now);
             msg = appResources.getString(R.string.best_clicks_text);
         }
         if (seconds > 0 && (bestTime < 0 || seconds < bestTime)) {
             editor.putInt(sizeName, ntiles);
             editor.putInt(timeName, seconds);
+            editor.putLong(timeName + "Date", now);
             if (msg == null)
                 msg = appResources.getString(R.string.best_time_text);
             else

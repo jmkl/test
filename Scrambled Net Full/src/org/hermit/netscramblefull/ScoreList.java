@@ -27,6 +27,9 @@ package org.hermit.netscramblefull;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.format.DateUtils;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -61,26 +64,36 @@ public class ScoreList
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        
+
+        // We don't want a title bar.
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         setContentView(R.layout.score_layout);
         
-        // Populate the score table.
         SharedPreferences scorePrefs = getSharedPreferences("scores", MODE_PRIVATE);
-        TableLayout tableView = (TableLayout) findViewById(R.id.scoreTable);
-        BoardView.Skill[] values = BoardView.Skill.values();
-        for (BoardView.Skill skill : values) {
+        BoardView.Skill[] skillVals = BoardView.Skill.values();
+        
+        // Populate the best clicks table.
+        TableLayout timeTable = (TableLayout) findViewById(R.id.timeTable);
+        for (BoardView.Skill skill : skillVals) {
+            String sizeName = "size" + skill.toString();
+            String clickName = "clicks" + skill.toString();
+
             // Get the best to date for this skill level.
-            int size = scorePrefs.getInt("size" + skill.toString(), -1);
-            int clicks = scorePrefs.getInt("clicks" + skill.toString(), -1);
-            int time = scorePrefs.getInt("time" + skill.toString(), -1);
+            int size = scorePrefs.getInt(sizeName, -1);
+            int clicks = scorePrefs.getInt(clickName, -1);
+            long date = scorePrefs.getLong(clickName + "Date", 0);
 
             // Create a table row for this column.
             TableRow row = new TableRow(this);
-            tableView.addView(row);
+            timeTable.addView(row);
 
             // Add a label field to display the skill level.
             TextView skillLab = new TextView(this);
             skillLab.setTextSize(16);
+            skillLab.setTextColor(0xff000000);
             String stext = getString(skill.label);
             if (size > 0)
                 stext += " (" + size + " tiles)";
@@ -90,16 +103,67 @@ public class ScoreList
             // Add a field to display the clicks count.
             TextView clickLab = new TextView(this);
             clickLab.setTextSize(16);
+            clickLab.setTextColor(0xff000000);
             clickLab.setText(clicks < 0 ? "--" : "" + clicks);
             row.addView(clickLab);
+
+            // Add a field to display the date/time of this record.
+            TextView dateLab = new TextView(this);
+            dateLab.setTextSize(16);
+            dateLab.setTextColor(0xff000000);
+            dateLab.setText(dateString(date));
+            row.addView(dateLab);
+        }
+        
+        // Populate the best timess table.
+        TableLayout clicksTable = (TableLayout) findViewById(R.id.clicksTable);
+        for (BoardView.Skill skill : skillVals) {
+            String sizeName = "size" + skill.toString();
+            String timeName = "time" + skill.toString();
+
+            // Get the best to date for this skill level.
+            int size = scorePrefs.getInt(sizeName, -1);
+            int time = scorePrefs.getInt(timeName, -1);
+            long date = scorePrefs.getLong(timeName + "Date", 0);
+
+            // Create a table row for this column.
+            TableRow row = new TableRow(this);
+            clicksTable.addView(row);
+
+            // Add a label field to display the skill level.
+            TextView skillLab = new TextView(this);
+            skillLab.setTextSize(16);
+            skillLab.setTextColor(0xff000000);
+            String stext = getString(skill.label);
+            if (size > 0)
+                stext += " (" + size + " tiles)";
+            skillLab.setText(stext);
+            row.addView(skillLab);
 
             // Add a field to display the time count.
             TextView timeLab = new TextView(this);
             timeLab.setTextSize(16);
+            timeLab.setTextColor(0xff000000);
             timeLab.setText(time < 0 ? "--" :
-            		        String.format("%2d:%02d", time / 60, time % 60));
+                            String.format("%2d:%02d", time / 60, time % 60));
             row.addView(timeLab);
+
+            // Add a field to display the date/time of this record.
+            TextView dateLab = new TextView(this);
+            dateLab.setTextSize(16);
+            dateLab.setTextColor(0xff000000);
+            dateLab.setText(dateString(date));
+            row.addView(dateLab);
         }
+    }
+    
+    
+    private String dateString(long date) {
+        if (date == 0)
+            return "";
+        int flags = DateUtils.isToday(date) ?
+                        DateUtils.FORMAT_SHOW_TIME : DateUtils.FORMAT_SHOW_DATE;
+        return DateUtils.formatDateTime(this, date, flags);
     }
 
 }
