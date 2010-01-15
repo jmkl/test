@@ -22,7 +22,7 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.hermit.netscramble" android:versionCode="22" android:versionName="3.11">
+    package="org.hermit.netscramble" android:versionCode="23" android:versionName="4.0">
     
     <application android:icon="@drawable/netscramble" android:label="@string/title" android:description="@string/description" android:debuggable="true">
         <activity android:name="NetScramble" android:label="@string/title" android:launchMode="singleTop">
@@ -32,12 +32,6 @@
                 <category android:name="android.intent.category.PREFERENCE" />
             </intent-filter>
         </activity>
-
-		<activity android:name=".ScoreList" android:launchMode="singleTop" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout" android:label="@string/scores_title">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN"></action>
-			</intent-filter>
-		</activity>
 
 		<activity android:name=".Help" android:launchMode="singleTop" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout" android:label="@string/help_title">
 			<intent-filter>

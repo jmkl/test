@@ -28,7 +28,6 @@ import org.hermit.android.core.MainActivity;
 import org.hermit.netscramble.BoardView.Skill;
 
 import android.app.AlertDialog;
-import android.app.LauncherActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -37,6 +36,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -725,13 +725,14 @@ public class NetScramble
     	case R.id.menu_pause:
     		setState(State.PAUSED, true);
     		break;
-//        case R.id.menu_scores:
-//            // Launch the high scores activity as a subactivity.
-//            setState(State.PAUSED, false);
-//            Intent sIntent = new Intent();
-//            sIntent.setClass(this, ScoreList.class);
-//            startActivity(sIntent);
-//            break;
+        case R.id.menu_scores:
+            // Launch the high scores activity as a subactivity.
+            new AlertDialog.Builder(this)
+                    .setMessage(R.string.upgrade_prompt)
+                    .setPositiveButton(R.string.upgrade_now, upgradeListener)
+                    .setNegativeButton(R.string.upgrade_later, null)
+                    .show();
+            break;
     	case R.id.menu_help:
             // Launch the help activity as a subactivity.
             setState(State.PAUSED, false);
@@ -785,6 +786,19 @@ public class NetScramble
         
         selectSoundMode();
     }
+    
+
+    // Create a listener for the user starting the game.
+    private final DialogInterface.OnClickListener upgradeListener =
+                                new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface arg0, int arg1) {
+            setState(State.PAUSED, false);
+            // Uri uri = Uri.parse("market://details?id=org.hermit.netscramblefull");
+            Uri uri = Uri.parse("market://details?id=org.hermit.audalyzer");
+            Intent sIntent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(sIntent);
+        }
+    };
     
     
     // ******************************************************************** //
@@ -1008,15 +1022,6 @@ public class NetScramble
 								time / 1000 % 60, clickCount);
 		}
 		
-		// See if we have a new high score.
-//		int ntiles = boardView.getBoardWidth() * boardView.getBoardHeight();
-//		String score = registerScore(gameSkill, ntiles,
-//		                             clickCount, (int) (time / 1000));
-//		if (score != null) {
-//		    msg += "\n\n" + score;
-//		    titleId = R.string.win_pbest_title;
-//		}
-		
 		// Display the dialog.
 	    String finish = appResources.getString(R.string.win_finish);
         msg += "\n\n" + finish;
@@ -1130,60 +1135,6 @@ public class NetScramble
         }
 	};
 	
-
-    // ******************************************************************** //
-    // High Scores.
-    // ******************************************************************** //
-
-    /**
-     * Check to see if we need to register a new "high score" (personal
-     * best).
-     * 
-     * @param   skill       The skill level of the completed puzzle.
-     * @param   ntiles      The actual number of tiles in the board.  This
-     *                      indicates the actual difficulty level on the
-     *                      specific device.
-     * @param   clicks      The user's click count.
-     * @param   seconds     The user's time in SECONDS.
-     * @return              Message to display to the user.  Null if nothing
-     *                      to report.
-     */
-    private String registerScore(BoardView.Skill skill, int ntiles,
-                                 int clicks, int seconds)
-    {
-        // Get the names of the prefs for the counts for this skill level.
-        String sizeName = "size" + skill.toString();
-        String clickName = "clicks" + skill.toString();
-        String timeName = "time" + skill.toString();
-        
-        // Get the best to date for this skill level.
-        SharedPreferences scorePrefs = getSharedPreferences("scores", MODE_PRIVATE);
-        int bestClicks = scorePrefs.getInt(clickName, -1);
-        int bestTime = scorePrefs.getInt(timeName, -1);
-
-        // See if we have a new best click count or time.
-        SharedPreferences.Editor editor = scorePrefs.edit();
-        String msg = null;
-        if (clicks > 0 && (bestClicks < 0 || clicks < bestClicks)) {
-            editor.putInt(sizeName, ntiles);
-            editor.putInt(clickName, clicks);
-            msg = appResources.getString(R.string.best_clicks_text);
-        }
-        if (seconds > 0 && (bestTime < 0 || seconds < bestTime)) {
-            editor.putInt(sizeName, ntiles);
-            editor.putInt(timeName, seconds);
-            if (msg == null)
-                msg = appResources.getString(R.string.best_time_text);
-            else
-                msg = appResources.getString(R.string.best_both_text);
-        }
-    
-        if (msg != null)
-            editor.commit();
-        
-        return msg;
-    }
-
 
     // ******************************************************************** //
     // Sound.
