@@ -812,7 +812,7 @@ public class NetScramble
     	// same cell.  This is because the tap interface only rotates
     	// clockwise, and it's not fair to count an anti-clockwise
     	// turn as 3 clicks.
-    	if (cell != prevClickedCell) {
+    	if (!isSolved && cell != prevClickedCell) {
     		++clickCount;
     		updateStatus();
     		prevClickedCell = cell;
@@ -953,13 +953,18 @@ public class NetScramble
                 showSplashText(R.string.splash_text);
             break;
         case SOLVED:
+            // This is a transient state, just used for signalling a win.
             gameTimer.stop();
             boardView.setSolved();
 
         	// We allow the user to keep playing after it's over, but
         	// don't keep reporting wins.
-        	if (prev != State.SOLVED)
+        	if (!isSolved)
         		reportWin(boardView.unconnectedCells());
+            isSolved = true;
+            
+            // Keep running.
+            gameState = State.RUNNING;
         	break;
         case ABORTED:
         	// Aborted is followed by something else,
@@ -975,6 +980,7 @@ public class NetScramble
             // Set us going, if this is a new game.
         	if (prev != State.RESTORED && prev != State.PAUSED) {
                 boardView.setupBoard(gameSkill);
+                isSolved = false;
         		clickCount = 0;
         		prevClickedCell = null;
         		gameTimer.reset();
@@ -982,7 +988,8 @@ public class NetScramble
         		makeSound(Sound.START.soundId);
         	}
         	hideSplashText();
-            gameTimer.start();
+        	if (!isSolved)
+        	    gameTimer.start();
             break;
         }
     }
@@ -1201,6 +1208,7 @@ public class NetScramble
     	// Save the skill level and game state.
     	outState.putString("gameSkill", gameSkill.toString());
     	outState.putString("gameState", gameState.toString());
+        outState.putBoolean("isSolved", isSolved);
     	
     	// Save the game state of the board.
         boardView.saveState(outState);
@@ -1223,6 +1231,7 @@ public class NetScramble
     	// Get the skill level and game state.
     	gameSkill = Skill.valueOf(map.getString("gameSkill"));
     	gameState = State.valueOf(map.getString("gameState"));
+    	isSolved = map.getBoolean("isSolved");
 
     	// Restore the state of the game board.
     	boolean restored = boardView.restoreState(map, gameSkill);
@@ -1323,6 +1332,10 @@ public class NetScramble
 	// When gameState == State.RESTORED, this is our restored game state.
 	private State restoredGameState;
 
+	// Flag whether the board has been solved.  Once solved, the user
+	// can keep playing, but we don't count score any more.
+	private boolean isSolved;
+	
 	// The currently selected skill level.
 	private BoardView.Skill gameSkill;
 	
