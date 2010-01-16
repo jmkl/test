@@ -33,7 +33,7 @@
             </intent-filter>
         </activity>
 
-		<activity android:name=".ScoreList" android:launchMode="singleTop" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout" android:label="@string/scores_title">
+		<activity android:name=".ScoreList" android:launchMode="singleTop" android:label="@string/scores_title" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"></action>
 			</intent-filter>

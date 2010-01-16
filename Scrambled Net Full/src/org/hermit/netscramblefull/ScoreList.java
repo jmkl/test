@@ -76,7 +76,7 @@ public class ScoreList
         BoardView.Skill[] skillVals = BoardView.Skill.values();
         
         // Populate the best clicks table.
-        TableLayout timeTable = (TableLayout) findViewById(R.id.timeTable);
+        TableLayout clicksTable = (TableLayout) findViewById(R.id.clicksTable);
         for (BoardView.Skill skill : skillVals) {
             String sizeName = "size" + skill.toString();
             String clickName = "clicks" + skill.toString();
@@ -88,7 +88,7 @@ public class ScoreList
 
             // Create a table row for this column.
             TableRow row = new TableRow(this);
-            timeTable.addView(row);
+            clicksTable.addView(row);
 
             // Add a label field to display the skill level.
             TextView skillLab = new TextView(this);
@@ -96,7 +96,7 @@ public class ScoreList
             skillLab.setTextColor(0xff000000);
             String stext = getString(skill.label);
             if (size > 0)
-                stext += " (" + size + " tiles)";
+                stext += " (" + size + ")";
             skillLab.setText(stext);
             row.addView(skillLab);
 
@@ -116,7 +116,7 @@ public class ScoreList
         }
         
         // Populate the best timess table.
-        TableLayout clicksTable = (TableLayout) findViewById(R.id.clicksTable);
+        TableLayout timeTable = (TableLayout) findViewById(R.id.timeTable);
         for (BoardView.Skill skill : skillVals) {
             String sizeName = "size" + skill.toString();
             String timeName = "time" + skill.toString();
@@ -128,7 +128,7 @@ public class ScoreList
 
             // Create a table row for this column.
             TableRow row = new TableRow(this);
-            clicksTable.addView(row);
+            timeTable.addView(row);
 
             // Add a label field to display the skill level.
             TextView skillLab = new TextView(this);
@@ -136,11 +136,11 @@ public class ScoreList
             skillLab.setTextColor(0xff000000);
             String stext = getString(skill.label);
             if (size > 0)
-                stext += " (" + size + " tiles)";
+                stext += " (" + size + ")";
             skillLab.setText(stext);
             row.addView(skillLab);
 
-            // Add a field to display the time count.
+            // Add a field to display the time taken.
             TextView timeLab = new TextView(this);
             timeLab.setTextSize(16);
             timeLab.setTextColor(0xff000000);
@@ -163,6 +163,7 @@ public class ScoreList
             return "";
         int flags = DateUtils.isToday(date) ?
                         DateUtils.FORMAT_SHOW_TIME : DateUtils.FORMAT_SHOW_DATE;
+        flags |= DateUtils.FORMAT_ABBREV_ALL;
         return DateUtils.formatDateTime(this, date, flags);
     }
 

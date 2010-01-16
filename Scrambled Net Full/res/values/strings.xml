@@ -51,6 +51,8 @@ for more details.\n</string>
 
     <!-- Scores list strings. -->
     <string name="scores_title">Personal Bests</string>
+    <string name="scores_clickstitle">Fewest Clicks</string>
+    <string name="scores_timestitle">Fastest Time</string>
     <string name="scores_skill">Skill Level</string>
     <string name="scores_clicks">Clicks</string>
     <string name="scores_time">Time</string>
