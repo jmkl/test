@@ -843,10 +843,9 @@ public class BoardView
         // to the screen.
         if (DRAW_BLIPS) {
             float frac = (float) (now - blipsLastAdvance) / (float) BLIPS_TIME;
-            int count = (int) (now % 1000);
             for (int x = 0; x < gridWidth; ++x)
                 for (int y = 0; y < gridHeight; ++y)
-                    count = cellMatrix[x][y].doDrawBlips(canvas, now, frac, count);
+                    cellMatrix[x][y].doDrawBlips(canvas, now, frac);
         }
     }
 

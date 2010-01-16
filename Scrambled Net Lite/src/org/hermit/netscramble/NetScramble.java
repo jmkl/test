@@ -788,13 +788,12 @@ public class NetScramble
     }
     
 
-    // Create a listener for the user starting the game.
+    // Create a listener for the user requesting an upgrade.
     private final DialogInterface.OnClickListener upgradeListener =
                                 new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface arg0, int arg1) {
             setState(State.PAUSED, false);
-            // Uri uri = Uri.parse("market://details?id=org.hermit.netscramblefull");
-            Uri uri = Uri.parse("market://details?id=org.hermit.audalyzer");
+            Uri uri = Uri.parse(getString(R.string.url_upgrade));
             Intent sIntent = new Intent(Intent.ACTION_VIEW, uri);
             startActivity(sIntent);
         }
