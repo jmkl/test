@@ -765,6 +765,10 @@ public class NetScramble
     	case R.id.sounds_on:
     		setSoundMode(SoundMode.FULL);
     		break;
+        case R.id.menu_autosolve:
+            solverUsed = true;
+            boardView.autosolve();
+            break;
     	default:
     		return super.onOptionsItemSelected(item);
     	}
@@ -939,13 +943,14 @@ public class NetScramble
                 showSplashText(R.string.splash_text);
             break;
         case SOLVED:
-            // Tiis is a transient state, just used for signalling a win.
+            // This is a transient state, just used for signalling a win.
             gameTimer.stop();
             boardView.setSolved();
 
         	// We allow the user to keep playing after it's over, but
-        	// don't keep reporting wins.
-        	if (!isSolved)
+        	// don't keep reporting wins.  Also don't brag or record a score
+            // if the user used the solver.
+        	if (!isSolved && !solverUsed)
         		reportWin(boardView.unconnectedCells());
             isSolved = true;
             
@@ -969,6 +974,7 @@ public class NetScramble
                 isSolved = false;
         		clickCount = 0;
         		prevClickedCell = null;
+        		solverUsed = false;
         		gameTimer.reset();
         		updateStatus();
         		makeSound(Sound.START.soundId);
@@ -1268,6 +1274,7 @@ public class NetScramble
     	// Restore the game timer and click count.
     	gameTimer.saveState(outState);
     	outState.putInt("clickCount", clickCount);
+        outState.putBoolean("solverUsed", solverUsed);
     }
 
     
@@ -1292,6 +1299,7 @@ public class NetScramble
     	if (restored) {
     		restored = gameTimer.restoreState(map, false);
     		clickCount = map.getInt("clickCount");
+    		solverUsed = map.getBoolean("solverUsed");
     	}
 
         return restored;
@@ -1403,6 +1411,9 @@ public class NetScramble
 	// The previous cell that was clicked.  Used to detect multiple clicks
 	// on the same cell.
 	private Cell prevClickedCell = null;
+	
+	// Flag if the user has invoked the auto-solver for this game.
+	private boolean solverUsed = false;
 
 }
 

@@ -30,6 +30,10 @@
         </menu>
     </item>
 
+    <!-- "Solve It". -->
+    <item android:id="@+id/menu_autosolve" android:title="@string/menu_autosolve" 
+    	  android:icon="@drawable/ic_menu_solve"/>
+
     <!-- "Sound...".  -->
     <item android:id="@+id/sound_menu" android:title="@string/menu_sound"
     	  android:icon="@drawable/ic_menu_volume">

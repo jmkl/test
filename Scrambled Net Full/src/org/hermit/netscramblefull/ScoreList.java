@@ -28,6 +28,9 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.format.DateUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TableLayout;
@@ -72,11 +75,86 @@ public class ScoreList
 
         setContentView(R.layout.score_layout);
         
+        // Display the best scores.
+        showScores();
+    }
+    
+    
+    // ******************************************************************** //
+    // Menu Management.
+    // ******************************************************************** //
+    
+    /**
+     * Initialize the contents of the game's options menu by adding items
+     * to the given menu.
+     * 
+     * This is only called once, the first time the options menu is displayed.
+     * To update the menu every time it is displayed, see
+     * onPrepareOptionsMenu(Menu).
+     * 
+     * When we add items to the menu, we can either supply a Runnable to
+     * receive notification of selection, or we can implement the Activity's
+     * onOptionsItemSelected(Menu.Item) method to handle them there.
+     * 
+     * @param   menu            The options menu in which we should
+     *                          place our items.  We can safely hold on this
+     *                          (and any items created from it), making
+     *                          modifications to it as desired, until the next
+     *                          time onCreateOptionsMenu() is called.
+     * @return                  true for the menu to be displayed; false
+     *                          to suppress showing it.
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // We must call through to the base implementation.
+        super.onCreateOptionsMenu(menu);
+        
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.scores_menu, menu);
+
+        return true;
+    }
+    
+    
+    /**
+     * This hook is called whenever an item in your options menu is selected.
+     * Derived classes should call through to the base class for it to
+     * perform the default menu handling.  (True?)
+     *
+     * @param   item            The menu item that was selected.
+     * @return                  false to have the normal processing happen.
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.menu_reset:
+            resetScores();
+            break;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+        
+        return true;
+    }
+
+    
+    // ******************************************************************** //
+    // Scores Display.
+    // ******************************************************************** //
+    
+    private void showScores() {
         SharedPreferences scorePrefs = getSharedPreferences("scores", MODE_PRIVATE);
         BoardView.Skill[] skillVals = BoardView.Skill.values();
         
         // Populate the best clicks table.
         TableLayout clicksTable = (TableLayout) findViewById(R.id.clicksTable);
+        
+        // Remove any existing scores rows, as we may be re-displaying.
+        int cc = clicksTable.getChildCount();
+        if (cc > 2)
+            for (int i = cc - 1; i >= 2; --i)
+                clicksTable.removeViewAt(i);
+        
         for (BoardView.Skill skill : skillVals) {
             String sizeName = "size" + skill.toString();
             String clickName = "clicks" + skill.toString();
@@ -115,8 +193,15 @@ public class ScoreList
             row.addView(dateLab);
         }
         
-        // Populate the best timess table.
+        // Populate the best times table.
         TableLayout timeTable = (TableLayout) findViewById(R.id.timeTable);
+        
+        // Remove any existing scores rows, as we may be re-displaying.
+        int tc = timeTable.getChildCount();
+        if (tc > 2)
+            for (int i = tc - 1; i >= 2; --i)
+                timeTable.removeViewAt(i);
+        
         for (BoardView.Skill skill : skillVals) {
             String sizeName = "size" + skill.toString();
             String timeName = "time" + skill.toString();
@@ -156,16 +241,30 @@ public class ScoreList
             row.addView(dateLab);
         }
     }
-    
+
     
     private String dateString(long date) {
         if (date == 0)
-            return "";
+            return "--";
         int flags = DateUtils.isToday(date) ?
                         DateUtils.FORMAT_SHOW_TIME : DateUtils.FORMAT_SHOW_DATE;
         flags |= DateUtils.FORMAT_ABBREV_ALL;
         return DateUtils.formatDateTime(this, date, flags);
     }
 
+    
+    // ******************************************************************** //
+    // Scores Management.
+    // ******************************************************************** //
+
+    private void resetScores() {
+        SharedPreferences scorePrefs = getSharedPreferences("scores", MODE_PRIVATE);
+        SharedPreferences.Editor editor = scorePrefs.edit();
+        editor.clear();
+        editor.commit();
+        
+        showScores();
+    }
+   
 }
 

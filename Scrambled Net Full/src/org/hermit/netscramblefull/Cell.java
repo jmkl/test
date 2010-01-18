@@ -350,6 +350,31 @@ class Cell
 	}
 
 
+    /**
+     * Return the directions that this cell would be connected to, outwards,
+     * if it was rotated in the given direction.
+     * 
+     * @param   a           The angle in degrees to rotate to; clockwise
+     *                      positive.
+     * @return              The directions that this cell is connected to,
+     *                      outwards.
+     */
+    Dir rotatedDirs(int a) {
+        int bits = connectedDirs.ordinal();
+        
+        if (a == 90)
+            bits = ((bits & 0x01) << 3) | ((bits & 0x0e) >> 1);
+        else if (a == -90)
+            bits = ((bits & 0x08) >> 3) | ((bits & 0x07) << 1);
+        else if (a == 180 || a == -180)
+            bits = ((bits & 0x0c) >> 2) | ((bits & 0x03) << 2);
+        else
+            return null;
+        
+        return Dir.getDir(bits);
+    }
+
+
 	/**
 	 * Query whether this cell has a connection in the given direction(s).
 	 *
@@ -617,9 +642,9 @@ class Cell
             // Rotate the directions bits (the bottom 4 bits of the ordinal)
             // right or left, as appropriate.
             if (Math.abs(rotateAngle) >= 90f) {
-                int bits = connectedDirs.ordinal(); 
+                Dir dir = null;
                 if (rotateTarget > 0) {
-                    bits = ((bits & 0x01) << 3) | ((bits & 0x0e) >> 1);
+                    dir = rotatedDirs(90);
                     if (rotateAngle >= rotateTarget)
                         rotateAngle = rotateTarget = 0f;
                     else {
@@ -628,7 +653,7 @@ class Cell
                         rotateStart += ROTATE_TIME;
                     }
                 } else {
-                    bits = ((bits & 0x08) >> 3) | ((bits & 0x07) << 1);
+                    dir = rotatedDirs(-90);
                     if (rotateAngle <= rotateTarget)
                         rotateAngle = rotateTarget = 0f;
                     else {
@@ -637,7 +662,7 @@ class Cell
                         rotateStart += ROTATE_TIME;
                     }
                 }
-                setDirs(Dir.getDir(bits));
+                setDirs(dir);
                 changed = true;
             }
             
