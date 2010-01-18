@@ -576,10 +576,28 @@ class Cell
      *                      positive.
      */
     void rotate(int a) {
+        rotate(a, ROTATE_DFLT_TIME);
+    }
+
+
+    /**
+     * Move the rotation currentAngle for this cell.  This changes the cell's
+     * idea of its connections, and with fractions of 90 degrees, is used to
+     * animate rotation of the cell's connections.  Setting this causes the
+     * cell's connections to be drawn at the given currentAngle; beyond +/-
+     * 45 degrees, the connections are changed in accordance with the
+     * direction the cell is now facing.
+     * 
+     * @param   a           The angle in degrees to rotate to; clockwise
+     *                      positive.
+     * @param   time        Time in ms over which to do the rotation.
+     */
+    void rotate(int a, long time) {
         // If we're not already rotating, set it up.
         if (rotateTarget == 0) {
             rotateStart = System.currentTimeMillis();
             rotateAngle = 0f;
+            rotateTime = time;
         }
 
         // Add the given rotation in.
@@ -634,7 +652,7 @@ class Cell
         // If we've got a rotation going on, move it on.
         if (rotateTarget != 0) {
             // Calculate the angle based on how long we've been going.
-            rotateAngle = (float) (now - rotateStart) / (float) ROTATE_TIME * 90f;
+            rotateAngle = (float) (now - rotateStart) / (float) rotateTime * 90f;
             if (rotateTarget < 0)
                 rotateAngle = -rotateAngle;
 
@@ -650,7 +668,7 @@ class Cell
                     else {
                         rotateAngle -= 90f;
                         rotateTarget -= 90f;
-                        rotateStart += ROTATE_TIME;
+                        rotateStart += rotateTime;
                     }
                 } else {
                     dir = rotatedDirs(-90);
@@ -659,7 +677,7 @@ class Cell
                     else {
                         rotateAngle += 90f;
                         rotateTarget += 90f;
-                        rotateStart += ROTATE_TIME;
+                        rotateStart += rotateTime;
                     }
                 }
                 setDirs(dir);
@@ -788,7 +806,9 @@ class Cell
 
         canvas.save();
 	    canvas.clipRect(sx, sy, ex, ey);
-    
+        cellPaint.setStyle(Paint.Style.STROKE);
+        cellPaint.setColor(0xff000000);
+
 		// Draw the background tile.
 		{
 			Image bgImage = Image.BG;
@@ -798,7 +818,7 @@ class Cell
 				bgImage = Image.EMPTY;
 			else if (isLocked)
 				bgImage = Image.LOCKED;
-			canvas.drawBitmap(bgImage.bitmap, sx, sy, cellPaint);
+			canvas.drawBitmap(bgImage.bitmap, sx, sy, null);
 		}
 
 		// Draw the highlight band, if active.
@@ -833,7 +853,7 @@ class Cell
 				// Draw the cable pixmap.
 				Bitmap pixmap = isConnected ? connectedDirs.normalImg :
 					                          connectedDirs.greyImg;
-				canvas.drawBitmap(pixmap, sx, sy, cellPaint);
+				canvas.drawBitmap(pixmap, sx, sy, null);
 				canvas.restore();
 			}
 
@@ -852,7 +872,7 @@ class Cell
 						equipImage = Image.COMP1;
 				}
 				if (equipImage != null)
-					canvas.drawBitmap(equipImage.bitmap, sx, sy, cellPaint);
+					canvas.drawBitmap(equipImage.bitmap, sx, sy, null);
 			}
 		}
 		
@@ -860,8 +880,8 @@ class Cell
 		// border around it.
 		if (haveFocus) {
 			cellPaint.setStyle(Paint.Style.STROKE);
-			cellPaint.setColor(Color.RED);
-			cellPaint.setStrokeWidth(0f);
+			cellPaint.setColor(0x60ff0000);
+			cellPaint.setStrokeWidth(cellWidth / 8);
 
 			canvas.drawRect(sx, sy, ex - 1, ey - 1, cellPaint);
 		}
@@ -968,7 +988,6 @@ class Cell
      * Restore the game state of this cell from the given Bundle, as
      * part of restoring the overall game state.
      * 
-     
      * @param	map			A Bundle containing the saved state.
      */
     void restoreState(Bundle map) {
@@ -1058,9 +1077,9 @@ class Cell
 	@SuppressWarnings("unused")
 	private static final String TAG = "netscramble";
 
-	// Time taken to rotate a cell, in ms.
-	private static final long ROTATE_TIME = 250;
-	
+    // Default time taken to rotate a cell, in ms.
+    private static final long ROTATE_DFLT_TIME = 250;
+    
 	// Time taken to display a highlight flash, in ms.
 	private static final long HIGHLIGHT_TIME = 200;
 	
@@ -1095,6 +1114,9 @@ class Cell
     private float rotateTarget = 0;
     private long rotateStart = 0;
 	private float rotateAngle = 0f;
+
+    // Duration of the current rotation, in ms.
+    private long rotateTime = 250;
 
 	// Status information for the highlight band across the cell.
 	// This is used to draw a diagonal band of highlightPos flicking across the

@@ -624,14 +624,9 @@ public class BoardView
         while (!connectingCells.isEmpty()) {
             Cell cell = connectingCells.remove();
 
-            if (hasNewConnection(cell, Cell.Dir.U___, isConnected))
-                connectingCells.add(cell.next(Cell.Dir.U___));
-            if (hasNewConnection(cell, Cell.Dir._R__, isConnected))
-                connectingCells.add(cell.next(Cell.Dir._R__));
-            if (hasNewConnection(cell, Cell.Dir.__D_, isConnected))
-                connectingCells.add(cell.next(Cell.Dir.__D_));
-            if (hasNewConnection(cell, Cell.Dir.___L, isConnected))
-                connectingCells.add(cell.next(Cell.Dir.___L));
+            for (Cell.Dir d : Cell.Dir.cardinals)
+                if (hasNewConnection(cell, d, isConnected))
+                    connectingCells.add(cell.next(d));
         }
 
         // Finally, scan the connection flags.  Set every cell's connected
@@ -756,7 +751,7 @@ public class BoardView
     // ******************************************************************** //
     // Client Methods.
     // ******************************************************************** //
-  
+    
     /**
      * Update the state of the application for the current frame.
      * 
@@ -774,7 +769,7 @@ public class BoardView
     protected void doUpdate(long now) {
         // See if we have programmed moves to execute.  If so, see if
         // it's time for the next one.
-        if (programmedMoves != null && now - lastProgMove > 500) {
+        if (programmedMoves != null && now - lastProgMove > SOLVE_STEP_TIME) {
             if (programmedMoves.isEmpty()) {
                 // Since the last move has completed, we're now finished.
                 programmedMoves = null;
@@ -785,14 +780,19 @@ public class BoardView
                 Cell mc = cellMatrix[move[0]][move[1]];
                 int dirn = move[2];
                 
+                // If the cell isn't focused, focus it, and that's our move.
                 // If the cell is locked, unlock it, and that's our move.
                 // Otherwise do the actual move and update the connection state.
-                Log.d(TAG, "Soln " + move[0] + "," + move[1] + ": " + mc.isLocked());
-                if (mc.isLocked()) {
+                if (mc != focusedCell) {
+                    setFocus(mc);
+                    programmedMoves.addFirst(move);
+                } else if (mc.isLocked()) {
                     mc.setLocked(false);
                     programmedMoves.addFirst(move);
                 } else {
-                    mc.rotate(dirn);
+                    // Make the cell's content visible.  Do the move.
+                    mc.setBlind(false);
+                    mc.rotate(dirn, SOLVE_ROTATE_TIME);
                     updateConnections();
                 }
 
@@ -1004,7 +1004,8 @@ public class BoardView
             // Focus on the pressed cell.
             pressedCell = findCell(event.getX(), event.getY());
             if (pressedCell != null) {
-                setFocus(pressedCell);
+                if (programmedMoves == null)
+                    setFocus(pressedCell);
                 pressDown();
             }
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -1206,9 +1207,12 @@ public class BoardView
     // ******************************************************************** //
 
 	/**
-	 * Auto-solve the puzzle, by setting each cell to the position it was
-	 * in when the network was created.  This runs on screen at a
-	 * watchable speed, and user input is blocked until it's done.
+	 * Auto-solve the puzzle, by generating a list of programmed moves
+	 * which will set each cell to the position it was in when the
+	 * network was created.
+	 * 
+	 * We generate the moves list in breadth-first order.  This is harder
+	 * to do, but looks nicer.
 	 */
 	void autosolve() {
         Bundle solution = solvedState;
@@ -1216,47 +1220,78 @@ public class BoardView
             return;
 
         // Read the solved state, accounting for device rotations etc.
-        GameState state = new GameState(gridWidth, gridHeight);
+        GameState state = new GameState(gridWidth, gridHeight, gameSkill);
         if (!restoreBoard(solution, state))
             return;
-        Cell[][] matrix = state.matrix;
         
         // Create the programmed move list.
         programmedMoves = new LinkedList<int[]>();
 
-        // Figure out the set of moves we need to make to solve the board.
-        for (int x = 0; x < gridWidth; ++x) {
-            for (int y = 0; y < gridHeight; ++y) {
-                Cell mc = cellMatrix[x][y];
-                Cell sc = matrix[x][y];
-                Cell.Dir md = mc.dirs();
-                if (md == Cell.Dir.FREE || md == Cell.Dir.NONE)
-                    continue;
-                int rot = 0;
-                if (sc.dirs() != mc.dirs()) {
-                    if (mc.rotatedDirs(90) == sc.dirs())
-                        rot = 90;
-                    else if (mc.rotatedDirs(-90) == sc.dirs())
-                        rot = -90;
-                    else if (mc.rotatedDirs(180) == sc.dirs())
-                        rot = rng.nextBoolean() ? 180 : -180;
-                }
-                
-                if (Math.abs(rot) == 90) {
-                    int[] move = { mc.x(), mc.y(), rot };
-                    programmedMoves.add(move);
-                } else if (Math.abs(rot) == 180) {
-                    int[] move = new int[] { mc.x(), mc.y(), rot / 2 };
-                    programmedMoves.add(move);
-                    move = new int[] { mc.x(), mc.y(), rot / 2 };
-                    programmedMoves.add(move);
+        // Clear the list of cells which are connected but
+        // haven't had their onward connections checked yet.
+        connectingCells.clear();
+        
+        // Reset the array of solved flags per cell.
+        for (int x = 0; x < gridWidth; x++)
+            for (int y = 0; y < gridHeight; y++)
+                isConnected[x][y] = false;
+        
+        // Set the root cell up to be solved first.
+        connectingCells.add(state.root);
+        isConnected[state.root.x()][state.root.y()] = true;
+
+        // While there are still cells to investigate, solve them, check
+        // them for connections that we haven't flagged yet, and add those
+        // cells to the connectingCells.
+        while (!connectingCells.isEmpty()) {
+            Cell cell = connectingCells.removeFirst();
+            solveCell(cell, programmedMoves);
+
+            for (Cell.Dir d : Cell.Dir.cardinals) {
+                if (cell.hasConnection(d)) {
+                    Cell next = cell.next(d);
+                    if (next != null && !isConnected[next.x()][next.y()]) {
+                        connectingCells.addLast(next);
+                        isConnected[next.x()][next.y()] = true;
+                    }
                 }
             }
         }
-        
+  
         lastProgMove = 0;
 	}
 	
+    
+	/**
+	 * Solve the given cell.  This doesn't actually do anything, except
+	 * add a move to the given moves list to put the cell into the
+	 * solved state.
+	 * 
+	 * @param  sc          The solved version of the cell.
+	 * @param  moves       List of moves that we're building.
+	 */
+    private void solveCell(Cell sc, LinkedList<int[]> moves) {
+        Cell mc = cellMatrix[sc.x()][sc.y()];
+        Cell.Dir sd = sc.dirs();
+        Cell.Dir md = mc.dirs();
+        if (sc.dirs() != md) {
+            int[] move;
+            if (mc.rotatedDirs(90) == sd) {
+                move = new int[] { mc.x(), mc.y(), 90 };
+                moves.add(move);
+            } else if (mc.rotatedDirs(-90) == sd) {
+                move = new int[] { mc.x(), mc.y(), -90 };
+                moves.add(move);
+            } else if (mc.rotatedDirs(180) == sd) {
+                int rot = rng.nextBoolean() ? 90 : -90;
+                move = new int[] { mc.x(), mc.y(), rot };
+                moves.add(move);
+                move = new int[] { mc.x(), mc.y(), rot };
+                moves.add(move);
+            }
+        }
+    }
+    
 		
     // ******************************************************************** //
     // State Save/Restore.
@@ -1514,7 +1549,7 @@ public class BoardView
         }
         
         // Create a game state with a new cell matrix.
-        GameState(int w, int h) {
+        GameState(int w, int h, Skill skill) {
             matrix = new Cell[w][h];
             for (int y = 0; y < h; ++y) {
                 for (int x = 0; x < w; ++x) {
@@ -1522,7 +1557,37 @@ public class BoardView
                     matrix[x][y] = cell;
                 }
             }
+            
+            // Save the width and height of the playing board for this skill
+            // level, and the board placement within the overall cell grid.
+            int bw = screenConfig.getBoardWidth(skill, w, h);
+            int bh = screenConfig.getBoardHeight(skill, w, h);
+            int bsx = (w - bw) / 2;
+            int bex = bsx + bw;
+            int bsy = (h - bh) / 2;
+            int bey = bsy + bh;
+            
+            boolean wrap = skill.wrapped;
+            Cell u, d, l, r;
+            for (int x = 0; x < w; x++) {
+                for (int y = 0; y < h; y++) {
+                    matrix[x][y].reset(wrap ? Cell.Dir.NONE : Cell.Dir.FREE);
+                    
+                    // Re-calculate who this cell's neighbours are.
+                    u = d = l = r = null;
+                    if (wrap || y > bsy)
+                        u = matrix[x][decr(y, bsy, bey)];
+                    if (wrap || y < bey - 1)
+                        d = matrix[x][incr(y, bsy, bey)];
+                    if (wrap || x > bsx)
+                        l = matrix[decr(x, bsx, bex)][y];
+                    if (wrap || x < bex - 1)
+                        r = matrix[incr(x, bsx, bex)][y];
+                    matrix[x][y].setNeighbours(u, d, l, r);
+                }
+            }
         }
+        
         Cell root = null;
         Cell focus = null;
         Cell[][] matrix = null;
@@ -1544,6 +1609,12 @@ public class BoardView
     
     // Time a blip takes to cross half a cell, in ms.
     private static final long BLIPS_TIME = 300;
+
+    // Rate at which we run moves in solve mode, in ms.
+    private static final long SOLVE_STEP_TIME = 800;
+
+    // Time taken to rotate a cell in solve mode, in ms.
+    private static final long SOLVE_ROTATE_TIME = 350;
 
     // Random number generator for the game.  We use a Mersenne Twister,
 	// which is a high-quality and fast implementation of java.util.Random.
