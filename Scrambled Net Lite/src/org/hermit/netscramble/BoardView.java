@@ -1278,7 +1278,7 @@ public class BoardView
             	if (cmap == null)
             		return false;
             	cellMatrix[x][gridHeight - y - 1].restoreState(cmap);
-            	cellMatrix[x][gridHeight - y - 1].rotate(-90);
+            	cellMatrix[x][gridHeight - y - 1].rotateImmediate(-90);
             }
         }
 
@@ -1314,7 +1314,7 @@ public class BoardView
             	if (cmap == null)
             		return false;
             	cellMatrix[gridWidth - x - 1][y].restoreState(cmap);
-            	cellMatrix[gridWidth - x - 1][y].rotate(90);
+            	cellMatrix[gridWidth - x - 1][y].rotateImmediate(90);
             }
         }
 
