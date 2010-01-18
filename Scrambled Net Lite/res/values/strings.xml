@@ -109,6 +109,11 @@ or "Continue" to experiment with this layout.</string>
     <!-- URLs. -->
     <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
     <string name="url_homepage">http://code.google.com/p/moonblink/wiki/ScrambledNet</string>
-    <string name="url_upgrade">market://details?id=org.hermit.netscramblefull</string>
     
+    <!--  
+    <string name="url_upgrade">market://details?id=org.hermit.netscramblefull</string>
+    <string name="url_upgrade">market://search?q=pname:org.hermit.netscramblefull</string>
+     -->
+    <string name="url_upgrade">http://market.android.com/search?q=pname:org.hermit.netscramblefull</string>
+
 </resources>

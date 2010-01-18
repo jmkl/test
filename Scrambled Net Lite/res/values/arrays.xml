@@ -39,8 +39,9 @@ game.\n\
 \n\
 This is the free version of Scrambled Net.  The full version has personal
 best tracking, an autosolver, and other cool features.  If you would like
-to upgrade, you can do so in the Android Market by selecting \"High scores\"
-in the menu.</item>
+to see the upgrade, you can follow this link:\n\
+\n\
+http://market.android.com/search?q=pname:org.hermit.netscramblefull</item>
 
 <item>Scrambled Net can be played with the keyboard, the touchscreen,
 or a combination of both:</item>
@@ -74,19 +75,26 @@ bit more challenging than it is on the Hero.</item>
 
 <item>The device\'s \"menu\" button pops up a menu containing a number
 of options:\n\
+\n\
 • <b>New Game</b> starts a new game, abandoning the current game if any.\n\
+\n\
 • <b>Pause</b> pauses the game, and covers the screen.  Tap the screen
 to un-pause.\n\
+\n\
 • <b>High Scores</b> -- the full version of Scrambled Net features personal
 best tracking, as well as an autosolver and other cool features.  Select
 High Scores to find the upgrade.\n\
+\n\
 • <b>Skill Level</b> prompts you to select a skill level, then starts
 a new game at that skill level.\n\
+\n\
 • <b>Sound</b> lets you set your preferred sound effects level.  However,
 the sound effects volume can always be adjusted in the game using the hardware
 volume keys.  If no sound is coming out, try turning up the volume using
 the buttons.\n\
+\n\
 • <b>Help</b> displays this help.\n\
+\n\
 • <b>About</b> displays version and license information.</item>
 
 <item>Here are some hints that may prove useful
