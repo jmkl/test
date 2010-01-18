@@ -19,7 +19,7 @@
     <!-- Help section texts. -->
     <string-array name="help_texts">
 
-<item><b>Scrambled</b> Net is a simple puzzle game which requires you to sort
+<item><b>Scrambled Net</b> is a simple puzzle game which requires you to sort
 out the connections in a computer network, so that all the terminals are
 connected to the server.  The network is made up of tiles, and while all
 the tiles are in the right place, they have been rotated randomly into a
@@ -35,7 +35,12 @@ I guarantee it gets more challenging when some of the tiles are invisible!
 If it gets too hard, try the hints below.\n\
 \n\
 Use the menu to select different skill levels, pause the game, or start a new
-game.</item>
+game.\n\
+\n\
+This is the free version of Scrambled Net.  The full version has personal
+best tracking, an autosolver, and other cool features.  If you would like
+to upgrade, you can do so in the Android Market by selecting \"High scores\"
+in the menu.</item>
 
 <item>Scrambled Net can be played with the keyboard, the touchscreen,
 or a combination of both:</item>
@@ -72,6 +77,9 @@ of options:\n\
 • <b>New Game</b> starts a new game, abandoning the current game if any.\n\
 • <b>Pause</b> pauses the game, and covers the screen.  Tap the screen
 to un-pause.\n\
+• <b>High Scores</b> -- the full version of Scrambled Net features personal
+best tracking, as well as an autosolver and other cool features.  Select
+High Scores to find the upgrade.\n\
 • <b>Skill Level</b> prompts you to select a skill level, then starts
 a new game at that skill level.\n\
 • <b>Sound</b> lets you set your preferred sound effects level.  However,

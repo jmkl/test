@@ -9,7 +9,7 @@
 
 
     <!-- Splash screen / help text. -->
-    <string name="splash_text"><b>Scrambled Net</b>\n\nConnect the
+    <string name="splash_text"><b>Scrambled Net Lite</b>\n\nConnect the
 terminals to the server by rotating the tiles.  Touch a tile to rotate
 it; press and hold a tile to lock it when you think it\'s correct.
 Use the menu to select different skill levels, pause the game, or start
@@ -27,14 +27,14 @@ cells on the right edge connect to those on the left edge, and vice
 versa.  Similarly for the top and bottom edges.  But in addition, in
 cells with 3 or 4 connections, the wiring is invisible.  Good luck!</string>
        
-    <string name="about_text"><b>Scrambled Net</b>, and Android puzzle
+    <string name="about_text"><b>Scrambled Net Lite</b>, an Android puzzle
 game by Ian Cameron Smith.
 Inspired by KNetwalk by Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.
 Includes MTRandom by David Beaumont.\n\
 \n\
 For information and source code see the project home page.\n\
 \n\
-This program is free software; you can redistribute it and/or modify
+This program is open-source software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.\n\
@@ -51,8 +51,8 @@ for more details.\n</string>
 
     <!-- Upgrade strings. -->
     <string name="upgrade_prompt">The Full version of Scrambled Net provides
-personal best tracking and some other nice features.  Would you like to
-look at the upgrade in the Android Market?</string>
+personal best tracking, an autosolver, and some other nice features.  Would
+you like to look at the upgrade in the Android Market?</string>
     <string name="upgrade_now">Show me!</string>
     <string name="upgrade_later">Maybe later</string>
         
