@@ -69,24 +69,32 @@ bit more challenging than it is on the Hero.</item>
 
 <item>The device\'s \"menu\" button pops up a menu containing a number
 of options:\n\
+\n\
 • <b>New game</b> starts a new game, abandoning the current game if any.\n\
+\n\
 • <b>Pause</b> pauses the game, and covers the screen.  Tap the screen
 to un-pause.\n\
+\n\
 • <b>High scores</b> displays a table of your personal best scores — both
 the fewest clicks in which you\'ve solved each difficulty level, and the
 fastest time.  You can use the menu to reset your scores.  Press \"Back\"
 to get back to the game.\n\
+\n\
 • <b>Skill level</b> prompts you to select a skill level, then starts
 a new game at that skill level.\n\
+\n\
 • <b>Solve it!</b> runs an autosolver to finish the current puzzle for you.
 If you get completely stuck, you can use this to see the solution — but
 you won\'t get personal best credit!  While solving, this menu item
 changes to a \"Stop\" button, so you can stop the autosolver at any time.\n\
+\n\
 • <b>Sound</b> lets you set your preferred sound effects level.  However,
 the sound effects volume can always be adjusted in the game using the hardware
 volume keys.  If no sound is coming out, try turning up the volume using
 the buttons.\n\
+\n\
 • <b>Help</b> displays this help.\n\
+\n\
 • <b>About</b> displays version and license information.</item>
 
 <item>Here are some hints that may prove useful
