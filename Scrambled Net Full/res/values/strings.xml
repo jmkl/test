@@ -27,14 +27,14 @@ cells on the right edge connect to those on the left edge, and vice
 versa.  Similarly for the top and bottom edges.  But in addition, in
 cells with 3 or 4 connections, the wiring is invisible.  Good luck!</string>
        
-    <string name="about_text"><b>Scrambled Net</b>, and Android puzzle
+    <string name="about_text"><b>Scrambled Net</b>, an Android puzzle
 game by Ian Cameron Smith.
 Inspired by KNetwalk by Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.
 Includes MTRandom by David Beaumont.\n\
 \n\
 For information and source code see the project home page.\n\
 \n\
-This program is free software; you can redistribute it and/or modify
+This program is open-source software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.\n\
@@ -44,10 +44,10 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
 for more details.\n</string>
-            
+
     <!-- Help strings. -->
     <string name="help_title">Scrambled Net User\'s Manual</string>
-        
+
 
     <!-- Scores list strings. -->
     <string name="scores_title">Personal Bests</string>
@@ -95,7 +95,7 @@ or "Continue" to experiment with this layout.</string>
     <string name="menu_show_scores">High scores</string>
     <string name="menu_set_skill">Skill level</string>
     <string name="menu_sound">Sound...</string>
-    <string name="menu_autosolve">Solve It!</string>
+    <string name="menu_autosolve">Solve it!</string>
     <string name="menu_help">Help</string>
     <string name="menu_about">About</string>
     <string name="no_sounds">No sounds</string>

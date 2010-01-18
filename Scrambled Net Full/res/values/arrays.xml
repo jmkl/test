@@ -19,7 +19,7 @@
     <!-- Help section texts. -->
     <string-array name="help_texts">
 
-<item><b>Scrambled</b> Net is a simple puzzle game which requires you to sort
+<item><b>Scrambled Net</b> is a simple puzzle game which requires you to sort
 out the connections in a computer network, so that all the terminals are
 connected to the server.  The network is made up of tiles, and while all
 the tiles are in the right place, they have been rotated randomly into a
@@ -69,11 +69,18 @@ bit more challenging than it is on the Hero.</item>
 
 <item>The device\'s \"menu\" button pops up a menu containing a number
 of options:\n\
-• <b>New Game</b> starts a new game, abandoning the current game if any.\n\
+• <b>New game</b> starts a new game, abandoning the current game if any.\n\
 • <b>Pause</b> pauses the game, and covers the screen.  Tap the screen
 to un-pause.\n\
-• <b>Skill Level</b> prompts you to select a skill level, then starts
+• <b>High scores</b> displays a table of your personal best scores — both
+the fewest clicks in which you\'ve solved each difficulty level, and the
+fastest time.  You can use the menu to reset your scores.  Press \"Back\"
+to get back to the game.\n\
+• <b>Skill level</b> prompts you to select a skill level, then starts
 a new game at that skill level.\n\
+• <b>Solve it!</b> runs an autosolver to finish the current puzzle for you.
+If you get completely stuck, you can use this to see the solution — but
+you won\'t get personal best credit!\n\
 • <b>Sound</b> lets you set your preferred sound effects level.  However,
 the sound effects volume can always be adjusted in the game using the hardware
 volume keys.  If no sound is coming out, try turning up the volume using
