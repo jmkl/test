@@ -471,6 +471,20 @@ class Cell
 	}
 
 
+    /**
+     * Rotate this cell right now -- no animation.  This is used during
+     * restore, when we need to adjust the state of the board for
+     * device rotations, not during play.
+     * 
+     * @param   a           The angle in degrees to rotate to; clockwise
+     *                      positive.
+     */
+    void rotateImmediate(int a) {
+        setDirs(rotatedDirs(a));
+        invalidate();
+    }
+
+
 	/**
 	 * Determine whether this cell's "locked" flag is set.
 	 * 

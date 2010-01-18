@@ -1218,7 +1218,7 @@ public class BoardView
         Bundle solution = solvedState;
         if (solution == null)
             return;
-
+        
         // Read the solved state, accounting for device rotations etc.
         GameState state = new GameState(gridWidth, gridHeight, gameSkill);
         if (!restoreBoard(solution, state))
@@ -1457,7 +1457,7 @@ public class BoardView
             	if (cmap == null)
             		return false;
             	state.matrix[x][gridHeight - y - 1].restoreState(cmap);
-            	state.matrix[x][gridHeight - y - 1].rotate(-90);
+            	state.matrix[x][gridHeight - y - 1].rotateImmediate(-90);
             }
         }
 
@@ -1494,7 +1494,7 @@ public class BoardView
             	if (cmap == null)
             		return false;
             	state.matrix[gridWidth - x - 1][y].restoreState(cmap);
-            	state.matrix[gridWidth - x - 1][y].rotate(90);
+            	state.matrix[gridWidth - x - 1][y].rotateImmediate(90);
             }
         }
 
