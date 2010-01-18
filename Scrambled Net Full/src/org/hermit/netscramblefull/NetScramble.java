@@ -712,6 +712,23 @@ public class NetScramble
     	}
     }
 
+
+    void selectAutosolveMode(boolean solving) {
+        // Set the autosolve menu item to the current state.
+        if (mainMenu != null) {
+            MenuItem solveItem = mainMenu.findItem(R.id.menu_autosolve);
+            if (solveItem != null) {
+                if (solving) {
+                    solveItem.setIcon(R.drawable.ic_menu_stop);
+                    solveItem.setTitle(R.string.menu_stopsolve);
+                } else {
+                    solveItem.setIcon(R.drawable.ic_menu_solve);
+                    solveItem.setTitle(R.string.menu_autosolve);
+                }
+            }
+        }
+    }
+
     
     /**
      * This hook is called whenever an item in your options menu is selected.

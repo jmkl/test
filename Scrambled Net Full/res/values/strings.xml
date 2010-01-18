@@ -111,6 +111,7 @@ or "Continue" to experiment with this layout.</string>
     <string name="menu_set_skill">Skill level</string>
     <string name="menu_sound">Sound...</string>
     <string name="menu_autosolve">Solve it!</string>
+    <string name="menu_stopsolve">Stop solving</string>
     <string name="menu_help">Help</string>
     <string name="menu_about">About</string>
     <string name="no_sounds">No sounds</string>

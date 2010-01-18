@@ -370,6 +370,7 @@ public class BoardView
      * 							accordingly.
      */
     public void setupBoard(Skill sk) {
+        autosolveStop();
     	gameSkill = sk;
     	
         // Reset the board for this game.
@@ -772,8 +773,7 @@ public class BoardView
         if (programmedMoves != null && now - lastProgMove > SOLVE_STEP_TIME) {
             if (programmedMoves.isEmpty()) {
                 // Since the last move has completed, we're now finished.
-                programmedMoves = null;
-                lastProgMove = 0;
+                autosolveStop();
             } else {
                 // Get the next move and execute it.
                 int[] move = programmedMoves.removeFirst();
@@ -1215,6 +1215,12 @@ public class BoardView
 	 * to do, but looks nicer.
 	 */
 	void autosolve() {
+	    // If we're already solving, just toggle the state.
+	    if (programmedMoves != null) {
+	        autosolveStop();
+	        return;
+	    }
+	
         Bundle solution = solvedState;
         if (solution == null)
             return;
@@ -1259,8 +1265,19 @@ public class BoardView
         }
   
         lastProgMove = 0;
+        parentApp.selectAutosolveMode(true);
 	}
 	
+
+    /**
+     * Stop the autosolver.
+     */
+    void autosolveStop() {
+        programmedMoves = null;
+        lastProgMove = 0;
+        parentApp.selectAutosolveMode(false);
+    }
+    
     
 	/**
 	 * Solve the given cell.  This doesn't actually do anything, except
