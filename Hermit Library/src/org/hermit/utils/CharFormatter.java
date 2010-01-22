@@ -220,6 +220,43 @@ public class CharFormatter
 
 
     /**
+     * Format an unsigned integer into a fixed-width field in hexadecimal.
+     * MUCH faster than String.format.
+     * 
+     * @param   buf         Buffer to place the result in.
+     * @param   off         Offset within buf to start writing at.
+     * @param   val         The value to format.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.
+     * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
+     */
+    public static final void formatHex(char[] buf, int off, int val, int field)
+    {
+        if (field < 0)
+            field = buf.length - off;
+        if (field < 0)
+            field = 0;
+        if (off + field > buf.length)
+            throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
+                                                     "] too small for " +
+                                                     off + "+" + field);
+        if (field < 1)
+            throw new IllegalArgumentException("Field <" + field + "> too small");
+   
+        for (int i = off + field - 1; i >= off; --i) {
+            int d = val % 16;
+            buf[i] = d < 10 ? (char) ('0' + d) : (char) ('a' + d - 10);
+            val /= 16;
+        }
+        
+        // We should have used up all the value.  If not, then the value
+        // doesn't fit; just put in an error indicator.
+        if (val != 0)
+            formatChar(buf, off, '+', field, true);
+    }
+
+
+    /**
      * Format a floating-point value into a fixed-width field, with sign.
      * MUCH faster than String.format.
      * 
