@@ -7,6 +7,7 @@
         <item>8,000 (4 kHz)</item>
         <item>16,000 (8 kHz)</item>
         <item>22,050 (11 kHz)</item>
+        <item>44,100 (22 kHz)</item>
     </string-array>
 
     <!-- Values for the sample rate menu. -->
@@ -14,10 +15,12 @@
         <item>8000</item>  
         <item>16000</item>
         <item>22050</item>
+        <item>44100</item>
     </string-array>
     
     <!-- Entry names for the block size menu. -->
     <string-array name="prefs_block_entries">
+        <item>128 samples</item>
         <item>256 samples</item>
         <item>512 samples</item>
         <item>1024 samples</item>  
@@ -25,7 +28,7 @@
 
     <!-- Values for the block size menu. -->
     <string-array name="prefs_block_values">
-        <item>256</item>  
+        <item>128</item>  
         <item>512</item>
         <item>1024</item>
     </string-array>
@@ -210,7 +213,9 @@ this frequency range is displayed alongside the sample rate.\n\
 \n\
 <b>Block size</b> sets the size in samples of the data block processed
 by the spectrum analyser.  A larger block size provides finer frequency
-resolution but with more delay and more processing power required.\n\
+resolution; the number of frequency bars is half the block size.  However,
+a larger block size introduces more delay and requires significantly more
+processing power.\n\
 \n\
 <b>Window function</b> sets the spectrum analyser windowing function.
 Windowing eliminates spurious frequencies caused by the blocking of
