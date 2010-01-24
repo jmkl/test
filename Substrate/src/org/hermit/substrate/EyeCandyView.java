@@ -77,7 +77,8 @@ public class EyeCandyView
     @Override
     protected void appSize(int width, int height, Bitmap.Config config) {
         // Create the screen hack.
-        eyeCandy = new Substrate(width, height, config);
+        eyeCandy = new Substrate();
+        eyeCandy.setConfiguration(width, height, config);
     }
     
 

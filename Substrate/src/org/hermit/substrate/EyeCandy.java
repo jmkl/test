@@ -41,19 +41,43 @@ public abstract class EyeCandy
 
 	/**
 	 * Create an EyeCandy instance.
+	 */
+    public EyeCandy() {
+    }
+
+
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Create an EyeCandy instance.
      * 
      * @param   width       The width of the substrate.
      * @param   height      The height of the substrate.
      * @param   config      Pixel configuration of the screen.
-	 */
-    public EyeCandy(int width, int height, Bitmap.Config config) {
+     */
+    void setConfiguration(int width, int height, Bitmap.Config config) {
         // Create our backing bitmap.
         renderBitmap = Bitmap.createBitmap(width, height, config);
         
         // Create a Canvas for drawing, and a Paint to hold the drawing state.
         renderCanvas = new Canvas(renderBitmap);
         renderPaint = new Paint();
+        
+        onConfigurationSet(width, height, config);
     }
+
+
+    /**
+     * This method is called to notify subclasses that the screen configuration
+     * has changed.
+     * 
+     * @param   width       The width of the substrate.
+     * @param   height      The height of the substrate.
+     * @param   config      Pixel configuration of the screen.
+     */
+    public abstract void onConfigurationSet(int width, int height, Bitmap.Config config);
 
 
     // ******************************************************************** //
@@ -70,6 +94,10 @@ public abstract class EyeCandy
      *                      whole screen.
      */
     public void render(Canvas canvas) {
+        // If not set up yet, ignore it.
+        if (renderBitmap == null)
+            return;
+        
         // Update the screen hack.
         doDraw();
         
@@ -98,12 +126,12 @@ public abstract class EyeCandy
      * A canvas initialized to draw into renderBitmap.  This is accessible
      * to subclasses.
      */
-    protected final Canvas renderCanvas;
+    protected Canvas renderCanvas = null;
     
     /**
      * A Paint made available as a convenience to subclasses.
      */
-    protected final Paint renderPaint;
+    protected Paint renderPaint = null;
 
 
     // ******************************************************************** //

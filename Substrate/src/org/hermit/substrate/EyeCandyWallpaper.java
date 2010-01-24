@@ -32,7 +32,7 @@ import android.view.SurfaceHolder;
  * Eye candy wallpaper.  This class provides the base infrastructure for
  * using an EyeCandy object as a live wallpaper.
  */
-public class EyeCandyWallpaper
+public abstract class EyeCandyWallpaper
     extends WallpaperService
 {
 
@@ -50,24 +50,20 @@ public class EyeCandyWallpaper
 
     @Override
     public Engine onCreateEngine() {
+        eyeCandy = onCreateHack();
         return new SubstrateEngine();
     }
 
+    public abstract EyeCandy onCreateHack();
+
     class SubstrateEngine
         extends Engine 
-        implements SharedPreferences.OnSharedPreferenceChangeListener
     {
 
         SubstrateEngine() {
             mPrefs = EyeCandyWallpaper.this.getSharedPreferences(SHARED_PREFS_NAME, 0);
-            mPrefs.registerOnSharedPreferenceChangeListener(this);
-            onSharedPreferenceChanged(mPrefs, null);
-        }
-
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-            String shape = prefs.getString("cube2_shape", "cube");
-
-            // read the 3D model from the resource
+            mPrefs.registerOnSharedPreferenceChangeListener(eyeCandy);
+            eyeCandy.onSharedPreferenceChanged(mPrefs, null);
         }
 
 
@@ -127,9 +123,7 @@ public class EyeCandyWallpaper
                 bitmapConfig = Bitmap.Config.RGB_565;
             break;
             }
-
-            // Create a Substrate of the right size.
-            substrate = new Substrate(width, height, bitmapConfig);
+            eyeCandy.setConfiguration(width, height, bitmapConfig);
             
             // Draw the eye candy to set up the screen.
             drawFrame();
@@ -182,7 +176,7 @@ public class EyeCandyWallpaper
                 c = holder.lockCanvas();
                 if (c != null) {
                     // draw something
-                    substrate.render(c);
+                    eyeCandy.render(c);
                 }
             } finally {
                 if (c != null)
@@ -197,8 +191,6 @@ public class EyeCandyWallpaper
 
 
         private final Handler mHandler = new Handler();
-
-        private Substrate substrate = null;
         
         private final Runnable mDrawCube = new Runnable() {
             public void run() {
@@ -211,6 +203,8 @@ public class EyeCandyWallpaper
         private SharedPreferences mPrefs;
         
     }
-    
+
+    private EyeCandy eyeCandy = null;
+   
 }
 

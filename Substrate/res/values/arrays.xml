@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    
+    <!-- Entry names for the run time menu. -->
+    <string-array name="substrate_prefs_cycles_entries">
+        <item>Very short</item>
+        <item>Short</item>
+        <item>Medium</item>
+        <item>Long</item>
+        <item>Very long</item>
+    </string-array>
+
+    <!-- Values for the run time menu. -->
+    <string-array name="substrate_prefs_cycles_values">
+        <item>3000</item>  
+        <item>6000</item>
+        <item>10000</item>
+        <item>15000</item>
+        <item>20000</item>
+    </string-array>
+      
+    <!-- Entry names for the number of cracks menu. -->
+    <string-array name="substrate_prefs_cracks_entries">
+        <item>Few</item>
+        <item>Medium</item>
+        <item>Lots</item>
+    </string-array>
+
+    <!-- Values for the number of cracks menu. -->
+    <string-array name="substrate_prefs_cracks_values">
+        <item>20</item>  
+        <item>50</item>
+        <item>150</item>
+    </string-array>
+    
+    <!-- Entry names for the sand menu. -->
+    <string-array name="substrate_prefs_sand_entries">
+        <item>Little</item>
+        <item>Medium</item>
+        <item>Lots</item>
+    </string-array>
+
+    <!-- Values for the sand menu. -->
+    <string-array name="substrate_prefs_sand_values">
+        <item>20</item>  
+        <item>50</item>
+        <item>100</item>
+    </string-array>
+    
+</resources>
+

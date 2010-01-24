@@ -7,8 +7,24 @@
     <string name="app_desc">Lines like crystals slowly grow on a computational substrate.</string>
      
     <string name="wallpaper_substrate">Substrate</string>
-     
-    <string name="substrate_settings">Substrate settings</string>
+    
+    <!--  Substrate Preferences. -->
+    
+    <string name="substrate_settings">Substrate preferences</string>
+    
+    <string name="substrate_prefs_title">Substrate Preferences</string>
+    
+    <string name="substrate_prefs_cycles">Run time</string>
+    <string name="substrate_prefs_cycles_summary">Number of iterations to run for before resetting</string>
+    <string name="substrate_prefs_cycles_title">Run Time</string>
+    
+    <string name="substrate_prefs_cracks">Cracks</string>
+    <string name="substrate_prefs_cracks_summary">Number of cracks to develop at once</string>
+    <string name="substrate_prefs_cracks_title">Cracks</string>
+    
+    <string name="substrate_prefs_sand">Sand density</string>
+    <string name="substrate_prefs_sand_summary">Amount of sand-paint stroke to draw on cracks</string>
+    <string name="substrate_prefs_sand_title">Sand Density</string>
    
 </resources>
 

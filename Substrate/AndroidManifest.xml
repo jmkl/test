@@ -2,9 +2,9 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	android:versionCode="1" android:versionName="1.0" package="org.hermit.substrate">
-	
+
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
-	
+
 		<activity android:icon="@drawable/icon"
 				android:label="@string/app_name"
 				android:name="EyeCandyApp">
@@ -15,7 +15,7 @@
 		</activity>
 
 		<service android:label="@string/wallpaper_substrate"
-				android:name="EyeCandyWallpaper"
+				android:name="SubstrateWallpaper"
 				android:permission="android.permission.BIND_WALLPAPER">
 			<intent-filter>
 				<action android:name="android.service.wallpaper.WallpaperService" />
@@ -24,8 +24,15 @@
 				android:resource="@xml/substrate" />
 		</service>
 
+        <activity
+            android:label="@string/substrate_prefs_title"
+            android:name="SubstratePreferences"
+            android:theme="@android:style/Theme.Light.WallpaperSettings"
+            android:exported="true">
+        </activity>
+
 	</application>
-	
+
 	<uses-sdk android:minSdkVersion="7" />
 	<supports-screens></supports-screens>
 	

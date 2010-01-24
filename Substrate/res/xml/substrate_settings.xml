@@ -4,12 +4,32 @@
         android:title="@string/substrate_settings"
         android:key="substrate_settings">
 
-    <!--  <ListPreference
-            android:key="cube2_shape"
-            android:title="@string/cube2_settings_title"
-            android:summary="@string/cube2_settings_summary"
-            android:entries="@array/cube2_shapenames"
-            android:entryValues="@array/cube2_shapeprefix" /> -->
+    <ListPreference
+            android:key="maxCycles"
+            android:title="@string/substrate_prefs_cycles"
+            android:summary="@string/substrate_prefs_cycles_summary"
+            android:entries="@array/substrate_prefs_cycles_entries"
+            android:entryValues="@array/substrate_prefs_cycles_values"
+            android:dialogTitle="@string/substrate_prefs_cycles_title"
+            android:defaultValue="10000" />
+
+    <ListPreference
+            android:key="maxCracks"
+            android:title="@string/substrate_prefs_cracks"
+            android:summary="@string/substrate_prefs_cracks_summary"
+            android:entries="@array/substrate_prefs_cracks_entries"
+            android:entryValues="@array/substrate_prefs_cracks_values"
+            android:dialogTitle="@string/substrate_prefs_cracks_title"
+            android:defaultValue="50" />
+
+    <ListPreference
+            android:key="sandGrains"
+            android:title="@string/substrate_prefs_sand"
+            android:summary="@string/substrate_prefs_sand_summary"
+            android:entries="@array/substrate_prefs_sand_entries"
+            android:entryValues="@array/substrate_prefs_sand_values"
+            android:dialogTitle="@string/substrate_prefs_sand_title"
+            android:defaultValue="50" />
 
 </PreferenceScreen>
 

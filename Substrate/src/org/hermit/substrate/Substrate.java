@@ -24,6 +24,7 @@ import java.util.Random;
 import net.goui.util.MTRandom;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.util.Log;
 
 
 /**
@@ -42,26 +43,34 @@ public class Substrate
     
     /**
      * Create a substrate drawing instance.
+     */
+    public Substrate() {
+    }
+
+
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * This method is called to notify us that the screen configuration
+     * has changed.
      * 
      * @param   width       The width of the substrate.
      * @param   height      The height of the substrate.
      * @param   config      Pixel configuration of the screen.
      */
-    public Substrate(int width, int height, Bitmap.Config config) {
-        super(width, height, config);
-        
+    @Override
+    public void onConfigurationSet(int width, int height, Bitmap.Config config) {
         substrateWidth = width;
         substrateHeight = height;
-        
-        crackGrid = new int[substrateWidth * substrateHeight];
-        cracks = new Crack[MAX_CRACKS];
 
         colourPalette = new PollockPalette();
         
-        resetSubstrate();  
+        resetSubstrate();
     }
 
-    
+
     // ******************************************************************** //
     // Preferences.
     // ******************************************************************** //
@@ -74,11 +83,32 @@ public class Substrate
      * @param   key         The key of the preference that was changed. 
      */
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences prefs,
-            String key) {
-//        String shape = prefs.getString("cube2_shape", "cube");
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        try {
+            String sval = prefs.getString("maxCycles", null);
+            maxCycles = Integer.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad maxCycles");
+        }
+        Log.i(TAG, "Prefs: maxCycles " + maxCycles);
 
-        // read the 3D model from the resource
+        try {
+            String sval = prefs.getString("maxCracks", null);
+            maxCracks = Integer.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad maxCracks");
+        }
+        Log.i(TAG, "Prefs: maxCracks " + maxCracks);
+
+        try {
+            String sval = prefs.getString("sandGrains", null);
+            sandGrains = Integer.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad sandGrains");
+        }
+        Log.i(TAG, "Prefs: sandGrains " + sandGrains);
+
+        resetSubstrate();
     }
 
     
@@ -90,6 +120,12 @@ public class Substrate
      * Reset this substrate back to a blank state.
      */
     public void resetSubstrate() {
+        if (substrateWidth <= 0 || substrateHeight <= 0)
+            return;
+        
+        crackGrid = new int[substrateWidth * substrateHeight];
+        cracks = new Crack[maxCracks];
+
         // erase crack grid
         for (int y = 0; y < substrateHeight; ++y)
             for (int x = 0; x < substrateWidth; ++x)
@@ -108,6 +144,8 @@ public class Substrate
 
         // Clear to white.
         renderCanvas.drawColor(0xffffffff);
+        
+        numCycles = 0;
     }
 
 
@@ -123,6 +161,9 @@ public class Substrate
         // crack all cracks
         for (int n = 0; n < numCracks; ++n)
             cracks[n].move();
+        
+        if (++numCycles >= maxCycles)
+            resetSubstrate();
     }
 
 
@@ -131,7 +172,7 @@ public class Substrate
     // ******************************************************************** //
 
     private void makeCrack() {
-        if (numCracks < MAX_CRACKS) {
+        if (numCracks < maxCracks) {
             // make a new crack instance
             cracks[numCracks] = new Crack();
             numCracks++;
@@ -283,17 +324,13 @@ public class Substrate
             if (g > maxg)
                 g = maxg;
 
-            // calculate grains by distance
-            //int grains = int(sqrt((ox-x)*(ox-x)+(oy-y)*(oy-y)));
-            int grains = 64;
-
             // lay down grains of sand (transparent pixels)
-            float w = g / (grains - 1);
-            for (int i = 0; i < grains; i++) {
+            float w = g / (sandGrains - 1);
+            for (int i = 0; i < sandGrains; i++) {
                 final float ssiw = (float) Math.sin(Math.sin(i * w));
                 final float px = ox + (x - ox) * ssiw;
                 final float py = oy + (y - oy) * ssiw;
-                final float a = 0.1f - i / (grains * 10.0f);
+                final float a = 0.1f - i / (sandGrains * 10.0f);
                 
                 renderPaint.setColor(c);
                 renderPaint.setAlpha(Math.round(a * 256));
@@ -328,12 +365,13 @@ public class Substrate
     // Class Data.
     // ******************************************************************** //
 
+    // Debugging tag.
+    @SuppressWarnings("unused")
+    private static final String TAG = "Substrate";
+    
     // Random number generator.  We use a Mersenne Twister,
     // which is a high-quality and fast implementation of java.util.Random.
     private static final Random MT_RANDOM = new MTRandom();
-    
-    // The maximum number of cracks we can have on the go at once.
-    private static final int MAX_CRACKS = 100;
 
     
     // ******************************************************************** //
@@ -341,18 +379,30 @@ public class Substrate
     // ******************************************************************** //
 
     // Colour palette we're using.
-    private Palette colourPalette;
+    private Palette colourPalette = null;
     
     // Size of this substrate.
-    private final int substrateWidth;
-    private final int substrateHeight;
+    private int substrateWidth = 0;
+    private int substrateHeight = 0;
 
     // The number of currently-active cracks.
     private int numCracks = 0;
 
     // Grid of cracks.
-    private int[] crackGrid;
-    private Crack[] cracks;
+    private int[] crackGrid = null;
+    private Crack[] cracks = null;
+    
+    // Number of cycles before we reset.
+    private int maxCycles = 10000;
+    
+    // Number of cycles we've done in this run.
+    private int numCycles = 0;
+    
+    // The maximum number of cracks we can have on the go at once.
+    private int maxCracks = 50;
+
+    // Number of grains of sand to paint.
+    private int sandGrains = 50;
 
 }
 
