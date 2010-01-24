@@ -74,12 +74,8 @@ public class SubstrateView
      */
     @Override
     protected void appSize(int width, int height, Bitmap.Config config) {
-        // Create the bitmap we actually render to.  Make the Canvas which
-        // draws into it -- used for drawing in the finger path.
-        renderBitmap = getBitmap();
-
-        // Create the drawing surface.
-        surface = new Substrate(width, height, renderBitmap);
+        // Create the screen hack.
+        eyeCandy = new Substrate(width, height, config);
     }
     
 
@@ -149,11 +145,8 @@ public class SubstrateView
      */
     @Override
     protected void doDraw(Canvas canvas, long now) {
-        // Update the surface.
-        surface.doDraw(now);
-        
-        // Draw the surface's bitmap into the screen.
-        canvas.drawBitmap(renderBitmap, 0, 0, null);
+        // Render the hack into the given canvas.
+        eyeCandy.render(canvas);
     }
 
 
@@ -200,12 +193,8 @@ public class SubstrateView
 	// Private Data.
 	// ******************************************************************** //
  	
-	// The substrate surface, where all the drawing happens.
-	private Substrate surface = null;
-    
-    // Bitmap in which we maintain the current image of the garden,
-	// and the Canvas for drawing into it.
-	private Bitmap renderBitmap = null;
+	// The screen hack we're displaying.
+	private EyeCandy eyeCandy = null;
     
 }
 

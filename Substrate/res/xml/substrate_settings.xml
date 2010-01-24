@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+        android:title="@string/substrate_settings"
+        android:key="substrate_settings">
+
+    <!--  <ListPreference
+            android:key="cube2_shape"
+            android:title="@string/cube2_settings_title"
+            android:summary="@string/cube2_settings_summary"
+            android:entries="@array/cube2_shapenames"
+            android:entryValues="@array/cube2_shapeprefix" /> -->
+
+</PreferenceScreen>
+

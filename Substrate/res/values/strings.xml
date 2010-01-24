@@ -3,6 +3,12 @@
 <resources>
     
     <string name="app_name">Substrate</string>
-    
+    <string name="app_author">Moonblink</string>
+    <string name="app_desc">Lines like crystals slowly grow on a computational substrate.</string>
+     
+    <string name="wallpaper_substrate">Substrate</string>
+     
+    <string name="substrate_settings">Substrate settings</string>
+   
 </resources>
 

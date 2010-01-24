@@ -4,38 +4,34 @@ package org.hermit.substrate;
 
 import java.util.Random;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-
 import net.goui.util.MTRandom;
+import android.graphics.Bitmap;
 
 
 /**
  * Main Substrate drawing class.  This class is abstracted (as much as
  * possible) to just draw into a Bitmap.
  */
-public class Substrate {
+public class Substrate
+    extends EyeCandy
+{
 
     // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
     
     /**
-     * Create a substrate drawing instance. We are given the Bitmap
-     * we have to render into.
+     * Create a substrate drawing instance.
      * 
      * @param   width       The width of the substrate.
      * @param   height      The height of the substrate.
-     * @param   bitmap      The Bitmap to render into.
+     * @param   config      Pixel configuration of the screen.
      */
-    public Substrate(int width, int height, Bitmap bitmap) {
+    public Substrate(int width, int height, Bitmap.Config config) {
+        super(width, height, config);
+        
         substrateWidth = width;
         substrateHeight = height;
-        
-        // Create a Canvas for drawing, and a Paint to hold the drawing state.
-        renderCanvas = new Canvas(bitmap);
-        renderPaint = new Paint();
         
         crackGrid = new int[substrateWidth * substrateHeight];
         cracks = new Crack[MAX_CRACKS];
@@ -44,7 +40,7 @@ public class Substrate {
         
         resetSubstrate();  
     }
-    
+
 
     // ******************************************************************** //
     // Control Methods.
@@ -80,13 +76,10 @@ public class Substrate {
     // ******************************************************************** //
 
     /**
-     * Update this substrate into its rendering bitmap.
-     * 
-     * @param   now         Current time in ms.  Will be the same as that
-     *                      passed to doUpdate(), if there was a preceeding
-     *                      call to doUpdate().
+     * Update this substrate into renderBitmap.
      */
-    public void doDraw(long now) {
+    @Override
+    protected void doDraw() {
         // crack all cracks
         for (int n = 0; n < numCracks; ++n)
             cracks[n].move();
@@ -313,10 +306,6 @@ public class Substrate {
     // Size of this substrate.
     private final int substrateWidth;
     private final int substrateHeight;
-     
-    // Canvas used for drawing into the Bitmap, and a Paint.
-    private final Canvas renderCanvas;
-    private final Paint renderPaint;
 
     // The number of currently-active cracks.
     private int numCracks = 0;
