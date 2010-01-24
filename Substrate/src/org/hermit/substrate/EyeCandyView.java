@@ -1,7 +1,9 @@
 
 /**
- * Zen: create a zen garden on your phone.
- * <br>Copyright 2009 Ian Cameron Smith
+ * Substrate: a collection of eye candies for Android.  Various screen
+ * hacks from the xscreensaver collection can be viewed standalone, or
+ * set as live wallpapers.
+ * <br>Copyright 2010 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -27,10 +29,10 @@ import android.view.MotionEvent;
 
 
 /**
- * A Zen garden view.  This class relies on the parent SurfaceRunner
- * class to do the bulk of the animation control.
+ * An eye candy view; displays and runs a screen hack.  This class relies
+ * on the parent SurfaceRunner class to do the bulk of the animation control.
  */
-public class SubstrateView
+public class EyeCandyView
 	extends SurfaceRunner
 {
 
@@ -43,7 +45,7 @@ public class SubstrateView
 	 * 
 	 * @param	app			The application context we're running in.
 	 */
-    public SubstrateView(Context app) {
+    public EyeCandyView(Context app) {
         super(app, SURFACE_DYNAMIC);
         setDelay(10);
     }

@@ -1,39 +1,18 @@
 
 /**
- * Substrate: grow crystal-like lines on a computational substrate
+ * Substrate: a collection of eye candies for Android.  Various screen
+ * hacks from the xscreensaver collection can be viewed standalone, or
+ * set as live wallpapers.
+ * <br>Copyright 2010 Ian Cameron Smith
  *
- *       Lines like crystals grow on a computational substrate.  A  simple  per-
-       pendicular growth rule creates intricate city-like structures.  Option-
-       ally, cracks may also be circular, producing a cityscape more  familiar
-       to places for which city planning is a distant, theoretical concern.
-
-       Ported from the code by j.tarbell at http://complexification.net
-
-       Copyright  ©  2003   by   J.   Tarbell   (complex@complexification.net,
-       http://www.complexification.net).
-
-       Ported      to      XScreensaver      2004      by     Mike     Kershaw
-       (dragorn@kismetwireless.net)
-
-AUTHOR
-       J. Tarbell <complex@complexification.net>, Jun-03
-
-       Mike Kershaw <dragorn@kismetwireless.net>, Oct-04
-
-
- * This is an Android implementation of the KDE game "knetwalk" by
- * Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.
- *
- * © 2007-2010 Ian Cameron Smith <johantheghost@yahoo.com>
- *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -41,7 +20,6 @@ package org.hermit.substrate;
 
 
 import android.app.Activity;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
@@ -49,11 +27,15 @@ import android.view.WindowManager;
 
 
 /**
- * Main activity for Zen Garden.
+ * A standalone activity which displays fullscreen eye candy.  Use
+ * this to hypnotize your children, or something.  Mainly it gives the user
+ * something to do when they don't know how to set up live wallpapers yet.
  * 
- * <p>This class basically sets up a ZenGarden object and lets it run.
+ * <p>This class basically sets up an EyeCandy object and lets it run.
  */
-public class SubstrateApp extends Activity {
+public class EyeCandyApp
+    extends Activity
+{
 
     // ******************************************************************** //
     // Activity Lifecycle.
@@ -85,13 +67,10 @@ public class SubstrateApp extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                              WindowManager.LayoutParams.FLAG_FULLSCREEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-      
-        // We want the audio controls to control our sound volume.
-        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         // Create the application GUI.
-        theGarden = new SubstrateView(this);
-        setContentView(theGarden);
+        eyeCandyView = new EyeCandyView(this);
+        setContentView(eyeCandyView);
 
         // Create the EULA dialog.
 //        eulaDialog = new EulaBox(this, R.string.eula_title,
@@ -106,11 +85,6 @@ public class SubstrateApp extends Activity {
         // Restore our preferences.
 //        updatePreferences();
         
-        // Restore our app state, if this is a restart.
-        if (icicle != null)
-            ;
-//            restoreState(icicle);
-
         // First time, show the splash screen.
 //        if (!shownSplash) {
 //            SplashActivity.launch(this, R.drawable.splash_screen, SPLASH_TIME);
@@ -129,7 +103,7 @@ public class SubstrateApp extends Activity {
         Log.i(TAG, "onStart()");
         
         super.onStart();
-        theGarden.onStart();
+        eyeCandyView.onStart();
     }
 
 
@@ -147,12 +121,14 @@ public class SubstrateApp extends Activity {
         Log.i(TAG, "onResume()");
 
         super.onResume();
+        
         // First time round, show the EULA.
 //        eulaDialog.showFirstTime();
-        theGarden.onResume();
+        
+        eyeCandyView.onResume();
         
         // Just start straight away.
-        theGarden.surfaceStart();
+        eyeCandyView.surfaceStart();
     }
 
 
@@ -183,7 +159,7 @@ public class SubstrateApp extends Activity {
         
         super.onPause();
         
-        theGarden.onPause();
+        eyeCandyView.onPause();
     }
 
 
@@ -197,7 +173,7 @@ public class SubstrateApp extends Activity {
         Log.i(TAG, "onStop()");
         super.onStop();
         
-        theGarden.onStop();
+        eyeCandyView.onStop();
     }
 
 
@@ -207,7 +183,7 @@ public class SubstrateApp extends Activity {
 
     // Debugging tag.
     @SuppressWarnings("unused")
-    private static final String TAG = "Zen";
+    private static final String TAG = "Substrate";
     
     
     // ******************************************************************** //
@@ -215,7 +191,7 @@ public class SubstrateApp extends Activity {
     // ******************************************************************** //
     
     // The surface manager for the view.
-    private SubstrateView theGarden = null;
+    private EyeCandyView eyeCandyView = null;
 
 }
 

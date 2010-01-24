@@ -1,7 +1,9 @@
 
 /**
- * Zen: create a zen garden on your phone.
- * <br>Copyright 2009 Ian Cameron Smith
+ * Substrate: a collection of eye candies for Android.  Various screen
+ * hacks from the xscreensaver collection can be viewed standalone, or
+ * set as live wallpapers.
+ * <br>Copyright 2010 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -17,6 +19,7 @@
 package org.hermit.substrate;
 
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -24,8 +27,12 @@ import android.graphics.Paint;
 
 /**
  * Base class for algorithms which draw pretty pictures on screen.
+ * This class is abstracted (as much as possible) to just draw into a Bitmap,
+ * so that EyeCandy objects can be re-used in standalone apps, as live
+ * wallpapers, etc.
  */
 public abstract class EyeCandy
+    implements SharedPreferences.OnSharedPreferenceChangeListener
 {
 
     // ******************************************************************** //

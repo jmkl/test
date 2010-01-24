@@ -1,4 +1,20 @@
 
+/**
+ * Substrate: a collection of eye candies for Android.  Various screen
+ * hacks from the xscreensaver collection can be viewed standalone, or
+ * set as live wallpapers.
+ * <br>Copyright 2010 Ian Cameron Smith
+ *
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
+ * 
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
 
 package org.hermit.substrate;
 
@@ -13,11 +29,10 @@ import android.view.SurfaceHolder;
 
 
 /**
- * This animated wallpaper draws a rotating wireframe shape. It is similar to
- * example #1, but has a choice of 2 shapes, which are user selectable and
- * defined in resources instead of in code.
+ * Eye candy wallpaper.  This class provides the base infrastructure for
+ * using an EyeCandy object as a live wallpaper.
  */
-public class SubstrateWallpaper
+public class EyeCandyWallpaper
     extends WallpaperService
 {
 
@@ -44,7 +59,7 @@ public class SubstrateWallpaper
     {
 
         SubstrateEngine() {
-            mPrefs = SubstrateWallpaper.this.getSharedPreferences(SHARED_PREFS_NAME, 0);
+            mPrefs = EyeCandyWallpaper.this.getSharedPreferences(SHARED_PREFS_NAME, 0);
             mPrefs.registerOnSharedPreferenceChangeListener(this);
             onSharedPreferenceChanged(mPrefs, null);
         }
