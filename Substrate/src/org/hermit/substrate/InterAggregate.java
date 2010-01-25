@@ -24,6 +24,7 @@ import java.util.Random;
 import net.goui.util.MTRandom;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.util.Log;
 
 
@@ -31,23 +32,30 @@ import android.util.Log;
  * Substrate: grow crystal-like lines on a computational substrate.  This
  * is a port of the code by J. Tarbell at http://complexification.net/.
  *
- * <p>Copyright © 2003 by J. Tarbell (complex@complexification.net).
+ * <p>Copyright © 2004 by J. Tarbell (complex@complexification.net).
+ // Intersection Aggregate, {Software} Structures
+ // j.tarbell   May, 2004
+ // Albuquerque, New Mexico
+ // complexification.net
+
+ // commissioned by the Whitney ArtPort 
+ // collaboration with Casey Reas, Robert Hodgin, William Ngan 
  * 
  *     "Modifications and extensions of these algorithms are encouraged.
  *      Please send me your experiences."
  */
-public class Substrate
-    extends EyeCandy
+public class InterAggregate
+extends EyeCandy
 {
 
     // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
-    
+
     /**
      * Create a substrate drawing instance.
      */
-    public Substrate() {
+    public InterAggregate() {
     }
 
 
@@ -93,14 +101,6 @@ public class Substrate
         Log.i(TAG, "Prefs: maxCycles " + maxCycles);
 
         try {
-            String sval = prefs.getString("maxCracks", null);
-            maxCracks = Integer.valueOf(sval);
-        } catch (Exception e) {
-            Log.e(TAG, "Pref: bad maxCracks");
-        }
-        Log.i(TAG, "Prefs: maxCracks " + maxCracks);
-
-        try {
             String sval = prefs.getString("sandGrains", null);
             sandGrains = Integer.valueOf(sval);
         } catch (Exception e) {
@@ -111,7 +111,7 @@ public class Substrate
         reset();
     }
 
-    
+
     // ******************************************************************** //
     // Control Methods.
     // ******************************************************************** //
@@ -125,25 +125,20 @@ public class Substrate
     public void reset() {
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
-        
-        crackGrid = new int[canvasWidth * canvasHeight];
-        cracks = new Crack[maxCracks];
 
-        // erase crack grid
-        for (int y = 0; y < canvasHeight; ++y)
-            for (int x = 0; x < canvasWidth; ++x)
-                crackGrid[y * canvasWidth + x] = 10001;
+//        framerate(30);
 
-        // make random crack seeds
-        for (int k = 0; k < 16; k++) {
-            int i = MT_RANDOM.nextInt(canvasWidth * canvasHeight - 1);
-            crackGrid[i] = MT_RANDOM.nextInt(360);
+        discs = new Disc[numDiscs];
+
+        // arrange linearly
+        for (int i = 0; i < numDiscs; i++) {
+            float x = random(canvasWidth);
+            float y = random(canvasHeight);
+            float fy = random(-1.2f, 1.2f);
+            float fx = random(-1.2f, 1.2f);
+            float r = random(minSize, maxSize);
+            discs[i] = new Disc(i, x, y, fx, fy, r);
         }
-
-        // make just three cracks
-        numCracks = 0;
-        for (int k = 0; k < 3; k++)
-            makeCrack();
 
         // Clear to white.
         renderCanvas.drawColor(0xffffffff);
@@ -159,145 +154,118 @@ public class Substrate
      */
     @Override
     protected void doDraw() {
-        // crack all cracks
-        for (int n = 0; n < numCracks; ++n)
-            cracks[n].move();
-    }
-
-
-    // ******************************************************************** //
-    // Private Methods.
-    // ******************************************************************** //
-
-    private void makeCrack() {
-        if (numCracks < maxCracks) {
-            // make a new crack instance
-            cracks[numCracks] = new Crack();
-            numCracks++;
+        // move discs
+        for (int c = 0; c < numDiscs; c++) {
+            discs[c].move();
+            discs[c].render();
         }
     }
 
 
     // ******************************************************************** //
-    // Crack Class.
+    // Disc Class.
     // ******************************************************************** //
-    
-    private class Crack {
+
+    private class Disc {
+        // index identifier
+        int id;
+        // position
         float x, y;
-        float t;    // direction of travel in degrees
+        // radius
+        float r;
+        // destination radius
+        float dr;
+        // velocity
+        float vx, vy;
 
-        // sand painter
-        SandPainter sp;
+        // sand painters
+        int numsands = 3;
+        SandPainter[] sands = new SandPainter[numsands];
 
-        Crack() {
-            // find placement along existing crack
-            findStart();
-            sp = new SandPainter();
-        }
-
-        void findStart() {
-            // pick random point
-            int px = 0;
-            int py = 0;
-
-            // shift until crack is found
-            boolean found = false;
-            int timeout = 0;
-            while (!found || timeout++ > 1000) {
-                px = MT_RANDOM.nextInt(canvasWidth);
-                py = MT_RANDOM.nextInt(canvasHeight);
-                if (crackGrid[py * canvasWidth + px] < 10000)
-                    found = true;
-            }
-
-            if (found) {
-                // start crack
-                int a = crackGrid[py*canvasWidth+px];
-                if (MT_RANDOM.nextBoolean())
-                    a -= 90 + irandom(-2f, 2.1f);
-                else
-                    a += 90 + irandom(-2f, 2.1f);
-
-                startCrack(px, py, a);
-            } else {
-                //println("timeout: "+timeout);
-            }
-        }
-
-        void startCrack(int X, int Y, int T) {
+        Disc(int Id, float X, float Y, float Vx, float Vy, float R) {
+            // construct
+            id=Id;
             x=X;
             y=Y;
-            t=T;//%360;
-            double tr = Math.toRadians(t);
-            x += 0.61 * Math.cos(tr);
-            y += 0.61 * Math.sin(tr);  
+            vx=Vx;
+            vy=Vy;
+            r=0;
+            dr=R;
+
+            // create sand painters
+            for (int n=0;n<numsands;n++) {
+                sands[n] = new SandPainter();
+            }
+        }
+
+        void reset(int Id, float X, float Y, float Vx, float Vy, float R) {
+            // construct
+            id=Id;
+            x=X;
+            y=Y;
+            vx=Vx;
+            vy=Vy;
+            r=0;
+            dr=R;
+        }
+
+        void draw() {
+            renderPaint.setColor(0xff000000);
+            renderPaint.setAlpha(50);
+            renderPaint.setStyle(Paint.Style.STROKE);
+            renderCanvas.drawCircle(x, y, r, renderPaint);
+        }
+
+        void render() {
+            // find intersecting points with all ascending discs
+            for (int n=id+1;n<numDiscs;n++) {
+                // find distance to other disc
+                float dx = discs[n].x-x;
+                float dy = discs[n].y-y;
+                float d = (float) Math.sqrt(dx*dx+dy*dy);
+                // intersection test
+                if (d < (discs[n].r + r)) {
+                    // complete containment test
+                    if (d > Math.abs(discs[n].r-r)) {
+                        // find solutions
+                        float a = (r*r - discs[n].r*discs[n].r + d*d ) / (2*d);
+
+                        float p2x = x + a*(discs[n].x - x)/d;
+                        float p2y = y + a*(discs[n].y - y)/d;
+
+                        float h = (float) Math.sqrt(r*r - a*a);
+
+                        float p3ax = p2x + h*(discs[n].y - y)/d;
+                        float p3ay = p2y - h*(discs[n].x - x)/d;
+
+                        float p3bx = p2x - h*(discs[n].y - y)/d;
+                        float p3by = p2y + h*(discs[n].x - x)/d;
+
+                        for (int s = 0; s < numsands; s++)
+                            sands[s].render(p3ax, p3ay, p3bx, p3by);
+                    }
+                }
+            }
         }
 
         void move() {
-            // continue cracking
-            double tr = Math.toRadians(t);
-            x += 0.42 * Math.cos(tr);
-            y += 0.42 * Math.sin(tr); 
+            // add velocity to position
+            x += vx;
+            y += vy;
+            
+            // grow to destination radius
+            if (r < dr)
+                r += 0.1;
 
             // bound check
-            float z = 0.33f;
-            int cx = (int) (x + random(-z, z));  // add fuzz
-            int cy = (int) (y + random(-z, z));
-
-            // draw sand painter
-            regionColor();
-
-            // draw black crack
-            renderPaint.setColor(0xff000000);
-            renderPaint.setAlpha(85);
-            renderCanvas.drawPoint(x + random(-z, z), y + random(-z, z), renderPaint);
-            // stroke(0, 85);
-            // point(x + random(-z, z), y + random(-z, z));
-
-            if ((cx>=0) && (cx<canvasWidth) && (cy>=0) && (cy<canvasHeight)) {
-                // safe to check
-                if ((crackGrid[cy*canvasWidth+cx]>10000) || (Math.abs(crackGrid[cy*canvasWidth+cx]-t)<5)) {
-                    // continue cracking
-                    crackGrid[cy * canvasWidth + cx] = (int) t;
-                } else if (Math.abs(crackGrid[cy*canvasWidth+cx]-t)>2) {
-                    // crack encountered (not self), stop cracking
-                    findStart();
-                    makeCrack();
-                }
-            } else {
-                // out of bounds, stop cracking
-                findStart();
-                makeCrack();
-            }
-        }
-
-        void regionColor() {
-            // start checking one step away
-            float rx=x;
-            float ry=y;
-            boolean openspace=true;
-
-            // find extents of open space
-            while (openspace) {
-                // move perpendicular to crack
-                double tr = Math.toRadians(t);
-                rx += 0.81 * Math.sin(tr);
-                ry -= 0.81 * Math.cos(tr);
-                int cx = (int) rx;
-                int cy = (int) ry;
-                if ((cx>=0) && (cx<canvasWidth) && (cy>=0) && (cy<canvasHeight)) {
-                    // safe to check
-                    if (crackGrid[cy*canvasWidth+cx]>10000) {
-                        // space is open
-                    } else {
-                        openspace=false;
-                    }
-                } else {
-                    openspace=false;
-                }
-            }
-            // draw sand painter
-            sp.render(rx,ry,x,y);
+            if (x + r < 0)
+                x += canvasWidth + r + r;
+            if (x - r > canvasWidth)
+                x -= canvasWidth + r + r;
+            if (y + r < 0)
+                y += canvasHeight + r + r;
+            if (y - r > canvasHeight)
+                y -= canvasHeight + r + r;
         }
     }
 
@@ -306,59 +274,71 @@ public class Substrate
     // SandPainter Class.
     // ******************************************************************** //
 
-    private class SandPainter {
+    class SandPainter {
 
         SandPainter() {
             c = colourPalette.getRandom();
+            p = random(1.0f);
             g = random(0.01f, 0.1f);
         }
-        
+
         void render(float x, float y, float ox, float oy) {
             // modulate gain
             g += random(-0.050f, 0.050f);
-            float maxg = 1.0f;
+            float maxg = 0.22f;
             if (g < 0)
                 g = 0;
             if (g > maxg)
                 g = maxg;
 
-            // lay down grains of sand (transparent pixels)
+            p += random(-0.050f, 0.050f);
+            if (p < 0)
+                p = 0;
+            if (p > 1.0)
+                p = 1.0f;
+
+            // draw painting sweeps
             float w = g / (sandGrains - 1);
-            for (int i = 0; i < sandGrains; i++) {
-                final float ssiw = (float) Math.sin(Math.sin(i * w));
-                final float px = ox + (x - ox) * ssiw;
-                final float py = oy + (y - oy) * ssiw;
+            for (int i = 0; i < sandGrains; ++i) {
+                final float ssiw1 = (float) Math.sin(p + Math.sin(i * w));
+                final float ssiw2 = (float) Math.sin(p - Math.sin(i * w));
+                final float px1 = ox + (x - ox) * ssiw1;
+                final float py1 = oy + (y - oy) * ssiw1;
+                final float px2 = ox + (x - ox) * ssiw2;
+                final float py2 = oy + (y - oy) * ssiw2;
                 final float a = 0.1f - i / (sandGrains * 10.0f);
                 
                 renderPaint.setColor(c);
                 renderPaint.setAlpha(Math.round(a * 256));
-                renderCanvas.drawPoint(px, py, renderPaint);
-                // stroke(red(c), green(c), blue(c), a*256);
-                // point(px, py);
+                renderCanvas.drawPoint(px1, py1, renderPaint);
+                renderCanvas.drawPoint(px2, py2, renderPaint);
             }
         }
 
         // Colour for this SandPainter.
         private int c;
         
+        // 
+        private float p;
+        
         // Gain; used to modulate the alpha for a "fuzzy" effect.
         private float g;
     }
 
-    
+
     // ******************************************************************** //
     // Utility Methods.
     // ******************************************************************** //
-    
+
+    private float random(float a) {
+        return MT_RANDOM.nextFloat() * a;
+    }
+
     private float random(float a, float b) {
         return MT_RANDOM.nextFloat() * (b - a) + a;
     }
 
-    private int irandom(float a, float b) {
-        return (int) random(a, b);
-    }
 
-    
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
@@ -366,12 +346,12 @@ public class Substrate
     // Debugging tag.
     @SuppressWarnings("unused")
     private static final String TAG = "Substrate";
-    
+
     // Random number generator.  We use a Mersenne Twister,
     // which is a high-quality and fast implementation of java.util.Random.
     private static final Random MT_RANDOM = new MTRandom();
 
-    
+
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
@@ -379,18 +359,18 @@ public class Substrate
     // Colour palette we're using.
     private Palette colourPalette = null;
 
-    // The number of currently-active cracks.
-    private int numCracks = 0;
-
-    // Grid of cracks.
-    private int[] crackGrid = null;
-    private Crack[] cracks = null;
-    
-    // The maximum number of cracks we can have on the go at once.
-    private int maxCracks = 50;
-
     // Number of grains of sand to paint.
-    private int sandGrains = 50;
+    private int sandGrains = 11;
+
+    // The number of discs on the move.
+    private int numDiscs = 100;
+    
+    // Min and max disc sizes.
+    private int minSize = 40;
+    private int maxSize = 600;
+
+    // The discs.
+    private Disc[] discs;
 
 }
 

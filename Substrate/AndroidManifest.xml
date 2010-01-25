@@ -14,7 +14,7 @@
 			</intent-filter>
 		</activity>
 
-		<service android:label="@string/wallpaper_substrate"
+		<service android:label="@string/substrate_title"
 				android:name="SubstrateWallpaper"
 				android:permission="android.permission.BIND_WALLPAPER">
 			<intent-filter>
@@ -27,6 +27,23 @@
         <activity
             android:label="@string/substrate_prefs_title"
             android:name="SubstratePreferences"
+            android:theme="@android:style/Theme.Light.WallpaperSettings"
+            android:exported="true">
+        </activity>
+
+		<service android:label="@string/interaggregate_title"
+				android:name="InteraggregateWallpaper"
+				android:permission="android.permission.BIND_WALLPAPER">
+			<intent-filter>
+				<action android:name="android.service.wallpaper.WallpaperService" />
+			</intent-filter>
+			<meta-data android:name="android.service.wallpaper"
+				android:resource="@xml/interaggregate" />
+		</service>
+
+        <activity
+            android:label="@string/interaggregate_prefs_title"
+            android:name="InteraggregatePreferences"
             android:theme="@android:style/Theme.Light.WallpaperSettings"
             android:exported="true">
         </activity>

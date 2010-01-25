@@ -58,6 +58,9 @@ public abstract class EyeCandy
      * @param   config      Pixel configuration of the screen.
      */
     void setConfiguration(int width, int height, Bitmap.Config config) {
+        canvasWidth = width;
+        canvasHeight = height;
+
         // Create our backing bitmap.
         renderBitmap = Bitmap.createBitmap(width, height, config);
         
@@ -66,6 +69,9 @@ public abstract class EyeCandy
         renderPaint = new Paint();
         
         onConfigurationSet(width, height, config);
+        
+        reset();
+        numCycles = 0;
     }
 
 
@@ -79,11 +85,31 @@ public abstract class EyeCandy
      */
     public abstract void onConfigurationSet(int width, int height, Bitmap.Config config);
 
+    
+    /**
+     * Set the number of cycles this hack will run for before resetting.
+     * 
+     * @param   num         Maximum number of cycles to run for.  Zero means
+     *                      run forever; maybe the hack will reset itself,
+     *                      or doesn't need to.
+     */
+    void setMaxCycles(int num) {
+        maxCycles = num;
+    }
 
+    
     // ******************************************************************** //
     // Animation Rendering.
     // ******************************************************************** //
     
+    /**
+     * Reset this eye candy back to a blank state.  This will be called
+     * at start-up, and to reset back to an initial state when the cycle
+     * limit is exceeded.
+     */
+    public abstract void reset();
+    
+
     /**
      * Draw the current frame of the application.
      * 
@@ -98,6 +124,12 @@ public abstract class EyeCandy
         if (renderBitmap == null)
             return;
         
+        // See if we need to start over.
+        if (numCycles++ >= maxCycles) {
+            reset();
+            numCycles = 0;
+        }
+   
         // Update the screen hack.
         doDraw();
         
@@ -115,7 +147,19 @@ public abstract class EyeCandy
     // ******************************************************************** //
     // Subclass Accessible Data.
     // ******************************************************************** //
-   
+    
+    /**
+     * The width of the canvas we're drawing into.  Not necessarily the
+     * screen width.  Zero if not known yet.
+     */
+    protected int canvasWidth = 0;
+    
+    /**
+     * The height of the canvas we're drawing into.  Not necessarily the
+     * screen height.  Zero if not known yet.
+     */
+    protected int canvasHeight = 0;
+
     /**
      * Bitmap in which we maintain the current image of the garden,
      * and the Canvas for drawing into it.  This is accessible to subclasses.
@@ -141,6 +185,17 @@ public abstract class EyeCandy
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "Substrate";
+
+
+    // ******************************************************************** //
+    // Private Data.
+    // ******************************************************************** //
+   
+    // Number of cycles before we reset.
+    private int maxCycles = 10000;
+    
+    // Number of cycles we've done in this run.
+    private int numCycles = 0;
 
 }
 

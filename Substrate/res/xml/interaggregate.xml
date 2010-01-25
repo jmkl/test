@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+		android:thumbnail="@drawable/interaggregate_preview"
+		android:author="@string/interaggregate_author"
+		android:description="@string/interaggregate_desc"
+        android:settingsActivity="org.hermit.substrate.InteraggregatePreferences" />
+
