@@ -56,12 +56,13 @@ public class Substrate
     // ******************************************************************** //
 
     /**
-     * This method is called to notify us that the screen configuration
-     * has changed.
+     * This method is called to notify subclasses that the canvas
+     * configuration has changed.  This specifies the logical wallpaper
+     * size, which may not match the screen size.
      * 
-     * @param   width       The width of the substrate.
-     * @param   height      The height of the substrate.
-     * @param   config      Pixel configuration of the screen.
+     * @param   width       The width of the canvas.
+     * @param   height      The height of the canvas.
+     * @param   config      Pixel configuration of the canvas.
      */
     @Override
     public void onConfigurationSet(int width, int height, Bitmap.Config config) {

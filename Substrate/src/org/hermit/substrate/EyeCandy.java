@@ -51,16 +51,18 @@ public abstract class EyeCandy
     // ******************************************************************** //
 
     /**
-     * Create an EyeCandy instance.
+     * Set the drawing canvas configuration.  This specifies the logical
+     * wallpaper size, which may not match the screen size.
      * 
-     * @param   width       The width of the substrate.
-     * @param   height      The height of the substrate.
-     * @param   config      Pixel configuration of the screen.
+     * @param   width       The width of the canvas.
+     * @param   height      The height of the canvas.
+     * @param   config      Pixel configuration of the canvas.
      */
     void setConfiguration(int width, int height, Bitmap.Config config) {
         canvasWidth = width;
         canvasHeight = height;
-
+        canvasConfig = config;
+        
         // Create our backing bitmap.
         renderBitmap = Bitmap.createBitmap(width, height, config);
         
@@ -73,15 +75,16 @@ public abstract class EyeCandy
         reset();
         numCycles = 0;
     }
-
+    
 
     /**
-     * This method is called to notify subclasses that the screen configuration
-     * has changed.
+     * This method is called to notify subclasses that the canvas
+     * configuration has changed.  This specifies the logical wallpaper
+     * size, which may not match the screen size.
      * 
-     * @param   width       The width of the substrate.
-     * @param   height      The height of the substrate.
-     * @param   config      Pixel configuration of the screen.
+     * @param   width       The width of the canvas.
+     * @param   height      The height of the canvas.
+     * @param   config      Pixel configuration of the canvas.
      */
     public abstract void onConfigurationSet(int width, int height, Bitmap.Config config);
 
@@ -111,15 +114,9 @@ public abstract class EyeCandy
     
 
     /**
-     * Draw the current frame of the application.
-     * 
-     * <p>Applications must override this, and are expected to draw the
-     * entire screen into the provided canvas.
-     * 
-     * @param   canvas      The Canvas to draw into.  We must re-draw the
-     *                      whole screen.
+     * Advance this eye candy, updating its state in renderBitmap.
      */
-    public void render(Canvas canvas) {
+    public void update() {
         // If not set up yet, ignore it.
         if (renderBitmap == null)
             return;
@@ -132,9 +129,6 @@ public abstract class EyeCandy
    
         // Update the screen hack.
         doDraw();
-        
-        // Draw the surface's bitmap into the screen.
-        canvas.drawBitmap(renderBitmap, 0, 0, null);
     }
 
 
@@ -144,21 +138,40 @@ public abstract class EyeCandy
     protected abstract void doDraw();
 
 
+    /**
+     * Draw the current frame of the application onto the screen.
+     * 
+     * <p>Applications must override this, and are expected to draw their
+     * entire state into the provided canvas at the given offset.
+     * 
+     * @param   canvas      The Canvas to draw into.  We must re-draw the
+     *                      whole screen.
+     * @param   xoff        X offset to draw at, in pixels.
+     * @param   yoff        Y offset to draw at, in pixels.
+     */
+    public void render(Canvas canvas, int xoff, int yoff) {
+        canvas.drawBitmap(renderBitmap, xoff, yoff, null);
+    }
+
+
     // ******************************************************************** //
     // Subclass Accessible Data.
     // ******************************************************************** //
     
     /**
-     * The width of the canvas we're drawing into.  Not necessarily the
-     * screen width.  Zero if not known yet.
+     * The width of the screen we're drawing into.  Zero if not known yet.
      */
     protected int canvasWidth = 0;
     
     /**
-     * The height of the canvas we're drawing into.  Not necessarily the
-     * screen height.  Zero if not known yet.
+     * The height of the screen we're drawing into.  Zero if not known yet.
      */
     protected int canvasHeight = 0;
+    
+    /**
+     * Screen pixel configuration.  null if not known yet.
+     */
+    protected Bitmap.Config canvasConfig;
 
     /**
      * Bitmap in which we maintain the current image of the garden,

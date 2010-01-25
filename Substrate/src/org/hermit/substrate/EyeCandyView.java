@@ -149,7 +149,7 @@ public class EyeCandyView
     @Override
     protected void doDraw(Canvas canvas, long now) {
         // Render the hack into the given canvas.
-        eyeCandy.render(canvas);
+        eyeCandy.render(canvas, 0, 0);
     }
 
 
