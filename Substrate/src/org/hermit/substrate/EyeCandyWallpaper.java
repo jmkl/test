@@ -36,27 +36,38 @@ public abstract class EyeCandyWallpaper
     extends WallpaperService
 {
 
-    public static final int WALLPAPER_MULT_X = 2;
-    public static final int WALLPAPER_MULT_Y = 1;
+    // ******************************************************************** //
+    // Service Methods.
+    // ******************************************************************** //
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
+    /**
+     * This method is invoked to create an Engine instance.
+     * 
+     * @return          A new instance of this wallpaper's engine.
+     */
     @Override
     public Engine onCreateEngine() {
-        eyeCandy = onCreateHack();
         return new EyeCandyEngine();
     }
 
-    public abstract EyeCandy onCreateHack();
 
+    /**
+     * This method is invoked to create an instance of the eye candy
+     * this wallpaper displays.  Subclasses must implement this to
+     * return the appropriate hack.
+     * 
+     * @return          A new instance of the eye candy to display.
+     */
+    public abstract EyeCandy onCreateHack();
+    
+
+    // ******************************************************************** //
+    // Wallpaper Engine.
+    // ******************************************************************** //
+
+    /**
+     * Wallpaper engine for displaying an eye candy.
+     */
     class EyeCandyEngine
         extends Engine 
     {
@@ -65,6 +76,8 @@ public abstract class EyeCandyWallpaper
          * Create an Engine instance.
          */
         EyeCandyEngine() {
+            eyeCandy = onCreateHack();
+            
             mPrefs = EyeCandyWallpaper.this.getSharedPreferences(eyeCandy.getPrefsName(), 0);
             mPrefs.registerOnSharedPreferenceChangeListener(eyeCandy);
             eyeCandy.onSharedPreferenceChanged(mPrefs, null);
@@ -245,10 +258,8 @@ public abstract class EyeCandyWallpaper
             Canvas c = null;
             try {
                 c = holder.lockCanvas();
-                if (c != null) {
-                    // draw something
+                if (c != null)
                     eyeCandy.render(c, drawXOff, drawYOff);
-                }
             } finally {
                 if (c != null)
                     holder.unlockCanvasAndPost(c);
@@ -270,42 +281,46 @@ public abstract class EyeCandyWallpaper
             }
         };
         
+        
+        // ******************************************************************** //
+        // Class Data.
+        // ******************************************************************** //
+
+        // Debugging tag.
+        @SuppressWarnings("unused")
+        private static final String TAG = "Substrate";
+
+        // Amount by which the wallpaper is bigger than the screen.
+        private static final int WALLPAPER_MULT_X = 2;
+        private static final int WALLPAPER_MULT_Y = 1;
+
+
+        // ******************************************************************** //
+        // Private Data.
+        // ******************************************************************** //
+
+        // The size of the screen we're drawing into.  Zero if not known yet.
+        private int screenWidth = 0;
+        private int screenHeight = 0;
+
+        // The desired size for the wallpaper.
+        private int wallpaperWidth = 0;
+        private int wallpaperHeight = 0;
+        
+        // Drawing offsets in pixels, representing where the wallpaper should
+        // be positioned within the screen space.  These only make sense when
+        // the wallpaper is larger than the screen.
+        private int drawXOff = 0;
+        private int drawYOff = 0;
+
+        // The screen hack to be displayed.
+        private EyeCandy eyeCandy = null;
+        
         private boolean mVisible;
         
         private SharedPreferences mPrefs;
         
     }
 
-    
-    // ******************************************************************** //
-    // Class Data.
-    // ******************************************************************** //
-
-    // Debugging tag.
-    @SuppressWarnings("unused")
-    private static final String TAG = "Substrate";
-    
-
-    // ******************************************************************** //
-    // Private Data.
-    // ******************************************************************** //
-
-    // The size of the screen we're drawing into.  Zero if not known yet.
-    private int screenWidth = 0;
-    private int screenHeight = 0;
-
-    // The desired size for the wallpaper.
-    private int wallpaperWidth = 0;
-    private int wallpaperHeight = 0;
-    
-    // Drawing offsets in pixels, representing where the wallpaper should
-    // be positioned within the screen space.  These only make sense when
-    // the wallpaper is larger than the screen.
-    private int drawXOff = 0;
-    private int drawYOff = 0;
-
-    // The screen hack to be displayed.
-    private EyeCandy eyeCandy = null;
-   
-}
+ }
 

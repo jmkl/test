@@ -26,6 +26,13 @@ public class SubstrateWallpaper
     extends EyeCandyWallpaper
 {
 
+    /**
+     * This method is invoked to create an instance of the eye candy
+     * this wallpaper displays.  Subclasses must implement this to
+     * return the appropriate hack.
+     * 
+     * @return          A new instance of the eye candy to display.
+     */
     @Override
     public EyeCandy onCreateHack() {
         return new Substrate();

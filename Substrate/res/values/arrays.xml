@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
-    
-    <!-- Substrate Preferences. -->
+         
+    <!-- ################################################################# -->
+    <!-- Substrate Preferences.                                            -->
+    <!-- ################################################################# -->
     
     <!-- Entry names for the run time menu. -->
     <string-array name="substrate_prefs_cycles_entries">
@@ -46,8 +48,11 @@
         <item>100</item>
     </string-array>
      
-    <!-- Interaggregate Preferences. -->
-       
+         
+    <!-- ################################################################# -->
+    <!-- Interaggregate Preferences.                                       -->
+    <!-- ################################################################# -->
+
     <!-- Entry names for the run time menu. -->
     <string-array name="interaggregate_prefs_cycles_entries">
         <item>Short</item>
