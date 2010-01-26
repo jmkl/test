@@ -45,9 +45,19 @@ import android.util.Log;
  *      Please send me your experiences."
  */
 public class InterAggregate
-extends EyeCandy
+    extends EyeCandy
 {
 
+    // ******************************************************************** //
+    // Public Constants.
+    // ******************************************************************** //
+    
+    /**
+     * Preferences name for preferences relating to this eye candy.
+     */
+    public static final String SHARED_PREFS_NAME = "interaggregate_settings";
+
+    
     // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
@@ -62,6 +72,17 @@ extends EyeCandy
     // ******************************************************************** //
     // Configuration.
     // ******************************************************************** //
+
+    /**
+     * Get the shared prefs name for this eye candy,
+     * 
+     * @return              Shared preferences name.
+     */
+    @Override
+    public String getPrefsName() {
+        return SHARED_PREFS_NAME;
+    }
+    
 
     /**
      * This method is called to notify subclasses that the canvas
@@ -102,6 +123,23 @@ extends EyeCandy
         Log.i(TAG, "Prefs: maxCycles " + maxCycles);
 
         try {
+            String sval = prefs.getString("numDiscs", null);
+            numDiscs = Integer.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad numDiscs");
+        }
+        Log.i(TAG, "Prefs: numDiscs " + numDiscs);
+
+        try {
+            String sval = prefs.getString("discSize", null);
+            discMaxSize = Integer.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad discSize");
+        }
+        discMinSize = discMaxSize / 15;
+        Log.i(TAG, "Prefs: discSize " + discMinSize + "-" + discMaxSize);
+
+        try {
             String sval = prefs.getString("sandGrains", null);
             sandGrains = Integer.valueOf(sval);
         } catch (Exception e) {
@@ -127,6 +165,8 @@ extends EyeCandy
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
 
+        Log.v(TAG, "Interag reset: " + numDiscs + " discs, " +
+                                       discMinSize + "-" + discMaxSize);
 //        framerate(30);
 
         discs = new Disc[numDiscs];
@@ -137,7 +177,7 @@ extends EyeCandy
             float y = random(canvasHeight);
             float fy = random(-1.2f, 1.2f);
             float fx = random(-1.2f, 1.2f);
-            float r = random(minSize, maxSize);
+            float r = random(discMinSize, discMaxSize);
             discs[i] = new Disc(i, x, y, fx, fy, r);
         }
 
@@ -367,8 +407,8 @@ extends EyeCandy
     private int numDiscs = 100;
     
     // Min and max disc sizes.
-    private int minSize = 40;
-    private int maxSize = 600;
+    private int discMinSize = 40;
+    private int discMaxSize = 600;
 
     // The discs.
     private Disc[] discs;

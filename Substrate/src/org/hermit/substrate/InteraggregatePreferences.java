@@ -24,7 +24,7 @@ import android.preference.PreferenceActivity;
 
 
 /**
- * Preferences activity for the Substrate live wallpaper.
+ * Preferences activity for the InterAggregate live wallpaper.
  */
 public class InteraggregatePreferences
     extends PreferenceActivity
@@ -43,10 +43,10 @@ public class InteraggregatePreferences
         
         // Set up the key we're using for the wallpaper prefs.
         getPreferenceManager().setSharedPreferencesName(
-                                    EyeCandyWallpaper.SHARED_PREFS_NAME);
+                                        InterAggregate.SHARED_PREFS_NAME);
         
         // Load the preferences from an XML resource.
-        addPreferencesFromResource(R.xml.substrate_settings);
+        addPreferencesFromResource(R.xml.interaggregate_settings);
     }
 
 }

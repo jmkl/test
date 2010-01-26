@@ -51,6 +51,14 @@ public abstract class EyeCandy
     // ******************************************************************** //
 
     /**
+     * Get the shared prefs name for this eye candy.
+     * 
+     * @return              Shared preferences name.
+     */
+    public abstract String getPrefsName();
+    
+
+    /**
      * Set the drawing canvas configuration.  This specifies the logical
      * wallpaper size, which may not match the screen size.
      * 

@@ -46,9 +46,13 @@
     <string name="interaggregate_prefs_cycles_summary">Number of iterations to run for before resetting</string>
     <string name="interaggregate_prefs_cycles_title">Run Time</string>
     
-    <string name="interaggregate_prefs_cracks">Cracks</string>
-    <string name="interaggregate_prefs_cracks_summary">Number of cracks to develop at once</string>
-    <string name="interaggregate_prefs_cracks_title">Cracks</string>
+    <string name="interaggregate_prefs_discs">Discs</string>
+    <string name="interaggregate_prefs_discs_summary">Number of moving discs intersecting in the scene</string>
+    <string name="interaggregate_prefs_discs_title">Discs</string>
+    
+    <string name="interaggregate_prefs_dsize">Disc sizes</string>
+    <string name="interaggregate_prefs_dsize_summary">Sizes of the discs</string>
+    <string name="interaggregate_prefs_dsize_title">Disc Sizes</string>
     
     <string name="interaggregate_prefs_sand">Sand density</string>
     <string name="interaggregate_prefs_sand_summary">Amount of sand-paint stroke to draw on cracks</string>

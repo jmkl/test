@@ -43,7 +43,7 @@ public class SubstratePreferences
         
         // Set up the key we're using for the wallpaper prefs.
         getPreferenceManager().setSharedPreferencesName(
-                                    EyeCandyWallpaper.SHARED_PREFS_NAME);
+                                                Substrate.SHARED_PREFS_NAME);
         
         // Load the preferences from an XML resource.
         addPreferencesFromResource(R.xml.substrate_settings);

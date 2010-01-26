@@ -36,8 +36,6 @@ public abstract class EyeCandyWallpaper
     extends WallpaperService
 {
 
-    public static final String SHARED_PREFS_NAME = "substrate_settings";
-
     public static final int WALLPAPER_MULT_X = 2;
     public static final int WALLPAPER_MULT_Y = 1;
 
@@ -67,7 +65,7 @@ public abstract class EyeCandyWallpaper
          * Create an Engine instance.
          */
         EyeCandyEngine() {
-            mPrefs = EyeCandyWallpaper.this.getSharedPreferences(SHARED_PREFS_NAME, 0);
+            mPrefs = EyeCandyWallpaper.this.getSharedPreferences(eyeCandy.getPrefsName(), 0);
             mPrefs.registerOnSharedPreferenceChangeListener(eyeCandy);
             eyeCandy.onSharedPreferenceChanged(mPrefs, null);
         }

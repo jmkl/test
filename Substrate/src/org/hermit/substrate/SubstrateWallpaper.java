@@ -26,9 +26,6 @@ public class SubstrateWallpaper
     extends EyeCandyWallpaper
 {
 
-    public static final String SHARED_PREFS_NAME = "substrate_settings";
-
-
     @Override
     public EyeCandy onCreateHack() {
         return new Substrate();

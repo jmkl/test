@@ -41,6 +41,16 @@ public class Substrate
 {
 
     // ******************************************************************** //
+    // Public Constants.
+    // ******************************************************************** //
+    
+    /**
+     * Preferences name for preferences relating to this eye candy.
+     */
+    public static final String SHARED_PREFS_NAME = "substrate_settings";
+
+    
+    // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
     
@@ -54,6 +64,17 @@ public class Substrate
     // ******************************************************************** //
     // Configuration.
     // ******************************************************************** //
+
+    /**
+     * Get the shared prefs name for this eye candy,
+     * 
+     * @return              Shared preferences name.
+     */
+    @Override
+    public String getPrefsName() {
+        return SHARED_PREFS_NAME;
+    }
+    
 
     /**
      * This method is called to notify subclasses that the canvas

@@ -26,9 +26,6 @@ public class InteraggregateWallpaper
     extends EyeCandyWallpaper
 {
 
-    public static final String SHARED_PREFS_NAME = "interaggregate_settings";
-
-
     @Override
     public EyeCandy onCreateHack() {
         return new InterAggregate();
