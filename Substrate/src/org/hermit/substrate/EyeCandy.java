@@ -22,6 +22,9 @@ package org.hermit.substrate;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 
 
@@ -74,10 +77,14 @@ public abstract class EyeCandy
         // Create our backing bitmap.
         renderBitmap = Bitmap.createBitmap(width, height, config);
         
-        // Create a Canvas for drawing, and a Paint to hold the drawing state.
+        // Create a Canvas for the subclass to draw in, and a Paint to
+        // hold the drawing state.
         renderCanvas = new Canvas(renderBitmap);
         renderPaint = new Paint();
-        
+
+        // Our own Paint for drawing to the screen.
+        screenPaint = new Paint();
+
         onConfigurationSet(width, height, config);
         
         reset();
@@ -104,7 +111,7 @@ public abstract class EyeCandy
      *                      run forever; maybe the hack will reset itself,
      *                      or doesn't need to.
      */
-    void setMaxCycles(int num) {
+    protected void setMaxCycles(int num) {
         maxCycles = num;
     }
 
@@ -118,32 +125,37 @@ public abstract class EyeCandy
      * at start-up, and to reset back to an initial state when the cycle
      * limit is exceeded.
      */
-    public abstract void reset();
+    protected abstract void reset();
     
 
     /**
      * Advance this eye candy, updating its state in renderBitmap.
      */
-    public void update() {
+    protected void update() {
         // If not set up yet, ignore it.
         if (renderBitmap == null)
             return;
-        
-        // See if we need to start over.
-        if (numCycles++ >= maxCycles) {
-            reset();
-            numCycles = 0;
-        }
    
+        // If we're fading out, do nothing.
+        if (fadeCycles > 0)
+            return;
+        
         // Update the screen hack.
-        doDraw();
+        numCycles += doDraw();
+        
+        // See if we need to start fading out the image.
+        if (numCycles >= maxCycles)
+            fadeCycles = FADE_CYCLES;
     }
 
 
     /**
      * Update this screen hack into renderBitmap.
+     * 
+     * @return              The number of cycles completed during this update.
+     *                      May be zero, one, or more.
      */
-    protected abstract void doDraw();
+    protected abstract int doDraw();
 
 
     /**
@@ -157,8 +169,23 @@ public abstract class EyeCandy
      * @param   xoff        X offset to draw at, in pixels.
      * @param   yoff        Y offset to draw at, in pixels.
      */
-    public void render(Canvas canvas, int xoff, int yoff) {
-        canvas.drawBitmap(renderBitmap, xoff, yoff, null);
+    protected void render(Canvas canvas, int xoff, int yoff) {
+        if (fadeCycles > 0) {
+            float frac = (float) fadeCycles / (float) FADE_CYCLES;
+            int mul = Math.round(255 * frac);
+            int add = 255 - mul;
+            ColorFilter filter = new LightingColorFilter(
+                            Color.rgb(mul, mul, mul), Color.rgb(add, add, add));
+            screenPaint.setColorFilter(filter);
+            canvas.drawBitmap(renderBitmap, xoff, yoff, screenPaint);
+            
+            // If we're done fading, start the next iteration.
+            if (--fadeCycles == 0) {
+                reset();
+                numCycles = 0;
+            }
+        } else
+            canvas.drawBitmap(renderBitmap, xoff, yoff, null);
     }
 
 
@@ -206,6 +233,9 @@ public abstract class EyeCandy
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "Substrate";
+	
+	// The number of cycles over which to fade the image out when restarting.
+	private static final int FADE_CYCLES = 150;
 
 
     // ******************************************************************** //
@@ -217,6 +247,13 @@ public abstract class EyeCandy
     
     // Number of cycles we've done in this run.
     private int numCycles = 0;
+
+    // Paint we use for drawing the renderBitmap to the screen.
+    private Paint screenPaint = null;
+
+    // If we're fading out, this is the number of cycles remaining
+    // in the fade.  If zero, we're not fading.
+    private int fadeCycles = 0;
 
 }
 

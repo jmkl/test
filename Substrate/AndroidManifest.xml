@@ -15,7 +15,7 @@
 		</activity>
 
 		<service android:label="@string/substrate_title"
-				android:name="SubstrateWallpaper"
+				android:name=".hacks.SubstrateWallpaper"
 				android:permission="android.permission.BIND_WALLPAPER">
 			<intent-filter>
 				<action android:name="android.service.wallpaper.WallpaperService" />
@@ -26,13 +26,13 @@
 
         <activity
             android:label="@string/substrate_prefs_title"
-            android:name="SubstratePreferences"
+            android:name=".hacks.SubstratePreferences"
             android:theme="@android:style/Theme.Light.WallpaperSettings"
             android:exported="true">
         </activity>
 
 		<service android:label="@string/interaggregate_title"
-				android:name="InteraggregateWallpaper"
+				android:name=".hacks.InteraggregateWallpaper"
 				android:permission="android.permission.BIND_WALLPAPER">
 			<intent-filter>
 				<action android:name="android.service.wallpaper.WallpaperService" />
@@ -43,7 +43,24 @@
 
         <activity
             android:label="@string/interaggregate_prefs_title"
-            android:name="InteraggregatePreferences"
+            android:name=".hacks.InteraggregatePreferences"
+            android:theme="@android:style/Theme.Light.WallpaperSettings"
+            android:exported="true">
+        </activity>
+
+		<service android:label="@string/sandtrav_title"
+				android:name=".hacks.SandTravellerWallpaper"
+				android:permission="android.permission.BIND_WALLPAPER">
+			<intent-filter>
+				<action android:name="android.service.wallpaper.WallpaperService" />
+			</intent-filter>
+			<meta-data android:name="android.service.wallpaper"
+				android:resource="@xml/sandtrav" />
+		</service>
+
+        <activity
+            android:label="@string/sandtrav_prefs_title"
+            android:name=".hacks.SandTravellerPreferences"
             android:theme="@android:style/Theme.Light.WallpaperSettings"
             android:exported="true">
         </activity>

@@ -266,9 +266,8 @@ public abstract class EyeCandyWallpaper
             }
 
             mHandler.removeCallbacks(mDrawCube);
-            if (mVisible) {
+            if (mVisible)
                 mHandler.postDelayed(mDrawCube, 100);
-            }
         }
 
 

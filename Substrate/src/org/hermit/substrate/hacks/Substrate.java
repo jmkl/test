@@ -16,10 +16,14 @@
  */
 
 
-package org.hermit.substrate;
+package org.hermit.substrate.hacks;
 
 
 import java.util.Random;
+
+import org.hermit.substrate.EyeCandy;
+import org.hermit.substrate.Palette;
+import org.hermit.substrate.PollockPalette;
 
 import net.goui.util.MTRandom;
 import android.content.SharedPreferences;
@@ -104,9 +108,9 @@ public class Substrate
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        int maxCycles = 10000;
+        int maxCycles = 6000;
         try {
-            String sval = prefs.getString("maxCycles", null);
+            String sval = prefs.getString("maxCycles", "" + maxCycles);
             maxCycles = Integer.valueOf(sval);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad maxCycles");
@@ -115,7 +119,7 @@ public class Substrate
         Log.i(TAG, "Prefs: maxCycles " + maxCycles);
 
         try {
-            String sval = prefs.getString("maxCracks", null);
+            String sval = prefs.getString("maxCracks", "" + maxCracks);
             maxCracks = Integer.valueOf(sval);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad maxCracks");
@@ -123,7 +127,7 @@ public class Substrate
         Log.i(TAG, "Prefs: maxCracks " + maxCracks);
 
         try {
-            String sval = prefs.getString("sandGrains", null);
+            String sval = prefs.getString("sandGrains", "" + sandGrains);
             sandGrains = Integer.valueOf(sval);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad sandGrains");
@@ -144,7 +148,7 @@ public class Substrate
      * limit is exceeded.
      */
     @Override
-    public void reset() {
+    protected void reset() {
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
         
@@ -166,6 +170,7 @@ public class Substrate
         numCracks = 0;
         for (int k = 0; k < 3; k++)
             makeCrack();
+        nextCrack = 0;
 
         // Clear to white.
         renderCanvas.drawColor(0xffffffff);
@@ -178,12 +183,31 @@ public class Substrate
 
     /**
      * Update this substrate into renderBitmap.
+     * 
+     * @return              The number of cycles completed during this update.
+     *                      May be zero, one, or more.
      */
     @Override
-    protected void doDraw() {
-        // crack all cracks
-        for (int n = 0; n < numCracks; ++n)
-            cracks[n].move();
+    protected int doDraw() {
+        // move discs
+        long start = System.currentTimeMillis();
+        long time = 0;
+        int cycles = 0;
+        
+        while (time < RUN_TIME) {
+            final int c = nextCrack;
+            if (++nextCrack >= numCracks) {
+                nextCrack = 0;
+                ++cycles;
+            }
+            
+            // Update one crack.
+            cracks[c].move();
+            
+            time = System.currentTimeMillis() - start;
+        }
+        
+        return cycles;
     }
 
 
@@ -345,6 +369,7 @@ public class Substrate
                 g = maxg;
 
             // lay down grains of sand (transparent pixels)
+            renderPaint.setColor(c);
             float w = g / (sandGrains - 1);
             for (int i = 0; i < sandGrains; i++) {
                 final float ssiw = (float) Math.sin(Math.sin(i * w));
@@ -352,11 +377,8 @@ public class Substrate
                 final float py = oy + (y - oy) * ssiw;
                 final float a = 0.1f - i / (sandGrains * 10.0f);
                 
-                renderPaint.setColor(c);
                 renderPaint.setAlpha(Math.round(a * 256));
                 renderCanvas.drawPoint(px, py, renderPaint);
-                // stroke(red(c), green(c), blue(c), a*256);
-                // point(px, py);
             }
         }
 
@@ -388,7 +410,10 @@ public class Substrate
     // Debugging tag.
     @SuppressWarnings("unused")
     private static final String TAG = "Substrate";
-    
+
+    // Time in ms to run for during each update.
+    private static final int RUN_TIME = 80;
+
     // Random number generator.  We use a Mersenne Twister,
     // which is a high-quality and fast implementation of java.util.Random.
     private static final Random MT_RANDOM = new MTRandom();
@@ -400,6 +425,9 @@ public class Substrate
 
     // Colour palette we're using.
     private Palette colourPalette = null;
+    
+    // The maximum number of cracks we can have on the go at once.
+    private int maxCracks = 50;
 
     // The number of currently-active cracks.
     private int numCracks = 0;
@@ -408,8 +436,10 @@ public class Substrate
     private int[] crackGrid = null;
     private Crack[] cracks = null;
     
-    // The maximum number of cracks we can have on the go at once.
-    private int maxCracks = 50;
+    // Index of the next crack to be updated.  We don't update all the cracks
+    // every time for performance reasons, so this keeps our place in the
+    // list between updates.
+    private int nextCrack = 0;
 
     // Number of grains of sand to paint.
     private int sandGrains = 50;

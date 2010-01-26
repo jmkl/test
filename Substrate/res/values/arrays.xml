@@ -100,14 +100,65 @@
         <item>Little</item>
         <item>Medium</item>
         <item>Lots</item>
+        <item>Lots and lots</item>
     </string-array>
 
     <!-- Values for the sand menu. -->
     <string-array name="interaggregate_prefs_sand_values">
-        <item>20</item>  
-        <item>50</item>
-        <item>100</item>
+        <item>6</item>  
+        <item>11</item>
+        <item>20</item>
+        <item>40</item>
     </string-array>
+    
    
+    <!-- ################################################################# -->
+    <!-- Sand Traveller Preferences.                                       -->
+    <!-- ################################################################# -->
+
+    <!-- Entry names for the run time menu. -->
+    <string-array name="sandtrav_prefs_cycles_entries">
+        <item>Short</item>
+        <item>Medium</item>
+        <item>Long</item>
+    </string-array>
+
+    <!-- Values for the run time menu. -->
+    <string-array name="sandtrav_prefs_cycles_values">
+        <item>2000</item>  
+        <item>4000</item>  
+        <item>6000</item>
+    </string-array>
+       
+    <!-- Entry names for the initial velocity menu. -->
+    <string-array name="sandtrav_prefs_velo_entries">
+        <item>Slow</item>
+        <item>Medium</item>
+        <item>Fast</item>
+    </string-array>
+
+    <!-- Values for the initial velocity menu. -->
+    <string-array name="sandtrav_prefs_velo_values">
+        <item>4.2</item>  
+        <item>9</item>
+        <item>20</item>
+    </string-array>
+    
+    <!-- Entry names for the sand menu. -->
+    <string-array name="sandtrav_prefs_sand_entries">
+        <item>Little</item>
+        <item>Medium</item>
+        <item>Lots</item>
+        <item>Lots and lots</item>
+    </string-array>
+
+    <!-- Values for the sand menu. -->
+    <string-array name="sandtrav_prefs_sand_values">
+        <item>6</item>  
+        <item>11</item>
+        <item>20</item>
+        <item>40</item>
+    </string-array>
+
 </resources>
 

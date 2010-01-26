@@ -16,17 +16,19 @@
  */
 
 
-package org.hermit.substrate;
+package org.hermit.substrate.hacks;
 
+
+import org.hermit.substrate.R;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
 
 /**
- * Preferences activity for the InterAggregate live wallpaper.
+ * Preferences activity for the Substrate live wallpaper.
  */
-public class InteraggregatePreferences
+public class SubstratePreferences
     extends PreferenceActivity
 {
 
@@ -43,10 +45,10 @@ public class InteraggregatePreferences
         
         // Set up the key we're using for the wallpaper prefs.
         getPreferenceManager().setSharedPreferencesName(
-                                        InterAggregate.SHARED_PREFS_NAME);
+                                                Substrate.SHARED_PREFS_NAME);
         
         // Load the preferences from an XML resource.
-        addPreferencesFromResource(R.xml.interaggregate_settings);
+        addPreferencesFromResource(R.xml.substrate_settings);
     }
 
 }

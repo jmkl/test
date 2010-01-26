@@ -4,5 +4,5 @@
 		android:thumbnail="@drawable/substrate_preview"
 		android:author="@string/substrate_author"
 		android:description="@string/substrate_desc"
-        android:settingsActivity="org.hermit.substrate.SubstratePreferences" />
+        android:settingsActivity="org.hermit.substrate.hacks.SubstratePreferences" />
 

@@ -16,13 +16,16 @@
  */
 
 
-package org.hermit.substrate;
+package org.hermit.substrate.hacks;
+
+import org.hermit.substrate.EyeCandy;
+import org.hermit.substrate.EyeCandyWallpaper;
 
 
 /**
- * A live wallpaper based on the InterAggregate hack.
+ * A live wallpaper based on the SandTraveller hack.
  */
-public class InteraggregateWallpaper
+public class SandTravellerWallpaper
     extends EyeCandyWallpaper
 {
 
@@ -35,7 +38,7 @@ public class InteraggregateWallpaper
      */
     @Override
     public EyeCandy onCreateHack() {
-        return new InterAggregate();
+        return new SandTraveller();
     }
 
 }

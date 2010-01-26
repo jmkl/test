@@ -20,6 +20,7 @@ package org.hermit.substrate;
 
 
 import org.hermit.android.core.SurfaceRunner;
+import org.hermit.substrate.hacks.InterAggregate;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -129,6 +130,7 @@ public class EyeCandyView
      */
     @Override
     protected void doUpdate(long now) {
+        eyeCandy.update();
     }
 
     

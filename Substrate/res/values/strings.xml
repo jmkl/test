@@ -57,6 +57,34 @@
     <string name="interaggregate_prefs_sand">Sand density</string>
     <string name="interaggregate_prefs_sand_summary">Amount of sand-paint stroke to draw on cracks</string>
     <string name="interaggregate_prefs_sand_title">Sand Density</string>
+    
+    <!-- Sand Traveller. -->
+     
+    <string name="sandtrav_title">Sand Traveller</string>
+    <string name="sandtrav_author">Moonblink</string>
+    <string name="sandtrav_desc">Traveling particles, each in pursuit of another, sweeping out paths of color.</string>
+    
+    <!-- Sand Traveller Preferences. -->
+    
+    <string name="sandtrav_settings">Sand Traveller preferences</string>
+    
+    <string name="sandtrav_prefs_title">Sand Traveller Preferences</string>
+    
+    <string name="sandtrav_prefs_cycles">Run time</string>
+    <string name="sandtrav_prefs_cycles_summary">Number of iterations to run for before resetting</string>
+    <string name="sandtrav_prefs_cycles_title">Run Time</string>
+      
+    <string name="sandtrav_prefs_spaint">Use sand painter</string>
+    <string name="sandtrav_prefs_spaint_summary_off">A simple painter will be used.</string>
+    <string name="sandtrav_prefs_spaint_summary_on">A sand painter will be used.</string>
+    
+    <string name="sandtrav_prefs_velo">Initial velocity</string>
+    <string name="sandtrav_prefs_velo_summary">How fast the travellers move initially</string>
+    <string name="sandtrav_prefs_velo_title">Initial Velocity</string>
+    
+    <string name="sandtrav_prefs_sand">Sand density</string>
+    <string name="sandtrav_prefs_sand_summary">Amount of sand-paint stroke to draw on cracks</string>
+    <string name="sandtrav_prefs_sand_title">Sand Density</string>
    
 </resources>
 

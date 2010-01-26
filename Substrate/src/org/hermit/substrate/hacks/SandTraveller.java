@@ -16,48 +16,54 @@
  */
 
 
-package org.hermit.substrate;
+package org.hermit.substrate.hacks;
 
 
 import java.util.Random;
 
+import org.hermit.substrate.EyeCandy;
+import org.hermit.substrate.Palette;
+import org.hermit.substrate.SandPalette;
+
 import net.goui.util.MTRandom;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Paint;
 import android.util.Log;
 
 
 /**
- * Substrate: grow crystal-like lines on a computational substrate.  This
+ * SandTraveller: grow crystal-like lines on a computational substrate.  This
  * is a port of the code by J. Tarbell at http://complexification.net/.
  *
- * <p>Copyright © 2004 by J. Tarbell (complex@complexification.net).
- // Intersection Aggregate, {Software} Structures
+ // Sand Traveler 
+ // Special commission for Sónar 2004, Barcelona
+ // sand painter implementation of City Traveler + complexification.net
+
  // j.tarbell   May, 2004
  // Albuquerque, New Mexico
  // complexification.net
 
- // commissioned by the Whitney ArtPort 
- // collaboration with Casey Reas, Robert Hodgin, William Ngan 
+ // Processing 0085 Beta syntax update
+ // j.tarbell   April, 2005
+ * <p>Copyright © 2003 by J. Tarbell (complex@complexification.net).
  * 
  *     "Modifications and extensions of these algorithms are encouraged.
  *      Please send me your experiences."
  */
-public class InterAggregate
-    extends EyeCandy
+public class SandTraveller
+extends EyeCandy
 {
 
     // ******************************************************************** //
     // Public Constants.
     // ******************************************************************** //
-    
+
     /**
      * Preferences name for preferences relating to this eye candy.
      */
-    public static final String SHARED_PREFS_NAME = "interaggregate_settings";
+    public static final String SHARED_PREFS_NAME = "sandtrav_settings";
 
-    
+
     // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
@@ -65,7 +71,7 @@ public class InterAggregate
     /**
      * Create a substrate drawing instance.
      */
-    public InterAggregate() {
+    public SandTraveller() {
     }
 
 
@@ -82,7 +88,7 @@ public class InterAggregate
     public String getPrefsName() {
         return SHARED_PREFS_NAME;
     }
-    
+
 
     /**
      * This method is called to notify subclasses that the canvas
@@ -95,7 +101,7 @@ public class InterAggregate
      */
     @Override
     public void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        colourPalette = new PollockPalette();
+        colourPalette = new SandPalette();
     }
 
 
@@ -112,9 +118,9 @@ public class InterAggregate
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        int maxCycles = 10000;
+        int maxCycles = 3600;
         try {
-            String sval = prefs.getString("maxCycles", null);
+            String sval = prefs.getString("maxCycles", "" + maxCycles);
             maxCycles = Integer.valueOf(sval);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad maxCycles");
@@ -123,24 +129,22 @@ public class InterAggregate
         Log.i(TAG, "Prefs: maxCycles " + maxCycles);
 
         try {
-            String sval = prefs.getString("numDiscs", null);
-            numDiscs = Integer.valueOf(sval);
+            sandPaint = prefs.getBoolean("sandPaint", sandPaint);
         } catch (Exception e) {
-            Log.e(TAG, "Pref: bad numDiscs");
+            Log.e(TAG, "Pref: bad sandPaint");
         }
-        Log.i(TAG, "Prefs: numDiscs " + numDiscs);
+        Log.i(TAG, "Prefs: sandPaint " + sandPaint);
 
         try {
-            String sval = prefs.getString("discSize", null);
-            discMaxSize = Integer.valueOf(sval);
+            String sval = prefs.getString("initVelocity", "" + initVelocity);
+            initVelocity = Float.valueOf(sval);
         } catch (Exception e) {
-            Log.e(TAG, "Pref: bad discSize");
+            Log.e(TAG, "Pref: bad initVelocity");
         }
-        discMinSize = discMaxSize / 15;
-        Log.i(TAG, "Prefs: discSize " + discMinSize + "-" + discMaxSize);
+        Log.i(TAG, "Prefs: initVelocity " + initVelocity);
 
         try {
-            String sval = prefs.getString("sandGrains", null);
+            String sval = prefs.getString("sandGrains", "" + sandGrains);
             sandGrains = Integer.valueOf(sval);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad sandGrains");
@@ -161,25 +165,26 @@ public class InterAggregate
      * limit is exceeded.
      */
     @Override
-    public void reset() {
+    protected void reset() {
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
 
-        Log.v(TAG, "Interag reset: " + numDiscs + " discs, " +
-                                       discMinSize + "-" + discMaxSize);
-//        framerate(30);
+        cities = new City[maxCities];
 
-        discs = new Disc[numDiscs];
-
-        // arrange linearly
-        for (int i = 0; i < numDiscs; i++) {
-            float x = random(canvasWidth);
-            float y = random(canvasHeight);
-            float fy = random(-1.2f, 1.2f);
-            float fx = random(-1.2f, 1.2f);
-            float r = random(discMinSize, discMaxSize);
-            discs[i] = new Disc(i, x, y, fx, fy, r);
+        float vt = initVelocity;
+        float vvt = 0.2f;
+        float ot = random(TWO_PI);
+        for (int t = 0; t < numCities; ++t) {
+            float tinc = ot + (1.1f - t / numCities) * 2 * t * TWO_PI / numCities;
+            float vx = vt * (float) Math.sin(tinc);
+            float vy = vt * (float) Math.cos(tinc);
+            cities[t] = new City(canvasWidth / 2 + vx * 2, canvasHeight / 2 + vy * 2, vx, vy, t);
+            vvt -= 0.00033f;
+            vt += vvt;
         }
+
+        for (int t = 0; t < numCities; ++t)
+            cities[t].findFriend();
 
         // Clear to white.
         renderCanvas.drawColor(0xffffffff);
@@ -192,121 +197,139 @@ public class InterAggregate
 
     /**
      * Update this substrate into renderBitmap.
+     * 
+     * @return              The number of cycles completed during this update.
+     *                      May be zero, one, or more.
      */
     @Override
-    protected void doDraw() {
+    protected int doDraw() {
         // move discs
-        for (int c = 0; c < numDiscs; c++) {
-            discs[c].move();
-            discs[c].render();
+        long start = System.currentTimeMillis();
+        long time = 0;
+        int cycles = 0;
+
+        while (time < RUN_TIME) {
+            final int c = nextCity;
+            if (++nextCity >= numCities) {
+                nextCity = 0;
+                ++cycles;
+            }
+
+            // move cities
+            cities[c].move();
+
+            time = System.currentTimeMillis() - start;
+        }
+
+        return cycles;
+    }
+
+
+    // ******************************************************************** //
+    // Private Methods.
+    // ******************************************************************** //
+
+    private float citydistance(int a, int b) {
+        if (a != b) {
+            // calculate and return distance between cities
+            float dx = cities[b].x - cities[a].x;
+            float dy = cities[b].y - cities[a].y;
+            float d = (float) Math.sqrt(dx * dx + dy * dy);
+            return d;
+        } else {
+            return 0.0f;
         }
     }
 
 
     // ******************************************************************** //
-    // Disc Class.
+    // City Class.
     // ******************************************************************** //
 
-    private class Disc {
-        // index identifier
-        int id;
-        // position
-        float x, y;
-        // radius
-        float r;
-        // destination radius
-        float dr;
-        // velocity
+    private class City {
+
+        float x,y;
+        int friend;
         float vx, vy;
+        int idx;
+        int myc = colourPalette.getRandom();
 
         // sand painters
         int numsands = 3;
         SandPainter[] sands = new SandPainter[numsands];
 
-        Disc(int Id, float X, float Y, float Vx, float Vy, float R) {
-            // construct
-            id=Id;
-            x=X;
-            y=Y;
-            vx=Vx;
-            vy=Vy;
-            r=0;
-            dr=R;
+        City(float Dx, float Dy, float Vx, float Vy, int Idx) {
+            // position
+            x = Dx;
+            y = Dy;
+            vx = Vx;
+            vy = Vy;
+            idx = Idx;
 
             // create sand painters
-            for (int n=0;n<numsands;n++) {
+            for (int n = 0; n < numsands; ++n)
                 sands[n] = new SandPainter();
-            }
-        }
-
-        void reset(int Id, float X, float Y, float Vx, float Vy, float R) {
-            // construct
-            id=Id;
-            x=X;
-            y=Y;
-            vx=Vx;
-            vy=Vy;
-            r=0;
-            dr=R;
-        }
-
-        void draw() {
-            renderPaint.setColor(0xff000000);
-            renderPaint.setAlpha(50);
-            renderPaint.setStyle(Paint.Style.STROKE);
-            renderCanvas.drawCircle(x, y, r, renderPaint);
-        }
-
-        void render() {
-            // find intersecting points with all ascending discs
-            for (int n=id+1;n<numDiscs;n++) {
-                // find distance to other disc
-                float dx = discs[n].x-x;
-                float dy = discs[n].y-y;
-                float d = (float) Math.sqrt(dx*dx+dy*dy);
-                // intersection test
-                if (d < (discs[n].r + r)) {
-                    // complete containment test
-                    if (d > Math.abs(discs[n].r-r)) {
-                        // find solutions
-                        float a = (r*r - discs[n].r*discs[n].r + d*d ) / (2*d);
-
-                        float p2x = x + a*(discs[n].x - x)/d;
-                        float p2y = y + a*(discs[n].y - y)/d;
-
-                        float h = (float) Math.sqrt(r*r - a*a);
-
-                        float p3ax = p2x + h*(discs[n].y - y)/d;
-                        float p3ay = p2y - h*(discs[n].x - x)/d;
-
-                        float p3bx = p2x - h*(discs[n].y - y)/d;
-                        float p3by = p2y + h*(discs[n].x - x)/d;
-
-                        for (int s = 0; s < numsands; s++)
-                            sands[s].render(p3ax, p3ay, p3bx, p3by);
-                    }
-                }
-            }
         }
 
         void move() {
-            // add velocity to position
-            x += vx;
-            y += vy;
-            
-            // grow to destination radius
-            if (r < dr)
-                r += 0.1;
+            vx+=(cities[friend].x-x)/1000;
+            vy+=(cities[friend].y-y)/1000;
 
-            // bound check
-            if (x + r < 0)
-                x += canvasWidth + r + r;
-            if (x - r > canvasWidth)
-                x -= canvasWidth + r + r;
-            if (y + r < 0)
-                y += canvasHeight + r + r;
-            if (y - r > canvasHeight)
-                y -= canvasHeight + r + r;
+            vx*=.936;
+            vy*=.936;
+            x+=vx;
+            y+=vy;
+
+            if (!sandPaint) {
+                drawTravelers();
+            } else {
+                if (citydistance(idx, friend) < minConnection)
+                    drawSandPainters();
+            }
+        }
+
+
+        void findFriend() {
+            // pick a node to follow just out ahead
+            int off = (int) random(numCities / 5) + 1;
+            friend = (idx + off) % numCities;
+        }
+
+
+        void drawTravelers() {
+            int nt = 11;
+            for (int i=0;i<nt;i++) {
+                // pick random distance between city
+                final float t = random(TWO_PI);
+                final float sint = (float) Math.sin(t);
+                
+                // draw traveler      
+                float dx = sint*(x-cities[friend].x)/2+(x+cities[friend].x)/2;
+                float dy = sint*(y-cities[friend].y)/2+(y+cities[friend].y)/2;
+                if (random(1000)>990) {
+                    // noise
+                    dx+=random(3)-random(3);
+                    dy+=random(3)-random(3);
+                }
+                renderPaint.setColor(cities[friend].myc);
+                renderPaint.setAlpha(48);
+                renderCanvas.drawPoint(dx, dy, renderPaint);
+                // draw anti-traveler
+                dx = -1*sint*(x-cities[friend].x)/2+(x+cities[friend].x)/2;
+                dy = -1*sint*(y-cities[friend].y)/2+(y+cities[friend].y)/2;
+                if (random(1000)>990) {
+                    // noise
+                    dx+=random(3)-random(3);
+                    dy+=random(3)-random(3);
+                }
+                renderCanvas.drawPoint(dx, dy, renderPaint);
+            }
+        }
+
+        void drawSandPainters() {
+            for (int s=0;s<numsands;s++) {
+                sands[s].render(x,y,cities[friend].x,cities[friend].y);
+            }
         }
     }
 
@@ -315,7 +338,7 @@ public class InterAggregate
     // SandPainter Class.
     // ******************************************************************** //
 
-    class SandPainter {
+    private class SandPainter {
 
         SandPainter() {
             c = colourPalette.getRandom();
@@ -324,21 +347,20 @@ public class InterAggregate
         }
 
         void render(float x, float y, float ox, float oy) {
-            // modulate gain
-            g += random(-0.050f, 0.050f);
-            float maxg = 0.22f;
-            if (g < 0)
-                g = 0;
-            if (g > maxg)
-                g = maxg;
-
-            p += random(-0.050f, 0.050f);
-            if (p < 0)
-                p = 0;
-            if (p > 1.0)
-                p = 1.0f;
-
             // draw painting sweeps
+            renderPaint.setColor(c);
+            renderPaint.setAlpha(28);
+            renderCanvas.drawPoint(ox+(x-ox)*(float) Math.sin(p),oy+(y-oy)*(float) Math.sin(p), renderPaint);
+
+            g+=random(-0.050f, 0.050f);
+            float maxg = 0.22f;
+            if (g<-maxg) g=-maxg;
+            if (g>maxg) g=maxg;
+            p+=random(-0.050f, 0.050f);
+            if (p<0) p=0;
+            if (p>1.0) p=1.0f;
+
+            renderPaint.setColor(c);
             float w = g / (sandGrains - 1);
             for (int i = 0; i < sandGrains; ++i) {
                 final float ssiw1 = (float) Math.sin(p + Math.sin(i * w));
@@ -348,8 +370,7 @@ public class InterAggregate
                 final float px2 = ox + (x - ox) * ssiw2;
                 final float py2 = oy + (y - oy) * ssiw2;
                 final float a = 0.1f - i / (sandGrains * 10.0f);
-                
-                renderPaint.setColor(c);
+
                 renderPaint.setAlpha(Math.round(a * 256));
                 renderCanvas.drawPoint(px1, py1, renderPaint);
                 renderCanvas.drawPoint(px2, py2, renderPaint);
@@ -358,10 +379,10 @@ public class InterAggregate
 
         // Colour for this SandPainter.
         private int c;
-        
+
         // 
         private float p;
-        
+
         // Gain; used to modulate the alpha for a "fuzzy" effect.
         private float g;
     }
@@ -388,6 +409,12 @@ public class InterAggregate
     @SuppressWarnings("unused")
     private static final String TAG = "Substrate";
 
+    // Convenience -- two times pi.
+    private static final float TWO_PI = (float) Math.PI * 2;
+
+    // Time in ms to run for during each update.
+    private static final int RUN_TIME = 80;
+
     // Random number generator.  We use a Mersenne Twister,
     // which is a high-quality and fast implementation of java.util.Random.
     private static final Random MT_RANDOM = new MTRandom();
@@ -400,18 +427,31 @@ public class InterAggregate
     // Colour palette we're using.
     private Palette colourPalette = null;
 
+    // Whether to use the sand painter.
+    private boolean sandPaint = false;
+    
+    // Traveller initial velocity.
+    private float initVelocity = 4.2f;
+
+    // The maximum number of cities we can have on the go at once.
+    private int maxCities = 201;
+
+    // The cities.
+    private City[] cities;
+
+    // The number of currently-active cities.
+    private int numCities = 200;
+
+    // Index of the next city to be updated.  We don't update all the cities
+    // every time for performance reasons, so this keeps our place in the
+    // list between updates.
+    private int nextCity = 0;
+
     // Number of grains of sand to paint.
     private int sandGrains = 11;
 
-    // The number of discs on the move.
-    private int numDiscs = 100;
-    
-    // Min and max disc sizes.
-    private int discMinSize = 40;
-    private int discMaxSize = 600;
-
-    // The discs.
-    private Disc[] discs;
+    // minimum distance to draw connections
+    private int minConnection = 256;
 
 }
 

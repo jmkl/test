@@ -16,17 +16,19 @@
  */
 
 
-package org.hermit.substrate;
+package org.hermit.substrate.hacks;
 
+
+import org.hermit.substrate.R;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
 
 /**
- * Preferences activity for the Substrate live wallpaper.
+ * Preferences activity for the SandTraveller live wallpaper.
  */
-public class SubstratePreferences
+public class SandTravellerPreferences
     extends PreferenceActivity
 {
 
@@ -43,10 +45,10 @@ public class SubstratePreferences
         
         // Set up the key we're using for the wallpaper prefs.
         getPreferenceManager().setSharedPreferencesName(
-                                                Substrate.SHARED_PREFS_NAME);
+                                    SandTraveller.SHARED_PREFS_NAME);
         
         // Load the preferences from an XML resource.
-        addPreferencesFromResource(R.xml.substrate_settings);
+        addPreferencesFromResource(R.xml.sandtrav_settings);
     }
 
 }

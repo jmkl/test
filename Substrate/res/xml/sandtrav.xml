@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+		android:thumbnail="@drawable/sandtrav_preview"
+		android:author="@string/sandtrav_author"
+		android:description="@string/sandtrav_desc"
+        android:settingsActivity="org.hermit.substrate.hacks.SandTravellerPreferences" />
+

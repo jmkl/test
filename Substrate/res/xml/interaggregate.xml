@@ -4,5 +4,5 @@
 		android:thumbnail="@drawable/interaggregate_preview"
 		android:author="@string/interaggregate_author"
 		android:description="@string/interaggregate_desc"
-        android:settingsActivity="org.hermit.substrate.InteraggregatePreferences" />
+        android:settingsActivity="org.hermit.substrate.hacks.InteraggregatePreferences" />
 
