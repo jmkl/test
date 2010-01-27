@@ -11,7 +11,7 @@
             android:entries="@array/sandtrav_prefs_cycles_entries"
             android:entryValues="@array/sandtrav_prefs_cycles_values"
             android:dialogTitle="@string/sandtrav_prefs_cycles_title"
-            android:defaultValue="3600" />
+            android:defaultValue="2000" />
 
     <CheckBoxPreference
             android:key="sandPaint"

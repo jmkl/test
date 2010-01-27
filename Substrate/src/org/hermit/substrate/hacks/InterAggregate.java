@@ -21,11 +21,12 @@ package org.hermit.substrate.hacks;
 
 import java.util.Random;
 
+import net.goui.util.MTRandom;
+
 import org.hermit.substrate.EyeCandy;
 import org.hermit.substrate.Palette;
-import org.hermit.substrate.palettes.PollockPalette;
+import org.hermit.substrate.palettes.InterPalette;
 
-import net.goui.util.MTRandom;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -98,7 +99,7 @@ public class InterAggregate
      */
     @Override
     public void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        colourPalette = new PollockPalette();
+        colourPalette = new InterPalette();
     }
 
 

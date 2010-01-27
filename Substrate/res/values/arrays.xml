@@ -125,8 +125,8 @@
 
     <!-- Values for the run time menu. -->
     <string-array name="sandtrav_prefs_cycles_values">
+        <item>1000</item>  
         <item>2000</item>  
-        <item>4000</item>  
         <item>6000</item>
     </string-array>
        
@@ -140,7 +140,7 @@
     <!-- Values for the initial velocity menu. -->
     <string-array name="sandtrav_prefs_velo_values">
         <item>4.2</item>  
-        <item>9</item>
+        <item>10</item>
         <item>20</item>
     </string-array>
     

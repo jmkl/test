@@ -118,7 +118,7 @@ extends EyeCandy
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        int maxCycles = 3600;
+        int maxCycles = 2000;
         try {
             String sval = prefs.getString("maxCycles", "" + maxCycles);
             maxCycles = Integer.valueOf(sval);
@@ -434,13 +434,13 @@ extends EyeCandy
     private float initVelocity = 4.2f;
 
     // The maximum number of cities we can have on the go at once.
-    private int maxCities = 201;
+    private int maxCities = 101;
 
     // The cities.
     private City[] cities;
 
     // The number of currently-active cities.
-    private int numCities = 200;
+    private int numCities = 100;
 
     // Index of the next city to be updated.  We don't update all the cities
     // every time for performance reasons, so this keeps our place in the
