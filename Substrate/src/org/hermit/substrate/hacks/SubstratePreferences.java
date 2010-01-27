@@ -47,7 +47,9 @@ public class SubstratePreferences
         getPreferenceManager().setSharedPreferencesName(
                                                 Substrate.SHARED_PREFS_NAME);
         
-        // Load the preferences from an XML resource.
+        // Load the preferences from XML resources -- both common and
+        // hack-specific settings.
+        addPreferencesFromResource(R.xml.eyecandy_settings);
         addPreferencesFromResource(R.xml.substrate_settings);
     }
 

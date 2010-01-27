@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+        android:title="@string/eyecandy_settings" >
+
+    <ListPreference
+            android:key="bgColour"
+            android:title="@string/eyecandy_prefs_bg"
+            android:summary="@string/eyecandy_prefs_bg_summary"
+            android:entries="@array/eyecandy_prefs_bg_entries"
+            android:entryValues="@array/eyecandy_prefs_bg_values"
+            android:dialogTitle="@string/eyecandy_prefs_bg_title"
+            android:defaultValue="2000" />
+
+</PreferenceScreen>
+

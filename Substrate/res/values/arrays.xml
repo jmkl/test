@@ -3,6 +3,23 @@
 <resources>
          
     <!-- ################################################################# -->
+    <!-- Common EyeCandy Preferences.                                            -->
+    <!-- ################################################################# -->
+    
+    <!-- Entry names for the run time menu. -->
+    <string-array name="eyecandy_prefs_bg_entries">
+        <item>Black</item>
+        <item>White</item>
+    </string-array>
+
+    <!-- Values for the run time menu. -->
+    <string-array name="eyecandy_prefs_bg_values">
+        <item>#ff000000</item>  
+        <item>#ffffffff</item>
+    </string-array>
+      
+         
+    <!-- ################################################################# -->
     <!-- Substrate Preferences.                                            -->
     <!-- ################################################################# -->
     

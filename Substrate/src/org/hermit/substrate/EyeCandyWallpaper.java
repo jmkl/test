@@ -18,7 +18,7 @@
 
 package org.hermit.substrate;
 
-import android.content.SharedPreferences;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
@@ -56,9 +56,10 @@ public abstract class EyeCandyWallpaper
      * this wallpaper displays.  Subclasses must implement this to
      * return the appropriate hack.
      * 
-     * @return          A new instance of the eye candy to display.
+     * @param  context      Our application context.
+     * @return              A new instance of the eye candy to display.
      */
-    public abstract EyeCandy onCreateHack();
+    public abstract EyeCandy onCreateHack(Context context);
     
 
     // ******************************************************************** //
@@ -76,11 +77,7 @@ public abstract class EyeCandyWallpaper
          * Create an Engine instance.
          */
         EyeCandyEngine() {
-            eyeCandy = onCreateHack();
-            
-            mPrefs = EyeCandyWallpaper.this.getSharedPreferences(eyeCandy.getPrefsName(), 0);
-            mPrefs.registerOnSharedPreferenceChangeListener(eyeCandy);
-            eyeCandy.onSharedPreferenceChanged(mPrefs, null);
+            eyeCandy = onCreateHack(EyeCandyWallpaper.this);
         }
 
 
@@ -316,8 +313,6 @@ public abstract class EyeCandyWallpaper
         private EyeCandy eyeCandy = null;
         
         private boolean mVisible;
-        
-        private SharedPreferences mPrefs;
         
     }
 

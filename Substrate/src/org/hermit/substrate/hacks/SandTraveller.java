@@ -19,13 +19,11 @@
 package org.hermit.substrate.hacks;
 
 
-import java.util.Random;
-
 import org.hermit.substrate.EyeCandy;
 import org.hermit.substrate.Palette;
 import org.hermit.substrate.palettes.SandPalette;
 
-import net.goui.util.MTRandom;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -70,8 +68,11 @@ extends EyeCandy
 
     /**
      * Create a substrate drawing instance.
+     * 
+     * @param  context      Our application context.
      */
-    public SandTraveller() {
+    public SandTraveller(Context context) {
+        super(context);
     }
 
 
@@ -85,7 +86,7 @@ extends EyeCandy
      * @return              Shared preferences name.
      */
     @Override
-    public String getPrefsName() {
+    protected String getPrefsName() {
         return SHARED_PREFS_NAME;
     }
 
@@ -100,7 +101,7 @@ extends EyeCandy
      * @param   config      Pixel configuration of the canvas.
      */
     @Override
-    public void onConfigurationSet(int width, int height, Bitmap.Config config) {
+    protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
         colourPalette = new SandPalette();
     }
 
@@ -110,48 +111,46 @@ extends EyeCandy
     // ******************************************************************** //
 
     /**
-     * Called when a shared preference is changed, added, or removed.
-     * This may be called even if a preference is set to its existing value.
+     * Read our shared preferences from the given preferences object.
+     * Subclasses must implement this to read their own preferences.
      *
-     * @param   prefs       The SharedPreferences that received the change.
+     * @param   prefs       The SharedPreferences to read.
      * @param   key         The key of the preference that was changed. 
      */
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+    protected void readPreferences(SharedPreferences prefs, String key) {
         int maxCycles = 2000;
-        try {
+        if (key == null || key.equals("maxCycles")) try {
             String sval = prefs.getString("maxCycles", "" + maxCycles);
             maxCycles = Integer.valueOf(sval);
+            setMaxCycles(maxCycles);
+            Log.i(TAG, "Prefs: maxCycles " + maxCycles);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad maxCycles");
         }
-        setMaxCycles(maxCycles);
-        Log.i(TAG, "Prefs: maxCycles " + maxCycles);
 
-        try {
+        if (key == null || key.equals("sandPaint")) try {
             sandPaint = prefs.getBoolean("sandPaint", sandPaint);
+            Log.i(TAG, "Prefs: sandPaint " + sandPaint);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad sandPaint");
         }
-        Log.i(TAG, "Prefs: sandPaint " + sandPaint);
 
-        try {
+        if (key == null || key.equals("initVelocity")) try {
             String sval = prefs.getString("initVelocity", "" + initVelocity);
             initVelocity = Float.valueOf(sval);
+            Log.i(TAG, "Prefs: initVelocity " + initVelocity);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad initVelocity");
         }
-        Log.i(TAG, "Prefs: initVelocity " + initVelocity);
 
-        try {
+        if (key == null || key.equals("sandGrains")) try {
             String sval = prefs.getString("sandGrains", "" + sandGrains);
             sandGrains = Integer.valueOf(sval);
+            Log.i(TAG, "Prefs: sandGrains " + sandGrains);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad sandGrains");
         }
-        Log.i(TAG, "Prefs: sandGrains " + sandGrains);
-
-        reset();
     }
 
 
@@ -187,7 +186,7 @@ extends EyeCandy
             cities[t].findFriend();
 
         // Clear to white.
-        renderCanvas.drawColor(0xffffffff);
+        renderCanvas.drawColor(backgroundColor);
     }
 
 
@@ -196,30 +195,30 @@ extends EyeCandy
     // ******************************************************************** //
 
     /**
-     * Update this substrate into renderBitmap.
+     * Run one iteration of this screen hack, updating its appearance
+     * into renderBitmap.  The work done should be restricted to a small
+     * unit of work, ideally less than RUN_TIME, in order to not affect
+     * the responsiveness of the home screen.
      * 
-     * @return              The number of cycles completed during this update.
+     * <p>This method will be called multiple times, to accumulate about
+     * RUN_TIME ms of work per update.  Hence each call need only do one
+     * small work unit.
+     * 
+     * @return              The number of complete algorithm cycles
+     *                      completed during this update.
      *                      May be zero, one, or more.
      */
     @Override
-    protected int doDraw() {
-        // move discs
-        long start = System.currentTimeMillis();
-        long time = 0;
+    protected int iterate() {
+        final int c = nextCity;
         int cycles = 0;
-
-        while (time < RUN_TIME) {
-            final int c = nextCity;
-            if (++nextCity >= numCities) {
-                nextCity = 0;
-                ++cycles;
-            }
-
-            // move cities
-            cities[c].move();
-
-            time = System.currentTimeMillis() - start;
+        if (++nextCity >= numCities) {
+            nextCity = 0;
+            ++cycles;
         }
+
+        // move cities
+        cities[c].move();
 
         return cycles;
     }
@@ -389,19 +388,6 @@ extends EyeCandy
 
 
     // ******************************************************************** //
-    // Utility Methods.
-    // ******************************************************************** //
-
-    private float random(float a) {
-        return MT_RANDOM.nextFloat() * a;
-    }
-
-    private float random(float a, float b) {
-        return MT_RANDOM.nextFloat() * (b - a) + a;
-    }
-
-
-    // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
 
@@ -411,13 +397,6 @@ extends EyeCandy
 
     // Convenience -- two times pi.
     private static final float TWO_PI = (float) Math.PI * 2;
-
-    // Time in ms to run for during each update.
-    private static final int RUN_TIME = 80;
-
-    // Random number generator.  We use a Mersenne Twister,
-    // which is a high-quality and fast implementation of java.util.Random.
-    private static final Random MT_RANDOM = new MTRandom();
 
 
     // ******************************************************************** //

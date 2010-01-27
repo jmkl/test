@@ -19,14 +19,11 @@
 package org.hermit.substrate.hacks;
 
 
-import java.util.Random;
-
-import net.goui.util.MTRandom;
-
 import org.hermit.substrate.EyeCandy;
 import org.hermit.substrate.Palette;
 import org.hermit.substrate.palettes.InterPalette;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -68,8 +65,11 @@ public class InterAggregate
 
     /**
      * Create a substrate drawing instance.
+     * 
+     * @param  context      Our application context.
      */
-    public InterAggregate() {
+    public InterAggregate(Context context) {
+        super(context);
     }
 
 
@@ -83,7 +83,7 @@ public class InterAggregate
      * @return              Shared preferences name.
      */
     @Override
-    public String getPrefsName() {
+    protected String getPrefsName() {
         return SHARED_PREFS_NAME;
     }
     
@@ -98,7 +98,7 @@ public class InterAggregate
      * @param   config      Pixel configuration of the canvas.
      */
     @Override
-    public void onConfigurationSet(int width, int height, Bitmap.Config config) {
+    protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
         colourPalette = new InterPalette();
     }
 
@@ -108,14 +108,14 @@ public class InterAggregate
     // ******************************************************************** //
 
     /**
-     * Called when a shared preference is changed, added, or removed.
-     * This may be called even if a preference is set to its existing value.
+     * Read our shared preferences from the given preferences object.
+     * Subclasses must implement this to read their own preferences.
      *
-     * @param   prefs       The SharedPreferences that received the change.
+     * @param   prefs       The SharedPreferences to read.
      * @param   key         The key of the preference that was changed. 
      */
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+    protected void readPreferences(SharedPreferences prefs, String key) {
         int maxCycles = 4000;
         try {
             String sval = prefs.getString("maxCycles", "" + maxCycles);
@@ -150,8 +150,6 @@ public class InterAggregate
             Log.e(TAG, "Pref: bad sandGrains");
         }
         Log.i(TAG, "Prefs: sandGrains " + sandGrains);
-
-        reset();
     }
 
 
@@ -190,7 +188,7 @@ public class InterAggregate
         nextDisc = 0;
 
         // Clear to white.
-        renderCanvas.drawColor(0xffffffff);
+        renderCanvas.drawColor(backgroundColor);
     }
 
 
@@ -199,32 +197,32 @@ public class InterAggregate
     // ******************************************************************** //
 
     /**
-     * Update this substrate into renderBitmap.
+     * Run one iteration of this screen hack, updating its appearance
+     * into renderBitmap.  The work done should be restricted to a small
+     * unit of work, ideally less than RUN_TIME, in order to not affect
+     * the responsiveness of the home screen.
      * 
-     * @return              The number of cycles completed during this update.
+     * <p>This method will be called multiple times, to accumulate about
+     * RUN_TIME ms of work per update.  Hence each call need only do one
+     * small work unit.
+     * 
+     * @return              The number of complete algorithm cycles
+     *                      completed during this update.
      *                      May be zero, one, or more.
      */
     @Override
-    protected int doDraw() {
-        // move discs
-        long start = System.currentTimeMillis();
-        long time = 0;
+    protected int iterate() {
+        final int c = nextDisc;
         int cycles = 0;
-        
-        while (time < RUN_TIME) {
-            final int c = nextDisc;
-            if (++nextDisc >= numDiscs) {
-                nextDisc = 0;
-                ++cycles;
-            }
-            
-            // Update one disc.
-            discs[c].move();
-            discs[c].render();
-            
-            time = System.currentTimeMillis() - start;
+        if (++nextDisc >= numDiscs) {
+            nextDisc = 0;
+            ++cycles;
         }
-        
+
+        // Update one disc.
+        discs[c].move();
+        discs[c].render();
+
         return cycles;
     }
 
@@ -388,32 +386,12 @@ public class InterAggregate
 
 
     // ******************************************************************** //
-    // Utility Methods.
-    // ******************************************************************** //
-
-    private static final float random(float a) {
-        return MT_RANDOM.nextFloat() * a;
-    }
-
-    private static final float random(float a, float b) {
-        return MT_RANDOM.nextFloat() * (b - a) + a;
-    }
-
-
-    // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
 
     // Debugging tag.
     @SuppressWarnings("unused")
     private static final String TAG = "Substrate";
-
-    // Time in ms to run for during each update.
-    private static final int RUN_TIME = 80;
-
-    // Random number generator.  We use a Mersenne Twister,
-    // which is a high-quality and fast implementation of java.util.Random.
-    private static final Random MT_RANDOM = new MTRandom();
 
 
     // ******************************************************************** //

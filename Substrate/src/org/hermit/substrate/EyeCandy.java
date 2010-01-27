@@ -19,6 +19,10 @@
 package org.hermit.substrate;
 
 
+import java.util.Random;
+
+import net.goui.util.MTRandom;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -26,6 +30,7 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
+import android.util.Log;
 
 
 /**
@@ -39,15 +44,73 @@ public abstract class EyeCandy
 {
 
     // ******************************************************************** //
+    // Public Constants.
+    // ******************************************************************** //
+    
+    /**
+     * Preferences name for the common EyeCandy preferences.
+     */
+    public static final String COMMON_PREFS_NAME = "eyecandy_settings";
+
+    
+    // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
 
 	/**
 	 * Create an EyeCandy instance.
+	 * 
+	 * @param  context      Our application context.
 	 */
-    public EyeCandy() {
+    protected EyeCandy(Context context) {
+        // Register for changes in the subclass's preferences.
+        SharedPreferences prefs = context.getSharedPreferences(getPrefsName(), 0);
+        prefs.registerOnSharedPreferenceChangeListener(this);
+        onSharedPreferenceChanged(prefs, null);
     }
 
+
+    // ******************************************************************** //
+    // Preferences.
+    // ******************************************************************** //
+
+    /**
+     * Handle changes in our preferences.
+     *
+     * @param   prefs       The SharedPreferences to read.
+     * @param   key         The key of the preference that was changed. 
+     */
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences prefs,
+            String key)
+    {
+        Log.i(TAG, "Child Prefs: " + key);
+
+        if (key == null || key.equals("bgColour")) try {
+            String dflt = String.format("#%08x", backgroundColor);
+            String sval = prefs.getString("bgColour", dflt);
+            backgroundColor = Color.parseColor(sval);
+            Log.i(TAG, "Prefs: bgColour " + String.format("#%08x", backgroundColor));
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad bgColour");
+        }
+
+        // Tell the subclass to read its prefs.
+        readPreferences(prefs, key);
+
+        reset();
+    }
+
+
+    /**
+     * Read our shared preferences from the given preferences object.
+     * Subclasses must implement this to read their own preferences.
+     *
+     * @param   prefs       The SharedPreferences to read.
+     * @param   key         The key of the preference that was changed. 
+     */
+    protected abstract void readPreferences(SharedPreferences prefs, String key);
+    
 
     // ******************************************************************** //
     // Configuration.
@@ -58,18 +121,22 @@ public abstract class EyeCandy
      * 
      * @return              Shared preferences name.
      */
-    public abstract String getPrefsName();
+    protected abstract String getPrefsName();
     
 
     /**
      * Set the drawing canvas configuration.  This specifies the logical
      * wallpaper size, which may not match the screen size.
      * 
+     * <p>This method is used by our framework to tell us our config.
+     * Subclasses override
+     * {@link #onConfigurationSet(int, int, android.graphics.Bitmap.Config)}.
+     * 
      * @param   width       The width of the canvas.
      * @param   height      The height of the canvas.
      * @param   config      Pixel configuration of the canvas.
      */
-    void setConfiguration(int width, int height, Bitmap.Config config) {
+    final void setConfiguration(int width, int height, Bitmap.Config config) {
         canvasWidth = width;
         canvasHeight = height;
         canvasConfig = config;
@@ -97,15 +164,20 @@ public abstract class EyeCandy
      * configuration has changed.  This specifies the logical wallpaper
      * size, which may not match the screen size.
      * 
+     * <p>Subclasses should implement this to be informed of their canvas
+     * size.
+     * 
      * @param   width       The width of the canvas.
      * @param   height      The height of the canvas.
      * @param   config      Pixel configuration of the canvas.
      */
-    public abstract void onConfigurationSet(int width, int height, Bitmap.Config config);
+    protected abstract void onConfigurationSet(int width, int height, Bitmap.Config config);
 
     
     /**
      * Set the number of cycles this hack will run for before resetting.
+     * Subclasses can call this to tell us how long they wish to run
+     * for.
      * 
      * @param   num         Maximum number of cycles to run for.  Zero means
      *                      run forever; maybe the hack will reset itself,
@@ -115,7 +187,7 @@ public abstract class EyeCandy
         maxCycles = num;
     }
 
-    
+   
     // ******************************************************************** //
     // Animation Rendering.
     // ******************************************************************** //
@@ -131,7 +203,7 @@ public abstract class EyeCandy
     /**
      * Advance this eye candy, updating its state in renderBitmap.
      */
-    protected void update() {
+    final void update() {
         // If not set up yet, ignore it.
         if (renderBitmap == null)
             return;
@@ -140,43 +212,52 @@ public abstract class EyeCandy
         if (fadeCycles > 0)
             return;
         
-        // Update the screen hack.
-        numCycles += doDraw();
+        // Update the screen hack.  Run as many mini-iterations as we can in a
+        // reasonable time, so we don't block the home screen's responsiveness.
+        long start = System.currentTimeMillis();
+        long time = 0;
+        while (time < RUN_TIME) {
+            numCycles += iterate();
+            time = System.currentTimeMillis() - start;
+        }
         
         // See if we need to start fading out the image.
-        if (numCycles >= maxCycles)
+        if (maxCycles > 0 && numCycles >= maxCycles)
             fadeCycles = FADE_CYCLES;
     }
 
 
     /**
-     * Update this screen hack into renderBitmap.
+     * Run one iteration of this screen hack, updating its appearance
+     * into renderBitmap.  The work done should be restricted to a small
+     * unit of work, ideally less than RUN_TIME, in order to not affect
+     * the responsiveness of the home screen.
      * 
-     * @return              The number of cycles completed during this update.
+     * <p>This method will be called multiple times, to accumulate about
+     * RUN_TIME ms of work per update.  Hence each call need only do one
+     * small work unit.
+     * 
+     * @return              The number of complete algorithm cycles
+     *                      completed during this update.
      *                      May be zero, one, or more.
      */
-    protected abstract int doDraw();
+    protected abstract int iterate();
 
 
     /**
      * Draw the current frame of the application onto the screen.
-     * 
-     * <p>Applications must override this, and are expected to draw their
-     * entire state into the provided canvas at the given offset.
+     * We are expected to draw our entire state into the provided
+     * canvas at the given offset.
      * 
      * @param   canvas      The Canvas to draw into.  We must re-draw the
      *                      whole screen.
      * @param   xoff        X offset to draw at, in pixels.
      * @param   yoff        Y offset to draw at, in pixels.
      */
-    protected void render(Canvas canvas, int xoff, int yoff) {
+    final void render(Canvas canvas, int xoff, int yoff) {
         if (fadeCycles > 0) {
-            float frac = (float) fadeCycles / (float) FADE_CYCLES;
-            int mul = Math.round(255 * frac);
-            int add = 255 - mul;
-            ColorFilter filter = new LightingColorFilter(
-                            Color.rgb(mul, mul, mul), Color.rgb(add, add, add));
-            screenPaint.setColorFilter(filter);
+            float alpha = (float) fadeCycles / (float) FADE_CYCLES;
+            screenPaint.setColorFilter(fadeFilter(alpha));
             canvas.drawBitmap(renderBitmap, xoff, yoff, screenPaint);
             
             // If we're done fading, start the next iteration.
@@ -187,19 +268,95 @@ public abstract class EyeCandy
         } else
             canvas.drawBitmap(renderBitmap, xoff, yoff, null);
     }
+    
+    
+    /**
+     * Create a ColorFilter which fades an image to backgroundColor
+     * according to the given alpha.
+     * 
+     * @param   alpha       Amount of the original image to preserve; 1
+     *                      means full original, 0 means all backgroundColor.
+     * @return              The created ColorFilter.
+     */
+    private final ColorFilter fadeFilter(float alpha) {
+        int mul = Math.round(255 * alpha);
+        
+        int addR = Math.round(Color.red(backgroundColor) * (1 - alpha));
+        int addG = Math.round(Color.green(backgroundColor) * (1 - alpha));
+        int addB = Math.round(Color.blue(backgroundColor) * (1 - alpha));
+        return new LightingColorFilter(
+                        Color.rgb(mul, mul, mul), Color.rgb(addR, addG, addB));
+    }
+
+
+    // ******************************************************************** //
+    // Utility Methods.
+    // ******************************************************************** //
+
+    /**
+     * Return a random integer in the range [0-a[.
+     * 
+     * @param   a           Upper (non-inclusive) bound.
+     * @return              A random int in [0-a[.
+     */
+    protected final int random(int a) {
+        return randomGen.nextInt(a);
+    }
+
+
+    /**
+     * Return a random float in the range [0-a[.
+     * 
+     * @param   a           Upper (non-inclusive) bound.
+     * @return              A random float in [0-a[.
+     */
+    protected final float random(float a) {
+        return randomGen.nextFloat() * a;
+    }
+
+
+    /**
+     * Return a random float in the range [a-b[.
+     * 
+     * @param   a           Lower (inclusive) bound.
+     * @param   b           Upper (non-inclusive) bound.
+     * @return              A random float in [a-b[.
+     */
+    protected final float random(float a, float b) {
+        return randomGen.nextFloat() * (b - a) + a;
+    }
+
+
+    /**
+     * Return a random boolean.
+     * 
+     * @return              A random boolean.
+     */
+    protected final boolean brandom() {
+        return randomGen.nextBoolean();
+    }
 
 
     // ******************************************************************** //
     // Subclass Accessible Data.
     // ******************************************************************** //
-    
+
     /**
-     * The width of the screen we're drawing into.  Zero if not known yet.
+     * Random number generator, made available as a convenience to
+     * subclasses.  We use a Mersenne Twister, which is a high-quality
+     * and fast implementation of java.util.Random.
+     */
+    protected static final Random randomGen = new MTRandom();
+
+    /**
+     * The width of the canvas we're drawing into.  Typically not the
+     * physical screen size, to allow for panning.  Zero if not known yet.
      */
     protected int canvasWidth = 0;
     
     /**
-     * The height of the screen we're drawing into.  Zero if not known yet.
+     * The height of the canvas we're drawing into.  Typically not the
+     * physical screen size, to allow for panning.  Zero if not known yet.
      */
     protected int canvasHeight = 0;
     
@@ -224,6 +381,11 @@ public abstract class EyeCandy
      * A Paint made available as a convenience to subclasses.
      */
     protected Paint renderPaint = null;
+    
+    /**
+     * The background color for this hack.
+     */
+    protected int backgroundColor = 0xffffffff;
 
 
     // ******************************************************************** //
@@ -233,7 +395,10 @@ public abstract class EyeCandy
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "Substrate";
-	
+
+    // Time in ms to run for during each update.
+    private static final int RUN_TIME = 80;
+
 	// The number of cycles over which to fade the image out when restarting.
 	private static final int FADE_CYCLES = 150;
 
@@ -241,8 +406,9 @@ public abstract class EyeCandy
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
-   
-    // Number of cycles before we reset.
+    
+    // Number of cycles before we reset.  Zero means run forever.
+	// Subclasses should generally override this with something appropriate.
     private int maxCycles = 10000;
     
     // Number of cycles we've done in this run.

@@ -5,6 +5,16 @@
     <string name="app_name">Substrate</string>
     <string name="app_author">Moonblink</string>
     <string name="app_desc">A collection of live wallpapers.</string>
+          
+    <!-- Common EyeCandy Preferences. -->
+    
+    <string name="eyecandy_settings">Preferences</string>
+    
+    <string name="eyecandy_prefs_title">Preferences</string>
+    
+    <string name="eyecandy_prefs_bg">Background colour</string>
+    <string name="eyecandy_prefs_bg_summary">Select a background colour for the wallpaper</string>
+    <string name="eyecandy_prefs_bg_title">Background Colour</string>
       
     <!-- Substrate. -->
      

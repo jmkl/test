@@ -21,6 +21,8 @@ package org.hermit.substrate.hacks;
 import org.hermit.substrate.EyeCandy;
 import org.hermit.substrate.EyeCandyWallpaper;
 
+import android.content.Context;
+
 
 /**
  * A live wallpaper based on the SandTraveller hack.
@@ -34,11 +36,12 @@ public class SandTravellerWallpaper
      * this wallpaper displays.  Subclasses must implement this to
      * return the appropriate hack.
      * 
-     * @return          A new instance of the eye candy to display.
+     * @param  context      Our application context.
+     * @return              A new instance of the eye candy to display.
      */
     @Override
-    public EyeCandy onCreateHack() {
-        return new SandTraveller();
+    public EyeCandy onCreateHack(Context context) {
+        return new SandTraveller(context);
     }
 
 }
