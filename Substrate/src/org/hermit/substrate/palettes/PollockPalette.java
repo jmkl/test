@@ -16,10 +16,12 @@
  */
 
 
-package org.hermit.substrate;
+package org.hermit.substrate.palettes;
 
 
 import java.util.Random;
+
+import org.hermit.substrate.Palette;
 
 import net.goui.util.MTRandom;
 

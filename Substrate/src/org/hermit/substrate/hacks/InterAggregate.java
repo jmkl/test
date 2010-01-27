@@ -23,7 +23,7 @@ import java.util.Random;
 
 import org.hermit.substrate.EyeCandy;
 import org.hermit.substrate.Palette;
-import org.hermit.substrate.PollockPalette;
+import org.hermit.substrate.palettes.PollockPalette;
 
 import net.goui.util.MTRandom;
 import android.content.SharedPreferences;
