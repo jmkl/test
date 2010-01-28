@@ -24,8 +24,6 @@ import org.hermit.android.core.SurfaceRunner;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 
 
 /**
@@ -118,6 +116,12 @@ public class EyeCandyView
     // Hack Control.
     // ******************************************************************** //
 
+    /**
+     * Set the hack to be displayed in this view.  This can be called
+     * multiple times to change hacks.
+     * 
+     * @param   hack        The EyeCandy to display.
+     */
     void setHack(EyeCandy hack) {
         eyeCandy = hack;
         
@@ -167,36 +171,6 @@ public class EyeCandyView
     protected void doDraw(Canvas canvas, long now) {
         // Render the hack into the given canvas.
         eyeCandy.render(canvas, 0, 0);
-    }
-
-
-	// ******************************************************************** //
-	// Input Handling.
-	// ******************************************************************** //
-
-    /**
-	 * Handle key input.
-	 * 
-     * @param	keyCode		The key code.
-     * @param	event		The KeyEvent object that defines the
-     * 						button action.
-     * @return				True if the event was handled, false otherwise.
-	 */
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	return false;
-    }
-    
-    
-    /**
-	 * Handle touchscreen input.
-	 * 
-     * @param	event		The MotionEvent object that defines the action.
-     * @return				True if the event was handled, false otherwise.
-	 */
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-		return false;
     }
 
 

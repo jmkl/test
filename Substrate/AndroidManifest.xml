@@ -7,7 +7,7 @@
 
 		<activity android:icon="@drawable/icon"
 				android:label="@string/app_name"
-				android:name="EyeCandyApp">
+				android:name="EyeCandyApp" android:screenOrientation="portrait" android:launchMode="singleTop" android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -33,7 +33,6 @@
         <activity
             android:label="@string/substrate_prefs_title"
             android:name=".hacks.SubstratePreferences"
-            android:theme="@android:style/Theme.Light.WallpaperSettings"
             android:exported="true">
         </activity>
 
@@ -50,7 +49,6 @@
         <activity
             android:label="@string/interaggregate_prefs_title"
             android:name=".hacks.InteraggregatePreferences"
-            android:theme="@android:style/Theme.Light.WallpaperSettings"
             android:exported="true">
         </activity>
 
@@ -67,14 +65,13 @@
         <activity
             android:label="@string/sandtrav_prefs_title"
             android:name=".hacks.SandTravellerPreferences"
-            android:theme="@android:style/Theme.Light.WallpaperSettings"
             android:exported="true">
         </activity>
 
 	</application>
 
 	<uses-sdk android:minSdkVersion="7" />
-	<supports-screens></supports-screens>
+	<supports-screens android:resizeable="true" android:smallScreens="true" android:largeScreens="true" android:normalScreens="true" android:anyDensity="true"></supports-screens>
 	
 </manifest>
 

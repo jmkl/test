@@ -41,10 +41,10 @@ import android.view.Window;
 
 /**
  * A standalone activity which displays fullscreen eye candy.  Use
- * this to hypnotize your children, or something.  Mainly it gives the user
+ * this to browse the eye candies, play with different options, hypnotize
+ * your children, or something.  Mainly it gives the user
  * something to do when they don't know how to set up live wallpapers yet.
- * 
- * <p>This class basically sets up an EyeCandy object and lets it run.
+ * Hence, we use a "eula" to tell them how to do this.
  */
 public class EyeCandyApp
     extends MainActivity
@@ -91,6 +91,8 @@ public class EyeCandyApp
         // Create the application GUI.
         eyeCandyView = new EyeCandyView(this);
         setContentView(eyeCandyView);
+        
+        currentHack = 0;
     }
     
 
@@ -105,6 +107,23 @@ public class EyeCandyApp
         
         super.onStart();
         eyeCandyView.onStart();
+    }
+
+    
+    /**
+     * This method is called after onStart() when the activity is being
+     * re-initialized from a previously saved state, given here in state.
+     * 
+     * @param   icicle      The data most recently supplied in
+     *                      onSaveInstanceState(Bundle).
+     */
+    @Override
+    protected void onRestoreInstanceState(Bundle icicle) {
+        Log.i(TAG, "onRestoreInstanceState()");
+
+        // Set the value of currentHack.  setHack() will be called in
+        // onResume().
+        currentHack = icicle.getInt("currentHack", 0);
     }
 
 
@@ -126,7 +145,11 @@ public class EyeCandyApp
         // First time round, show the EULA.
         showFirstEula();
         
-        setHack(0);
+        // By now currentHack has either been initialised or restored.
+        // Select the indicated hack.
+        setHack(currentHack);
+        
+        // Resume the view.
         eyeCandyView.onResume();
         
         // Just start straight away.
@@ -147,6 +170,9 @@ public class EyeCandyApp
     public void onSaveInstanceState(Bundle outState) {
         Log.i(TAG, "onSaveInstanceState()");
         super.onSaveInstanceState(outState);
+        
+        // Save the selected hack index.
+        outState.putInt("currentHack", currentHack);
     }
 
     
@@ -266,14 +292,23 @@ public class EyeCandyApp
     // Control.
     // ******************************************************************** //
 
+    /**
+     * Set the currently displayed hack.
+     * 
+     * @param   index       Index (in hacksList[] etc.) of the hack
+     *                      to display.
+     */
     private void setHack(int index) {
         Class<?> hclass = hacksList[index];
         
-        // Create the screen hack.
         try {
+            // Create an instance of the screen hack.
             Constructor<?> cons = hclass.getConstructor(Context.class);
             EyeCandy eyeCandy = (EyeCandy) cons.newInstance(this);
+            
+            // Display the hack.
             eyeCandyView.setHack(eyeCandy);
+            currentHack = index;
         } catch (Exception e) {
             // throw new InstantiationException(e.getMessage());
         }

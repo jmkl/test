@@ -9,27 +9,22 @@
           
     <!-- Boilerplate Dialogs. -->
      
-    <string name="eula_title">Not for serious use</string>
+    <string name="eula_title">Using Live Wallpapers</string>
     
-    <string name="eula_text">Audalyzer is a toy spectrum analyser for
-your phone.  Since microphone sensitivity varies between individual devices,
-let alone models, it\'s impossible to generate accurate sound level readings
-with this app; so all data should be taken with a pinch of salt.  dB levels
-are relative to the maximum input level of your device.  Still, it may be
-interesting when used to compare sound readings at different locations.\n\
+    <string name="eula_text">This application displays previews of some
+live wallpapers.  To actually use one of these as your wallpaper, you
+need to set it as follows:\n\
 \n\
-This program is free software, and is distributed by its creator free
-of charge.  A free copy, and the source code, can be obtained on the
-project home page; see the About screen.\n\
+• Go to your home screen.\n\
+• Press the menu key.\n\
+• Select \"Wallpaper\", then \"Live wallpapers\".\n\
+• Pick your preferred wallpaper.\n\
 \n\
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
-for more details.\n</string>
+For more information, please read the help available in this application\'s
+menu.\n</string>
 
 
-    <string name="about_text"><b>Audalyzer</b> by Ian Cameron Smith
+    <string name="about_text"><b>Substrate</b> by Ian Cameron Smith
 (headstay).\n\
 \n\
 For information and source code see the project home page.\n\
@@ -46,7 +41,7 @@ GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
 for more details.\n</string>
     
     <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
-    <string name="url_homepage">http://code.google.com/p/moonblink/wiki/Audalyzer</string>
+    <string name="url_homepage">http://code.google.com/p/moonblink/wiki/Substrate</string>
         
         
     <!-- Button strings. -->
