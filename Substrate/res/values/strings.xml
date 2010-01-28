@@ -5,9 +5,74 @@
     <string name="app_name">Substrate</string>
     <string name="app_author">Moonblink</string>
     <string name="app_desc">A collection of live wallpapers.</string>
+         
           
-    <!-- Common EyeCandy Preferences. -->
+    <!-- Boilerplate Dialogs. -->
+     
+    <string name="eula_title">Not for serious use</string>
     
+    <string name="eula_text">Audalyzer is a toy spectrum analyser for
+your phone.  Since microphone sensitivity varies between individual devices,
+let alone models, it\'s impossible to generate accurate sound level readings
+with this app; so all data should be taken with a pinch of salt.  dB levels
+are relative to the maximum input level of your device.  Still, it may be
+interesting when used to compare sound readings at different locations.\n\
+\n\
+This program is free software, and is distributed by its creator free
+of charge.  A free copy, and the source code, can be obtained on the
+project home page; see the About screen.\n\
+\n\
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
+for more details.\n</string>
+
+
+    <string name="about_text"><b>Audalyzer</b> by Ian Cameron Smith
+(headstay).\n\
+\n\
+For information and source code see the project home page.\n\
+\n\
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.\n\
+\n\
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
+for more details.\n</string>
+    
+    <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
+    <string name="url_homepage">http://code.google.com/p/moonblink/wiki/Audalyzer</string>
+        
+        
+    <!-- Button strings. -->
+    
+    <string name="button_ok">OK</string>
+    <string name="button_close">OK</string>
+    <string name="button_license">License</string>
+    <string name="button_homepage">Project</string>
+
+          
+    <!-- Main Menu. -->
+       
+    <string name="menu_select">Select hack</string>
+    <string name="menu_prefs">Hack preferences</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+    <string name="menu_exit">Exit</string>
+      
+          
+    <!-- Help.  See arrays.xml for the help content. -->
+    
+    <string name="help_title">Substrate User\'s Manual</string>
+ 
+    
+    <!-- Common EyeCandy Preferences. -->
+     
     <string name="eyecandy_settings">Preferences</string>
     
     <string name="eyecandy_prefs_title">Preferences</string>
@@ -15,6 +80,7 @@
     <string name="eyecandy_prefs_bg">Background colour</string>
     <string name="eyecandy_prefs_bg_summary">Select a background colour for the wallpaper</string>
     <string name="eyecandy_prefs_bg_title">Background Colour</string>
+      
       
     <!-- Substrate. -->
      

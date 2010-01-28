@@ -14,6 +14,12 @@
 			</intent-filter>
 		</activity>
 
+		<activity android:name=".Help" android:launchMode="singleTop" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout" android:label="@string/help_title">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"></action>
+			</intent-filter>
+		</activity>
+
 		<service android:label="@string/substrate_title"
 				android:name=".hacks.SubstrateWallpaper"
 				android:permission="android.permission.BIND_WALLPAPER">
