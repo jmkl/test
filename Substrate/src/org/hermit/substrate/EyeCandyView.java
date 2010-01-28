@@ -20,7 +20,6 @@ package org.hermit.substrate;
 
 
 import org.hermit.android.core.SurfaceRunner;
-import org.hermit.substrate.hacks.InterAggregate;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -48,6 +47,7 @@ public class EyeCandyView
 	 */
     public EyeCandyView(Context app) {
         super(app, SURFACE_DYNAMIC);
+        
         setDelay(10);
     }
 
@@ -77,9 +77,12 @@ public class EyeCandyView
      */
     @Override
     protected void appSize(int width, int height, Bitmap.Config config) {
-        // Create the screen hack.
-        eyeCandy = new InterAggregate(getContext());
-        eyeCandy.setConfiguration(width, height, config);
+        screenWidth = width;
+        screenHeight = height;
+        screenConfig = config;
+
+        if (eyeCandy != null)
+            eyeCandy.setConfiguration(screenWidth, screenHeight, screenConfig);
     }
     
 
@@ -111,6 +114,18 @@ public class EyeCandyView
     }
     
 
+    // ******************************************************************** //
+    // Hack Control.
+    // ******************************************************************** //
+
+    void setHack(EyeCandy hack) {
+        eyeCandy = hack;
+        
+        if (screenWidth > 0 && screenHeight > 0)
+            eyeCandy.setConfiguration(screenWidth, screenHeight, screenConfig);
+    }
+    
+    
     // ******************************************************************** //
     // Animation Rendering.
     // ******************************************************************** //
@@ -197,7 +212,12 @@ public class EyeCandyView
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
- 	
+    
+    // Screen size and pixel configuration.
+    private int screenWidth = 0;
+    private int screenHeight = 0;
+    private Bitmap.Config screenConfig = null;
+    
 	// The screen hack we're displaying.
 	private EyeCandy eyeCandy = null;
     

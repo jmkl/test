@@ -3,8 +3,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- "Select". -->
-	<item android:id="@+id/menu_select" android:title="@string/menu_select"
-    	  android:icon="@drawable/ic_menu_show_list"></item>
+    <item android:id="@+id/menu_select" android:title="@string/menu_select"
+        	android:icon="@drawable/ic_menu_show_list">
+        <menu>
+			<item android:id="@+id/menu_select_0" android:title="@string/substrate_title" />
+			<item android:id="@+id/menu_select_1" android:title="@string/interaggregate_title" />
+			<item android:id="@+id/menu_select_2" android:title="@string/sandtrav_title" />
+        </menu>
+    </item>
 
     <!-- "Preferences". -->
 	<item android:id="@+id/menu_prefs" android:title="@string/menu_prefs"

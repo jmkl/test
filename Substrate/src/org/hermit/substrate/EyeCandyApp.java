@@ -19,18 +19,24 @@
 package org.hermit.substrate;
 
 
-import org.hermit.android.core.MainActivity;
+import java.lang.reflect.Constructor;
 
-import android.app.Activity;
+import org.hermit.android.core.MainActivity;
+import org.hermit.substrate.hacks.InterAggregate;
+import org.hermit.substrate.hacks.InteraggregatePreferences;
+import org.hermit.substrate.hacks.SandTraveller;
+import org.hermit.substrate.hacks.SandTravellerPreferences;
+import org.hermit.substrate.hacks.Substrate;
+import org.hermit.substrate.hacks.SubstratePreferences;
+
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 
 
 /**
@@ -83,7 +89,8 @@ public class EyeCandyApp
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         // Create the application GUI.
-        setContentView(createUi());
+        eyeCandyView = new EyeCandyView(this);
+        setContentView(eyeCandyView);
     }
     
 
@@ -117,8 +124,9 @@ public class EyeCandyApp
         super.onResume();
         
         // First time round, show the EULA.
-//        eulaDialog.showFirstTime();
+        showFirstEula();
         
+        setHack(0);
         eyeCandyView.onResume();
         
         // Just start straight away.
@@ -170,25 +178,10 @@ public class EyeCandyApp
         eyeCandyView.onStop();
     }
 
-
-    // ******************************************************************** //
-    // UI Creation.
-    // ******************************************************************** //
-
-    /**
-     * Create the main IU.  This consists of a FrameLayout switching
-     * between the various supported screen hacks.
-     */
-    private View createUi() {
-        eyeCandyView = new EyeCandyView(this);
-        return eyeCandyView;
-    }
-    
-    
+  
     // ******************************************************************** //
     // Menu Handling.
     // ******************************************************************** //
-
 
     /**
      * Initialize the contents of the game's options menu by adding items
@@ -233,19 +226,21 @@ public class EyeCandyApp
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-        case R.id.menu_select:
+        case R.id.menu_select_0:
+            setHack(0);
+            break;
+        case R.id.menu_select_1:
+            setHack(1);
+            break;
+        case R.id.menu_select_2:
+            setHack(2);
             break;
         case R.id.menu_prefs:
             // Launch the preferences activity as a subactivity, so we
             // know when it returns.
             Intent pIntent = new Intent();
-            pIntent.setClass(this, Preferences.class);
-            startActivityForResult(pIntent, new MainActivity.ActivityListener() {
-                @Override
-                public void onActivityFinished(int resultCode, Intent data) {
-                    updatePreferences();
-                }
-            });
+            pIntent.setClass(this, prefsList[currentHack]);
+            startActivity(pIntent);
             break;
         case R.id.menu_help:
             // Launch the help activity as a subactivity.
@@ -268,12 +263,45 @@ public class EyeCandyApp
     
 
     // ******************************************************************** //
+    // Control.
+    // ******************************************************************** //
+
+    private void setHack(int index) {
+        Class<?> hclass = hacksList[index];
+        
+        // Create the screen hack.
+        try {
+            Constructor<?> cons = hclass.getConstructor(Context.class);
+            EyeCandy eyeCandy = (EyeCandy) cons.newInstance(this);
+            eyeCandyView.setHack(eyeCandy);
+        } catch (Exception e) {
+            // throw new InstantiationException(e.getMessage());
+        }
+    }
+    
+    
+    // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
 
     // Debugging tag.
     @SuppressWarnings("unused")
     private static final String TAG = "Substrate";
+    
+    // List of hacks.
+    private static final Class<?>[] hacksList = {
+        Substrate.class,
+        InterAggregate.class,
+        SandTraveller.class,
+    };
+    
+
+    // List of the preferences activities for the above hacks.
+    private static final Class<?>[] prefsList = {
+        SubstratePreferences.class,
+        InteraggregatePreferences.class,
+        SandTravellerPreferences.class,
+    };
     
     
     // ******************************************************************** //
@@ -282,6 +310,9 @@ public class EyeCandyApp
     
     // The surface manager for the view.
     private EyeCandyView eyeCandyView = null;
+    
+    // Currently selected hack index.
+    private int currentHack = 0;
 
 }
 
