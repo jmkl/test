@@ -140,8 +140,15 @@ public class InterAggregate
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad discSize");
         }
-        discMinSize = discMaxSize / 15;
+        discMinSize = discMaxSize / 12;
         Log.i(TAG, "Prefs: discSize " + discMinSize + "-" + discMaxSize);
+
+        if (key == null || key.equals("twoDims")) try {
+            twoDims = prefs.getBoolean("twoDims", twoDims);
+            Log.i(TAG, "Prefs: twoDims " + twoDims);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad twoDims");
+        }
 
         try {
             String sval = prefs.getString("sandGrains", "" + sandGrains);
@@ -180,8 +187,8 @@ public class InterAggregate
                 discs[i] = new Disc();
             float x = random(canvasWidth);
             float y = random(canvasHeight);
-            float fy = random(-1.2f, 1.2f);
             float fx = random(-1.2f, 1.2f);
+            float fy = twoDims ? random(-1.2f, 1.2f) : 0;
             float r = random(discMinSize, discMaxSize);
             discs[i].reset(i, x, y, fx, fy, r);
         }
@@ -402,11 +409,11 @@ public class InterAggregate
     private Palette colourPalette = null;
 
     // The number of discs on the move.
-    private int numDiscs = 70;
+    private int numDiscs = 100;
     
     // Min and max disc sizes.
-    private int discMinSize = 20;
-    private int discMaxSize = 300;
+    private int discMinSize = 5;
+    private int discMaxSize = 60;
 
     // The discs.
     private Disc[] discs;
@@ -415,7 +422,10 @@ public class InterAggregate
     // every time for performance reasons, so this keeps our place in the
     // list between updates.
     private int nextDisc = 0;
-
+    
+    // If true, move discs in both dimensions.
+    private boolean twoDims = false;
+    
     // Number of grains of sand to paint.
     private int sandGrains = 11;
 

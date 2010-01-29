@@ -48,7 +48,7 @@
     <string-array name="substrate_prefs_cracks_values">
         <item>20</item>  
         <item>50</item>
-        <item>150</item>
+        <item>200</item>
     </string-array>
     
     <!-- Entry names for the sand menu. -->
@@ -61,7 +61,7 @@
     <!-- Values for the sand menu. -->
     <string-array name="substrate_prefs_sand_values">
         <item>20</item>  
-        <item>50</item>
+        <item>64</item>
         <item>100</item>
     </string-array>
      
@@ -94,8 +94,8 @@
     <!-- Values for the number of discs menu. -->
     <string-array name="interaggregate_prefs_discs_values">
         <item>40</item>  
-        <item>70</item>
         <item>100</item>
+        <item>200</item>
     </string-array>
       
     <!-- Entry names for the disc sizes menu. -->
@@ -103,13 +103,15 @@
         <item>Small</item>
         <item>Medium</item>
         <item>Large</item>
+        <item>Huge</item>
     </string-array>
 
     <!-- Values for the disc sizes menu. -->
     <string-array name="interaggregate_prefs_dsize_values">
-        <item>100</item>  
-        <item>300</item>
-        <item>600</item>
+        <item>30</item>  
+        <item>60</item>
+        <item>200</item>
+        <item>500</item>
     </string-array>
     
     <!-- Entry names for the sand menu. -->
@@ -157,8 +159,8 @@
     <!-- Values for the initial velocity menu. -->
     <string-array name="sandtrav_prefs_velo_values">
         <item>4.2</item>  
+        <item>7</item>
         <item>10</item>
-        <item>20</item>
     </string-array>
     
     <!-- Entry names for the sand menu. -->
@@ -166,15 +168,13 @@
         <item>Little</item>
         <item>Medium</item>
         <item>Lots</item>
-        <item>Lots and lots</item>
     </string-array>
 
     <!-- Values for the sand menu. -->
     <string-array name="sandtrav_prefs_sand_values">
         <item>6</item>  
         <item>11</item>
-        <item>20</item>
-        <item>40</item>
+        <item>30</item>
     </string-array>
      
          
@@ -206,7 +206,10 @@ Each one displays a slowly growing pattern which gradually evolves in
 your home screen.\n\
 \n\
 Note that this app only previews the live wallpapers.  To actually set one
-as your wallpaper, see \"Installing\" below.</item>
+as your wallpaper, see \"Installing\" below.  Also note that the hacks
+run much faster in this preview than they do as wallpapers, so that you
+can see how they develop.  As a wallpaper, we don\'t want to flatten your
+battery or be too distracting.</item>
 			  
 <item>To set one of these hacks as your wallpaper, you need to install
 it as follows:\n\
@@ -269,11 +272,22 @@ be of interest, as described in the following sections.</item>
     <string-array name="help_hacks_texts">
 
 <item><b>Substrate</b> is the title hack and inspiration for this package.
-It displays .</item>
+Lines likes crystals grow on a computational substrate.  A simple
+perpendicular growth rule creates intricate city-like structures.\n\
+\n\
+j.tarbell June, 2004 / Albuquerque, New Mexico / complexification.net</item>
 
-<item><b>Inter.Aggregate</b> .</item>
+<item><b>Inter.Aggregate</b> shows a surface filled with medium to small
+sized circles.  Each circle has a different size and direction, but moves at
+the same slow rate.  We display the aggregate intersections of the circles.\n\
+\n\
+j.tarbell May, 2004 / Albuquerque, New Mexico / complexification.net</item>
 
-<item><b>Sand Traveller</b> .</item>
+<item><b>Sand.Traveler</b> is a rendering of 1,000 traveling particles,
+each in pursuit of another.  Over time, patterns of travel are exposed as
+sweeping paths of color.\n\
+\n\
+j.tarbell May, 2004 / Albuquerque, New Mexico / complexification.net</item>
 
     </string-array>
     

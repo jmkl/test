@@ -103,15 +103,15 @@ for more details.\n</string>
    
     <!-- Interaggregate. -->
      
-    <string name="interaggregate_title">Interaggregate</string>
+    <string name="interaggregate_title">Inter.Aggregate</string>
     <string name="interaggregate_author">Moonblink</string>
-    <string name="interaggregate_desc">Lines like crystals slowly grow on a computational interaggregate.</string>
+    <string name="interaggregate_desc">The intersections of slowly-moving circles draw out sand patterns.</string>
     
     <!-- Interaggregate Preferences. -->
     
-    <string name="interaggregate_settings">Substrate preferences</string>
+    <string name="interaggregate_settings">Inter.Aggregate preferences</string>
     
-    <string name="interaggregate_prefs_title">Substrate Preferences</string>
+    <string name="interaggregate_prefs_title">Inter.Aggregate Preferences</string>
     
     <string name="interaggregate_prefs_cycles">Run time</string>
     <string name="interaggregate_prefs_cycles_summary">Number of iterations to run for before resetting</string>
@@ -125,21 +125,25 @@ for more details.\n</string>
     <string name="interaggregate_prefs_dsize_summary">Sizes of the discs</string>
     <string name="interaggregate_prefs_dsize_title">Disc Sizes</string>
     
+    <string name="interaggregate_prefs_2dim">Move in both dimensions</string>
+    <string name="interaggregate_prefs_2dim_summary_off">Discs move only horizontally</string>
+    <string name="interaggregate_prefs_2dim_summary_on">Discs move horizontally and vertically</string>
+    
     <string name="interaggregate_prefs_sand">Sand density</string>
     <string name="interaggregate_prefs_sand_summary">Amount of sand-paint stroke to draw on cracks</string>
     <string name="interaggregate_prefs_sand_title">Sand Density</string>
     
     <!-- Sand Traveller. -->
      
-    <string name="sandtrav_title">Sand Traveller</string>
+    <string name="sandtrav_title">Sand.Traveler</string>
     <string name="sandtrav_author">Moonblink</string>
     <string name="sandtrav_desc">Traveling particles, each in pursuit of another, sweeping out paths of color.</string>
     
     <!-- Sand Traveller Preferences. -->
     
-    <string name="sandtrav_settings">Sand Traveller preferences</string>
+    <string name="sandtrav_settings">Sand.Traveler preferences</string>
     
-    <string name="sandtrav_prefs_title">Sand Traveller Preferences</string>
+    <string name="sandtrav_prefs_title">Sand.Traveler Preferences</string>
     
     <string name="sandtrav_prefs_cycles">Run time</string>
     <string name="sandtrav_prefs_cycles_summary">Number of iterations to run for before resetting</string>

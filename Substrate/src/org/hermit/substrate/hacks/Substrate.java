@@ -420,7 +420,7 @@ public class Substrate
     private int nextCrack = 0;
 
     // Number of grains of sand to paint.
-    private int sandGrains = 50;
+    private int sandGrains = 64;
 
 }
 

@@ -430,7 +430,7 @@ extends EyeCandy
     private int sandGrains = 11;
 
     // minimum distance to draw connections
-    private int minConnection = 256;
+    private int minConnection = 128;
 
 }
 

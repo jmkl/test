@@ -19,7 +19,7 @@
             android:entries="@array/interaggregate_prefs_discs_entries"
             android:entryValues="@array/interaggregate_prefs_discs_values"
             android:dialogTitle="@string/interaggregate_prefs_discs_title"
-            android:defaultValue="70" />
+            android:defaultValue="100" />
 
     <ListPreference
             android:key="discSize"
@@ -28,7 +28,14 @@
             android:entries="@array/interaggregate_prefs_dsize_entries"
             android:entryValues="@array/interaggregate_prefs_dsize_values"
             android:dialogTitle="@string/interaggregate_prefs_dsize_title"
-            android:defaultValue="300" />
+            android:defaultValue="60" />
+
+    <CheckBoxPreference
+            android:key="twoDims"
+            android:title="@string/interaggregate_prefs_2dim"
+            android:summaryOff="@string/interaggregate_prefs_2dim_summary_off"
+            android:summaryOn="@string/interaggregate_prefs_2dim_summary_on"
+            android:defaultValue="false" />
 
     <ListPreference
             android:key="sandGrains"
