@@ -34,8 +34,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.Window;
 
 
@@ -210,16 +210,15 @@ public class EyeCandyApp
     // ******************************************************************** //
 
     /**
-     * Initialize the contents of the game's options menu by adding items
+     * Initialize the contents of the app's options menu by adding items
      * to the given menu.
      * 
      * This is only called once, the first time the options menu is displayed.
      * To update the menu every time it is displayed, see
      * onPrepareOptionsMenu(Menu).
      * 
-     * When we add items to the menu, we can either supply a Runnable to
-     * receive notification of selection, or we can implement the Activity's
-     * onOptionsItemSelected(Menu.Item) method to handle them there.
+     * We build this menu programmatically, so we can create the "Select
+     * hack" menu based on data.
      * 
      * @param   menu            The options menu in which we should
      *                          place our items.  We can safely hold on this
@@ -231,11 +230,24 @@ public class EyeCandyApp
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // We must call through to the base implementation.
-        super.onCreateOptionsMenu(menu);
+        // Add the "Select hack" sub-menu.
+        SubMenu selectMenu = menu.addSubMenu(R.string.menu_select);
+        selectMenu.setIcon(R.drawable.ic_menu_show_list);
         
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
+        // Add entries for all the hacks.
+        for (int i = 0; i < hackNamesList.length; ++i)
+            selectMenu.add(0, MENU_HACK_BASE + i, 0, hackNamesList[i]);
+        
+        // Make the remaining menu items -- these are all simple ones.
+        MenuItem it;
+        it = menu.add(0, MENU_PREFS, 0, R.string.menu_prefs);
+        it.setIcon(R.drawable.ic_menu_preferences);
+        it = menu.add(0, MENU_HELP, 0, R.string.menu_help);
+        it.setIcon(R.drawable.ic_menu_help);
+        it = menu.add(0, MENU_ABOUT, 0, R.string.menu_about);
+        it.setIcon(R.drawable.ic_menu_info);
+        it = menu.add(0, MENU_EXIT, 0, R.string.menu_exit);
+        it.setIcon(R.drawable.ic_menu_close);
 
         return true;
     }
@@ -251,37 +263,36 @@ public class EyeCandyApp
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case R.id.menu_select_0:
-            setHack(0);
-            break;
-        case R.id.menu_select_1:
-            setHack(1);
-            break;
-        case R.id.menu_select_2:
-            setHack(2);
-            break;
-        case R.id.menu_prefs:
-            // Launch the preferences activity as a subactivity, so we
-            // know when it returns.
-            Intent pIntent = new Intent();
-            pIntent.setClass(this, prefsList[currentHack]);
-            startActivity(pIntent);
-            break;
-        case R.id.menu_help:
-            // Launch the help activity as a subactivity.
-            Intent hIntent = new Intent();
-            hIntent.setClass(this, Help.class);
-            startActivity(hIntent);
-            break;
-        case R.id.menu_about:
-            showAbout();
-            break;
-        case R.id.menu_exit:
-            finish();
-            break;
-        default:
-            return super.onOptionsItemSelected(item);
+        final int id = item.getItemId();
+        
+        if (id >= MENU_HACK_BASE) {
+            int index = id - MENU_HACK_BASE;
+            if (index < hacksList.length)
+                setHack(index);
+        } else {
+            switch (item.getItemId()) {
+            case MENU_PREFS:
+                // Launch the preferences activity as a subactivity, so we
+                // know when it returns.
+                Intent pIntent = new Intent();
+                pIntent.setClass(this, prefsList[currentHack]);
+                startActivity(pIntent);
+                break;
+            case MENU_HELP:
+                // Launch the help activity as a subactivity.
+                Intent hIntent = new Intent();
+                hIntent.setClass(this, Help.class);
+                startActivity(hIntent);
+                break;
+            case MENU_ABOUT:
+                showAbout();
+                break;
+            case MENU_EXIT:
+                finish();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+            }
         }
         
         return true;
@@ -323,11 +334,26 @@ public class EyeCandyApp
     @SuppressWarnings("unused")
     private static final String TAG = "Substrate";
     
+    // Menu item constants.
+    private static final int MENU_PREFS = 2;
+    private static final int MENU_HELP = 3;
+    private static final int MENU_ABOUT = 4;
+    private static final int MENU_EXIT = 9;
+    private static final int MENU_HACK_BASE = 100;
+
     // List of hacks.
     private static final Class<?>[] hacksList = {
         Substrate.class,
         InterAggregate.class,
         SandTraveller.class,
+    };
+    
+
+    // List of the names of the hacks.
+    private static final int[] hackNamesList = {
+        R.string.substrate_title,
+        R.string.interaggregate_title,
+        R.string.sandtrav_title,
     };
     
 
