@@ -162,7 +162,7 @@ public class SandTraveller
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
 
-        cities = new City[maxCities];
+        cities = new City[numCities];
 
         float vt = initVelocity;
         float vvt = 0.2f;
@@ -406,13 +406,10 @@ public class SandTraveller
     // Traveller initial velocity.
     private float initVelocity = 4.2f;
 
-    // The maximum number of cities we can have on the go at once.
-    private int maxCities = 101;
-
     // The cities.
     private City[] cities;
 
-    // The number of currently-active cities.
+    // The number of cities.
     private int numCities = 100;
 
     // Index of the next city to be updated.  We don't update all the cities
