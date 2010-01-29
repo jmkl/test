@@ -22,6 +22,8 @@ package org.hermit.substrate;
 import java.lang.reflect.Constructor;
 
 import org.hermit.android.core.MainActivity;
+import org.hermit.substrate.hacks.Guts;
+import org.hermit.substrate.hacks.GutsPreferences;
 import org.hermit.substrate.hacks.InterAggregate;
 import org.hermit.substrate.hacks.InteraggregatePreferences;
 import org.hermit.substrate.hacks.SandTraveller;
@@ -357,6 +359,7 @@ public class EyeCandyApp
         Substrate.class,
         InterAggregate.class,
         SandTraveller.class,
+        Guts.class,
     };
     
 
@@ -365,6 +368,7 @@ public class EyeCandyApp
         R.string.substrate_title,
         R.string.interaggregate_title,
         R.string.sandtrav_title,
+        R.string.guts_title,
     };
     
 
@@ -373,6 +377,7 @@ public class EyeCandyApp
         SubstratePreferences.class,
         InteraggregatePreferences.class,
         SandTravellerPreferences.class,
+        GutsPreferences.class,
     };
     
     

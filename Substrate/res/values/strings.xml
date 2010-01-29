@@ -160,6 +160,22 @@ for more details.\n</string>
     <string name="sandtrav_prefs_sand">Sand density</string>
     <string name="sandtrav_prefs_sand_summary">Amount of sand-paint stroke to draw on cracks</string>
     <string name="sandtrav_prefs_sand_title">Sand Density</string>
+     
+    <!-- Guts. -->
+     
+    <string name="guts_title">Guts</string>
+    <string name="guts_author">Moonblink</string>
+    <string name="guts_desc">Eeuurghgggggg...</string>
+    
+    <!-- Guts Preferences. -->
+    
+    <string name="guts_settings">Guts preferences</string>
+    
+    <string name="guts_prefs_title">Guts Preferences</string>
+    
+    <string name="guts_prefs_cycles">Run time</string>
+    <string name="guts_prefs_cycles_summary">Number of iterations to run for before resetting</string>
+    <string name="guts_prefs_cycles_title">Run Time</string>
    
 </resources>
 

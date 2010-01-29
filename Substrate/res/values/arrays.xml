@@ -177,6 +177,25 @@
         <item>30</item>
     </string-array>
      
+            
+    <!-- ################################################################# -->
+    <!-- Guts Preferences.                                                 -->
+    <!-- ################################################################# -->
+
+    <!-- Entry names for the run time menu. -->
+    <string-array name="guts_prefs_cycles_entries">
+        <item>Short</item>
+        <item>Medium</item>
+        <item>Long</item>
+    </string-array>
+
+    <!-- Values for the run time menu. -->
+    <string-array name="guts_prefs_cycles_values">
+        <item>1000</item>  
+        <item>2000</item>  
+        <item>6000</item>
+    </string-array>
+       
          
     <!-- ################################################################# -->
     <!-- Help.                                                             -->
@@ -267,7 +286,9 @@ be of interest, as described in the following sections.</item>
 
 <item>Inter.Aggregate</item>
 
-<item>Sand Traveller</item>
+<item>Sand.Traveller</item>
+
+<item>Guts</item>
 
     </string-array>
 
@@ -336,6 +357,18 @@ more dense patterns before resetting.\n\
 • <b>Sand density</b> sets the amount of sand to paint with.\n\
 \n\
 j.tarbell May, 2004 / Albuquerque, New Mexico / complexification.net</item>
+
+<item><b>Guts</b> is a composition of many hundreds of gut instances
+rendered simultaneously in a radial fashion.  The gut is a wandering tube
+like object.  Gross, right?\n\
+\n\
+The following preferences settings are available:\n\
+\n\
+• <b>Run time</b> sets the time (actually the number of computation
+cycles) the hack will run for before starting over.  Longer run times produce
+more dense patterns before resetting.\n\
+\n\
+j.tarbell July, 2004 / Albuquerque, New Mexico / complexification.net</item>
 
     </string-array>
     

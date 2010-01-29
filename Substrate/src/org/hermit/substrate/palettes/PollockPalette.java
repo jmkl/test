@@ -19,11 +19,7 @@
 package org.hermit.substrate.palettes;
 
 
-import java.util.Random;
-
 import org.hermit.substrate.Palette;
-
-import net.goui.util.MTRandom;
 
 
 /**
@@ -31,30 +27,24 @@ import net.goui.util.MTRandom;
  * Pollock painting.
  */
 public class PollockPalette
-    implements Palette
+    extends Palette
 {
 
     // ******************************************************************** //
-    // Public Methods.
+    // Constructor.
     // ******************************************************************** //
-    
+
     /**
-     * Get a random colour from this palette.
-     * 
-     * @return          A radomly selected colour.
+     * Create an instance of this palette.
      */
-    public int getRandom() {
-        return POLLOCK[MT_RANDOM.nextInt(POLLOCK_SIZE)];
+    public PollockPalette() {
+        super(POLLOCK);
     }
 
     
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
-    
-    // Random number generator.  We use a Mersenne Twister,
-    // which is a high-quality and fast implementation of java.util.Random.
-    private static final Random MT_RANDOM = new MTRandom();
 
     // The palette data.
     private static final int[] POLLOCK = {
@@ -265,7 +255,6 @@ public class PollockPalette
             (96 << 16) | (112 << 8) | 112,
             (96 << 16) | (56 << 8) | 16,
     };
-    private static final int POLLOCK_SIZE = POLLOCK.length;
 
 }
 

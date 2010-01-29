@@ -19,41 +19,31 @@
 package org.hermit.substrate.palettes;
 
 
-import java.util.Random;
-
 import org.hermit.substrate.Palette;
-
-import net.goui.util.MTRandom;
 
 
 /**
  * A colour palette that came in the InterAggregate hack.
  */
 public class InterPalette
-    implements Palette
+    extends Palette
 {
 
     // ******************************************************************** //
-    // Public Methods.
+    // Constructor.
     // ******************************************************************** //
 
     /**
-     * Get a random colour from this palette.
-     * 
-     * @return          A radomly selected colour.
+     * Create an instance of this palette.
      */
-    public int getRandom() {
-        return INTERAGGREGATE[MT_RANDOM.nextInt(INTER_SIZE)];
+    public InterPalette() {
+        super(INTERAGGREGATE);
     }
 
 
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
-
-    // Random number generator.  We use a Mersenne Twister,
-    // which is a high-quality and fast implementation of java.util.Random.
-    private static final Random MT_RANDOM = new MTRandom();
 
     // The palette data.
     private static final int[] INTERAGGREGATE = {
@@ -65,7 +55,6 @@ public class InterPalette
         0xb0a085,
         0xe6d3ae,
     };
-    private static final int INTER_SIZE = INTERAGGREGATE.length;
 
 }
 
