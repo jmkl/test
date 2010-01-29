@@ -37,6 +37,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.Window;
+import android.widget.Toast;
 
 
 /**
@@ -74,6 +75,8 @@ public class EyeCandyApp
      */
     @Override
     public void onCreate(Bundle icicle) {
+        Log.i(TAG, "onCreate(" + (icicle == null ? "null" : "icicle") + ")");
+
         super.onCreate(icicle);
         
         // Create our EULA box.
@@ -92,7 +95,7 @@ public class EyeCandyApp
         eyeCandyView = new EyeCandyView(this);
         setContentView(eyeCandyView);
         
-        currentHack = 0;
+        restoredHack = 0;
     }
     
 
@@ -121,9 +124,9 @@ public class EyeCandyApp
     protected void onRestoreInstanceState(Bundle icicle) {
         Log.i(TAG, "onRestoreInstanceState()");
 
-        // Set the value of currentHack.  setHack() will be called in
+        // Set the value of restoredHack.  setHack() will be called in
         // onResume().
-        currentHack = icicle.getInt("currentHack", 0);
+        restoredHack = icicle.getInt("currentHack", 0);
     }
 
 
@@ -145,10 +148,12 @@ public class EyeCandyApp
         // First time round, show the EULA.
         showFirstEula();
         
-        // By now currentHack has either been initialised or restored.
-        // Select the indicated hack.
-        setHack(currentHack);
-        
+        // If restoredHack has been set, select the indicated hack.
+        if (restoredHack >= 0) {
+            setHack(restoredHack);
+            restoredHack = -1;
+        }
+
         // Resume the view.
         eyeCandyView.onResume();
         
@@ -310,10 +315,13 @@ public class EyeCandyApp
      *                      to display.
      */
     private void setHack(int index) {
-        Class<?> hclass = hacksList[index];
+        // Do nothing if it's already set.
+        if (index == currentHack)
+            return;
         
         try {
             // Create an instance of the screen hack.
+            Class<?> hclass = hacksList[index];
             Constructor<?> cons = hclass.getConstructor(Context.class);
             EyeCandy eyeCandy = (EyeCandy) cons.newInstance(this);
             
@@ -321,11 +329,14 @@ public class EyeCandyApp
             eyeCandyView.setHack(eyeCandy);
             currentHack = index;
         } catch (Exception e) {
-            // throw new InstantiationException(e.getMessage());
+            String text = "Can't set selected hack " +
+                            hackNamesList[index] + ": " + e.getMessage();
+            Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
+            toast.show();
         }
     }
-    
-    
+
+
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
@@ -372,8 +383,12 @@ public class EyeCandyApp
     // The surface manager for the view.
     private EyeCandyView eyeCandyView = null;
     
-    // Currently selected hack index.
-    private int currentHack = 0;
+    // Restored hack index -- i.e. the one that should be set when we get
+    // fully up and running.  Negative if not set.
+    private int restoredHack = -1;
+
+    // Currently set hack index.  Negative if not set.
+    private int currentHack = -1;
 
 }
 
