@@ -3,7 +3,7 @@
 <resources>
          
     <!-- ################################################################# -->
-    <!-- Common EyeCandy Preferences.                                            -->
+    <!-- Common EyeCandy Preferences.                                      -->
     <!-- ################################################################# -->
     
     <!-- Entry names for the run time menu. -->
@@ -179,7 +179,7 @@
      
          
     <!-- ################################################################# -->
-    <!-- Help.                                            -->
+    <!-- Help.                                                             -->
     <!-- ################################################################# -->
 
     <!-- Help section titles. -->
@@ -200,16 +200,20 @@
 \n\
 A live wallpaper is a wallpaper which runs in the background of your
 home screen, displaying a constantly-changing backdrop.  This application
-is a collection of live wallpapers (a.k.a. \"screen hacks\") based on the
-beautiful work of J.Tarbell.
-Each one displays a slowly growing pattern which gradually evolves in
+is a collection of live wallpapers (a.k.a. \"screen hacks\"), each one
+displaying a slowly growing pattern which gradually evolves in
 your home screen.\n\
+\n\
+The hacks collected here are the work of J.Tarbell; to see more of this
+beautiful work you can visit his web site at
+http://complexification.net/ .  The author of this app is not affiliated
+with the website or J.Tarbell.\n\
 \n\
 Note that this app only previews the live wallpapers.  To actually set one
 as your wallpaper, see \"Installing\" below.  Also note that the hacks
 run much faster in this preview than they do as wallpapers, so that you
-can see how they develop.  As a wallpaper, we don\'t want to flatten your
-battery or be too distracting.</item>
+can see how they develop.  Live wallpapers run more slowly, as we don\'t
+want to flatten your battery or be too distracting.</item>
 			  
 <item>To set one of these hacks as your wallpaper, you need to install
 it as follows:\n\
@@ -243,7 +247,8 @@ wallpaper.</item>
               
 <item>This section provides details on each of the live wallpapers —
 \"hacks\" — available in this package, including details of the
-settings available in each hack.</item>
+settings available in each hack.  There are also some settings which are
+common to all hacks, as detailed in the next section.</item>
 
 <item>@array/help_hacks_texts</item>
 
@@ -260,6 +265,8 @@ be of interest, as described in the following sections.</item>
     <!-- Section titles for the hacks help. -->
     <string-array name="help_hacks_titles">
 
+<item>Common</item>
+
 <item>Substrate</item>
 
 <item>Inter.Aggregate</item>
@@ -271,21 +278,66 @@ be of interest, as described in the following sections.</item>
     <!-- Section contents for the hacks help. -->
     <string-array name="help_hacks_texts">
 
+<item>The following preferences settings are available in all the hacks:\n\
+\n\
+• <b>Background colour</b> sets the background colour for the hack.  White
+produces a clear, bright rendering; black is more subtle, and may save
+some battery power on devices with an OLED display.</item>
+
 <item><b>Substrate</b> is the title hack and inspiration for this package.
 Lines likes crystals grow on a computational substrate.  A simple
 perpendicular growth rule creates intricate city-like structures.\n\
 \n\
+The following preferences settings are available:\n\
+\n\
+• <b>Run time</b> sets the time (actually the number of computation
+cycles) the hack will run for before starting over.  Longer run times produce
+more dense patterns before resetting.\n\
+\n\
+• <b>Number of cracks</b> sets the number of cracks which will be developed
+at one time.\n\
+\n\
+• <b>Sand density</b> sets the amount of sand to paint each crack with.\n\
+\n\
 j.tarbell June, 2004 / Albuquerque, New Mexico / complexification.net</item>
 
 <item><b>Inter.Aggregate</b> shows a surface filled with medium to small
-sized circles.  Each circle has a different size and direction, but moves at
-the same slow rate.  We display the aggregate intersections of the circles.\n\
+sized discs.  Each disc has a different size and direction, but moves at
+the same slow rate.  We display the aggregate intersections of the disc.\n\
+\n\
+The following preferences settings are available:\n\
+\n\
+• <b>Run time</b> sets the time (actually the number of computation
+cycles) the hack will run for before starting over.  Longer run times produce
+more dense patterns before resetting.\n\
+\n\
+• <b>Number of discs</b> sets the number of discs moving in the background.\n\
+\n\
+• <b>Disc sizes</b> sets the sizes of the discs.\n\
+\n\
+• <b>Both dimensions</b> determines whether the discs move in any direction,
+or just horizontally (the default).\n\
+\n\
+• <b>Sand density</b> sets the amount of sand to paint the intersections
+with.\n\
 \n\
 j.tarbell May, 2004 / Albuquerque, New Mexico / complexification.net</item>
 
 <item><b>Sand.Traveler</b> is a rendering of 1,000 traveling particles,
 each in pursuit of another.  Over time, patterns of travel are exposed as
 sweeping paths of color.\n\
+\n\
+The following preferences settings are available:\n\
+\n\
+• <b>Run time</b> sets the time (actually the number of computation
+cycles) the hack will run for before starting over.  Longer run times produce
+more dense patterns before resetting.\n\
+\n\
+• <b>Use sand painter</b> uses an alternate drawing algorithm.\n\
+\n\
+• <b>Initial velocity</b> sets how fast the travellers move initially.\n\
+\n\
+• <b>Sand density</b> sets the amount of sand to paint with.\n\
 \n\
 j.tarbell May, 2004 / Albuquerque, New Mexico / complexification.net</item>
 

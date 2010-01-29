@@ -30,20 +30,17 @@ import android.util.Log;
 
 
 /**
- * Substrate: grow crystal-like lines on a computational substrate.  This
- * is a port of the code by J. Tarbell at http://complexification.net/.
+ * Intersection Aggregate: a fun visualization defining the relationships
+ * between objects.  This is a port of the code by J. Tarbell at
+ * http://complexification.net/.
  *
- * <p>Copyright © 2004 by J. Tarbell (complex@complexification.net).
- // Intersection Aggregate, {Software} Structures
- // j.tarbell   May, 2004
- // Albuquerque, New Mexico
- // complexification.net
-
- // commissioned by the Whitney ArtPort 
- // collaboration with Casey Reas, Robert Hodgin, William Ngan 
+ * <p>By j.tarbell, May, 2004<br>
+ * Albuquerque, New Mexico<br>
+ * complexification.net<br>
+ * Copyright © 2003 by J. Tarbell (complex@complexification.net).
  * 
- *     "Modifications and extensions of these algorithms are encouraged.
- *      Please send me your experiences."
+ * <p>"Modifications and extensions of these algorithms are encouraged.
+ * Please send me your experiences."
  */
 public class InterAggregate
     extends EyeCandy

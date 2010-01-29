@@ -30,26 +30,20 @@ import android.util.Log;
 
 
 /**
- * SandTraveller: grow crystal-like lines on a computational substrate.  This
- * is a port of the code by J. Tarbell at http://complexification.net/.
+ * SandTraveller: a rendering of 1,000 traveling particles, each in pursuit
+ * of another.  This is a port of the code by J. Tarbell at
+ * http://complexification.net/.
  *
- // Sand Traveler 
- // Special commission for Sónar 2004, Barcelona
- // sand painter implementation of City Traveler + complexification.net
-
- // j.tarbell   May, 2004
- // Albuquerque, New Mexico
- // complexification.net
-
- // Processing 0085 Beta syntax update
- // j.tarbell   April, 2005
- * <p>Copyright © 2003 by J. Tarbell (complex@complexification.net).
+ * <p>By j.tarbell, May, 2004<br>
+ * Albuquerque, New Mexico<br>
+ * complexification.net<br>
+ * Copyright © 2003 by J. Tarbell (complex@complexification.net).
  * 
- *     "Modifications and extensions of these algorithms are encouraged.
- *      Please send me your experiences."
+ * <p>"Modifications and extensions of these algorithms are encouraged.
+ * Please send me your experiences."
  */
 public class SandTraveller
-extends EyeCandy
+    extends EyeCandy
 {
 
     // ******************************************************************** //

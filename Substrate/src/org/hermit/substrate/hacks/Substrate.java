@@ -33,10 +33,13 @@ import android.util.Log;
  * Substrate: grow crystal-like lines on a computational substrate.  This
  * is a port of the code by J. Tarbell at http://complexification.net/.
  *
- * <p>Copyright © 2003 by J. Tarbell (complex@complexification.net).
+ * <p>By j.tarbell, June, 2004<br>
+ * Albuquerque, New Mexico<br>
+ * complexification.net<br>
+ * Copyright © 2003 by J. Tarbell (complex@complexification.net).
  * 
- *     "Modifications and extensions of these algorithms are encouraged.
- *      Please send me your experiences."
+ * <p>"Modifications and extensions of these algorithms are encouraged.
+ * Please send me your experiences."
  */
 public class Substrate
     extends EyeCandy
