@@ -191,9 +191,9 @@
 
     <!-- Values for the run time menu. -->
     <string-array name="guts_prefs_cycles_values">
-        <item>1000</item>  
-        <item>2000</item>  
-        <item>6000</item>
+        <item>3000</item>  
+        <item>6000</item>  
+        <item>12000</item>
     </string-array>
        
          

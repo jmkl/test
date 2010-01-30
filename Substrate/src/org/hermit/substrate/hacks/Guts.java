@@ -458,7 +458,7 @@ extends EyeCandy
     private int dim;
 
     // The number of currently-active paths.
-    private int numPaths = 11;
+    private int numPaths = 8;
 
     // object array
     private CPath[] cpaths;
