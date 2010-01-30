@@ -154,10 +154,10 @@ public class Substrate
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
         
-        crackGrid = new int[canvasWidth * canvasHeight];
-        cracks = new Crack[maxCracks];
-
         // erase crack grid
+        final int grid = canvasWidth * canvasHeight;
+        if (crackGrid == null || crackGrid.length != grid)
+            crackGrid = new int[grid];
         for (int y = 0; y < canvasHeight; ++y)
             for (int x = 0; x < canvasWidth; ++x)
                 crackGrid[y * canvasWidth + x] = 10001;
@@ -169,6 +169,8 @@ public class Substrate
         }
 
         // make just three cracks
+        if (cracks == null || cracks.length != maxCracks)
+            cracks = new Crack[maxCracks];
         numCracks = 0;
         for (int k = 0; k < 3; k++)
             makeCrack();
@@ -219,7 +221,10 @@ public class Substrate
     private void makeCrack() {
         if (numCracks < maxCracks) {
             // make a new crack instance
-            cracks[numCracks] = new Crack();
+            if (cracks[numCracks] == null)
+                cracks[numCracks] = new Crack();
+            else
+                cracks[numCracks].reset();
             numCracks++;
         }
     }
@@ -230,16 +235,17 @@ public class Substrate
     // ******************************************************************** //
     
     private class Crack {
-        float x, y;
-        float t;    // direction of travel in degrees
-
-        // sand painter
-        SandPainter sp;
 
         Crack() {
             // find placement along existing crack
             findStart();
             sp = new SandPainter();
+        }
+
+        void reset() {
+            // find placement along existing crack
+            findStart();
+            sp.reset();
         }
 
         void findStart() {
@@ -250,6 +256,9 @@ public class Substrate
             // shift until crack is found
             boolean found = false;
             int timeout = 0;
+            
+            // The timeout logic looks back to front.  But if you fix it,
+            // it hangs forever.
             while (!found || timeout++ > 1000) {
                 px = random(canvasWidth);
                 py = random(canvasHeight);
@@ -259,32 +268,34 @@ public class Substrate
 
             if (found) {
                 // start crack
-                int a = crackGrid[py*canvasWidth+px];
+                int a = crackGrid[py * canvasWidth + px];
                 if (brandom())
                     a -= 90 + (int) random(-2f, 2.1f);
                 else
                     a += 90 + (int) random(-2f, 2.1f);
 
                 startCrack(px, py, a);
-            } else {
-                //println("timeout: "+timeout);
             }
         }
 
         void startCrack(int X, int Y, int T) {
-            x=X;
-            y=Y;
-            t=T;//%360;
-            double tr = Math.toRadians(t);
-            x += 0.61 * Math.cos(tr);
-            y += 0.61 * Math.sin(tr);  
+            x = X;
+            y = Y;
+            azimuth = T;
+            
+            // Save the sin and cos of azimuth for later (frequent) use.
+            double azRads = Math.toRadians(azimuth);
+            sinAz = (float) Math.sin(azRads);
+            cosAz = (float) Math.cos(azRads);
+            
+            x += 0.61 * cosAz;
+            y += 0.61 * sinAz;  
         }
 
         void move() {
             // continue cracking
-            double tr = Math.toRadians(t);
-            x += 0.42 * Math.cos(tr);
-            y += 0.42 * Math.sin(tr); 
+            x += 0.42 * cosAz;
+            y += 0.42 * sinAz; 
 
             // bound check
             float z = 0.33f;
@@ -295,18 +306,17 @@ public class Substrate
             regionColor();
 
             // draw black crack
-            renderPaint.setColor(0xff000000);
-            renderPaint.setAlpha(85);
-            renderCanvas.drawPoint(x + random(-z, z), y + random(-z, z), renderPaint);
-            // stroke(0, 85);
-            // point(x + random(-z, z), y + random(-z, z));
+            renderPaint.setColor(0x55000000);
+            renderCanvas.drawPoint(cx, cy, renderPaint);
 
-            if ((cx>=0) && (cx<canvasWidth) && (cy>=0) && (cy<canvasHeight)) {
+            if (cx >= 0 && cx < canvasWidth && cy >= 0 && cy < canvasHeight) {
                 // safe to check
-                if ((crackGrid[cy*canvasWidth+cx]>10000) || (Math.abs(crackGrid[cy*canvasWidth+cx]-t)<5)) {
+                int gval = crackGrid[cy * canvasWidth + cx];
+                int gdel = Math.abs(gval - azimuth);
+                if (gval > 10000 || gdel < 5) {
                     // continue cracking
-                    crackGrid[cy * canvasWidth + cx] = (int) t;
-                } else if (Math.abs(crackGrid[cy*canvasWidth+cx]-t)>2) {
+                    crackGrid[cy * canvasWidth + cx] = azimuth;
+                } else if (gdel > 2) {
                     // crack encountered (not self), stop cracking
                     findStart();
                     makeCrack();
@@ -318,34 +328,39 @@ public class Substrate
             }
         }
 
-        void regionColor() {
+        private void regionColor() {
             // start checking one step away
-            float rx=x;
-            float ry=y;
+            float rx = x;
+            float ry = y;
             boolean openspace=true;
 
             // find extents of open space
             while (openspace) {
                 // move perpendicular to crack
-                double tr = Math.toRadians(t);
-                rx += 0.81 * Math.sin(tr);
-                ry -= 0.81 * Math.cos(tr);
+                rx += 0.81 * sinAz;
+                ry -= 0.81 * cosAz;
                 int cx = (int) rx;
                 int cy = (int) ry;
-                if ((cx>=0) && (cx<canvasWidth) && (cy>=0) && (cy<canvasHeight)) {
+                if (cx >= 0 && cx < canvasWidth && cy >= 0 && cy < canvasHeight) {
                     // safe to check
-                    if (crackGrid[cy*canvasWidth+cx]>10000) {
-                        // space is open
-                    } else {
+                    if (crackGrid[cy * canvasWidth + cx] > 10000)
+                        ; // space is open
+                    else
                         openspace=false;
-                    }
-                } else {
+                } else
                     openspace=false;
-                }
             }
             // draw sand painter
-            sp.render(rx,ry,x,y);
+            sp.render(rx, ry, x, y);
         }
+
+        // sand painter
+        private SandPainter sp;
+ 
+        private float x, y;
+        private int azimuth;    // direction of travel in degrees
+        private float cosAz;    // cos(azimuth)
+        private float sinAz;    // sin(azimuth)
     }
 
 
@@ -356,10 +371,14 @@ public class Substrate
     private class SandPainter {
 
         SandPainter() {
+            reset();
+        }
+
+        void reset() {
             c = colourPalette.getRandom();
             g = random(0.01f, 0.1f);
         }
-        
+
         void render(float x, float y, float ox, float oy) {
             // modulate gain
             g += random(-0.050f, 0.050f);
@@ -376,7 +395,7 @@ public class Substrate
                 final float ssiw = (float) Math.sin(Math.sin(i * w));
                 final float px = ox + (x - ox) * ssiw;
                 final float py = oy + (y - oy) * ssiw;
-                final float a = 0.1f - i / (sandGrains * 10.0f);
+                final float a = 0.1f - (float) i / (sandGrains * 10.0f);
                 
                 renderPaint.setAlpha(Math.round(a * 256));
                 renderCanvas.drawPoint(px, py, renderPaint);
@@ -385,12 +404,12 @@ public class Substrate
 
         // Colour for this SandPainter.
         private int c;
-        
+
         // Gain; used to modulate the alpha for a "fuzzy" effect.
         private float g;
     }
 
-    
+
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //

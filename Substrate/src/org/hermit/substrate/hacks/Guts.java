@@ -139,12 +139,18 @@ extends EyeCandy
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
 
-        dim = Math.min(canvasWidth, canvasHeight);
+        // Make the diameter the average of the screen dimensions.
+        diameter = (canvasWidth + canvasHeight) / 2;
 
-        // Make all of the paths.
-        cpaths = new CPath[numPaths];
-        for (int i = 0; i < numPaths; ++i)
-            cpaths[i] = new CPath(i);
+        // Make or re-initialize all of the paths.
+        if (cpaths == null || cpaths.length != numPaths) {
+            cpaths = new CPath[numPaths];
+            for (int i = 0; i < numPaths; ++i)
+                cpaths[i] = new CPath(i);
+        } else {
+            for (int i = 0; i < numPaths; ++i)
+                cpaths[i].reset();
+        }
         nextPath = 0;
 
         // Clear to white.
@@ -191,100 +197,48 @@ extends EyeCandy
     // ******************************************************************** //
 
     private class CPath {
-        // index identifier
-        int id;
-        // position
-        float x,y;
-        // angle
-        float a, av;
-        float v;
-        float tdv, tdvm;
-        int time;
-        // petals
-        int pt;
-        // girth
-        float grth, gv;
-        // sand painters
-        int numsands = 3;
-        boolean fadeOut, moveme;
-        SandPainter[] sandsCenter = new SandPainter[numsands];
-        SandPainter[] sandsLeft = new SandPainter[numsands];
-        SandPainter[] sandsRight = new SandPainter[numsands];
-        SandPainter sandGut;
 
         CPath(int Id) {
             // construct
-            id=Id;
+            id = Id;
 
             // create sand painters
             sandGut = new SandPainter(3);
-            sandGut.setColor(0xff000000);
-            for (int s = 0; s < numsands; ++s) {
-                sandsCenter[s] = new SandPainter(0);
+            for (int s = 0; s < NUM_SANDS; ++s) {
                 sandsLeft[s] = new SandPainter(1);
                 sandsRight[s] = new SandPainter(1);
-                sandsLeft[s].setColor(0xff000000);
-                sandsRight[s].setColor(0xff000000);
-                sandsCenter[s].setColor(colourPalette.getRandom());
+                sandsCenter[s] = new SandPainter(0);
             }
             reset();        
         }
 
         void reset() {
-            float d = random(dim / 2);
+            // Reset the sand painters except the center sands.
+            sandGut.reset(0xff000000);
+            for (int s = 0; s < NUM_SANDS; ++s) {
+                sandsLeft[s].reset(0xff000000);
+                sandsRight[s].reset(0xff000000);
+            }
+
+            // Set up our radius, and set up the center sand painter.
+            float d = random(diameter / 2);
             float t = random(TWO_PI);
             x = d * (float) Math.cos(t);
             y = d * (float) Math.sin(t);
-            int ci = (int) (colourPalette.size() * 2.0f * d / dim);
-            for (int s = 0; s < numsands; s++)
-                sandsCenter[s].setColor(colourPalette.get(ci));
+            int ci = (int) (colourPalette.size() * 2.0f * d / diameter);
+            for (int s = 0; s < NUM_SANDS; s++)
+                sandsCenter[s].reset(colourPalette.get(ci));
 
-            v=0.5f;
-            a=random(TWO_PI);
-            grth=0.1f;
-            gv=1.2f;
+            v = 0.5f;
+            a = random(TWO_PI);
+            grth = 0.1f;
+            gv = 1.2f;
             pt = (int) Math.pow(3, 1 + id % 3);
-            time=0;
+            time = 0;
             tdv = random(0.1f, 0.5f);
             tdvm = random(1.0f, 100.0f);
             fadeOut = false;
             moveme = true;
-        }
-
-        void draw() {
-            // draw each petal
-            for (int p = 0; p < pt; ++p) {
-                // calculate actual angle
-                float t = (float) Math.atan2(y, x);
-                float at = t+p*(TWO_PI / pt);
-                float ad = a+p*(TWO_PI / pt);
-
-                // calculate distance
-                float d = (float) Math.sqrt(x*x+y*y);
-
-                // calculate actual xy
-                float ax = canvasWidth / 2 + d * (float) Math.cos(at);
-                float ay = canvasHeight / 2 + d * (float) Math.sin(at);
-
-                // calculate girth markers
-                float cx = 0.5f * grth * (float) Math.cos(ad - HALF_PI);
-                float cy = 0.5f * grth * (float) Math.sin(ad - HALF_PI);
-
-                // draw points
-                // paint background white
-                for (int s = 0; s < grth * 2; ++s) {
-                    float dd = random(-0.9f, 0.9f);
-                    renderPaint.setColor(0xffffffff);
-                    renderCanvas.drawPoint(ax + dd * cx, ay + dd * cy, renderPaint);
-                }
-                for (int s=0;s<numsands;s++) {
-                    sandsCenter[s].render(ax+cx*0.6f, ay+cy*0.6f,ax-cx*0.6f, ay-cy*0.6f);
-                    sandsLeft[s].render(ax+cx*0.6f, ay+cy*0.6f, ax+cx, ay+cy);
-                    sandsRight[s].render(ax-cx*0.6f,  ay-cy*0.6f, ax-cx, ay-cy);
-                }
-                // paint crease enhancement
-                sandGut.render(ax+cx,ay+cy,ax-cx,ay-cy);
-            }
         }
 
         void grow() {
@@ -294,7 +248,7 @@ extends EyeCandy
 
             // rotational meander
             av = 0.1f * (float) Math.sin(time * tdv) +
-            0.1f * (float) Math.sin(time * tdv / tdvm);
+                 0.1f * (float) Math.sin(time * tdv / tdvm);
             while (Math.abs(av) > HALF_PI / grth)
                 av *= 0.73;
             a += av;
@@ -303,9 +257,8 @@ extends EyeCandy
             if (fadeOut) {
                 gv -= 0.062f;
                 grth += gv;
-                if (grth < 0.1f) {
+                if (grth < 0.1f)
                     moveme = false;
-                }
             } else {
                 grth += gv;
                 gv += random(-0.15f, 0.12f);
@@ -320,6 +273,67 @@ extends EyeCandy
             draw();
         }
 
+        void draw() {
+            // draw each petal
+            for (int p = 0; p < pt; ++p) {
+                // calculate actual angle
+                float t = (float) Math.atan2(y, x);
+                float at = t + p * (TWO_PI / pt);
+                float ad = a + p * (TWO_PI / pt);
+
+                // calculate distance
+                float d = (float) Math.sqrt(x * x + y * y);
+
+                // calculate actual xy
+                float ax = canvasWidth / 2 + d * (float) Math.cos(at);
+                float ay = canvasHeight / 2 + d * (float) Math.sin(at);
+
+                // calculate girth markers
+                float cx = 0.5f * grth * (float) Math.cos(ad - HALF_PI);
+                float cy = 0.5f * grth * (float) Math.sin(ad - HALF_PI);
+
+                // draw points
+                // paint background white
+                renderPaint.setColor(0xffffffff);
+                for (int s = 0; s < grth * 2; ++s) {
+                    float dd = random(-0.9f, 0.9f);
+                    renderCanvas.drawPoint(ax + dd * cx, ay + dd * cy, renderPaint);
+                }
+                for (int s = 0; s < NUM_SANDS; ++s) {
+                    final float px1 = ax + cx * 0.6f;
+                    final float py1 = ay + cy * 0.6f;
+                    final float px2 = ax - cx * 0.6f;
+                    final float py2 = ay - cy * 0.6f;
+                    sandsCenter[s].render(px1, py1, px2, py2);
+                    sandsLeft[s].render(px1, py1, ax + cx, ay + cy);
+                    sandsRight[s].render(px2,  py2, ax - cx, ay - cy);
+                }
+                
+                // paint crease enhancement
+                sandGut.render(ax + cx, ay + cy, ax - cx, ay - cy);
+            }
+        }
+
+        // index identifier
+        private int id;
+        // position
+        private float x,y;
+        // angle
+        private float a, av;
+        private float v;
+        private float tdv, tdvm;
+        private int time;
+        // petals
+        private int pt;
+        // girth
+        private float grth, gv;
+        // sand painters
+        private static final int NUM_SANDS = 3;
+        private boolean fadeOut, moveme;
+        private SandPainter[] sandsCenter = new SandPainter[NUM_SANDS];
+        private SandPainter[] sandsLeft = new SandPainter[NUM_SANDS];
+        private SandPainter[] sandsRight = new SandPainter[NUM_SANDS];
+        private SandPainter sandGut;
     }
 
 
@@ -328,13 +342,13 @@ extends EyeCandy
     // ******************************************************************** //
 
     private class SandPainter {
-        private int c;
-        private float g;
-        private int MODE;
 
         SandPainter(int M) {
             MODE = M;
-            c = colourPalette.getRandom();
+        }
+
+        void reset(int C) {
+            c = C;
             g = random(0f, HALF_PI);
         }
 
@@ -428,10 +442,11 @@ extends EyeCandy
                 renderCanvas.drawPoint(px2, py2, renderPaint);
             }
         }
-
-        void setColor(int C) {
-            c = C;
-        }
+        
+        private final int MODE;
+        private int c;
+        private float g;
+        
     }
 
 
@@ -455,7 +470,7 @@ extends EyeCandy
     // Colour palette we're using.
     private Palette colourPalette = null;
 
-    private int dim;
+    private int diameter;
 
     // The number of currently-active paths.
     private int numPaths = 8;

@@ -264,7 +264,7 @@ public abstract class EyeCandyWallpaper
 
             mHandler.removeCallbacks(mDrawCube);
             if (mVisible)
-                mHandler.postDelayed(mDrawCube, 100);
+                mHandler.postDelayed(mDrawCube, eyeCandy.getSleepTime());
         }
 
 
@@ -289,7 +289,7 @@ public abstract class EyeCandyWallpaper
         // Amount by which the wallpaper is bigger than the screen.
         private static final int WALLPAPER_MULT_X = 2;
         private static final int WALLPAPER_MULT_Y = 1;
-
+        
 
         // ******************************************************************** //
         // Private Data.

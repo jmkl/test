@@ -12,5 +12,14 @@
             android:dialogTitle="@string/eyecandy_prefs_bg_title"
             android:defaultValue="2000" />
 
+    <ListPreference
+            android:key="animSpeed"
+            android:title="@string/eyecandy_prefs_speed"
+            android:summary="@string/eyecandy_prefs_speed_summary"
+            android:entries="@array/eyecandy_prefs_speed_entries"
+            android:entryValues="@array/eyecandy_prefs_speed_values"
+            android:dialogTitle="@string/eyecandy_prefs_speed_title"
+            android:defaultValue="1" />
+
 </PreferenceScreen>
 

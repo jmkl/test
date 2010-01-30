@@ -75,6 +75,10 @@ for more details.\n</string>
     <string name="eyecandy_prefs_bg">Background colour</string>
     <string name="eyecandy_prefs_bg_summary">Select a background colour for the wallpaper</string>
     <string name="eyecandy_prefs_bg_title">Background Colour</string>
+    
+    <string name="eyecandy_prefs_speed">Animation speed</string>
+    <string name="eyecandy_prefs_speed_summary">Faster risks a less responsive home screen</string>
+    <string name="eyecandy_prefs_speed_title">Animation Speed</string>
       
       
     <!-- Substrate. -->

@@ -18,6 +18,20 @@
         <item>#ffffffff</item>
     </string-array>
       
+    <!-- Entry names for the run time menu. -->
+    <string-array name="eyecandy_prefs_speed_entries">
+        <item>Slow</item>
+        <item>Medium</item>
+        <item>Fast</item>
+    </string-array>
+
+    <!-- Values for the run time menu. -->
+    <string-array name="eyecandy_prefs_speed_values">
+        <item>2</item>
+        <item>1</item>
+        <item>0</item>
+    </string-array>
+      
          
     <!-- ################################################################# -->
     <!-- Substrate Preferences.                                            -->

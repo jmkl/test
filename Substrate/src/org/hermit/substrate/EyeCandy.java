@@ -95,6 +95,16 @@ public abstract class EyeCandy
             Log.e(TAG, "Pref: bad bgColour");
         }
 
+        if (key == null || key.equals("animSpeed")) try {
+            String sval = prefs.getString("animSpeed", null);
+            int ival = Integer.parseInt(sval);
+            runTime = 25 + (2 - ival) * 10;
+            sleepTime = 20 + ival * 20;
+            Log.i(TAG, "Prefs: animSpeed: run=" + runTime + " sleep=" + sleepTime);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad animSpeed");
+        }
+
         // Tell the subclass to read its prefs.
         readPreferences(prefs, key);
 
@@ -175,6 +185,16 @@ public abstract class EyeCandy
 
     
     /**
+     * Get the time in ms to sleep between updates.
+     * 
+     * @return              Sleep time in ms.
+     */
+    protected long getSleepTime() {
+        return sleepTime;
+    }
+    
+
+    /**
      * Set the number of cycles this hack will run for before resetting.
      * Subclasses can call this to tell us how long they wish to run
      * for.
@@ -216,7 +236,7 @@ public abstract class EyeCandy
         // reasonable time, so we don't block the home screen's responsiveness.
         long start = System.currentTimeMillis();
         long time = 0;
-        while (time < RUN_TIME) {
+        while (time < runTime) {
             numCycles += iterate();
             time = System.currentTimeMillis() - start;
         }
@@ -396,9 +416,6 @@ public abstract class EyeCandy
 	@SuppressWarnings("unused")
 	private static final String TAG = "Substrate";
 
-    // Time in ms to run for during each update.
-    private static final int RUN_TIME = 80;
-
 	// The number of cycles over which to fade the image out when restarting.
 	private static final int FADE_CYCLES = 150;
 
@@ -406,7 +423,16 @@ public abstract class EyeCandy
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
+
+    // Time in ms to run for during each update.
+    private long runTime = 35;
+
+    // The time in ms to sleep between updates.
+    private long sleepTime = 40;
     
+    // 30 / 40 gives a fast reponse.
+    // 30 / 20 is a bit laggy.
+
     // Number of cycles before we reset.  Zero means run forever.
 	// Subclasses should generally override this with something appropriate.
     private int maxCycles = 10000;

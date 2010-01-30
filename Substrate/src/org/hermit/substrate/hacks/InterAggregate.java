@@ -177,7 +177,7 @@ public class InterAggregate
 
         if (discs == null || discs.length != numDiscs)
             discs = new Disc[numDiscs];
-        
+
         // arrange linearly
         for (int i = 0; i < numDiscs; i++) {
             if (discs[i] == null)
@@ -334,12 +334,10 @@ public class InterAggregate
     private class SandPainter {
 
         SandPainter() {
-            c = colourPalette.getRandom();
-            p = random(1.0f);
-            g = random(0.01f, 0.1f);
+            reset();
         }
 
-        private void reset() {
+        void reset() {
             c = colourPalette.getRandom();
             p = random(1.0f);
             g = random(0.01f, 0.1f);
