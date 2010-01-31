@@ -20,8 +20,6 @@ package org.hermit.substrate.hacks;
 
 
 import org.hermit.substrate.EyeCandy;
-import org.hermit.substrate.Palette;
-import org.hermit.substrate.palettes.PollockPalette;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -95,7 +93,6 @@ public class Substrate
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        colourPalette = new PollockPalette();
     }
 
 
@@ -424,9 +421,6 @@ public class Substrate
     // Private Data.
     // ******************************************************************** //
 
-    // Colour palette we're using.
-    private Palette colourPalette = null;
-    
     // The maximum number of cracks we can have on the go at once.
     private int maxCracks = 50;
 

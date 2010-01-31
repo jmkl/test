@@ -21,6 +21,14 @@ package org.hermit.substrate;
 
 import java.util.Random;
 
+import org.hermit.substrate.palettes.BluesPalette;
+import org.hermit.substrate.palettes.CaramelPalette;
+import org.hermit.substrate.palettes.FirecodePalette;
+import org.hermit.substrate.palettes.FlowerPalette;
+import org.hermit.substrate.palettes.OrnatePalette;
+import org.hermit.substrate.palettes.PollockPalette;
+import org.hermit.substrate.palettes.SandPalette;
+
 import net.goui.util.MTRandom;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -99,6 +107,14 @@ public abstract class EyeCandy
             Log.e(TAG, "Pref: bad bgColour");
         }
 
+        if (key == null || key.equals("colourPalette")) try {
+            String sval = prefs.getString("colourPalette", "" + colourPaletteId);
+            colourPaletteId = Integer.parseInt(sval);
+            Log.i(TAG, "Prefs: colourPalette " + colourPaletteId);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad colourPalette");
+        }
+
         if (key == null || key.equals("animSpeed")) try {
             String sval = prefs.getString("animSpeed", null);
             int ival = Integer.parseInt(sval);
@@ -112,7 +128,7 @@ public abstract class EyeCandy
         // Tell the subclass to read its prefs.
         readPreferences(prefs, key);
 
-        reset();
+        restartHack();
     }
 
 
@@ -168,7 +184,7 @@ public abstract class EyeCandy
 
         onConfigurationSet(width, height, config);
         
-        reset();
+        restartHack();
         numCycles = 0;
     }
     
@@ -216,6 +232,21 @@ public abstract class EyeCandy
     // Animation Rendering.
     // ******************************************************************** //
     
+    /**
+     * Reset this eye candy back to a blank state.  This will be called
+     * at start-up, and to reset back to an initial state when the cycle
+     * limit is exceeded.
+     */
+    private void restartHack() {
+        // Set the colour palette for this run.
+        int i = colourPaletteId < 0 ?
+                random(COLOUR_PALETTES.length) : colourPaletteId;
+        colourPalette = COLOUR_PALETTES[i];
+                
+        reset();
+    }
+    
+
     /**
      * Reset this eye candy back to a blank state.  This will be called
      * at start-up, and to reset back to an initial state when the cycle
@@ -292,7 +323,7 @@ public abstract class EyeCandy
             
             // If we're done fading, start the next iteration.
             if (--fadeCycles == 0) {
-                reset();
+                restartHack();
                 numCycles = 0;
             }
         } else
@@ -379,6 +410,31 @@ public abstract class EyeCandy
 
 
     // ******************************************************************** //
+    // Class Data.
+    // ******************************************************************** //
+
+    // Debugging tag.
+    @SuppressWarnings("unused")
+    private static final String TAG = "Substrate";
+
+    // The number of cycles over which to fade the image out when restarting.
+    // For the first 50% of the time, we show the image static, so the user
+    // can admire it.
+    private static final int FADE_CYCLES = 300;
+    
+    // Our colour palettes.
+    private Palette[] COLOUR_PALETTES = {
+            new PollockPalette(),
+            new BluesPalette(),
+            new CaramelPalette(),
+            new FirecodePalette(),
+            new FlowerPalette(),
+            new OrnatePalette(),
+            new SandPalette(),
+    };
+
+
+    // ******************************************************************** //
     // Subclass Accessible Data.
     // ******************************************************************** //
 
@@ -428,19 +484,15 @@ public abstract class EyeCandy
      */
     protected int backgroundColor = 0xffffffff;
 
+    /**
+     * The colour palette index for this hack.
+     */
+    protected int colourPaletteId = 0;
 
-    // ******************************************************************** //
-    // Class Data.
-    // ******************************************************************** //
-
-    // Debugging tag.
-	@SuppressWarnings("unused")
-	private static final String TAG = "Substrate";
-
-	// The number of cycles over which to fade the image out when restarting.
-	// For the first 50% of the time, we show the image static, so the user
-	// can admire it.
-	private static final int FADE_CYCLES = 300;
+    /**
+     * The colour palette for this hack.
+     */
+    protected Palette colourPalette = COLOUR_PALETTES[0];
 
 
     // ******************************************************************** //
@@ -455,9 +507,6 @@ public abstract class EyeCandy
 
     // The time in ms to sleep between updates.
     private long sleepTime = 40;
-    
-    // 30 / 40 gives a fast reponse.
-    // 30 / 20 is a bit laggy.
 
     // Number of cycles before we reset.  Zero means run forever.
 	// Subclasses should generally override this with something appropriate.

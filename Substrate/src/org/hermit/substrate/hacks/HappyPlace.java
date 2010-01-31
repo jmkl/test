@@ -20,8 +20,6 @@ package org.hermit.substrate.hacks;
 
 
 import org.hermit.substrate.EyeCandy;
-import org.hermit.substrate.Palette;
-import org.hermit.substrate.palettes.SandPalette;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -96,7 +94,6 @@ public class HappyPlace
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        colourPalette = new SandPalette();
     }
 
 
@@ -442,9 +439,6 @@ public class HappyPlace
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
-
-    // Colour palette we're using.
-    private Palette colourPalette = null;
 
     // Number of friends we'll process.
     private int numFriends = 40;

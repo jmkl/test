@@ -20,8 +20,6 @@ package org.hermit.substrate.hacks;
 
 
 import org.hermit.substrate.EyeCandy;
-import org.hermit.substrate.Palette;
-import org.hermit.substrate.palettes.InterPalette;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -96,7 +94,6 @@ public class InterAggregate
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        colourPalette = new InterPalette();
     }
 
 
@@ -400,9 +397,6 @@ public class InterAggregate
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
-
-    // Colour palette we're using.
-    private Palette colourPalette = null;
 
     // The number of discs on the move.
     private int numDiscs = 100;

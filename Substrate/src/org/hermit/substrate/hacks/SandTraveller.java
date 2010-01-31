@@ -20,8 +20,6 @@ package org.hermit.substrate.hacks;
 
 
 import org.hermit.substrate.EyeCandy;
-import org.hermit.substrate.Palette;
-import org.hermit.substrate.palettes.SandPalette;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -96,7 +94,6 @@ public class SandTraveller
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        colourPalette = new SandPalette();
     }
 
 
@@ -397,9 +394,6 @@ public class SandTraveller
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
-
-    // Colour palette we're using.
-    private Palette colourPalette = null;
 
     // Whether to use the sand painter.
     private boolean sandPaint = false;

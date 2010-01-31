@@ -6,16 +6,40 @@
     <!-- Common EyeCandy Preferences.                                      -->
     <!-- ################################################################# -->
     
-    <!-- Entry names for the run time menu. -->
+    <!-- Entry names for the background colour menu. -->
     <string-array name="eyecandy_prefs_bg_entries">
         <item>Black</item>
         <item>White</item>
     </string-array>
 
-    <!-- Values for the run time menu. -->
+    <!-- Values for the background colour menu. -->
     <string-array name="eyecandy_prefs_bg_values">
         <item>#ff000000</item>  
         <item>#ffffffff</item>
+    </string-array>
+      
+    <!-- Entry names for the colour palette menu. -->
+    <string-array name="eyecandy_prefs_palette_entries">
+        <item>Pollock</item>
+        <item>Blues</item>
+        <item>Caramel</item>
+        <item>Fire</item>
+        <item>Flower</item>
+        <item>Ornate</item>
+        <item>Sand</item>
+        <item>Random</item>
+    </string-array>
+
+    <!-- Values for the colour palette menu. -->
+    <string-array name="eyecandy_prefs_palette_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>-1</item>
     </string-array>
       
     <!-- Entry names for the run time menu. -->
@@ -355,7 +379,15 @@ be of interest, as described in the following sections.</item>
 \n\
 • <b>Background colour</b> sets the background colour for the hack.  White
 produces a clear, bright rendering; black is more subtle, and may save
-some battery power on devices with an OLED display.</item>
+some battery power on devices with an OLED display.\n\
+\n\
+• <b>Colour palette</b> selects the palette the content of the hack is
+rendered with.  How this will affect the final appearance will depend on
+the hack.  The palette names don\'t mean much; experiment.\n\
+\n\
+• <b>Animation speed</b> determines how fast the animation runs.  Bear in
+mind that these hacks are mostly very CPU-intensive; select a low speed
+for better battery life and a more responsive home screen.</item>
 
 <item><b>Substrate</b> is the title hack and inspiration for this package.
 Lines likes crystals grow on a computational substrate.  A simple

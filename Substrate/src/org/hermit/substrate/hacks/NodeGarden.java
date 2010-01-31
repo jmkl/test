@@ -20,9 +20,7 @@ package org.hermit.substrate.hacks;
 
 
 import org.hermit.substrate.EyeCandy;
-import org.hermit.substrate.Palette;
 import org.hermit.substrate.R;
-import org.hermit.substrate.palettes.PollockPalette;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -100,8 +98,6 @@ extends EyeCandy
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        colourPalette = new PollockPalette();
-        
         // load node icon   
         nodeIcoBase = loadImage(R.drawable.node_base);
         nodeIcoDark = loadImage(R.drawable.node_dark);
@@ -596,22 +592,6 @@ extends EyeCandy
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
-
-    // Colour palette we're using.
-    private Palette colourPalette = null;
-
-    //    // The maximum number of cracks we can have on the go at once.
-    //    private int maxCracks = 50;
-    //
-    //    // The number of currently-active cracks.
-    //    private int numCracks = 0;
-    //
-    //    // Grid of cracks.
-    //    private int[] crackGrid = null;
-    //    private Crack[] cracks = null;
-    //
-    //    // Number of grains of sand to paint.
-    //    private int sandGrains = 64;
 
     private int diameter;
     private int numSpines;

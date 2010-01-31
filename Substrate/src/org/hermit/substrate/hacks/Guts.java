@@ -20,8 +20,6 @@ package org.hermit.substrate.hacks;
 
 
 import org.hermit.substrate.EyeCandy;
-import org.hermit.substrate.Palette;
-import org.hermit.substrate.palettes.PollockPalette;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -96,7 +94,6 @@ extends EyeCandy
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        colourPalette = new PollockPalette();
     }
 
 
@@ -467,9 +464,6 @@ extends EyeCandy
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
-
-    // Colour palette we're using.
-    private Palette colourPalette = null;
 
     private int diameter;
 
