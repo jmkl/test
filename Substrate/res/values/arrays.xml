@@ -212,6 +212,25 @@
        
          
     <!-- ################################################################# -->
+    <!-- Happy.Place Preferences.                                          -->
+    <!-- ################################################################# -->
+
+    <!-- Entry names for the run time menu. -->
+    <string-array name="happy_prefs_cycles_entries">
+        <item>Short</item>
+        <item>Medium</item>
+        <item>Long</item>
+    </string-array>
+
+    <!-- Values for the run time menu. -->
+    <string-array name="happy_prefs_cycles_values">
+        <item>3000</item>  
+        <item>6000</item>  
+        <item>12000</item>
+    </string-array>
+       
+         
+    <!-- ################################################################# -->
     <!-- Help.                                                             -->
     <!-- ################################################################# -->
 
@@ -304,6 +323,8 @@ be of interest, as described in the following sections.</item>
 
 <item>Guts</item>
 
+<item>Happy.Place</item>
+
     </string-array>
 
     <!-- Section contents for the hacks help. -->
@@ -383,6 +404,18 @@ cycles) the hack will run for before starting over.  Longer run times produce
 more dense patterns before resetting.\n\
 \n\
 j.tarbell July, 2004 / Albuquerque, New Mexico / complexification.net</item>
+
+<item><b>Happy.Place</b> renders the resulting configuration of a system of
+friendly nodes.  They are connected at random with preferences to nodes
+closer.  Connections between nodes are considered friendships.\n\
+\n\
+The following preferences settings are available:\n\
+\n\
+• <b>Run time</b> sets the time (actually the number of computation
+cycles) the hack will run for before starting over.  Longer run times produce
+more dense patterns before resetting.\n\
+\n\
+j.tarbell March, 2004 / Albuquerque, New Mexico / complexification.net</item>
 
     </string-array>
     

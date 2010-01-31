@@ -30,11 +30,11 @@ import android.util.Log;
 
 
 /**
- * SandTraveller: a rendering of 1,000 traveling particles, each in pursuit
- * of another.  This is a port of the code by J. Tarbell at
+ * Happy.Place: renders the resulting configuration of a system of
+ * friendly nodes.  This is a port of the code by J. Tarbell at
  * http://complexification.net/.
  *
- * <p>By j.tarbell, May, 2004<br>
+ * <p>By j.tarbell, March, 2004<br>
  * Albuquerque, New Mexico<br>
  * complexification.net<br>
  * Copyright © 2003 by J. Tarbell (complex@complexification.net).
@@ -42,8 +42,8 @@ import android.util.Log;
  * <p>"Modifications and extensions of these algorithms are encouraged.
  * Please send me your experiences."
  */
-public class SandTraveller
-    extends EyeCandy
+public class HappyPlace
+extends EyeCandy
 {
 
     // ******************************************************************** //
@@ -53,7 +53,7 @@ public class SandTraveller
     /**
      * Preferences name for preferences relating to this eye candy.
      */
-    public static final String SHARED_PREFS_NAME = "sandtrav_settings";
+    public static final String SHARED_PREFS_NAME = "happy_settings";
 
 
     // ******************************************************************** //
@@ -61,11 +61,11 @@ public class SandTraveller
     // ******************************************************************** //
 
     /**
-     * Create a substrate drawing instance.
+     * Create an instance.
      * 
      * @param  context      Our application context.
      */
-    public SandTraveller(Context context) {
+    public HappyPlace(Context context) {
         super(context);
     }
 
@@ -113,38 +113,15 @@ public class SandTraveller
      */
     @Override
     protected void readPreferences(SharedPreferences prefs, String key) {
-        int maxCycles = 2000;
-        if (key == null || key.equals("maxCycles")) try {
+        int maxCycles = 6000;
+        try {
             String sval = prefs.getString("maxCycles", "" + maxCycles);
             maxCycles = Integer.valueOf(sval);
-            setMaxCycles(maxCycles);
-            Log.i(TAG, "Prefs: maxCycles " + maxCycles);
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad maxCycles");
         }
-
-        if (key == null || key.equals("sandPaint")) try {
-            sandPaint = prefs.getBoolean("sandPaint", sandPaint);
-            Log.i(TAG, "Prefs: sandPaint " + sandPaint);
-        } catch (Exception e) {
-            Log.e(TAG, "Pref: bad sandPaint");
-        }
-
-        if (key == null || key.equals("initVelocity")) try {
-            String sval = prefs.getString("initVelocity", "" + initVelocity);
-            initVelocity = Float.valueOf(sval);
-            Log.i(TAG, "Prefs: initVelocity " + initVelocity);
-        } catch (Exception e) {
-            Log.e(TAG, "Pref: bad initVelocity");
-        }
-
-        if (key == null || key.equals("sandGrains")) try {
-            String sval = prefs.getString("sandGrains", "" + sandGrains);
-            sandGrains = Integer.valueOf(sval);
-            Log.i(TAG, "Prefs: sandGrains " + sandGrains);
-        } catch (Exception e) {
-            Log.e(TAG, "Pref: bad sandGrains");
-        }
+        setMaxCycles(maxCycles);
+        Log.i(TAG, "Prefs: maxCycles " + maxCycles);
     }
 
 
@@ -162,25 +139,41 @@ public class SandTraveller
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
 
-        cities = new City[numCities];
+        if (friends == null || friends.length != numFriends)
+            friends = new Friend[numFriends];
 
-        float vt = initVelocity;
-        float vvt = 0.2f;
-        float ot = random(TWO_PI);
-        for (int t = 0; t < numCities; ++t) {
-            float tinc = ot + (1.1f - t / numCities) * 2 * t * TWO_PI / numCities;
-            float vx = vt * (float) Math.sin(tinc);
-            float vy = vt * (float) Math.cos(tinc);
-            cities[t] = new City(canvasWidth / 2 + vx * 2, canvasHeight / 2 + vy * 2, vx, vy, t);
-            vvt -= 0.00033f;
-            vt += vvt;
+        // make some friend entities
+        final int dim = Math.min(canvasWidth, canvasHeight);
+        for (int i = 0; i < numFriends; ++i) {
+            final float az = TWO_PI * i / numFriends;
+            float fx = canvasWidth / 2 + 0.4f * dim * (float) Math.cos(az);
+            float fy = canvasHeight / 2 + 0.4f * dim * (float) Math.sin(az);
+            if (friends[i] == null)
+                friends[i] = new Friend(fx, fy);
+            else
+                friends[i].reset(fx, fy);
         }
 
-        for (int t = 0; t < numCities; ++t)
-            cities[t].findFriend();
+        // make some random friend connections
+        for (int k=0;k<numFriends*2.2;k++) {
+            int a = (int)((float) Math.floor(random(numFriends)));
+            int b = (int)((float) Math.floor(a+random(22f))%numFriends);
+            if (b>=numFriends) {
+                b=0;
+            } else if (b<0) {
+                b=0;
+            }
+            if (a!=b) {
+                friends[a].connectTo(b);
+                friends[b].connectTo(a);
+            }
+        }
 
         // Clear to white.
         renderCanvas.drawColor(backgroundColor);
+
+        nextFriend = 0;
+        updateState = 0;
     }
 
 
@@ -206,153 +199,195 @@ public class SandTraveller
      */
     @Override
     protected int iterate(int cycles) {
-        final int c = nextCity;
-        if (++nextCity >= numCities) {
-            nextCity = 0;
-            ++cycles;
+        final int c = nextFriend;
+
+        // move friends to happy places
+        switch (updateState) {
+        case 0:
+            friends[c].move();
+            break;
+        case 1:
+            friends[c].expose();
+            friends[c].exposeConnections();
+            break;
+        case 2:
+            friends[c].findHappyPlace();
+            break;
         }
 
-        // move cities
-        cities[c].move();
-
+        if (++nextFriend >= numFriends) {
+            nextFriend = 0;
+            ++updateState;
+            if (updateState > 2 || (updateState > 1 && cycles % 2 == 1)) {
+                updateState = 0;
+                ++cycles;
+            }
+        }
         return cycles;
     }
 
 
     // ******************************************************************** //
-    // Private Methods.
+    // Friend Class.
     // ******************************************************************** //
 
-    private float citydistance(int a, int b) {
-        if (a != b) {
-            // calculate and return distance between cities
-            float dx = cities[b].x - cities[a].x;
-            float dy = cities[b].y - cities[a].y;
-            float d = (float) Math.sqrt(dx * dx + dy * dy);
-            return d;
-        } else {
-            return 0.0f;
-        }
-    }
-
-
-    // ******************************************************************** //
-    // City Class.
-    // ******************************************************************** //
-
-    private class City {
-
-        float x,y;
-        int friend;
+    private class Friend {
+        float x, y;
         float vx, vy;
-        int idx;
-        int myc = colourPalette.getRandom();
+
+        int numcon;
+        int maxcon = 10;
+        int lencon = 10 + (int) random(50f);
+        int[] connections = new int[maxcon];
 
         // sand painters
         int numsands = 3;
         SandPainter[] sands = new SandPainter[numsands];
 
-        City(float Dx, float Dy, float Vx, float Vy, int Idx) {
-            // position
-            x = Dx;
-            y = Dy;
-            vx = Vx;
-            vy = Vy;
-            idx = Idx;
-
-            // create sand painters
+        Friend(float X, float Y) {
             for (int n = 0; n < numsands; ++n)
                 sands[n] = new SandPainter();
+            reset(X, Y);
+        }
+        
+        void reset(float X, float Y) {
+            // position
+            x = X;
+            y = Y;
+            numcon = 0;
+
+            for (int n = 0; n < numsands; ++n)
+                sands[n].reset();
         }
 
-        void move() {
-            vx+=(cities[friend].x-x)/1000;
-            vy+=(cities[friend].y-y)/1000;
+        void expose() {
+            for (int dx = -2; dx <= 2; ++dx) {
+                float a = 0.5f - Math.abs(dx) / 5.0f;
+                renderPaint.setColor(0xff000000);
+                renderPaint.setAlpha(Math.round(256 * a));
+                renderCanvas.drawPoint(x + dx, y, renderPaint);
+                renderPaint.setColor(0xffffffff);
+                renderPaint.setAlpha(Math.round(256 * a));
+                renderCanvas.drawPoint(x + dx - 1, y - 1, renderPaint);
+            }
+            for (int dy = -2; dy <= 2; ++dy) {
+                float a = 0.5f - Math.abs(dy) / 5.0f;
+                renderPaint.setColor(0xff000000);
+                renderPaint.setAlpha(Math.round(256 * a));
+                renderCanvas.drawPoint(x, y + dy, renderPaint);
+                renderPaint.setColor(0xffffffff);
+                renderPaint.setAlpha(Math.round(256 * a));
+                renderCanvas.drawPoint(x - 1, y + dy - 1, renderPaint);
+            }
+        }
 
-            vx*=.936;
-            vy*=.936;
+        void exposeConnections() {
+            // draw connection lines to all friends
+            for (int n=0;n<numcon;n++) {
+                // find axis distances
+                float ox = friends[connections[n]].x;
+                float oy = friends[connections[n]].y;
+
+                for (int s=0;s<numsands;s++) {
+                    sands[s].render(x,y,ox,oy);
+                }
+            }
+        }
+
+
+        void move() {
+            // add velocity to position
             x+=vx;
             y+=vy;
 
-            if (!sandPaint) {
-                drawTravelers();
-            } else {
-                if (citydistance(idx, friend) < minConnection)
-                    drawSandPainters();
-            }
+            //friction
+            vx*=0.92;
+            vy*=0.92;
         }
 
+        void connectTo(int f) {
+            // connect to friend f
 
-        void findFriend() {
-            // pick a node to follow just out ahead
-            int off = (int) random(numCities / 5) + 1;
-            friend = (idx + off) % numCities;
-        }
-
-
-        void drawTravelers() {
-            int nt = 11;
-            for (int i=0;i<nt;i++) {
-                // pick random distance between city
-                final float t = random(TWO_PI);
-                final float sint = (float) Math.sin(t);
-                
-                // draw traveler      
-                float dx = sint*(x-cities[friend].x)/2+(x+cities[friend].x)/2;
-                float dy = sint*(y-cities[friend].y)/2+(y+cities[friend].y)/2;
-                if (random(1000)>990) {
-                    // noise
-                    dx+=random(3)-random(3);
-                    dy+=random(3)-random(3);
+            // is there room for more friends?
+            if (numcon<maxcon) {
+                // already connected to friend?
+                if (!friendOf(f)) {
+                    connections[numcon] = f;
+                    numcon++;
                 }
-                renderPaint.setColor(cities[friend].myc);
-                renderPaint.setAlpha(48);
-                renderCanvas.drawPoint(dx, dy, renderPaint);
-                // draw anti-traveler
-                dx = -1*sint*(x-cities[friend].x)/2+(x+cities[friend].x)/2;
-                dy = -1*sint*(y-cities[friend].y)/2+(y+cities[friend].y)/2;
-                if (random(1000)>990) {
-                    // noise
-                    dx+=random(3)-random(3);
-                    dy+=random(3)-random(3);
-                }
-                renderCanvas.drawPoint(dx, dy, renderPaint);
             }
         }
 
-        void drawSandPainters() {
-            for (int s=0;s<numsands;s++) {
-                sands[s].render(x,y,cities[friend].x,cities[friend].y);
+        boolean friendOf(int x) {
+            boolean isFriend = false;
+            for (int n=0;n<numcon;n++) {
+                if (connections[n]==x) isFriend=true;
             }
+            return isFriend;
+        }
+
+        void findHappyPlace() {
+            // set destination to a happier place
+            // (closer to friends, further from others)
+            float ax = 0.0f;
+            float ay = 0.0f;
+
+            // find mean average of all friends and non-friends
+            for (int n=0;n<numFriends;n++) {
+                if (friends[n]!=this) {
+                    // find distance
+                    float ddx = friends[n].x-x;
+                    float ddy = friends[n].y-y;
+                    float d = (float) Math.sqrt(ddx*ddx + ddy*ddy);
+                    float t = (float) Math.atan2(ddy,ddx);
+
+                    boolean friend = false;
+                    for (int j=0;j<numcon;j++) if (connections[j]==n) friend=true;
+                    if (friend) {
+                        // attract
+                        if (d>lencon) {
+                            ax += 4.0*(float) Math.cos(t);
+                            ay += 4.0*(float) Math.sin(t);
+                        }
+                    } else {
+                        // repulse
+                        if (d<lencon) {
+                            ax += (lencon-d)*(float) Math.cos(t+PI);
+                            ay += (lencon-d)*(float) Math.sin(t+PI);
+                        }
+                    }
+                }
+            }
+
+            vx+=ax/42.22;
+            vy+=ay/42.22;
         }
     }
 
-
-    // ******************************************************************** //
-    // SandPainter Class.
-    // ******************************************************************** //
-
-    private class SandPainter {
+    class SandPainter {
 
         SandPainter() {
+            reset();
+        }
+
+        void reset() {
             c = colourPalette.getRandom();
             p = random(1.0f);
+            sinp = (float) Math.sin(p);
             g = random(0.01f, 0.1f);
         }
 
         void render(float x, float y, float ox, float oy) {
-            // draw painting sweeps
             renderPaint.setColor(c);
             renderPaint.setAlpha(28);
-            renderCanvas.drawPoint(ox+(x-ox)*(float) Math.sin(p),oy+(y-oy)*(float) Math.sin(p), renderPaint);
+            renderCanvas.drawPoint(ox + (x - ox) * sinp, oy + (y - oy) * sinp, renderPaint);
 
-            g+=random(-0.050f, 0.050f);
+            g += random(-0.050f, 0.050f);
             float maxg = 0.22f;
-            if (g<-maxg) g=-maxg;
-            if (g>maxg) g=maxg;
-            p+=random(-0.050f, 0.050f);
-            if (p<0) p=0;
-            if (p>1.0) p=1.0f;
+            if (g < -maxg)
+                g = -maxg;
+            if (g > maxg)
+                g = maxg;
 
             renderPaint.setColor(c);
             float w = g / (sandGrains - 1);
@@ -376,6 +411,7 @@ public class SandTraveller
 
         // 
         private float p;
+        private float sinp;
 
         // Gain; used to modulate the alpha for a "fuzzy" effect.
         private float g;
@@ -390,8 +426,9 @@ public class SandTraveller
     @SuppressWarnings("unused")
     private static final String TAG = "Substrate";
 
-    // Convenience -- two times pi.
-    private static final float TWO_PI = (float) Math.PI * 2;
+    // Handy constants.
+    private static final float PI = (float) Math.PI;
+    private static final float TWO_PI = (float) Math.PI * 2f;
 
 
     // ******************************************************************** //
@@ -401,28 +438,23 @@ public class SandTraveller
     // Colour palette we're using.
     private Palette colourPalette = null;
 
-    // Whether to use the sand painter.
-    private boolean sandPaint = false;
-    
-    // Traveller initial velocity.
-    private float initVelocity = 4.2f;
+    // Number of friends we'll process.
+    private int numFriends = 40;
 
-    // The cities.
-    private City[] cities;
+    // The list of friends.
+    private Friend[] friends;
 
-    // The number of cities.
-    private int numCities = 100;
-
-    // Index of the next city to be updated.  We don't update all the cities
+    // Index of the next friend to be updated.  We don't update all the friends
     // every time for performance reasons, so this keeps our place in the
     // list between updates.
-    private int nextCity = 0;
+    private int nextFriend = 0;
+
+    // Current processing state.  Used to progress through the various
+    // phases of processing we do.
+    private int updateState = 0;
 
     // Number of grains of sand to paint.
     private int sandGrains = 11;
-
-    // minimum distance to draw connections
-    private int minConnection = 128;
 
 }
 

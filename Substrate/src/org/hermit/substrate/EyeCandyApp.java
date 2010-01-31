@@ -24,6 +24,8 @@ import java.lang.reflect.Constructor;
 import org.hermit.android.core.MainActivity;
 import org.hermit.substrate.hacks.Guts;
 import org.hermit.substrate.hacks.GutsPreferences;
+import org.hermit.substrate.hacks.HappyPlace;
+import org.hermit.substrate.hacks.HappyPlacePreferences;
 import org.hermit.substrate.hacks.InterAggregate;
 import org.hermit.substrate.hacks.InteraggregatePreferences;
 import org.hermit.substrate.hacks.SandTraveller;
@@ -31,6 +33,8 @@ import org.hermit.substrate.hacks.SandTravellerPreferences;
 import org.hermit.substrate.hacks.Substrate;
 import org.hermit.substrate.hacks.SubstratePreferences;
 
+import android.app.WallpaperInfo;
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -97,7 +101,21 @@ public class EyeCandyApp
         eyeCandyView = new EyeCandyView(this);
         setContentView(eyeCandyView);
         
+        // If one of our hacks is currently running, set that as the
+        // hack to display initially.
         restoredHack = 0;
+        WallpaperManager wm = WallpaperManager.getInstance(this);
+        WallpaperInfo winfo = wm.getWallpaperInfo();
+        if (winfo != null) {
+            String ws = winfo.getSettingsActivity();
+            for (int i = 0; i < prefsList.length; ++i) {
+                String hn = prefsList[i].getName();
+                if (hn != null && hn.equals(ws)) {
+                    restoredHack = i;
+                    break;
+                }
+            }
+        }
     }
     
 
@@ -360,6 +378,7 @@ public class EyeCandyApp
         InterAggregate.class,
         SandTraveller.class,
         Guts.class,
+        HappyPlace.class,
     };
     
 
@@ -369,6 +388,7 @@ public class EyeCandyApp
         R.string.interaggregate_title,
         R.string.sandtrav_title,
         R.string.guts_title,
+        R.string.happy_title,
     };
     
 
@@ -378,6 +398,7 @@ public class EyeCandyApp
         InteraggregatePreferences.class,
         SandTravellerPreferences.class,
         GutsPreferences.class,
+        HappyPlacePreferences.class,
     };
     
     

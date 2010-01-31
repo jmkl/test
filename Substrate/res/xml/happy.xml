@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+		android:thumbnail="@drawable/happy_preview"
+		android:author="@string/happy_author"
+		android:description="@string/happy_desc"
+        android:settingsActivity="org.hermit.substrate.hacks.HappyPlacePreferences" />
+

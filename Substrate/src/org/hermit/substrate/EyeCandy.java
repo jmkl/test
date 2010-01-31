@@ -237,7 +237,7 @@ public abstract class EyeCandy
         long start = System.currentTimeMillis();
         long time = 0;
         while (time < runTime) {
-            numCycles += iterate();
+            numCycles = iterate(numCycles);
             time = System.currentTimeMillis() - start;
         }
         
@@ -257,11 +257,13 @@ public abstract class EyeCandy
      * RUN_TIME ms of work per update.  Hence each call need only do one
      * small work unit.
      * 
+     * @param   cycles      The total number of complete algorithm cycles
+     *                      completed to date.
      * @return              The number of complete algorithm cycles
-     *                      completed during this update.
-     *                      May be zero, one, or more.
+     *                      completed following this update.
+     *                      May or may not be more than cycles.
      */
-    protected abstract int iterate();
+    protected abstract int iterate(int cycles);
 
 
     /**

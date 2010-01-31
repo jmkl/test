@@ -180,6 +180,22 @@ for more details.\n</string>
     <string name="guts_prefs_cycles">Run time</string>
     <string name="guts_prefs_cycles_summary">Number of iterations to run for before resetting</string>
     <string name="guts_prefs_cycles_title">Run Time</string>
+       
+    <!-- Happy.Place. -->
+     
+    <string name="happy_title">Happy.Place</string>
+    <string name="happy_author">Moonblink</string>
+    <string name="happy_desc">The evolution of a system of friendly nodes.</string>
+    
+    <!-- Happy.Place Preferences. -->
+    
+    <string name="happy_settings">Happy.Place preferences</string>
+    
+    <string name="happy_prefs_title">Happy.Place Preferences</string>
+    
+    <string name="happy_prefs_cycles">Run time</string>
+    <string name="happy_prefs_cycles_summary">Number of iterations to run for before resetting</string>
+    <string name="happy_prefs_cycles_title">Run Time</string>
    
 </resources>
 

@@ -195,14 +195,15 @@ public class Substrate
      * RUN_TIME ms of work per update.  Hence each call need only do one
      * small work unit.
      * 
+     * @param   cycles      The total number of complete algorithm cycles
+     *                      completed to date.
      * @return              The number of complete algorithm cycles
-     *                      completed during this update.
-     *                      May be zero, one, or more.
+     *                      completed following this update.
+     *                      May or may not be more than cycles.
      */
     @Override
-    protected int iterate() {
+    protected int iterate(int cycles) {
         final int c = nextCrack;
-        int cycles = 0;
         if (++nextCrack >= numCracks) {
             nextCrack = 0;
             ++cycles;
