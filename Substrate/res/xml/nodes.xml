@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+		android:thumbnail="@drawable/nodes_preview"
+		android:author="@string/nodes_author"
+		android:description="@string/nodes_desc"
+        android:settingsActivity="org.hermit.substrate.hacks.NodeGardenPreferences" />
+

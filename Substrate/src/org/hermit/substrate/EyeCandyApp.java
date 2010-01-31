@@ -28,6 +28,8 @@ import org.hermit.substrate.hacks.HappyPlace;
 import org.hermit.substrate.hacks.HappyPlacePreferences;
 import org.hermit.substrate.hacks.InterAggregate;
 import org.hermit.substrate.hacks.InteraggregatePreferences;
+import org.hermit.substrate.hacks.NodeGarden;
+import org.hermit.substrate.hacks.NodeGardenPreferences;
 import org.hermit.substrate.hacks.SandTraveller;
 import org.hermit.substrate.hacks.SandTravellerPreferences;
 import org.hermit.substrate.hacks.Substrate;
@@ -379,6 +381,7 @@ public class EyeCandyApp
         SandTraveller.class,
         Guts.class,
         HappyPlace.class,
+        NodeGarden.class,
     };
     
 
@@ -389,6 +392,7 @@ public class EyeCandyApp
         R.string.sandtrav_title,
         R.string.guts_title,
         R.string.happy_title,
+        R.string.nodes_title,
     };
     
 
@@ -399,6 +403,7 @@ public class EyeCandyApp
         SandTravellerPreferences.class,
         GutsPreferences.class,
         HappyPlacePreferences.class,
+        NodeGardenPreferences.class,
     };
     
     

@@ -24,7 +24,9 @@ import java.util.Random;
 import net.goui.util.MTRandom;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -63,6 +65,8 @@ public abstract class EyeCandy
 	 * @param  context      Our application context.
 	 */
     protected EyeCandy(Context context) {
+        appResources = context.getResources();
+
         // Register for changes in the subclass's preferences.
         SharedPreferences prefs = context.getSharedPreferences(getPrefsName(), 0);
         prefs.registerOnSharedPreferenceChangeListener(this);
@@ -278,9 +282,13 @@ public abstract class EyeCandy
      */
     final void render(Canvas canvas, int xoff, int yoff) {
         if (fadeCycles > 0) {
-            float alpha = (float) fadeCycles / (float) FADE_CYCLES;
-            screenPaint.setColorFilter(fadeFilter(alpha));
-            canvas.drawBitmap(renderBitmap, xoff, yoff, screenPaint);
+            if (fadeCycles > FADE_CYCLES / 2)
+                canvas.drawBitmap(renderBitmap, xoff, yoff, null);
+            else {
+                float alpha = (float) fadeCycles / ((float) FADE_CYCLES / 2);
+                screenPaint.setColorFilter(fadeFilter(alpha));
+                canvas.drawBitmap(renderBitmap, xoff, yoff, screenPaint);
+            }
             
             // If we're done fading, start the next iteration.
             if (--fadeCycles == 0) {
@@ -359,6 +367,17 @@ public abstract class EyeCandy
     }
 
 
+    /**
+     * Load an image from resources.
+     * 
+     * @param   resId       Resource ID of the image to load.
+     * @return              The image.
+     */
+    protected final Bitmap loadImage(int resId) {
+        return BitmapFactory.decodeResource(appResources, resId);
+    }
+
+
     // ******************************************************************** //
     // Subclass Accessible Data.
     // ******************************************************************** //
@@ -419,12 +438,17 @@ public abstract class EyeCandy
 	private static final String TAG = "Substrate";
 
 	// The number of cycles over which to fade the image out when restarting.
-	private static final int FADE_CYCLES = 150;
+	// For the first 50% of the time, we show the image static, so the user
+	// can admire it.
+	private static final int FADE_CYCLES = 300;
 
 
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
+
+    // Application resources.
+    private final Resources appResources;
 
     // Time in ms to run for during each update.
     private long runTime = 35;

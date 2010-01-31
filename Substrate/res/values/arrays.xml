@@ -231,6 +231,25 @@
        
          
     <!-- ################################################################# -->
+    <!-- Node.Garden Preferences.                                          -->
+    <!-- ################################################################# -->
+
+    <!-- Entry names for the run time menu. -->
+    <string-array name="nodes_prefs_cycles_entries">
+        <item>Short</item>
+        <item>Medium</item>
+        <item>Long</item>
+    </string-array>
+
+    <!-- Values for the run time menu. -->
+    <string-array name="nodes_prefs_cycles_values">
+        <item>3000</item>  
+        <item>6000</item>  
+        <item>12000</item>
+    </string-array>
+       
+         
+    <!-- ################################################################# -->
     <!-- Help.                                                             -->
     <!-- ################################################################# -->
 
@@ -325,6 +344,8 @@ be of interest, as described in the following sections.</item>
 
 <item>Happy.Place</item>
 
+<item>Node.Garden</item>
+
     </string-array>
 
     <!-- Section contents for the hacks help. -->
@@ -416,6 +437,18 @@ cycles) the hack will run for before starting over.  Longer run times produce
 more dense patterns before resetting.\n\
 \n\
 j.tarbell March, 2004 / Albuquerque, New Mexico / complexification.net</item>
+
+<item><b>Node.Garden</b> instantiates nodes on irregular curving lines.
+When connected together, they form a Node Garden.  The lines can be
+considered the substrate from which the nodes grow.\n\
+\n\
+The following preferences settings are available:\n\
+\n\
+• <b>Run time</b> sets the time (actually the number of computation
+cycles) the hack will run for before starting over.  Longer run times produce
+more dense patterns before resetting.\n\
+\n\
+j.tarbell August, 2004 / Albuquerque, New Mexico / complexification.net</item>
 
     </string-array>
     
