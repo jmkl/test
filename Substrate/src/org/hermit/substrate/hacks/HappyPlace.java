@@ -43,7 +43,7 @@ import android.util.Log;
  * Please send me your experiences."
  */
 public class HappyPlace
-extends EyeCandy
+    extends EyeCandy
 {
 
     // ******************************************************************** //
@@ -237,14 +237,15 @@ extends EyeCandy
 
         int numcon;
         int maxcon = 10;
-        int lencon = 10 + (int) random(50f);
-        int[] connections = new int[maxcon];
+        int lencon = 10 + random(50);
+        int[] connections = null;
 
         // sand painters
         int numsands = 3;
         SandPainter[] sands = new SandPainter[numsands];
 
         Friend(float X, float Y) {
+            connections = new int[maxcon];
             for (int n = 0; n < numsands; ++n)
                 sands[n] = new SandPainter();
             reset(X, Y);
@@ -256,6 +257,8 @@ extends EyeCandy
             y = Y;
             numcon = 0;
 
+            for (int i = 0; i < maxcon; ++i)
+                connections[i] = -1;
             for (int n = 0; n < numsands; ++n)
                 sands[n].reset();
         }
@@ -297,19 +300,19 @@ extends EyeCandy
 
         void move() {
             // add velocity to position
-            x+=vx;
-            y+=vy;
+            x += vx;
+            y += vy;
 
             //friction
-            vx*=0.92;
-            vy*=0.92;
+            vx *= 0.92;
+            vy *= 0.92;
         }
 
         void connectTo(int f) {
             // connect to friend f
 
             // is there room for more friends?
-            if (numcon<maxcon) {
+            if (numcon < maxcon) {
                 // already connected to friend?
                 if (!friendOf(f)) {
                     connections[numcon] = f;
@@ -319,11 +322,11 @@ extends EyeCandy
         }
 
         boolean friendOf(int x) {
-            boolean isFriend = false;
-            for (int n=0;n<numcon;n++) {
-                if (connections[n]==x) isFriend=true;
-            }
-            return isFriend;
+            for (int n = 0; n < numcon; ++n)
+                if (connections[n] == x)
+                    return true;
+
+            return false;
         }
 
         void findHappyPlace() {
@@ -333,16 +336,21 @@ extends EyeCandy
             float ay = 0.0f;
 
             // find mean average of all friends and non-friends
-            for (int n=0;n<numFriends;n++) {
-                if (friends[n]!=this) {
+            for (int n = 0; n < numFriends; ++n) {
+                if (friends[n] != this) {
                     // find distance
-                    float ddx = friends[n].x-x;
-                    float ddy = friends[n].y-y;
-                    float d = (float) Math.sqrt(ddx*ddx + ddy*ddy);
-                    float t = (float) Math.atan2(ddy,ddx);
+                    float ddx = friends[n].x - x;
+                    float ddy = friends[n].y - y;
+                    float d = (float) Math.sqrt(ddx * ddx + ddy * ddy);
+                    float t = (float) Math.atan2(ddy, ddx);
 
                     boolean friend = false;
-                    for (int j=0;j<numcon;j++) if (connections[j]==n) friend=true;
+                    for (int j = 0; j < numcon; ++j) {
+                        if (connections[j] == n) {
+                            friend = true;
+                            break;
+                        }
+                    }
                     if (friend) {
                         // attract
                         if (d>lencon) {
