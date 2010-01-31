@@ -185,7 +185,6 @@ public abstract class EyeCandy
         onConfigurationSet(width, height, config);
         
         restartHack();
-        numCycles = 0;
     }
     
 
@@ -244,6 +243,9 @@ public abstract class EyeCandy
         colourPalette = COLOUR_PALETTES[i];
                 
         reset();
+        
+        numCycles = 0;
+        fadeCycles = 0;
     }
     
 
@@ -322,10 +324,8 @@ public abstract class EyeCandy
             }
             
             // If we're done fading, start the next iteration.
-            if (--fadeCycles == 0) {
+            if (--fadeCycles == 0)
                 restartHack();
-                numCycles = 0;
-            }
         } else
             canvas.drawBitmap(renderBitmap, xoff, yoff, null);
     }

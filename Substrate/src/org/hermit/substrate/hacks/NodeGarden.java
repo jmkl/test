@@ -128,15 +128,13 @@ extends EyeCandy
      */
     @Override
     protected void readPreferences(SharedPreferences prefs, String key) {
-        int maxCycles = 6000;
         try {
-            String sval = prefs.getString("maxCycles", "" + maxCycles);
-            maxCycles = Integer.valueOf(sval);
+            String sval = prefs.getString("nodePattern", "" + nodePattern);
+            nodePattern = Integer.valueOf(sval);
         } catch (Exception e) {
-            Log.e(TAG, "Pref: bad maxCycles");
+            Log.e(TAG, "Pref: bad nodePattern");
         }
-//        setMaxCycles(maxCycles);
-        Log.i(TAG, "Prefs: maxCycles " + maxCycles);
+        Log.i(TAG, "Prefs: nodePattern " + nodePattern);
     }
 
 
@@ -158,27 +156,28 @@ extends EyeCandy
         numSpines = 0;
         numNodes = 0;
 
-        /*
-        // arrange spines in line
-        for (int i=0;i<maxSpines;i++) {
-          float x = dim/4 + i*dim/(maxSpines-1);
-          float y = dim/2;
-          float mt = 420; 
-          makeSpine(x,y,-HALF_PI,mt);
-          makeSpine(x,y,HALF_PI,mt);
-        }
-         */
-        // arrange spines in circle
         diameter = Math.min(canvasWidth, canvasHeight);
-        for (int i = 0; i < maxSpines; ++i) {
-            float a = TWO_PI * i / (maxSpines - 1);
-            float x = canvasWidth / 2f + 0.15f * diameter * (float) Math.cos(a);
-            float y = canvasHeight / 2f + 0.15f * diameter * (float) Math.sin(a);
-            float mt = random(11f, 140f); 
-            makeSpine(x, y, a, mt);
+        if (nodePattern == 0 || (nodePattern <= 0 && brandom())) {
+            // arrange spines in line
+            for (int i = 0; i < maxSpines; ++ i) {
+                float x = canvasWidth / 4f + i * canvasWidth / (maxSpines - 1);
+                float y = canvasHeight / 2f;
+                float mt = 420; 
+                makeSpine(x, y, -HALF_PI, mt);
+                makeSpine(x, y, HALF_PI, mt);
+            }
+        } else {
+            // arrange spines in circle
+            for (int i = 0; i < maxSpines; ++i) {
+                float a = TWO_PI * i / (maxSpines - 1);
+                float x = canvasWidth / 2f + 0.15f * diameter * (float) Math.cos(a);
+                float y = canvasHeight / 2f + 0.15f * diameter * (float) Math.sin(a);
+                float mt = random(11f, 140f); 
+                makeSpine(x, y, a, mt);
 
-            // make a second spine in opposite direction
-            //          makeSpine(x,y,a+PI,mt);
+                // make a second spine in opposite direction
+                //          makeSpine(x,y,a+PI,mt);
+            }
         }
 
         // begin step one of rendering process  
@@ -429,22 +428,6 @@ extends EyeCandy
             mass = Sz;
         }
 
-        void findRandomConnection() {
-            // check for available connection element
-            if ((numcons<maxcons) && (numcons<mass)) {
-                // pick other gnode at large
-                int cid = random(numNodes);
-                if (cid != id) {
-                    cons[numcons] = cid;
-                    numcons++;
-                    //         println(id+" connected to "+cid);
-                } else {
-                    // random connection failed
-                }
-            } else {
-                // no connection elements available
-            }
-        }
 
         void findNearConnection() {
             // find closest node
@@ -587,11 +570,15 @@ extends EyeCandy
     // Handy constants.
     private static final float PI = (float) Math.PI;
     private static final float TWO_PI = (float) Math.PI * 2f;
+    private static final float HALF_PI = (float) Math.PI / 2f;
 
 
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
+    
+    // Node placement pattern.  -1 means randomly select each time.
+    private int nodePattern = -1;
 
     private int diameter;
     private int numSpines;

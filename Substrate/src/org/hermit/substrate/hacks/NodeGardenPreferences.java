@@ -45,7 +45,7 @@ public class NodeGardenPreferences
         
         // Set up the key we're using for the wallpaper prefs.
         getPreferenceManager().setSharedPreferencesName(
-                                                Substrate.SHARED_PREFS_NAME);
+                                        NodeGarden.SHARED_PREFS_NAME);
         
         // Load the preferences from XML resources -- both common and
         // hack-specific settings.
