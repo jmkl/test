@@ -140,7 +140,8 @@ sections below.</item>
 
 <item>Tricorder has multiple views, which you can switch between
 using the buttons on the left.  Each view displays a particular type of
-information, as detailed in the sections below.</item>
+information, as detailed in the sections below.  All views have the stardate
+in the top-left corner (notated as per the J.J. Abrams move).</item>
 
 <item>@array/help_screens_texts</item>
 
