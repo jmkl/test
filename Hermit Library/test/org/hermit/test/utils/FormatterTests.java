@@ -83,6 +83,19 @@ public class FormatterTests
         assertEquals(expect, res);
     }
 
+    private void runL(int off, int val, int field, boolean signed, String expect) {
+        String res = null;
+        try {
+            CharFormatter.formatIntLeft(buf, off, val, field, signed);
+            res = new String(buf, off, field);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            res = "!OOB!";
+        } catch (IllegalArgumentException e) {
+            res = "!ILL!";
+        }
+        assertEquals(expect, res);
+    }
+
     private void run(int off, double val, int field, int frac, boolean signed, String expect) {
         String res = null;
         try {
@@ -98,7 +111,7 @@ public class FormatterTests
 
     
     // ******************************************************************** //
-    // Integer Tests.
+    // String Tests.
     // ******************************************************************** //
 
     public void testStringLeftFix() {
@@ -118,6 +131,10 @@ public class FormatterTests
         run(13, "ABCDE", 3, true, "CDE");
     }
     
+
+    // ******************************************************************** //
+    // Right-Aligned Integer Tests.
+    // ******************************************************************** //
 
     public void testPosIntUns() {
         run(13, 173, 7, false, "    173");
@@ -160,6 +177,54 @@ public class FormatterTests
         run(13, -173, 4, true, "-173");
         run(13, -173, 3, true, "  +");
         run(13, -173, 2, true, " +");
+    }
+
+
+    // ******************************************************************** //
+    // Left-Aligned Integer Tests.
+    // ******************************************************************** //
+
+    public void testLPosIntUns() {
+        runL(13, 173, 7, false, "173    ");
+        runL(13, 173, 3, false, "173");
+        runL(13, 173, 2, false, "+ ");
+        runL(35, 173, 7, false, "!OOB!");
+    }
+
+
+    public void testLZeroIntUns() {
+        runL(13, 0, 7, false, "0      ");
+        runL(13, 0, 1, false, "0");
+    }
+
+
+    public void testLNegIntUns() {
+        runL(13, -173, 7, false, "-      ");
+        runL(13, -173, 3, false, "-  ");
+    }
+
+
+    public void testLPosIntSgn() {
+        runL(13, 173, 7, true, " 173   ");
+        runL(13, 173, 4, true, " 173");
+        runL(13, 173, 3, true, "+  ");
+        runL(13, 173, 2, true, "+ ");
+        runL(35, 173, 7, true, "!OOB!");
+    }
+
+
+    public void testLZeroIntSgn() {
+        runL(13, 0, 7, true, " 0     ");
+        runL(13, 0, 2, true, " 0");
+        runL(13, 0, 1, true, "!ILL!");
+    }
+
+
+    public void testLNegIntSgn() {
+        runL(13, -173, 7, true, "-173   ");
+        runL(13, -173, 4, true, "-173");
+        runL(13, -173, 3, true, "+  ");
+        runL(13, -173, 2, true, "+ ");
     }
 
 
@@ -210,6 +275,10 @@ public class FormatterTests
         run(13, -73.00678, 7, 4, true, "      +");
     }
 
+
+    // ******************************************************************** //
+    // Speed Tests.
+    // ******************************************************************** //
 
     public void testSpeed() {
         final int COUNT = 100000;

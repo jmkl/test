@@ -220,6 +220,56 @@ public class CharFormatter
 
 
     /**
+     * Format an integer left-aligned into a fixed-width field.  MUCH faster
+     * than String.format.
+     * 
+     * @param   buf         Buffer to place the result in.
+     * @param   off         Offset within buf to start writing at.
+     * @param   val         The value to format.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.  If the value is smaller
+     *                      than the field, pads on the right with space.
+     * @param   signed      Iff true, add a sign character, space for
+     *                      positive, '-' for negative.  This takes
+     *                      up one place in the given field width, so positive
+     *                      values will have a space on the left.  Iff false,
+     *                      no space is taken for the sign; values must
+     *                      be positive, and will begin in the first position.
+     * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
+     * @throws  IllegalArgumentException        Negative value given and
+     *                                          signed == false.
+     */
+    public static final void formatIntLeft(char[] buf, int off, int val,
+                                           int field, boolean signed)
+    {
+        if (field < 0)
+            field = buf.length - off;
+        if (field < 0)
+            field = 0;
+        if (off + field > buf.length)
+            throw new ArrayIndexOutOfBoundsException("Buffer [" + buf.length +
+                                                     "] too small for " +
+                                                     off + "+" + field);
+        
+        // If the value is negative but field is unsigned, just put in an
+        // error indicator.
+        if (!signed && val < 0) {
+            formatChar(buf, off, '-', field, false);
+            return;
+        }
+        
+        int sign = val >= 0 ? 1 : -1;
+        val *= sign;
+        char schar = signed ? (sign < 0 ? '-' : ' ') : 0;
+        try {
+            formatIntLeft(buf, off, val, field, schar);
+        } catch (OverflowException e) {
+            formatChar(buf, off, '+', field, false);
+        }
+    }
+
+
+    /**
      * Format an unsigned integer into a fixed-width field in hexadecimal.
      * MUCH faster than String.format.
      * 
@@ -338,8 +388,8 @@ public class CharFormatter
      * @param   buf         Buffer to place the result in.
      * @param   off         Offset within buf to start writing at.
      * @param   val         The value to format.  Must not be negative.
-     * @param   field       Width of the field to format in.  -1 means use
-     *                      all available space.
+     * @param   field       Width of the field to format in.  Must not be
+     *                      negative.
      * @param   schar       Iff not zero, add this sign character.  This takes
      *                      up one place in the given field width.
      * @param   leadZero    Iff true, pad on the left with leading zeros
@@ -378,6 +428,62 @@ public class CharFormatter
             buf[off] = ' ';
             buf[last - 1] = schar;
         }
+    }
+
+
+    /**
+     * Internal integer formatter for left-aligned values.
+     * 
+     * @param   buf         Buffer to place the result in.
+     * @param   off         Offset within buf to start writing at.
+     * @param   val         The value to format.  Must not be negative.
+     * @param   field       Width of the field to format in.  Must not be
+     *                      negative.  If the number is narrower than the
+     *                      field, it will be right-padded with space.
+     * @param   schar       Iff not zero, add this sign character.  This takes
+     *                      up one place in the given field width.
+     * @throws  IllegalArgumentException    Field width is too small.
+     * @throws  OverflowException     Overflow: the value is too big to be
+     *                      formatted into the field.
+     */
+    private static final void formatIntLeft(char[] buf, int off, int val,
+                                            int field, char schar)
+        throws IllegalArgumentException, OverflowException
+    {
+        // Check that we have space for the sign and at least 1 digit.
+        int intDigits = field - (schar != 0 ? 1 : 0);
+        if (intDigits < 1)
+            throw new IllegalArgumentException("Field <" + field + "> too small");
+   
+        // Count the digits in the value.
+        int valDigits = 1;
+        int v = val / 10;
+        while (v > 0) {
+            v /= 10;
+            ++valDigits;
+        }
+        
+        // If the value doesn't fit, just put in an error indicator and bail.
+        if (intDigits < valDigits) {
+            formatChar(buf, off, '+', field, false);
+            throw new OverflowException();
+        }
+
+        // First, put in the sign if any.
+        int index = off;
+        if (schar != 0)
+            buf[index++] = schar;
+
+        // Now the digits.
+        for (int i = index + valDigits - 1; i >= index; --i) {
+            buf[i] = val == 0 ? '0' : (char) ('0' + val % 10);
+            val /= 10;
+        }
+        index += valDigits;
+        
+        // Now pad out with spaces.
+        while (index < off + field)
+                buf[index++] = ' ';
     }
 
 
