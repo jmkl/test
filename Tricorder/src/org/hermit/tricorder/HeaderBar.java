@@ -148,7 +148,7 @@ class HeaderBar
         calendar.setTimeInMillis(System.currentTimeMillis());
         CharFormatter.formatInt(dateBuf, 0,
                                 calendar.get(Calendar.YEAR),
-                                4, false);
+                                4, false, true);
         dateBuf[4] = '.';
         CharFormatter.formatIntLeft(dateBuf, 5,
                                     calendar.get(Calendar.DAY_OF_YEAR),
@@ -156,12 +156,12 @@ class HeaderBar
 
         CharFormatter.formatInt(timeBuf, 0,
                                 calendar.get(Calendar.HOUR_OF_DAY),
-                                2, false);
+                                2, false, true);
         timeBuf[2] = '.';
-        CharFormatter.formatIntLeft(timeBuf, 3,
-                                    calendar.get(Calendar.MINUTE),
-                                    2, false);
-        
+        CharFormatter.formatInt(timeBuf, 3,
+                                calendar.get(Calendar.MINUTE),
+                                2, false, true);
+
         // Re-draw the widget.
         postInvalidate();
         
