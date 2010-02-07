@@ -174,7 +174,31 @@ public class CharFormatter
 
 
     /**
-     * Format an integer into a fixed-width field.  MUCH faster
+     * Format an integer right-aligned into a fixed-width field.  MUCH faster
+     * than String.format.
+     * 
+     * @param   buf         Buffer to place the result in.
+     * @param   off         Offset within buf to start writing at.
+     * @param   val         The value to format.
+     * @param   field       Width of the field to format in.  -1 means use
+     *                      all available space.  The value will be padded
+     *                      on the left with spaces if smaller than the field.
+     * @param   signed      Iff true, add a sign character, space for
+     *                      positive, '-' for negative.  This takes
+     *                      up one place in the given field width.
+     * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
+     * @throws  IllegalArgumentException        Negative value given and
+     *                                          signed == false.
+     */
+    public static final void formatInt(char[] buf, int off, int val,
+                                       int field, boolean signed)
+    {
+        formatInt(buf, off, val, field, signed, false);
+    }
+
+
+    /**
+     * Format an integer right-aligned into a fixed-width field.  MUCH faster
      * than String.format.
      * 
      * @param   buf         Buffer to place the result in.
@@ -185,12 +209,14 @@ public class CharFormatter
      * @param   signed      Iff true, add a sign character, space for
      *                      positive, '-' for negative.  This takes
      *                      up one place in the given field width.
+     * @param   lz          Iff true, pad with leading zeros; otherwise,
+     *                      pad on the left with spaces.
      * @throws  ArrayIndexOutOfBoundsException  Buffer is too small.
      * @throws  IllegalArgumentException        Negative value given and
      *                                          signed == false.
      */
     public static final void formatInt(char[] buf, int off, int val,
-                                       int field, boolean signed)
+                                       int field, boolean signed, boolean lz)
     {
         if (field < 0)
             field = buf.length - off;
@@ -212,7 +238,7 @@ public class CharFormatter
         val *= sign;
         char schar = signed ? (sign < 0 ? '-' : ' ') : 0;
         try {
-            formatInt(buf, off, val, field, schar, false);
+            formatInt(buf, off, val, field, schar, lz);
         } catch (OverflowException e) {
             formatChar(buf, off, '+', field, true);
         }
