@@ -28,6 +28,7 @@ import org.hermit.substrate.palettes.FlowerPalette;
 import org.hermit.substrate.palettes.OrnatePalette;
 import org.hermit.substrate.palettes.PollockPalette;
 import org.hermit.substrate.palettes.SandPalette;
+import org.hermit.substrate.palettes.TropicalPalette;
 
 import net.goui.util.MTRandom;
 import android.content.Context;
@@ -246,6 +247,7 @@ public abstract class EyeCandy
         
         numCycles = 0;
         fadeCycles = 0;
+        lastCycles = 0;
     }
     
 
@@ -276,12 +278,18 @@ public abstract class EyeCandy
         while (time < runTime) {
             numCycles = iterate(numCycles);
             time = System.currentTimeMillis() - start;
+            if (numCycles / 100 > lastCycles) {
+                Log.i(TAG, "C: " + numCycles);
+                lastCycles = numCycles / 100;
+            }
         }
         
         // See if we need to start fading out the image.
         if (maxCycles > 0 && numCycles >= maxCycles)
             fadeCycles = FADE_CYCLES;
     }
+
+    private int lastCycles;
 
 
     /**
@@ -431,6 +439,7 @@ public abstract class EyeCandy
             new FlowerPalette(),
             new OrnatePalette(),
             new SandPalette(),
+            new TropicalPalette(),
     };
 
 

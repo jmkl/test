@@ -27,6 +27,7 @@
         <item>Flower</item>
         <item>Ornate</item>
         <item>Sand</item>
+        <item>Tropical</item>
         <item>Random</item>
     </string-array>
 
@@ -39,6 +40,7 @@
         <item>4</item>
         <item>5</item>
         <item>6</item>
+        <item>7</item>
         <item>-1</item>
     </string-array>
       
@@ -182,9 +184,9 @@
 
     <!-- Values for the run time menu. -->
     <string-array name="sandtrav_prefs_cycles_values">
-        <item>1000</item>  
-        <item>2000</item>  
-        <item>6000</item>
+        <item>400</item>  
+        <item>800</item>  
+        <item>2000</item>
     </string-array>
        
     <!-- Entry names for the initial velocity menu. -->

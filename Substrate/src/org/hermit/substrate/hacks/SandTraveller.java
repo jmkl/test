@@ -94,6 +94,9 @@ public class SandTraveller
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
+        cities = new City[numCities];
+        for (int t = 0; t < numCities; ++t)
+            cities[t] = new City(t);
     }
 
 
@@ -159,22 +162,19 @@ public class SandTraveller
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
 
-        cities = new City[numCities];
-
         float vt = initVelocity;
         float vvt = 0.2f;
         float ot = random(TWO_PI);
+        float cx = canvasWidth / 2f;
+        float cy = canvasHeight / 2f;
         for (int t = 0; t < numCities; ++t) {
-            float tinc = ot + (1.1f - t / numCities) * 2 * t * TWO_PI / numCities;
+            float tinc = ot + (1.1f - t / numCities) * 2f * t * TWO_PI / numCities;
             float vx = vt * (float) Math.sin(tinc);
             float vy = vt * (float) Math.cos(tinc);
-            cities[t] = new City(canvasWidth / 2 + vx * 2, canvasHeight / 2 + vy * 2, vx, vy, t);
+            cities[t].reset(cx + vx * 2f, cy + vy * 2f, vx, vy);
             vvt -= 0.00033f;
             vt += vvt;
         }
-
-        for (int t = 0; t < numCities; ++t)
-            cities[t].findFriend();
 
         // Clear to white.
         renderCanvas.drawColor(backgroundColor);
@@ -217,111 +217,111 @@ public class SandTraveller
 
 
     // ******************************************************************** //
-    // Private Methods.
-    // ******************************************************************** //
-
-    private float citydistance(int a, int b) {
-        if (a != b) {
-            // calculate and return distance between cities
-            float dx = cities[b].x - cities[a].x;
-            float dy = cities[b].y - cities[a].y;
-            float d = (float) Math.sqrt(dx * dx + dy * dy);
-            return d;
-        } else {
-            return 0.0f;
-        }
-    }
-
-
-    // ******************************************************************** //
     // City Class.
     // ******************************************************************** //
 
-    private class City {
+    private final class City {
 
-        float x,y;
-        int friend;
-        float vx, vy;
-        int idx;
-        int myc = colourPalette.getRandom();
+        private final int idx;
+        private float x,y;
+        private City friend;
+        private float vx, vy;
+        private int myc = colourPalette.getRandom();
 
         // sand painters
-        int numsands = 3;
-        SandPainter[] sands = new SandPainter[numsands];
+        private static final int NUM_SANDS = 3;
+        private SandPainter[] sands = new SandPainter[NUM_SANDS];
 
-        City(float Dx, float Dy, float Vx, float Vy, int Idx) {
+        City(int Idx) {
+            idx = Idx;
+
+            // create sand painters
+            for (int n = 0; n < NUM_SANDS; ++n)
+                sands[n] = new SandPainter();
+        }
+
+        final void reset(float Dx, float Dy, float Vx, float Vy) {
             // position
             x = Dx;
             y = Dy;
             vx = Vx;
             vy = Vy;
-            idx = Idx;
 
-            // create sand painters
-            for (int n = 0; n < numsands; ++n)
-                sands[n] = new SandPainter();
-        }
-
-        void move() {
-            vx+=(cities[friend].x-x)/1000;
-            vy+=(cities[friend].y-y)/1000;
-
-            vx*=.936;
-            vy*=.936;
-            x+=vx;
-            y+=vy;
-
-            if (!sandPaint) {
-                drawTravelers();
-            } else {
-                if (citydistance(idx, friend) < minConnection)
-                    drawSandPainters();
-            }
-        }
-
-
-        void findFriend() {
+            // Reset all the sand painters.
+            for (int n = 0; n < NUM_SANDS; ++n)
+                sands[n].reset();
+            
             // pick a node to follow just out ahead
             int off = (int) random(numCities / 5) + 1;
-            friend = (idx + off) % numCities;
+            friend = cities[(idx + off) % numCities];
+        }
+
+        final void move() {
+            vx += (friend.x - x) / 1000;
+            vy += (friend.y - y) / 1000;
+
+            vx *= 0.936f;
+            vy *= 0.936f;
+            x += vx;
+            y += vy;
+
+            if (!sandPaint)
+                drawTravelers();
+            else if (distance(friend) < minConnection)
+                drawSandPainters();
         }
 
 
-        void drawTravelers() {
+        private final void drawTravelers() {
+            renderPaint.setColor(friend.myc);
+            renderPaint.setAlpha(48);
             int nt = 11;
-            for (int i=0;i<nt;i++) {
+            for (int i = 0; i < nt; ++i) {
                 // pick random distance between city
-                final float t = random(TWO_PI);
-                final float sint = (float) Math.sin(t);
+                final float sint = (float) Math.sin(random(TWO_PI));
+                final float ox = sint * (x - friend.x) / 2 + (x + friend.x) / 2;
+                final float oy = sint * (y - friend.y) / 2 + (y + friend.y) / 2;
+                renderCanvas.drawPoint(ox, oy, renderPaint);
+                renderCanvas.drawPoint(-ox, -oy, renderPaint);
                 
-                // draw traveler      
-                float dx = sint*(x-cities[friend].x)/2+(x+cities[friend].x)/2;
-                float dy = sint*(y-cities[friend].y)/2+(y+cities[friend].y)/2;
-                if (random(1000)>990) {
-                    // noise
-                    dx+=random(3)-random(3);
-                    dy+=random(3)-random(3);
-                }
-                renderPaint.setColor(cities[friend].myc);
-                renderPaint.setAlpha(48);
-                renderCanvas.drawPoint(dx, dy, renderPaint);
-                // draw anti-traveler
-                dx = -1*sint*(x-cities[friend].x)/2+(x+cities[friend].x)/2;
-                dy = -1*sint*(y-cities[friend].y)/2+(y+cities[friend].y)/2;
-                if (random(1000)>990) {
-                    // noise
-                    dx+=random(3)-random(3);
-                    dy+=random(3)-random(3);
-                }
-                renderCanvas.drawPoint(dx, dy, renderPaint);
+//                // draw traveler      
+//                float dx = ox;
+//                float dy = oy;
+//                if (random(1000) > 990) {
+//                    // noise
+//                    dx += random(3) - random(3);
+//                    dy += random(3) - random(3);
+//                }
+//                renderCanvas.drawPoint(dx, dy, renderPaint);
+//                
+//                // draw anti-traveler
+//                dx = -ox;
+//                dy = -oy;
+//                if (random(1000) > 990) {
+//                    // noise
+//                    dx += random(3) - random(3);
+//                    dy += random(3) - random(3);
+//                }
+//                renderCanvas.drawPoint(dx, dy, renderPaint);
             }
         }
 
-        void drawSandPainters() {
-            for (int s=0;s<numsands;s++) {
-                sands[s].render(x,y,cities[friend].x,cities[friend].y);
-            }
+        private final void drawSandPainters() {
+            for (int s = 0; s < NUM_SANDS; s++)
+                sands[s].render(x, y, friend.x, friend.y);
         }
+
+        private final float distance(City other) {
+            // Distance to myself is zero.
+            if (other.idx == idx)
+                return 0.0f;
+
+            // calculate and return distance between cities
+            final float dx = other.x - x;
+            final float dy = other.y - y;
+            return (float) Math.sqrt(dx * dx + dy * dy);
+        }
+
     }
 
 
@@ -332,6 +332,10 @@ public class SandTraveller
     private class SandPainter {
 
         SandPainter() {
+            reset();
+        }
+        
+        void reset() {
             c = colourPalette.getRandom();
             p = random(1.0f);
             g = random(0.01f, 0.1f);
