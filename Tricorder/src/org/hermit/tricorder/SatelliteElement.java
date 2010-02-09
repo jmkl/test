@@ -56,7 +56,7 @@ class SatelliteElement
         headerBar.setText(0, 0, hFields[0]);
         
         // Create the sky diagram.
-        skyMap = new SkyMapAtom(parent, COLOUR_GRID, 0xffff0000);
+        skyMap = new SkyMapAtom(parent, headBgCol, headTextCol);
         
         // Create the list of GPS bargraphs, displaying ASU.  We'll assume
         // a WiFi ASU range from 0 to 41.  Since satellite numbers are
@@ -71,7 +71,7 @@ class SatelliteElement
         
         // Create the right-side bar.
         sideBar = new Gauge(parent);
-        sideBar.setBackgroundColor(COLOUR_GRID);
+        sideBar.setBackgroundColor(headBgCol);
 	}
 
 
@@ -136,6 +136,17 @@ class SatelliteElement
             y += bh + gap;
         }
 	}
+
+
+    /**
+     * This is called after we have our geometry to do any required layout
+     * on the given satellite status data.
+     * 
+     * @param   sats            The satellite data.
+     */
+    void formatValues(GeoView.GpsInfo[] sats) {
+        skyMap.formatValues(sats);
+    }
 
 
     /**
@@ -259,9 +270,6 @@ class SatelliteElement
     // Debugging tag.
 	@SuppressWarnings("unused")
 	private static final String TAG = "tricorder";
-
-    // Bargraph grid and plot colours.
-    private static final int COLOUR_GRID = 0xffc0a000;
 
 	
 	// ******************************************************************** //

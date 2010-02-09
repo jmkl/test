@@ -25,6 +25,7 @@ import org.hermit.tricorder.Tricorder.Sound;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -64,6 +65,14 @@ class GeoView
      * Cached info on a satellite's status.
      */
     static final class GpsInfo {
+        GpsInfo(int prn) {
+            this.prn = prn;
+            this.name = "" + prn;
+        }
+        
+        final int prn;
+        final String name;
+        
         // Time at which this status was retrieved.  If 0, not valid.
         long time = 0;
         
@@ -76,6 +85,13 @@ class GeoView
         
         // Time at which this satellite was last used in a fix.
         long usedTime = 0;
+        
+        // Bounding rectangle for the display in the sky view.
+        RectF rect;
+        
+        // Label position for the display in the sky view.
+        float textX;
+        float textY;
         
         // Colour to plot it with, based on status.
         int colour;
@@ -107,7 +123,7 @@ class GeoView
 		// NUM_SATS + 1 so we can index by PRN number.
 		satCache = new GpsInfo[NUM_SATS + 1];
 		for (int i = 1; i <= NUM_SATS; ++i)
-		    satCache[i] = new GpsInfo();
+		    satCache[i] = new GpsInfo(i);
 		numSats = 0;
 
 		// Get the information providers we need.
@@ -148,6 +164,8 @@ class GeoView
             layoutPortrait(bounds);
         else
             layoutLandscape(bounds);
+        
+        satElement.formatValues(satCache);
 	}
 
 
@@ -422,6 +440,22 @@ class GeoView
                 ginfo.used = sat.usedInFix();
             }
             
+//            // Fake some satellites, for testing.
+//            Random r = new Random();
+//            r.setSeed(4232);
+//            for (int i = 1; i <= NUM_SATS; ++i) {
+//                GpsInfo ginfo = satCache[i];
+//                if (i % 3 == 0) {
+//                    ginfo.time = time - r.nextInt(5000);
+//                    ginfo.azimuth = r.nextFloat() * 360.0f;
+//                    ginfo.elev = r.nextFloat() * 90.0f;
+//                    ginfo.snr = 12;
+//                    ginfo.hasAl = r.nextInt(4) != 0;
+//                    ginfo.hasEph = ginfo.hasAl && r.nextInt(3) != 0;
+//                    ginfo.used = ginfo.hasEph && r.nextBoolean();
+//                }
+//            }
+
             // Post-process the sats.
             numSats = 0;
             for (int prn = 1; prn <= NUM_SATS; ++prn) {

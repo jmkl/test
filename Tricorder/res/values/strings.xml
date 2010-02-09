@@ -106,6 +106,14 @@ for more details.\n</string>
     <string name="lab_solar_spots">Spots,Flares</string>
     <string name="lab_alt_mode">Mode Alt</string>
     <string name="lab_blank">         </string>
+    
+    <!-- Compass directions. -->
+    <string name="lab_n">N</string>
+    <string name="lab_s">S</string>
+    <string name="lab_e">E</string>
+    <string name="lab_w">W</string>
+    <string name="lab_dt">°T</string>
+    <string name="lab_dm">°M</string>
 
     <string name="msgNoData">No Data</string>
     <string name="msgNoSignal">No Signal</string>

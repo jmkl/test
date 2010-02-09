@@ -283,8 +283,8 @@ provider.\n\
 \n\
 Below these an indication of the satellites in view is displayed; tap it to
 toggle between a sky diagram and signal strength bars.  The sky diagram also
-indicates true north, with magnetic north drawn as a compass needle.  Note
-that the accuracy of the north indication depends on your device\'s
+indicates true north, with magnetic north drawn as a narrower arrow over
+it.  Note that the accuracy of the north indication depends on your device\'s
 magnetometer, which can be very poor.</item>
 
 <item><b>EMS</b> scans the electromagnetic spectrum for
