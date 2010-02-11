@@ -216,6 +216,22 @@ for more details.\n</string>
     <string name="nodes_prefs_pattern">Initial arrangement</string>
     <string name="nodes_prefs_pattern_summary">How are the nodes initially placed</string>
     <string name="nodes_prefs_pattern_title">Initial Arrangement</string>
+ 
+    <!-- Sand.Dollar. -->
+
+    <string name="dollar_title">Sand.Dollar</string>
+    <string name="dollar_author">Moonblink</string>
+    <string name="dollar_desc">An iteratively constructed radial form.</string>
+    
+    <!-- Sand.Dollar Preferences. -->
+
+    <string name="dollar_settings">Sand.Dollar preferences</string>
+    
+    <string name="dollar_prefs_title">Sand.Dollar Preferences</string>
+    
+    <!-- <string name="dollar_prefs_pattern">Initial arrangement</string>
+    <string name="dollar_prefs_pattern_summary">How are the nodes initially placed</string>
+    <string name="dollar_prefs_pattern_title">Initial Arrangement</string> -->
     
 </resources>
 

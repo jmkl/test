@@ -274,6 +274,11 @@
        
 
     <!-- ################################################################# -->
+    <!-- Sand.Dollar Preferences.                                          -->
+    <!-- ################################################################# -->
+       
+
+    <!-- ################################################################# -->
     <!-- Help.                                                             -->
     <!-- ################################################################# -->
 
@@ -369,6 +374,8 @@ be of interest, as described in the following sections.</item>
 <item>Happy.Place</item>
 
 <item>Node.Garden</item>
+
+<item>Sand.Dollar</item>
 
     </string-array>
 
@@ -479,6 +486,19 @@ The following preferences settings are available:\n\
 • <b>Initial arrangement</b> sets how the nodes are initially placed.\n\
 \n\
 j.tarbell August, 2004 / Albuquerque, New Mexico / complexification.net</item>
+
+<item><b>Sand.Dollar</b> is an iteratively constructed radial form using
+the Sand Stroke painting technique.  A very high level of detail is achieved
+with backpainting each Sand Dollar several times.  The radial form is
+constructed with a sweeping tree-like structure that oscillates as it
+moves clockwise around the origin.  Attached to the tree in random
+locations are the Sand Stroke elements.\n\
+\n\
+The following preferences settings are available:\n\
+\n\
+(currently none)\n\
+\n\
+j.tarbell March, 2004 / Albuquerque, New Mexico / complexification.net</item>
 
     </string-array>
     

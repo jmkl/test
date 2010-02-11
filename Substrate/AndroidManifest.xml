@@ -116,6 +116,22 @@
             android:exported="true">
         </activity>
 
+		<service android:label="@string/dollar_title"
+				android:name=".hacks.SandDollarWallpaper"
+				android:permission="android.permission.BIND_WALLPAPER">
+			<intent-filter>
+				<action android:name="android.service.wallpaper.WallpaperService" />
+			</intent-filter>
+			<meta-data android:name="android.service.wallpaper"
+				android:resource="@xml/dollar" />
+		</service>
+
+        <activity
+            android:label="@string/dollar_prefs_title"
+            android:name=".hacks.SandDollarPreferences"
+            android:exported="true">
+        </activity>
+
 	</application>
 
 	<uses-sdk android:minSdkVersion="7" />

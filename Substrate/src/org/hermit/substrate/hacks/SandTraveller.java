@@ -347,13 +347,17 @@ public class SandTraveller
             renderPaint.setAlpha(28);
             renderCanvas.drawPoint(ox+(x-ox)*(float) Math.sin(p),oy+(y-oy)*(float) Math.sin(p), renderPaint);
 
-            g+=random(-0.050f, 0.050f);
+            g += random(-0.050f, 0.050f);
             float maxg = 0.22f;
-            if (g<-maxg) g=-maxg;
-            if (g>maxg) g=maxg;
-            p+=random(-0.050f, 0.050f);
-            if (p<0) p=0;
-            if (p>1.0) p=1.0f;
+            if (g < -maxg)
+                g = -maxg;
+            else if (g > maxg)
+                g = maxg;
+            p += random(-0.050f, 0.050f);
+            if (p < 0)
+                p = 0;
+            if (p > 1.0)
+                p = 1.0f;
 
             renderPaint.setColor(c);
             float w = g / (sandGrains - 1);
