@@ -113,6 +113,21 @@ extends EyeCandy
      */
     @Override
     protected void readPreferences(SharedPreferences prefs, String key) {
+        try {
+            String sval = prefs.getString("branchFactor", "" + branchFactor);
+            branchFactor = Float.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad branchFactor");
+        }
+        Log.i(TAG, "Prefs: branchFactor " + branchFactor);
+
+        try {
+            String sval = prefs.getString("sandStretch", "" + sandStretch);
+            sandStretch = Float.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad sandStretch");
+        }
+        Log.i(TAG, "Prefs: sandStretch " + sandStretch);
     }
 
 
@@ -172,7 +187,6 @@ extends EyeCandy
     protected int iterate(int cycles) {
         final int c = nextSandDollar;
 
-//            rootDollar.swim();
         allSandDollars[c].swim();
 
         if (++nextSandDollar >= totalSandDollars) {
@@ -201,6 +215,8 @@ extends EyeCandy
     private class Dollar {
 
         Dollar() {
+            sp = new SandPainter[maxsp];
+            mysandDollars = new Dollar[2];
         }
         
         void reset(float X, float Y, int Depth, float Theta, float Radius, int Petals) {
@@ -218,8 +234,11 @@ extends EyeCandy
 
             // add sweeps
             numsp = 1 + random(1 + depth / 2);
-            for (int n = 0; n < numsp; ++n)
-                sp[n] = new SandPainter();
+            for (int n = 0; n < numsp; ++n) {
+                if (sp[n] == null)
+                    sp[n] = new SandPainter();
+                sp[n].reset();
+            }
         }
 
         void render() {
@@ -293,9 +312,9 @@ extends EyeCandy
 
         private int numsp = 1;
         private int maxsp = 13;
-        private SandPainter[] sp = new SandPainter[maxsp];
+        private SandPainter[] sp = null;
 
-        private Dollar[] mysandDollars = new Dollar[2];
+        private Dollar[] mysandDollars = null;
 
     }
 
@@ -305,10 +324,6 @@ extends EyeCandy
     // ******************************************************************** //
 
     private class SandPainter {
-
-        SandPainter() {
-            reset();
-        }
 
         void reset() {
             c = colourPalette.getRandom();
@@ -397,7 +412,7 @@ extends EyeCandy
     // How much to increase branching by at greater depth.  Branching
     // probability at a given depth is (branchBase + branchFactor * depth) %.
     private int branchBase = 10;
-    private int branchFactor = 2;
+    private float branchFactor = 2.0f;
     
     // drag is the number of segments within a full revolution
     private int drag = 2048;
@@ -406,7 +421,7 @@ extends EyeCandy
     private int sandGrains = 11;
     
     // Amount to extend the sand painters by.
-    private int sandStretch = 4;
+    private float sandStretch = 4.0f;
 
 }
 

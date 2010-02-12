@@ -277,7 +277,32 @@
     <!-- Sand.Dollar Preferences.                                          -->
     <!-- ################################################################# -->
        
+    <string-array name="dollar_prefs_branch_entries">
+        <item>Less</item>
+        <item>Medium</item>
+        <item>Lots</item>
+    </string-array>
 
+    <string-array name="dollar_prefs_branch_values">
+        <item>1.0</item>  
+        <item>2.0</item>  
+        <item>3.0</item>
+    </string-array>
+       
+
+    <string-array name="dollar_prefs_sand_entries">
+        <item>Less</item>
+        <item>Medium</item>
+        <item>Lots</item>
+    </string-array>
+
+    <string-array name="dollar_prefs_sand_values">
+        <item>2.0</item>  
+        <item>4.0</item>  
+        <item>6.0</item>
+    </string-array>
+    
+       
     <!-- ################################################################# -->
     <!-- Help.                                                             -->
     <!-- ################################################################# -->

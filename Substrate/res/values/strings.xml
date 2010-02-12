@@ -229,9 +229,13 @@ for more details.\n</string>
     
     <string name="dollar_prefs_title">Sand.Dollar Preferences</string>
     
-    <!-- <string name="dollar_prefs_pattern">Initial arrangement</string>
-    <string name="dollar_prefs_pattern_summary">How are the nodes initially placed</string>
-    <string name="dollar_prefs_pattern_title">Initial Arrangement</string> -->
+    <string name="dollar_prefs_branch">Branching density</string>
+    <string name="dollar_prefs_branch_summary">How much to branch the drawn shapes</string>
+    <string name="dollar_prefs_branch_title">Branching Density</string>
+      
+    <string name="dollar_prefs_sand">Sand painting density</string>
+    <string name="dollar_prefs_sand_summary">How densely to draw each branch</string>
+    <string name="dollar_prefs_sand_title">Sand Painting Density</string>
     
 </resources>
 

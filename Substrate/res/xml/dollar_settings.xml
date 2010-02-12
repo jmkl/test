@@ -3,5 +3,23 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         android:title="@string/dollar_settings" >
 
+    <ListPreference
+            android:key="branchFactor"
+            android:title="@string/dollar_prefs_branch"
+            android:summary="@string/dollar_prefs_branch_summary"
+            android:entries="@array/dollar_prefs_branch_entries"
+            android:entryValues="@array/dollar_prefs_branch_values"
+            android:dialogTitle="@string/dollar_prefs_branch_title"
+            android:defaultValue="2.0" />
+
+    <ListPreference
+            android:key="sandStretch"
+            android:title="@string/dollar_prefs_sand"
+            android:summary="@string/dollar_prefs_sand_summary"
+            android:entries="@array/dollar_prefs_sand_entries"
+            android:entryValues="@array/dollar_prefs_sand_values"
+            android:dialogTitle="@string/dollar_prefs_sand_title"
+            android:defaultValue="4.0" />
+
 </PreferenceScreen>
 
