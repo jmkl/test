@@ -63,6 +63,9 @@ extends EyeCandy
      */
     public SandDollar(Context context) {
         super(context);
+        
+        allSandDollars = new Dollar[256];
+        totalSandDollars = 0;
     }
 
 
@@ -92,7 +95,7 @@ extends EyeCandy
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        setMaxCycles((int) (drag * 1.1));
+        setMaxCycles(drag);
     }
 
 
@@ -125,15 +128,19 @@ extends EyeCandy
     protected void reset() {
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
+        
+        allSandDollars = new Dollar[256];
+        totalSandDollars = 0;
 
         // bp is number of petals
-        final int bp = random(13) + 3;
+        final int diameter = Math.min(canvasWidth, canvasHeight);
         final float sx = canvasWidth / 2;
         final float sy = canvasHeight / 2;
-        final int diameter = Math.min(canvasWidth, canvasHeight);
         final float radius = diameter * 0.0339f;
-        sandDollar = new Dollar(sx, sy, 0, -HALF_PI, radius, bp);
-        sandDollar.render();
+        final int bp = random(13) + 3;
+        rootDollar = new Dollar(sx, sy, 0, -HALF_PI, radius, bp);
+        allSandDollars[totalSandDollars++] = rootDollar;
+        rootDollar.render();
                 
         // Clear.
         renderCanvas.drawColor(backgroundColor);
@@ -162,13 +169,13 @@ extends EyeCandy
      */
     @Override
     protected int iterate(int cycles) {
-        final int c = nextDollar;
+        final int c = nextSandDollar;
 
-            sandDollar.swim();
-//            sandDollars[c].swim();
+//            rootDollar.swim();
+        allSandDollars[c].swim();
 
-        if (++nextDollar >= 1) {
-            nextDollar = 0;
+        if (++nextSandDollar >= totalSandDollars) {
+            nextSandDollar = 0;
             ++cycles;
         }
 
@@ -181,6 +188,83 @@ extends EyeCandy
     // ******************************************************************** //
 
     private class Dollar {
+
+        Dollar(float X, float Y, int Depth, float Theta, float Radius, int Petals) {
+            // init
+            ox = x = X;
+            oy = y = Y;
+            ptheta = Theta;
+            radius = Radius;
+            depth = Depth;
+            petals = Petals;
+
+            limbs = 0;
+            time = 0;
+            timev = petals * TWO_PI / drag * (brandom() ? 1 : -1);
+
+            // add sweeps
+            numsp = (int) (2 + random(depth / 2.0f));
+            for (int n = 0; n < numsp; ++n)
+                sp[n] = new SandPainter();
+        }
+
+        void render() {
+            theta = random(-HALF_PI / 3, HALF_PI / 3);
+            radius *= random(1.02f, 1.20f);
+
+            // set next radial point
+            x = ox + radius * (float) Math.cos(theta);
+            y = oy + radius * (float) Math.sin(theta);
+
+            if (depth < maxdepth) {
+                int lnum = 1;
+                if (random(100) > 90 - depth)
+                    ++lnum;
+                for (int n = 0; n < lnum; ++n) {
+                    int bp = petals * (random(3) + 1);
+                    mysandDollars[n] = new Dollar(x, y, depth + 1, theta, radius, bp);
+                    allSandDollars[totalSandDollars++] = mysandDollars[n];
+                    mysandDollars[n].render();
+                    limbs++;
+                }
+            }
+        }
+
+        void swim() {
+            // move through time
+            time += timev;
+            
+            // spin in sinusoidal waves
+            if (depth == 0) {
+                theta += TWO_PI / drag;
+            } else {
+                final float sint = (float) Math.sin(time);
+                final float cost = (float) Math.cos(time);
+                theta += sint / 1640f;
+                radius += depth % 2 == 0 ? sint * 0.22f : cost * 0.22f;
+            }
+
+            // set next radius point
+            x = ox + radius * (float) Math.cos(theta + ptheta);
+            y = oy + radius * (float) Math.sin(theta + ptheta);
+
+            // render sand painters
+            for (int n = 0; n < numsp; ++n)
+                sp[n].render(x, y, ox, oy);
+
+            // draw child limbs
+            for (int n = 0; n < limbs; n++) {
+                mysandDollars[n].setOrigin(x, y, theta + ptheta);
+                // mysandDollars[n].swim();
+            }
+        }
+
+        void setOrigin(float X, float Y, float Theta) {
+            ox = X;
+            oy = Y;
+            ptheta = Theta;
+        }
+
         // feet
         private int depth;
         private int limbs;
@@ -198,83 +282,6 @@ extends EyeCandy
         private SandPainter[] sp = new SandPainter[maxsp];
 
         private Dollar[] mysandDollars = new Dollar[2];
-
-        Dollar(float X, float Y, int Depth, float Theta, float Radius, int Petals) {
-            // init
-            ox = x = X;
-            oy = y = Y;
-            ptheta = Theta;
-            radius = Radius;
-            depth = Depth;
-            petals = Petals;
-
-            limbs = 0;
-            time = 0;
-            timev = petals*TWO_PI/drag;
-            if (random(100)>50) timev*=-1;
-
-            // add sweeps
-            numsp = (int) (2 + random(depth / 2.0f));
-            for (int n=0;n<numsp;n++) {
-                sp[n] = new SandPainter();
-            }
-        }
-
-        void render() {
-            theta = random(-HALF_PI / 3, HALF_PI / 3);
-            radius *= random(1.02f, 1.20f);
-
-            // set next radial point
-            x = ox + radius* (float) Math.cos(theta);
-            y = oy + radius*(float) Math.sin(theta);
-
-            if (depth < maxdepth) {
-                int lnum = 1;
-                if (random(100) > 90 - depth)
-                    ++lnum;
-                for (int n = 0; n < lnum; ++n) {
-                    int bp = petals * (random(3) + 1);
-                    mysandDollars[n] = new Dollar(x, y, depth + 1, theta, radius, bp);
-                    mysandDollars[n].render();
-                    limbs++;
-                }
-            }
-        }
-
-        void swim() {
-            // move through time
-            time += timev;
-            final float sint = (float) Math.sin(time);
-            final float cost = (float) Math.cos(time);
-            
-            // spin in sinusoidal waves
-            if (depth == 0) {
-                theta += TWO_PI / drag;
-            } else {
-                theta += sint / 1640f;
-                radius += depth % 2 == 0 ? sint * 0.22f : cost * 0.22f;
-            }
-
-            // set next radius point
-            x = ox + radius * (float) Math.cos(theta + ptheta);
-            y = oy + radius * (float) Math.sin(theta + ptheta);
-
-            // render sand painters
-            for (int n = 0; n < numsp; n++)
-                sp[n].render(x, y, ox, oy);
-
-            // draw child limbs
-            for (int n = 0; n < limbs; n++) {
-                mysandDollars[n].setOrigin(x, y, theta + ptheta);
-                mysandDollars[n].swim();
-            }
-        }
-
-        void setOrigin(float X, float Y, float Theta) {
-            ox = X;
-            oy = Y;
-            ptheta = Theta;
-        }
 
     }
 
@@ -313,7 +320,7 @@ extends EyeCandy
             else if (g > maxg)
                 g = maxg;
 
-            float w = g / (sandGrains - 1);
+            float w = g / (sandGrains - 1) * 8;
             for (int i = 1; i < sandGrains; ++i) {
                 final float siw = (float) Math.sin(i * w);
                 final float ssiw1 = (float) Math.sin(p + siw);
@@ -358,13 +365,17 @@ extends EyeCandy
     // Private Data.
     // ******************************************************************** //
 
-    // The actual sand dollar object.
-    private Dollar sandDollar;
+    // The root sand dollar object.
+    private Dollar rootDollar;
 
+    // A list of all the sand dollar object, ordered from the root to leaves.
+    private Dollar[] allSandDollars = null;
+    private int totalSandDollars = 0;
+    
     // Index of the next Dollar to be updated.  We don't update all the Dollars
     // every time for performance reasons, so this keeps our place in the
     // list between updates.
-    private int nextDollar = 0;
+    private int nextSandDollar = 0;
 
     // maxdepth keeps the tree structures reasonable
     private int maxdepth = 7;
@@ -373,7 +384,7 @@ extends EyeCandy
     private int drag = 2048;
     
     // Number of grains of sand to paint.
-    private int sandGrains = 7;
+    private int sandGrains = 15;
 
 }
 
