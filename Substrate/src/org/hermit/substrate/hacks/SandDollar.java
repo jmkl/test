@@ -24,6 +24,7 @@ import org.hermit.substrate.EyeCandy;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.util.Log;
 
 
 /**
@@ -129,21 +130,21 @@ extends EyeCandy
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
         
-        allSandDollars = new Dollar[256];
         totalSandDollars = 0;
 
         // bp is number of petals
         final int diameter = Math.min(canvasWidth, canvasHeight);
         final float sx = canvasWidth / 2;
         final float sy = canvasHeight / 2;
-        final float radius = diameter * 0.0339f;
+        final float radius = diameter * 0.024f;
         final int bp = random(13) + 3;
-        rootDollar = new Dollar(sx, sy, 0, -HALF_PI, radius, bp);
-        allSandDollars[totalSandDollars++] = rootDollar;
+        rootDollar = getDollar(sx, sy, 0, -HALF_PI, radius, bp);
         rootDollar.render();
                 
         // Clear.
         renderCanvas.drawColor(backgroundColor);
+        
+        Log.v(TAG, "Start: " + totalSandDollars);
     }
 
 
@@ -187,9 +188,22 @@ extends EyeCandy
     // SandDollar Class.
     // ******************************************************************** //
 
+    private Dollar getDollar(float X, float Y, int Depth, float Theta, float Radius, int Petals) {
+        if (totalSandDollars >= allSandDollars.length)
+            return null;
+        if (allSandDollars[totalSandDollars] == null)
+            allSandDollars[totalSandDollars] = new Dollar();
+        Dollar instance = allSandDollars[totalSandDollars++];
+        instance.reset(X, Y, Depth, Theta, Radius, Petals);
+        return instance;
+    }
+    
     private class Dollar {
 
-        Dollar(float X, float Y, int Depth, float Theta, float Radius, int Petals) {
+        Dollar() {
+        }
+        
+        void reset(float X, float Y, int Depth, float Theta, float Radius, int Petals) {
             // init
             ox = x = X;
             oy = y = Y;
@@ -203,7 +217,7 @@ extends EyeCandy
             timev = petals * TWO_PI / drag * (brandom() ? 1 : -1);
 
             // add sweeps
-            numsp = (int) (2 + random(depth / 2.0f));
+            numsp = 1 + random(1 + depth / 2);
             for (int n = 0; n < numsp; ++n)
                 sp[n] = new SandPainter();
         }
@@ -216,16 +230,18 @@ extends EyeCandy
             x = ox + radius * (float) Math.cos(theta);
             y = oy + radius * (float) Math.sin(theta);
 
-            if (depth < maxdepth) {
+            if (depth < maxDepth) {
                 int lnum = 1;
-                if (random(100) > 90 - depth)
+                if (random(100) <= branchBase + branchFactor * depth)
                     ++lnum;
                 for (int n = 0; n < lnum; ++n) {
                     int bp = petals * (random(3) + 1);
-                    mysandDollars[n] = new Dollar(x, y, depth + 1, theta, radius, bp);
-                    allSandDollars[totalSandDollars++] = mysandDollars[n];
-                    mysandDollars[n].render();
-                    limbs++;
+                    Dollar limb = getDollar(x, y, depth + 1, theta, radius, bp);
+                    if (limb != null) {
+                        mysandDollars[n] = limb;
+                        mysandDollars[n].render();
+                        limbs++;
+                    }
                 }
             }
         }
@@ -253,10 +269,8 @@ extends EyeCandy
                 sp[n].render(x, y, ox, oy);
 
             // draw child limbs
-            for (int n = 0; n < limbs; n++) {
+            for (int n = 0; n < limbs; n++)
                 mysandDollars[n].setOrigin(x, y, theta + ptheta);
-                // mysandDollars[n].swim();
-            }
         }
 
         void setOrigin(float X, float Y, float Theta) {
@@ -320,7 +334,7 @@ extends EyeCandy
             else if (g > maxg)
                 g = maxg;
 
-            float w = g / (sandGrains - 1) * 8;
+            float w = g / (sandGrains - 1) * sandStretch;
             for (int i = 1; i < sandGrains; ++i) {
                 final float siw = (float) Math.sin(i * w);
                 final float ssiw1 = (float) Math.sin(p + siw);
@@ -377,14 +391,22 @@ extends EyeCandy
     // list between updates.
     private int nextSandDollar = 0;
 
-    // maxdepth keeps the tree structures reasonable
-    private int maxdepth = 7;
+    // Maximum recursion depth for the tree structure.
+    private int maxDepth = 9;
+    
+    // How much to increase branching by at greater depth.  Branching
+    // probability at a given depth is (branchBase + branchFactor * depth) %.
+    private int branchBase = 10;
+    private int branchFactor = 2;
     
     // drag is the number of segments within a full revolution
     private int drag = 2048;
     
     // Number of grains of sand to paint.
-    private int sandGrains = 15;
+    private int sandGrains = 11;
+    
+    // Amount to extend the sand painters by.
+    private int sandStretch = 4;
 
 }
 

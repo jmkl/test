@@ -20,6 +20,7 @@
       
     <!-- Entry names for the colour palette menu. -->
     <string-array name="eyecandy_prefs_palette_entries">
+        <item>Random</item>
         <item>Pollock</item>
         <item>Blues</item>
         <item>Caramel</item>
@@ -28,11 +29,11 @@
         <item>Ornate</item>
         <item>Sand</item>
         <item>Tropical</item>
-        <item>Random</item>
     </string-array>
 
     <!-- Values for the colour palette menu. -->
     <string-array name="eyecandy_prefs_palette_values">
+        <item>-1</item>
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -41,7 +42,6 @@
         <item>5</item>
         <item>6</item>
         <item>7</item>
-        <item>-1</item>
     </string-array>
       
     <!-- Entry names for the run time menu. -->

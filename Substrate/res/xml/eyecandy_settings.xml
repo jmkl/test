@@ -19,7 +19,7 @@
             android:entries="@array/eyecandy_prefs_palette_entries"
             android:entryValues="@array/eyecandy_prefs_palette_values"
             android:dialogTitle="@string/eyecandy_prefs_palette_title"
-            android:defaultValue="0" />
+            android:defaultValue="-1" />
 
     <ListPreference
             android:key="animSpeed"

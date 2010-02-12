@@ -248,6 +248,8 @@ public abstract class EyeCandy
         numCycles = 0;
         fadeCycles = 0;
         lastCycles = 0;
+        numIters = 0;
+        numLoops = 0;
     }
     
 
@@ -278,18 +280,27 @@ public abstract class EyeCandy
         while (time < runTime) {
             numCycles = iterate(numCycles);
             time = System.currentTimeMillis() - start;
+            ++numIters;
             if (numCycles / 100 > lastCycles) {
                 Log.i(TAG, "C: " + numCycles);
                 lastCycles = numCycles / 100;
             }
         }
-        
+        ++numLoops;
+        if (numLoops == 40) {
+            Log.i(TAG, "I: " + (numIters / numLoops));
+            numIters = 0;
+            numLoops = 0;
+        }
+
         // See if we need to start fading out the image.
         if (maxCycles > 0 && numCycles >= maxCycles)
             fadeCycles = FADE_CYCLES;
     }
 
     private int lastCycles;
+    private int numIters;
+    private int numLoops;
 
 
     /**
@@ -494,9 +505,9 @@ public abstract class EyeCandy
     protected int backgroundColor = 0xffffffff;
 
     /**
-     * The colour palette index for this hack.
+     * The colour palette index for this hack.  -1 means random.
      */
-    protected int colourPaletteId = 0;
+    protected int colourPaletteId = -1;
 
     /**
      * The colour palette for this hack.
