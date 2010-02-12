@@ -19,6 +19,8 @@
 package org.hermit.tricorder;
 
 
+import java.util.Random;
+
 import org.hermit.android.core.SurfaceRunner;
 import org.hermit.tricorder.Tricorder.Sound;
 
@@ -269,7 +271,7 @@ class GeoView
         Sensor sensor = sensorManager.getDefaultSensor(type);
         if (sensor != null)
             sensorManager.registerListener(this, sensor,
-                                           SensorManager.SENSOR_DELAY_NORMAL);
+                                           SensorManager.SENSOR_DELAY_GAME);
 	}
 	
 	
@@ -440,21 +442,23 @@ class GeoView
                 ginfo.used = sat.usedInFix();
             }
             
-//            // Fake some satellites, for testing.
-//            Random r = new Random();
-//            r.setSeed(4232);
-//            for (int i = 1; i <= NUM_SATS; ++i) {
-//                GpsInfo ginfo = satCache[i];
-//                if (i % 3 == 0) {
-//                    ginfo.time = time - r.nextInt(5000);
-//                    ginfo.azimuth = r.nextFloat() * 360.0f;
-//                    ginfo.elev = r.nextFloat() * 90.0f;
-//                    ginfo.snr = 12;
-//                    ginfo.hasAl = r.nextInt(4) != 0;
-//                    ginfo.hasEph = ginfo.hasAl && r.nextInt(3) != 0;
-//                    ginfo.used = ginfo.hasEph && r.nextBoolean();
-//                }
-//            }
+            // Fake some satellites, for testing.
+            Random r = new Random();
+            r.setSeed(4232);
+            for (int i = 1; i <= NUM_SATS; ++i) {
+                GpsInfo ginfo = satCache[i];
+                if (i % 3 == 0) {
+                    ginfo.time = time - r.nextInt(5000);
+                    ginfo.azimuth = r.nextFloat() * 360.0f;
+                    ginfo.elev = r.nextFloat() * 90.0f;
+                    ginfo.snr = 12;
+                    ginfo.hasAl = r.nextInt(4) != 0;
+                    ginfo.hasEph = ginfo.hasAl && r.nextInt(3) != 0;
+                    ginfo.used = ginfo.hasEph && r.nextBoolean();
+                } else {
+                    ginfo.time = 0;
+                }
+            }
 
             // Post-process the sats.
             numSats = 0;
