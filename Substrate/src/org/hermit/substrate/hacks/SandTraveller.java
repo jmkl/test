@@ -65,6 +65,12 @@ public class SandTraveller
      */
     public SandTraveller(Context context) {
         super(context);
+        
+        setCycles(400, 800, 2000);
+        
+        cities = new City[numCities];
+        for (int t = 0; t < numCities; ++t)
+            cities[t] = new City(t);
     }
 
 
@@ -94,9 +100,6 @@ public class SandTraveller
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        cities = new City[numCities];
-        for (int t = 0; t < numCities; ++t)
-            cities[t] = new City(t);
     }
 
 
@@ -113,16 +116,6 @@ public class SandTraveller
      */
     @Override
     protected void readPreferences(SharedPreferences prefs, String key) {
-        int maxCycles = 2000;
-        if (key == null || key.equals("maxCycles")) try {
-            String sval = prefs.getString("maxCycles", "" + maxCycles);
-            maxCycles = Integer.valueOf(sval);
-            setMaxCycles(maxCycles);
-            Log.i(TAG, "Prefs: maxCycles " + maxCycles);
-        } catch (Exception e) {
-            Log.e(TAG, "Pref: bad maxCycles");
-        }
-
         if (key == null || key.equals("sandPaint")) try {
             sandPaint = prefs.getBoolean("sandPaint", sandPaint);
             Log.i(TAG, "Prefs: sandPaint " + sandPaint);

@@ -4,15 +4,6 @@
         android:title="@string/interaggregate_settings" >
 
     <ListPreference
-            android:key="maxCycles"
-            android:title="@string/interaggregate_prefs_cycles"
-            android:summary="@string/interaggregate_prefs_cycles_summary"
-            android:entries="@array/interaggregate_prefs_cycles_entries"
-            android:entryValues="@array/interaggregate_prefs_cycles_values"
-            android:dialogTitle="@string/interaggregate_prefs_cycles_title"
-            android:defaultValue="4000" />
-
-    <ListPreference
             android:key="numDiscs"
             android:title="@string/interaggregate_prefs_discs"
             android:summary="@string/interaggregate_prefs_discs_summary"

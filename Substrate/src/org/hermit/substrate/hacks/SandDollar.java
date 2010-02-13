@@ -65,6 +65,9 @@ extends EyeCandy
     public SandDollar(Context context) {
         super(context);
         
+        // Our rendering time is fixed.
+        setCycles(drag);
+
         allSandDollars = new Dollar[256];
         totalSandDollars = 0;
     }
@@ -96,7 +99,6 @@ extends EyeCandy
      */
     @Override
     protected void onConfigurationSet(int width, int height, Bitmap.Config config) {
-        setMaxCycles(drag);
     }
 
 

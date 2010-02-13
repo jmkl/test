@@ -125,6 +125,14 @@ public abstract class EyeCandy
         } catch (Exception e) {
             Log.e(TAG, "Pref: bad animSpeed");
         }
+        
+        try {
+            String sval = prefs.getString("cyclesSel", "" + cyclesSel);
+            cyclesSel = Integer.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad cyclesSel");
+        }
+        Log.i(TAG, "Prefs: cyclesSel " + cyclesSel);
 
         // Tell the subclass to read its prefs.
         readPreferences(prefs, key);
@@ -219,15 +227,35 @@ public abstract class EyeCandy
      * Subclasses can call this to tell us how long they wish to run
      * for.
      * 
-     * @param   num         Maximum number of cycles to run for.  Zero means
+     * @param   base        Number of cycles to run for.  Zero means
      *                      run forever; maybe the hack will reset itself,
-     *                      or doesn't need to.
+     *                      or doesn't need to.  Otherwise this is the
+     *                      exact number of cycles the hack runs for.
      */
-    protected void setMaxCycles(int num) {
-        maxCycles = num;
+    protected void setCycles(int base) {
+        minCycles = base;
+        baseCycles = base;
+        maxCycles = base;
     }
 
-   
+
+    /**
+     * Set the number of cycles this hack will run for before resetting.
+     * Subclasses can call this to tell us how long they wish to run
+     * for.  A range of options is specified; the framework will select
+     * the appropriate value based on common preferences.
+     * 
+     * @param   min         Minimum sensible running time in cycles.
+     * @param   base        "Medium" running time in cycles.
+     * @param   max         Maximum sensible running time in cycles.
+     */
+    protected void setCycles(int min, int base, int max) {
+        minCycles = min;
+        baseCycles = base;
+        maxCycles = max;
+    }
+
+
     // ******************************************************************** //
     // Animation Rendering.
     // ******************************************************************** //
@@ -245,6 +273,7 @@ public abstract class EyeCandy
                 
         reset();
         
+        limitCycles = cyclesSel == 1 ? minCycles : cyclesSel == 3 ? maxCycles : baseCycles;
         numCycles = 0;
         fadeCycles = 0;
         lastCycles = 0;
@@ -294,7 +323,7 @@ public abstract class EyeCandy
         }
 
         // See if we need to start fading out the image.
-        if (maxCycles > 0 && numCycles >= maxCycles)
+        if (limitCycles > 0 && numCycles >= limitCycles)
             fadeCycles = FADE_CYCLES;
     }
 
@@ -528,10 +557,19 @@ public abstract class EyeCandy
     // The time in ms to sleep between updates.
     private long sleepTime = 40;
 
-    // Number of cycles before we reset.  Zero means run forever.
-	// Subclasses should generally override this with something appropriate.
-    private int maxCycles = 10000;
+    // Minimum, base and maximum number of cycles before we reset.
+    // Zero means run forever.
+    private int minCycles = 800;
+    private int baseCycles = 800;
+    private int maxCycles = 800;
     
+    // Desired run time: 1,2,3 = short, medium, long.
+    private int cyclesSel = 2;
+
+    // Actual current cycles limit.  This is derived from the above
+    // according to preferences.
+    private int limitCycles = 800;
+ 
     // Number of cycles we've done in this run.
     private int numCycles = 0;
 

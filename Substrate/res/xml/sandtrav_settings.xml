@@ -3,15 +3,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         android:title="@string/sandtrav_settings" >
 
-    <ListPreference
-            android:key="maxCycles"
-            android:title="@string/sandtrav_prefs_cycles"
-            android:summary="@string/sandtrav_prefs_cycles_summary"
-            android:entries="@array/sandtrav_prefs_cycles_entries"
-            android:entryValues="@array/sandtrav_prefs_cycles_values"
-            android:dialogTitle="@string/sandtrav_prefs_cycles_title"
-            android:defaultValue="2000" />
-
     <CheckBoxPreference
             android:key="sandPaint"
             android:title="@string/sandtrav_prefs_spaint"

@@ -30,5 +30,14 @@
             android:dialogTitle="@string/eyecandy_prefs_speed_title"
             android:defaultValue="1" />
 
+    <ListPreference
+            android:key="cyclesSel"
+            android:title="@string/eyecandy_prefs_cycles"
+            android:summary="@string/eyecandy_prefs_cycles_summary"
+            android:entries="@array/eyecandy_prefs_cycles_entries"
+            android:entryValues="@array/eyecandy_prefs_cycles_values"
+            android:dialogTitle="@string/eyecandy_prefs_cycles_title"
+            android:defaultValue="2" />
+
 </PreferenceScreen>
 

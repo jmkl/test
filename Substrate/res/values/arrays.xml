@@ -58,25 +58,25 @@
         <item>0</item>
     </string-array>
       
-         
-    <!-- ################################################################# -->
-    <!-- Substrate Preferences.                                            -->
-    <!-- ################################################################# -->
-    
     <!-- Entry names for the run time menu. -->
-    <string-array name="substrate_prefs_cycles_entries">
+    <string-array name="eyecandy_prefs_cycles_entries">
         <item>Short</item>
         <item>Medium</item>
         <item>Long</item>
     </string-array>
 
     <!-- Values for the run time menu. -->
-    <string-array name="substrate_prefs_cycles_values">
-        <item>3000</item>  
-        <item>6000</item>
-        <item>10000</item>
+    <string-array name="eyecandy_prefs_cycles_values">
+        <item>1</item>  
+        <item>2</item>  
+        <item>3</item>
     </string-array>
-      
+         
+         
+    <!-- ################################################################# -->
+    <!-- Substrate Preferences.                                            -->
+    <!-- ################################################################# -->
+    
     <!-- Entry names for the number of cracks menu. -->
     <string-array name="substrate_prefs_cracks_entries">
         <item>Few</item>
@@ -110,20 +110,6 @@
     <!-- Interaggregate Preferences.                                       -->
     <!-- ################################################################# -->
 
-    <!-- Entry names for the run time menu. -->
-    <string-array name="interaggregate_prefs_cycles_entries">
-        <item>Short</item>
-        <item>Medium</item>
-        <item>Long</item>
-    </string-array>
-
-    <!-- Values for the run time menu. -->
-    <string-array name="interaggregate_prefs_cycles_values">
-        <item>2000</item>  
-        <item>4000</item>  
-        <item>6000</item>
-    </string-array>
-      
     <!-- Entry names for the number of discs menu. -->
     <string-array name="interaggregate_prefs_discs_entries">
         <item>Few</item>
@@ -175,20 +161,6 @@
     <!-- Sand Traveller Preferences.                                       -->
     <!-- ################################################################# -->
 
-    <!-- Entry names for the run time menu. -->
-    <string-array name="sandtrav_prefs_cycles_entries">
-        <item>Short</item>
-        <item>Medium</item>
-        <item>Long</item>
-    </string-array>
-
-    <!-- Values for the run time menu. -->
-    <string-array name="sandtrav_prefs_cycles_values">
-        <item>400</item>  
-        <item>800</item>  
-        <item>2000</item>
-    </string-array>
-       
     <!-- Entry names for the initial velocity menu. -->
     <string-array name="sandtrav_prefs_velo_entries">
         <item>Slow</item>
@@ -222,38 +194,10 @@
     <!-- Guts Preferences.                                                 -->
     <!-- ################################################################# -->
 
-    <!-- Entry names for the run time menu. -->
-    <string-array name="guts_prefs_cycles_entries">
-        <item>Short</item>
-        <item>Medium</item>
-        <item>Long</item>
-    </string-array>
 
-    <!-- Values for the run time menu. -->
-    <string-array name="guts_prefs_cycles_values">
-        <item>3000</item>  
-        <item>6000</item>  
-        <item>12000</item>
-    </string-array>
-       
-         
     <!-- ################################################################# -->
     <!-- Happy.Place Preferences.                                          -->
     <!-- ################################################################# -->
-
-    <!-- Entry names for the run time menu. -->
-    <string-array name="happy_prefs_cycles_entries">
-        <item>Short</item>
-        <item>Medium</item>
-        <item>Long</item>
-    </string-array>
-
-    <!-- Values for the run time menu. -->
-    <string-array name="happy_prefs_cycles_values">
-        <item>3000</item>  
-        <item>6000</item>  
-        <item>12000</item>
-    </string-array>
        
          
     <!-- ################################################################# -->

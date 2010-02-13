@@ -24,7 +24,6 @@ import org.hermit.substrate.EyeCandy;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.util.Log;
 
 
 /**
@@ -65,6 +64,8 @@ extends EyeCandy
      */
     public Guts(Context context) {
         super(context);
+
+        setCycles(3000, 6000, 12000);
     }
 
 
@@ -110,15 +111,6 @@ extends EyeCandy
      */
     @Override
     protected void readPreferences(SharedPreferences prefs, String key) {
-        int maxCycles = 6000;
-        try {
-            String sval = prefs.getString("maxCycles", "" + maxCycles);
-            maxCycles = Integer.valueOf(sval);
-        } catch (Exception e) {
-            Log.e(TAG, "Pref: bad maxCycles");
-        }
-        setMaxCycles(maxCycles);
-        Log.i(TAG, "Prefs: maxCycles " + maxCycles);
     }
 
 

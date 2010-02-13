@@ -65,6 +65,8 @@ public class InterAggregate
      */
     public InterAggregate(Context context) {
         super(context);
+
+        setCycles(2000, 4000, 6000);
     }
 
 
@@ -110,16 +112,6 @@ public class InterAggregate
      */
     @Override
     protected void readPreferences(SharedPreferences prefs, String key) {
-        int maxCycles = 4000;
-        try {
-            String sval = prefs.getString("maxCycles", "" + maxCycles);
-            maxCycles = Integer.valueOf(sval);
-        } catch (Exception e) {
-            Log.e(TAG, "Pref: bad maxCycles");
-        }
-        setMaxCycles(maxCycles);
-        Log.i(TAG, "Prefs: maxCycles " + maxCycles);
-
         try {
             String sval = prefs.getString("numDiscs", "" + numDiscs);
             numDiscs = Integer.valueOf(sval);

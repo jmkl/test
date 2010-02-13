@@ -64,6 +64,8 @@ public class Substrate
      */
     public Substrate(Context context) {
         super(context);
+
+        setCycles(3000, 6000, 10000);
     }
 
 
@@ -109,16 +111,6 @@ public class Substrate
      */
     @Override
     protected void readPreferences(SharedPreferences prefs, String key) {
-        int maxCycles = 6000;
-        try {
-            String sval = prefs.getString("maxCycles", "" + maxCycles);
-            maxCycles = Integer.valueOf(sval);
-        } catch (Exception e) {
-            Log.e(TAG, "Pref: bad maxCycles");
-        }
-        setMaxCycles(maxCycles);
-        Log.i(TAG, "Prefs: maxCycles " + maxCycles);
-
         try {
             String sval = prefs.getString("maxCracks", "" + maxCracks);
             maxCracks = Integer.valueOf(sval);

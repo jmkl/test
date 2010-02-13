@@ -69,6 +69,9 @@ extends EyeCandy
      */
     public NodeGarden(Context context) {
         super(context);
+
+        // For this hack, a single cycle renders the whole thing.
+        setCycles(1);
     }
 
 
@@ -184,9 +187,6 @@ extends EyeCandy
         updateState = 0;
         
         nextNode = 0;
-
-        // For this hack, a single cycle renders the whole thing.
-        setMaxCycles(1);
 
         // Clear to white.
         renderCanvas.drawColor(backgroundColor);
