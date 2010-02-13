@@ -219,34 +219,110 @@ public class SpectrumGauge
         // Now actually do the drawing.
         synchronized (this) {
             canvas.drawBitmap(bgBitmap, 0, 0, paint);
-
-            paint.setStyle(Style.FILL);
-            paintColor[1] = 1f;
-            paintColor[2] = 1f;
-            final int len = data.length;
-            final float bw = (float) (spectGraphWidth - 2) / (float) len;
-            final float bh = spectGraphHeight - 2;
-            final float be = spectGraphY + spectGraphHeight - 1;
-            for (int i = 0; i < len; ++i) {
-                // Cycle the hue angle from 0° to 300°; i.e. red to purple.
-                paintColor[0] = (float) i / (float) len * 300f;
-                paint.setColor(Color.HSVToColor(paintColor));
-
-                // Draw the bar.
-                final float x = spectGraphX + i * bw + 1;
-                float y = be - (float) (Math.log10(data[i]) / RANGE_BELS + 1f) * bh;
-                if (y > be)
-                    y = be;
-                else if (y < spectGraphY)
-                    y = spectGraphY;
-                if (bw <= 1.0f)
-                    canvas.drawLine(x, y, x, be, paint);
-                else
-                    canvas.drawRect(x, y, x + bw, be, paint);
-            }
+            if (logFreqScale)
+                logGraph(data, canvas, paint);
+            else
+                linearGraph(data, canvas, paint);
         }
     }
 
+	   
+    /**
+     * Draw a linear spectrum graph.
+     * 
+     * @param   data        An array of floats defining the signal power
+     *                      at each frequency in the spectrum.
+     * @param  canvas       Canvas to draw into.
+     * @param  paint        Paint to draw with.
+     */
+    private void logGraph(float[] data, Canvas canvas, Paint paint) {
+        paint.setStyle(Style.FILL);
+        paintColor[1] = 1f;
+        paintColor[2] = 1f;
+        final int len = data.length;
+        final float bw = (float) (spectGraphWidth - 2) / (float) len;
+        final float bh = spectGraphHeight - 2;
+        final float be = spectGraphY + spectGraphHeight - 1;
+        
+        // Determine the first and last frequencies we have.
+        final float lf = nyquistFreq / len;
+        final float rf = nyquistFreq;
+        
+        // Now, how many octaves is that.  Round down.  Calculate pixels/oct.
+        final int octaves = (int) Math.floor(log2(rf / lf)) - 2;
+        final float octWidth = (float) (spectGraphWidth - 2) / (float) octaves;
+        
+        // Calculate the base frequency for the graph, which isn't lf.
+        final float bf = rf / (float) Math.pow(2, octaves);
+            
+        // Element 0 isn't a frequency bucket; skip it.
+        for (int i = 1; i < len; ++i) {
+            // Cycle the hue angle from 0° to 300°; i.e. red to purple.
+            paintColor[0] = (float) i / (float) len * 300f;
+            paint.setColor(Color.HSVToColor(paintColor));
+
+            // What frequency bucket are we in.
+            final float f = lf * i;
+
+            // For freq f, calculate x.
+            final float x = spectGraphX + (float) (log2(f) - log2(bf)) * octWidth;
+
+            // Draw the bar.
+            float y = be - (float) (Math.log10(data[i]) / RANGE_BELS + 1f) * bh;
+            if (y > be)
+                y = be;
+            else if (y < spectGraphY)
+                y = spectGraphY;
+            if (bw <= 1.0f)
+                canvas.drawLine(x, y, x, be, paint);
+            else
+                canvas.drawRect(x, y, x + bw, be, paint);
+        }
+    }
+    
+    
+    private final double log2(double x) {
+        return Math.log(x) / LOG2;
+    }
+    
+
+	/**
+	 * Draw a linear spectrum graph.
+	 * 
+     * @param   data        An array of floats defining the signal power
+     *                      at each frequency in the spectrum.
+	 * @param  canvas       Canvas to draw into.
+	 * @param  paint        Paint to draw with.
+	 */
+	private void linearGraph(float[] data, Canvas canvas, Paint paint) {
+        paint.setStyle(Style.FILL);
+        paintColor[1] = 1f;
+        paintColor[2] = 1f;
+        final int len = data.length;
+        final float bw = (float) (spectGraphWidth - 2) / (float) len;
+        final float bh = spectGraphHeight - 2;
+        final float be = spectGraphY + spectGraphHeight - 1;
+        
+        // Element 0 isn't a frequency bucket; skip it.
+        for (int i = 1; i < len; ++i) {
+            // Cycle the hue angle from 0° to 300°; i.e. red to purple.
+            paintColor[0] = (float) i / (float) len * 300f;
+            paint.setColor(Color.HSVToColor(paintColor));
+
+            // Draw the bar.
+            final float x = spectGraphX + i * bw + 1;
+            float y = be - (float) (Math.log10(data[i]) / RANGE_BELS + 1f) * bh;
+            if (y > be)
+                y = be;
+            else if (y < spectGraphY)
+                y = spectGraphY;
+            if (bw <= 1.0f)
+                canvas.drawLine(x, y, x, be, paint);
+            else
+                canvas.drawRect(x, y, x + bw, be, paint);
+        }
+	}
+	
 
 	// ******************************************************************** //
 	// View Drawing.
@@ -280,8 +356,11 @@ public class SpectrumGauge
 	@SuppressWarnings("unused")
 	private static final String TAG = "instrument";
 	
-	// Vertical range of the graph in bels.
-	private static final float RANGE_BELS = 6f;
+	// Log of 2.
+	private static final double LOG2 = Math.log(2);
+
+    // Vertical range of the graph in bels.
+    private static final float RANGE_BELS = 6f;
 
 
 	// ******************************************************************** //
@@ -291,6 +370,9 @@ public class SpectrumGauge
     // The Nyquist frequency -- the highest frequency
     // represented in the spectrum data we will be plotting.
     private int nyquistFreq = 0;
+
+    // If true, draw a logarithmic frequency scale.  Otherwise linear.
+    private static final boolean logFreqScale = false;
 
 	// Display position and size within the parent view.
     private int dispX = 0;
