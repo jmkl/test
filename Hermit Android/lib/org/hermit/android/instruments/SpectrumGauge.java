@@ -72,7 +72,7 @@ public class SpectrumGauge
         // If we have a size, then we have a background.  Re-draw it
         // to show the new frequency scale.
         if (haveBounds())
-            drawBackgroundBody(bgCanvas, getPaint());
+            drawBg(bgCanvas, getPaint());
     }
     
 
