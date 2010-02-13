@@ -65,6 +65,15 @@
                 android:defaultValue="256" />
 
         <ListPreference
+                android:key="windowFunc"
+                android:title="@string/prefs_window"
+                android:summary="@string/prefs_window_summary"
+                android:entries="@array/prefs_window_entries"
+                android:entryValues="@array/prefs_window_values"
+                android:dialogTitle="@string/prefs_window_title"
+                android:defaultValue="BLACKMAN_HARRIS" />
+
+        <ListPreference
                 android:key="decimateRate"
                 android:title="@string/prefs_decimate"
                 android:summary="@string/prefs_decimate_summary"

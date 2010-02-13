@@ -40,6 +40,7 @@
         <item>8,000 (4 kHz)</item>
         <item>16,000 (8 kHz)</item>
         <item>22,050 (11 kHz)</item>
+        <item>44,100 (22 kHz)</item>
     </string-array>
 
     <!-- Values for the sample rate menu. -->
@@ -47,10 +48,12 @@
         <item>8000</item>  
         <item>16000</item>
         <item>22050</item>
+        <item>44100</item>
     </string-array>
     
     <!-- Entry names for the block size menu. -->
     <string-array name="prefs_block_entries">
+        <item>128 samples</item>
         <item>256 samples</item>
         <item>512 samples</item>
         <item>1024 samples</item>  
@@ -58,9 +61,26 @@
 
     <!-- Values for the block size menu. -->
     <string-array name="prefs_block_values">
+        <item>128</item>  
         <item>256</item>  
         <item>512</item>
         <item>1024</item>
+    </string-array>
+      
+    <!-- Entry names for the window function menu. -->
+    <string-array name="prefs_window_entries">
+        <item>No windowing</item>
+        <item>Blackman-Harris (dflt)</item>
+        <item>Gauss</item>  
+        <item>Weedon-Gauss</item>  
+    </string-array>
+
+    <!-- Values for the window function menu. -->
+    <string-array name="prefs_window_values">
+        <item>RECTANGULAR</item>  
+        <item>BLACKMAN_HARRIS</item>
+        <item>GAUSS</item>
+        <item>WEEDON_GAUSS</item>
     </string-array>
     
     <!-- Entry names for the decimation menu. -->
