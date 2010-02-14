@@ -396,7 +396,14 @@ this frequency range is displayed alongside the sample rate.\n\
 \n\
 <b>Block size</b> sets the size in samples of the data block processed
 by the spectrum analyser.  A larger block size provides finer frequency
-resolution but with more delay and more processing power required.\n\
+resolution; the number of frequency bars is half the block size.  However,
+a larger block size introduces more delay and requires significantly more
+processing power.\n\
+\n\
+<b>Window function</b> sets the spectrum analyser windowing function.
+Windowing eliminates spurious frequencies caused by the blocking of
+the input, at the cost of making peaks a little wider.  Blackman-Harris is
+a good bet.\n\
 \n\
 <b>Decimation</b> reduces the processing workload by only analysing a subset
 of the input data blocks.\n\
