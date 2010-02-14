@@ -160,10 +160,6 @@ public class InterAggregate
         if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
 
-        Log.v(TAG, "Interag reset: " + numDiscs + " discs, " +
-                                       discMinSize + "-" + discMaxSize);
-//        framerate(30);
-
         if (discs == null || discs.length != numDiscs)
             discs = new Disc[numDiscs];
 
@@ -263,14 +259,14 @@ public class InterAggregate
         }
 
         void move() {
-            // grow to destination radius
-            if (r < dr)
-                r += 0.1f;
-
             // add velocity to position
             x += vx;
             y += vy;
             
+            // grow to destination radius
+            if (r < dr)
+                r += 0.1f;
+
             // bound check
             if (x + r < 0)
                 x += canvasWidth + r + r;
@@ -285,18 +281,21 @@ public class InterAggregate
         void render() {
             // find intersecting points with all ascending discs
             for (int n = id + 1; n < numDiscs; n++) {
-                // find distance to other disc
-                final float dx = discs[n].x - x;
-                final float dy = discs[n].y - y;
-                final float d = (float) Math.sqrt(dx * dx + dy * dy);
+                final Disc disc = discs[n];
                 
+                // find distance to other disc
+                final float dx = disc.x - x;
+                final float dy = disc.y - y;
+                final float d = (float) Math.sqrt(dx * dx + dy * dy);
+                final float or = disc.r;
+          
                 // Test for intersection but not complete containment.
-                if (d < (discs[n].r + r) && d > Math.abs(discs[n].r - r)) {
+                if (d < or + r && d > Math.abs(or - r)) {
                     // find solutions
-                    final float a = (r*r - discs[n].r*discs[n].r + d*d) / (2*d);
-                    final float idx = (discs[n].x - x) / d;
-                    final float idy = (discs[n].y - y) / d;
-                    
+                    final float a = (r * r - or * or + d * d) / (2 * d);
+                    final float idx = dx / d;
+                    final float idy = dy / d;
+
                     final float p2x = x + a * idx;
                     final float p2y = y + a * idy;
 

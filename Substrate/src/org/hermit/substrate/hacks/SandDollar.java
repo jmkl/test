@@ -360,7 +360,7 @@ extends EyeCandy
                 final float py1 = oy + dy * ssiw1;
                 final float px2 = ox + dx * ssiw2;
                 final float py2 = oy + dy * ssiw2;
-                final float a = 0.1f - i / (sandGrains * 10.0f);
+                final float a = 0.2f - i / (sandGrains * 10.0f);
 
                 renderPaint.setAlpha(Math.round(a * 256));
                 renderCanvas.drawPoint(px1, py1, renderPaint);
@@ -420,7 +420,7 @@ extends EyeCandy
     private int drag = 2048;
     
     // Number of grains of sand to paint.
-    private int sandGrains = 11;
+    private int sandGrains = 20;
     
     // Amount to extend the sand painters by.
     private float sandStretch = 4.0f;

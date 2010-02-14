@@ -40,7 +40,7 @@ import android.graphics.Bitmap;
  * Please send me your experiences."
  */
 public class Guts
-extends EyeCandy
+    extends EyeCandy
 {
 
     // ******************************************************************** //
@@ -65,7 +65,7 @@ extends EyeCandy
     public Guts(Context context) {
         super(context);
 
-        setCycles(3000, 6000, 12000);
+        setCycles(2000, 4000, 8000);
     }
 
 
@@ -136,10 +136,10 @@ extends EyeCandy
             cpaths = new CPath[numPaths];
             for (int i = 0; i < numPaths; ++i)
                 cpaths[i] = new CPath(i);
-        } else {
-            for (int i = 0; i < numPaths; ++i)
-                cpaths[i].reset();
         }
+
+        for (int i = 0; i < numPaths; ++i)
+            cpaths[i].reset();
         nextPath = 0;
 
         // Clear to white.
@@ -175,8 +175,7 @@ extends EyeCandy
             ++cycles;
         }
 
-        if (cpaths[c].moveme)
-            cpaths[c].grow();
+        cpaths[c].grow();
 
         return cycles;
     }
@@ -193,13 +192,12 @@ extends EyeCandy
             id = Id;
 
             // create sand painters
-            sandGut = new SandPainter(3);
+            sandGut = new SandPainterOne();
             for (int s = 0; s < NUM_SANDS; ++s) {
-                sandsLeft[s] = new SandPainter(1);
-                sandsRight[s] = new SandPainter(1);
-                sandsCenter[s] = new SandPainter(0);
+                sandsLeft[s] = new SandPainterInside();
+                sandsRight[s] = new SandPainterInside();
+                sandsCenter[s] = new SandPainterOutside();
             }
-            reset();        
         }
 
         void reset() {
@@ -223,12 +221,10 @@ extends EyeCandy
             a = random(TWO_PI);
             grth = 0.1f;
             gv = 1.2f;
-            pt = (int) Math.pow(3, 1 + id % 3);
+            pt = (int) Math.pow(2, 1 + id % 3);
             time = 0;
             tdv = random(0.1f, 0.5f);
             tdvm = random(1.0f, 100.0f);
-            fadeOut = false;
-            moveme = true;
         }
 
         void grow() {
@@ -243,44 +239,38 @@ extends EyeCandy
                 av *= 0.73;
             a += av;
 
-            // randomly increase and descrease in girth (thickness)      
-            if (fadeOut) {
-                gv -= 0.062f;
-                grth += gv;
-                if (grth < 0.1f)
-                    moveme = false;
-            } else {
-                grth += gv;
-                gv += random(-0.15f, 0.12f);
-                if (grth < 6) {
-                    grth = 6;
-                    gv *= 0.9f;
-                } else if (grth > 26) {
-                    grth = 26;
-                    gv *= 0.8f;
-                }
+            // randomly increase and decrease in girth (thickness)      
+            grth += gv;
+            gv += random(-0.15f, 0.12f);
+            if (grth < 6) {
+                grth = 6;
+                gv *= 0.9f;
+            } else if (grth > 26) {
+                grth = 26;
+                gv *= 0.8f;
             }
             draw();
         }
 
         void draw() {
+            // calculate distance
+            final float d = (float) Math.sqrt(x * x + y * y);
+            final float t = (float) Math.atan2(y, x);
+
             // draw each petal
             for (int p = 0; p < pt; ++p) {
                 // calculate actual angle
-                float t = (float) Math.atan2(y, x);
-                float at = t + p * (TWO_PI / pt);
-                float ad = a + p * (TWO_PI / pt);
-
-                // calculate distance
-                float d = (float) Math.sqrt(x * x + y * y);
+                final float pang = p * (TWO_PI / pt);
+                final float at = t + pang;
+                final float ad = a + pang;
 
                 // calculate actual xy
-                float ax = canvasWidth / 2 + d * (float) Math.cos(at);
-                float ay = canvasHeight / 2 + d * (float) Math.sin(at);
+                final float ax = canvasWidth / 2 + d * (float) Math.cos(at);
+                final float ay = canvasHeight / 2 + d * (float) Math.sin(at);
 
                 // calculate girth markers
-                float cx = 0.5f * grth * (float) Math.cos(ad - HALF_PI);
-                float cy = 0.5f * grth * (float) Math.sin(ad - HALF_PI);
+                final float cx = 0.5f * grth * (float) Math.cos(ad - HALF_PI);
+                final float cy = 0.5f * grth * (float) Math.sin(ad - HALF_PI);
 
                 // draw points
                 // paint background white
@@ -319,7 +309,6 @@ extends EyeCandy
         private float grth, gv;
         // sand painters
         private static final int NUM_SANDS = 3;
-        private boolean fadeOut, moveme;
         private SandPainter[] sandsCenter = new SandPainter[NUM_SANDS];
         private SandPainter[] sandsLeft = new SandPainter[NUM_SANDS];
         private SandPainter[] sandsRight = new SandPainter[NUM_SANDS];
@@ -331,10 +320,9 @@ extends EyeCandy
     // SandPainter Class.
     // ******************************************************************** //
 
-    private class SandPainter {
+    private abstract class SandPainter {
 
-        SandPainter(int M) {
-            MODE = M;
+        SandPainter() {
         }
 
         void reset(int C) {
@@ -344,28 +332,42 @@ extends EyeCandy
 
         void render(float x, float y, float ox, float oy) {
             // modulate gain
-            if (MODE == 3)
-                g += random(-0.9f, 0.5f);
-            else
-                g += random(-0.050f, 0.050f);
+            modulateGain();
             if (g < 0.0f)
                 g = 0.0f;
             else if (g > HALF_PI)
                 g = HALF_PI;
 
-            if (MODE == 3 || MODE == 2) {
-                renderOne(x, y, ox, oy);
-            } else if (MODE == 1) {
-                renderInside(x, y, ox, oy);
-            } else if (MODE == 0) {
-                renderOutside(x, y, ox, oy);
-            }
+            renderBody(x, y, ox, oy);
         }
 
-        void renderOne(float x, float y, float ox, float oy) {
+        void modulateGain() {
+            g += random(-0.050f, 0.050f);
+        }
+        
+        abstract void renderBody(float x, float y, float ox, float oy);
+        
+        int c;
+        float g;
+        
+    }
+
+
+    private class SandPainterOne extends SandPainter {
+
+        SandPainterOne() {
+        }
+
+        @Override
+        void modulateGain() {
+            g += random(-0.9f, 0.5f);
+        }
+        
+        @Override
+        void renderBody(float x, float y, float ox, float oy) {
             // calculate grains by distance
             //int grains = int(sqrt((ox-x)*(ox-x)+(oy-y)*(oy-y)));
-            int grains = 42;
+            int grains = 15;
 
             // lay down grains of sand (transparent pixels)
             renderPaint.setColor(c);
@@ -382,11 +384,20 @@ extends EyeCandy
                 renderCanvas.drawPoint(px, py, renderPaint);
             }
         }
+        
+    }
 
-        void renderInside(float x, float y, float ox, float oy) {
+
+    private class SandPainterInside extends SandPainter {
+
+        SandPainterInside() {
+        }
+
+        @Override
+        void renderBody(float x, float y, float ox, float oy) {
             // calculate grains by distance
             //int grains = int(sqrt((ox-x)*(ox-x)+(oy-y)*(oy-y)));
-            int grains = 11;
+            int grains = 6;
 
             // lay down grains of sand (transparent pixels)
             renderPaint.setColor(c);
@@ -407,8 +418,17 @@ extends EyeCandy
                 renderCanvas.drawPoint(px2, py2, renderPaint);
             }
         }
+        
+    }
 
-        void renderOutside(float x, float y, float ox, float oy) {
+
+    private class SandPainterOutside extends SandPainter {
+
+        SandPainterOutside() {
+        }
+
+        @Override
+        void renderBody(float x, float y, float ox, float oy) {
             // calculate grains by distance
             //int grains = int(sqrt((ox-x)*(ox-x)+(oy-y)*(oy-y)));
             int grains = 11;
@@ -432,10 +452,6 @@ extends EyeCandy
                 renderCanvas.drawPoint(px2, py2, renderPaint);
             }
         }
-        
-        private final int MODE;
-        private int c;
-        private float g;
         
     }
 

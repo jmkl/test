@@ -185,6 +185,14 @@ for more details.\n</string>
     
     <string name="happy_prefs_title">Happy.Place Preferences</string>
 
+    <string name="happy_prefs_friends">Number of friends</string>
+    <string name="happy_prefs_friends_summary">How many moving friendly nodes are there</string>
+    <string name="happy_prefs_friends_title">Number of Friends</string>
+ 
+    <string name="happy_prefs_space">Personal space</string>
+    <string name="happy_prefs_space_summary">How close do friends like to be</string>
+    <string name="happy_prefs_space_title">Personal Space</string>
+
     <!-- Node.Garden. -->
 
     <string name="nodes_title">Node.Garden</string>

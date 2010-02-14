@@ -24,6 +24,7 @@ import org.hermit.substrate.EyeCandy;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.util.Log;
 
 
 /**
@@ -65,7 +66,7 @@ public class HappyPlace
     public HappyPlace(Context context) {
         super(context);
 
-        setCycles(3000, 6000, 12000);
+        setCycles(600, 1000, 2000);
     }
 
 
@@ -111,6 +112,21 @@ public class HappyPlace
      */
     @Override
     protected void readPreferences(SharedPreferences prefs, String key) {
+        try {
+            String sval = prefs.getString("numFriends", "" + numFriends);
+            numFriends = Integer.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad numFriends");
+        }
+        Log.i(TAG, "Prefs: numFriends " + numFriends);
+        
+        try {
+            String sval = prefs.getString("personalSpace", "" + personalSpace);
+            personalSpace = Integer.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad personalSpace");
+        }
+        Log.i(TAG, "Prefs: personalSpace " + personalSpace);
     }
 
 
@@ -138,9 +154,8 @@ public class HappyPlace
             float fx = canvasWidth / 2 + 0.4f * dim * (float) Math.cos(az);
             float fy = canvasHeight / 2 + 0.4f * dim * (float) Math.sin(az);
             if (friends[i] == null)
-                friends[i] = new Friend(fx, fy);
-            else
-                friends[i].reset(fx, fy);
+                friends[i] = new Friend();
+            friends[i].reset(fx, fy);
         }
 
         // make some random friend connections
@@ -221,23 +236,11 @@ public class HappyPlace
     // ******************************************************************** //
 
     private class Friend {
-        float x, y;
-        float vx, vy;
 
-        int numcon;
-        int maxcon = 10;
-        int lencon = 10 + random(50);
-        int[] connections = null;
-
-        // sand painters
-        int numsands = 3;
-        SandPainter[] sands = new SandPainter[numsands];
-
-        Friend(float X, float Y) {
+        Friend() {
             connections = new int[maxcon];
             for (int n = 0; n < numsands; ++n)
                 sands[n] = new SandPainter();
-            reset(X, Y);
         }
         
         void reset(float X, float Y) {
@@ -245,11 +248,36 @@ public class HappyPlace
             x = X;
             y = Y;
             numcon = 0;
+            
+            conLen = personalSpace + random(40 + personalSpace);
 
             for (int i = 0; i < maxcon; ++i)
                 connections[i] = -1;
             for (int n = 0; n < numsands; ++n)
                 sands[n].reset();
+        }
+
+        void connectTo(int f) {
+            // connect to friend f
+
+            // is there room for more friends?
+            if (numcon < maxcon) {
+                // already connected to friend?
+                if (!friendOf(f)) {
+                    connections[numcon] = f;
+                    numcon++;
+                }
+            }
+        }
+
+        void move() {
+            // add velocity to position
+            x += vx;
+            y += vy;
+
+            //friction
+            vx *= 0.92;
+            vy *= 0.92;
         }
 
         void expose() {
@@ -275,38 +303,12 @@ public class HappyPlace
 
         void exposeConnections() {
             // draw connection lines to all friends
-            for (int n=0;n<numcon;n++) {
+            for (int n = 0; n < numcon; ++n) {
                 // find axis distances
                 float ox = friends[connections[n]].x;
                 float oy = friends[connections[n]].y;
-
-                for (int s=0;s<numsands;s++) {
-                    sands[s].render(x,y,ox,oy);
-                }
-            }
-        }
-
-
-        void move() {
-            // add velocity to position
-            x += vx;
-            y += vy;
-
-            //friction
-            vx *= 0.92;
-            vy *= 0.92;
-        }
-
-        void connectTo(int f) {
-            // connect to friend f
-
-            // is there room for more friends?
-            if (numcon < maxcon) {
-                // already connected to friend?
-                if (!friendOf(f)) {
-                    connections[numcon] = f;
-                    numcon++;
-                }
+                for (int s = 0; s < numsands; ++s)
+                    sands[s].render(x, y, ox, oy);
             }
         }
 
@@ -342,15 +344,15 @@ public class HappyPlace
                     }
                     if (friend) {
                         // attract
-                        if (d>lencon) {
+                        if (d>conLen) {
                             ax += 4.0*(float) Math.cos(t);
                             ay += 4.0*(float) Math.sin(t);
                         }
                     } else {
                         // repulse
-                        if (d<lencon) {
-                            ax += (lencon-d)*(float) Math.cos(t+PI);
-                            ay += (lencon-d)*(float) Math.sin(t+PI);
+                        if (d<conLen) {
+                            ax += (conLen-d)*(float) Math.cos(t+PI);
+                            ay += (conLen-d)*(float) Math.sin(t+PI);
                         }
                     }
                 }
@@ -359,7 +361,27 @@ public class HappyPlace
             vx+=ax/42.22;
             vy+=ay/42.22;
         }
+        
+        float x, y;
+        float vx, vy;
+        
+        // Preferred connection length for friends.
+        int conLen;
+
+        int numcon;
+        int maxcon = 10;
+        int[] connections = null;
+
+        // sand painters
+        int numsands = 1;
+        SandPainter[] sands = new SandPainter[numsands];
+        
     }
+
+    
+    // ******************************************************************** //
+    // SandPainter Class.
+    // ******************************************************************** //
 
     class SandPainter {
 
@@ -433,7 +455,7 @@ public class HappyPlace
     // ******************************************************************** //
 
     // Number of friends we'll process.
-    private int numFriends = 40;
+    private int numFriends = 30;
 
     // The list of friends.
     private Friend[] friends;
@@ -446,6 +468,9 @@ public class HappyPlace
     // Current processing state.  Used to progress through the various
     // phases of processing we do.
     private int updateState = 0;
+
+    // Base distance by which friends want to be separated.
+    private int personalSpace = 20;
 
     // Number of grains of sand to paint.
     private int sandGrains = 11;

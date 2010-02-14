@@ -3,5 +3,23 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         android:title="@string/happy_settings" >
 
+    <ListPreference
+            android:key="numFriends"
+            android:title="@string/happy_prefs_friends"
+            android:summary="@string/happy_prefs_friends_summary"
+            android:entries="@array/happy_prefs_friends_entries"
+            android:entryValues="@array/happy_prefs_friends_values"
+            android:dialogTitle="@string/happy_prefs_friends_title"
+            android:defaultValue="30" />
+
+    <ListPreference
+            android:key="personalSpace"
+            android:title="@string/happy_prefs_space"
+            android:summary="@string/happy_prefs_space_summary"
+            android:entries="@array/happy_prefs_space_entries"
+            android:entryValues="@array/happy_prefs_space_values"
+            android:dialogTitle="@string/happy_prefs_space_title"
+            android:defaultValue="20" />
+
 </PreferenceScreen>
 

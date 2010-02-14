@@ -199,6 +199,31 @@
     <!-- Happy.Place Preferences.                                          -->
     <!-- ################################################################# -->
        
+    <string-array name="happy_prefs_friends_entries">
+        <item>Few</item>
+        <item>Medium</item>
+        <item>Lots</item>
+    </string-array>
+
+    <string-array name="happy_prefs_friends_values">
+        <item>15</item>  
+        <item>30</item>  
+        <item>45</item>
+    </string-array>
+       
+         
+    <string-array name="happy_prefs_space_entries">
+        <item>Close</item>
+        <item>Medium</item>
+        <item>Roomy</item>
+    </string-array>
+
+    <string-array name="happy_prefs_space_values">
+        <item>10</item>  
+        <item>20</item>  
+        <item>35</item>
+    </string-array>
+       
          
     <!-- ################################################################# -->
     <!-- Node.Garden Preferences.                                          -->

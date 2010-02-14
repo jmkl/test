@@ -105,21 +105,9 @@ public class EyeCandyApp
         eyeCandyView = new EyeCandyView(this);
         setContentView(eyeCandyView);
         
-        // If one of our hacks is currently running, set that as the
-        // hack to display initially.
+        // Default to showing the first hack.  This usually gets overridden
+        // in onRestoreInstanceState() and/or onResume().
         restoredHack = 0;
-        WallpaperManager wm = WallpaperManager.getInstance(this);
-        WallpaperInfo winfo = wm.getWallpaperInfo();
-        if (winfo != null) {
-            String ws = winfo.getSettingsActivity();
-            for (int i = 0; i < prefsList.length; ++i) {
-                String hn = prefsList[i].getName();
-                if (hn != null && hn.equals(ws)) {
-                    restoredHack = i;
-                    break;
-                }
-            }
-        }
     }
     
 
@@ -171,6 +159,22 @@ public class EyeCandyApp
         
         // First time round, show the EULA.
         showFirstEula();
+        
+        // If one of our hacks is currently running, set that as the
+        // hack to display initially.  Otherwise use whatever restoredHack
+        // has.
+        WallpaperManager wm = WallpaperManager.getInstance(this);
+        WallpaperInfo winfo = wm.getWallpaperInfo();
+        if (winfo != null) {
+            String ws = winfo.getSettingsActivity();
+            for (int i = 0; i < prefsList.length; ++i) {
+                String hn = prefsList[i].getName();
+                if (hn != null && hn.equals(ws)) {
+                    restoredHack = i;
+                    break;
+                }
+            }
+        }
         
         // If restoredHack has been set, select the indicated hack.
         if (restoredHack >= 0) {
