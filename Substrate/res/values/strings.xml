@@ -12,7 +12,8 @@
     <string name="eula_title">Using Live Wallpapers</string>
     
     <string name="eula_text">This application displays previews of some
-live wallpapers.  To actually use one of these as your wallpaper, you
+live wallpapers, and allows you to change the settings of the current live
+wallpaper.  To actually use one of these as your wallpaper, you
 need to set it as follows:\n\
 \n\
 • Go to your home screen.\n\

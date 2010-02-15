@@ -303,19 +303,20 @@ beautiful work you can visit his web site at
 http://complexification.net/ .  The author of this app is not affiliated
 with the website or J.Tarbell.\n\
 \n\
-Note that this app only previews the live wallpapers.  To actually set one
+Note that this app only previews the live wallpapers, and allows you to
+adjust the settings of your current live wallpaper.  To actually set one
 as your wallpaper, see \"Installing\" below.  Also note that the hacks
 run much faster in this preview than they do as wallpapers, so that you
 can see how they develop.  Live wallpapers run more slowly, as we don\'t
 want to flatten your battery or be too distracting.</item>
-			  
+
 <item>To set one of these hacks as your wallpaper, you need to install
 it as follows:\n\
 • Go to your home screen.\n\
 • Press the menu key.\n\
 • Select \"Wallpaper\", then \"Live wallpapers\".\n\
 • Pick your preferred wallpaper.</item>
-              
+
 <item>Within the Substrate application, the device\'s \"menu\" button pops
 up a menu containing a number of options:\n\
 \n\
@@ -338,7 +339,16 @@ wallpaper.</item>
 <item>This section provides details on each of the live wallpapers —
 \"hacks\" — available in this package, including details of the
 settings available in each hack.  There are also some settings which are
-common to all hacks, as detailed in the next section.</item>
+common to all hacks, as detailed in the next section.\n\
+\n\
+A couple of notes:\n\
+\n\
+• Although some settings are common between hacks (background colour,
+for example), each hack has its own copy of the value of that setting.\n\
+\n\
+• Changing the settings on the hack which is your current live wallpaper
+will update the running live wallpaper; so you don\'t have to re-install
+a live wallpaper to change its settings.</item>
 
 <item>@array/help_hacks_texts</item>
 
