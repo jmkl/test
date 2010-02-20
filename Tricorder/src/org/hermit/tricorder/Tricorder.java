@@ -32,6 +32,7 @@ import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
@@ -126,7 +127,10 @@ public class Tricorder
     			(icicle == null ? "clean start" : "restart"));
     
         super.onCreate(icicle);
-        
+
+        // Get our power manager for wake locks.
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+
         createMessageBox(R.string.button_close);
         setAboutInfo(R.string.about_text);
         setHomeInfo(R.string.button_homepage, R.string.url_homepage);
@@ -208,6 +212,10 @@ public class Tricorder
         
         super.onResume();
         
+        // Take the wake lock if we want it.
+        if (wakeLock != null && !wakeLock.isHeld())
+            wakeLock.acquire();
+ 
         mainView.onResume();
 
         // Just start straight away.
@@ -256,6 +264,10 @@ public class Tricorder
         super.onPause();
         
         mainView.onPause();
+
+        // Let go the wake lock if we have it.
+        if (wakeLock != null && wakeLock.isHeld())
+            wakeLock.release();
     }
 
 
@@ -499,7 +511,26 @@ public class Tricorder
         }
         Log.i(TAG, "Prefs: orientationMode " + orientMode);
         setRequestedOrientation(orientMode);
-        
+
+        boolean keepAwake = false;
+        try {
+            keepAwake = prefs.getBoolean("keepAwake", false);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad keepAwake");
+        }
+        if (keepAwake) {
+            Log.i(TAG, "Prefs: keepAwake true: take the wake lock");
+            if (wakeLock == null)
+                wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+            if (!wakeLock.isHeld())
+                wakeLock.acquire();
+        } else {
+            Log.i(TAG, "Prefs: keepAwake false: release the wake lock");
+            if (wakeLock != null && wakeLock.isHeld())
+                wakeLock.release();
+            wakeLock = null;
+        }
+
     	boolean fakeMissingData = false;
     	try {
     		fakeMissingData = prefs.getBoolean("fakeMissingData", false);
@@ -770,6 +801,9 @@ public class Tricorder
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
+    
+    // Our power manager.
+    private PowerManager powerManager = null;
 
     // The main data display window.
     private TricorderView mainView;
@@ -793,6 +827,11 @@ public class Tricorder
     
     // Top label which identifies the current view.
 	private NavButton topLabel;
+    
+    // Wake lock used to keep the screen alive.  Null if we aren't going
+    // to take a lock; non-null indicates that the lock should be taken
+    // while we're actually running.
+    private PowerManager.WakeLock wakeLock = null;
 
 	// Current sound mode.
 	private SoundMode soundMode;

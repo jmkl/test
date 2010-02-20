@@ -32,6 +32,13 @@
                 android:dialogTitle="@string/prefs_orient_title"
                 android:defaultValue="1" />
             
+        <CheckBoxPreference
+                android:key="keepAwake"
+                android:title="@string/prefs_wakelock"
+                android:summaryOff="@string/prefs_wakelock_summary_off"
+                android:summaryOn="@string/prefs_wakelock_summary_on"
+                android:defaultValue="false" />
+            
     </PreferenceCategory>
   
     <PreferenceCategory android:title="@string/prefs_cat_data">

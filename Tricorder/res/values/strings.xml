@@ -43,6 +43,9 @@ for more details.\n</string>
     <string name="prefs_orient">Screen orientation</string>
     <string name="prefs_orient_summary">Set your desired screen rotation behaviour</string>
     <string name="prefs_orient_title">Screen Orientation</string>
+    <string name="prefs_wakelock">Keep device awake</string>
+    <string name="prefs_wakelock_summary_off">The device will sleep normally after the screen times out.</string>
+    <string name="prefs_wakelock_summary_on">The device will stay awake while the app is running.  Warning: battery drain!</string>
     <string name="prefs_cat_data">Data</string>
     <string name="prefs_fake">Simulate missing</string>
     <string name="prefs_fake_summary">Use simulated data for missing sensors</string>
