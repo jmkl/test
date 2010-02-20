@@ -22,6 +22,7 @@ package org.hermit.substrate;
 import java.lang.reflect.Constructor;
 
 import org.hermit.android.core.MainActivity;
+import org.hermit.android.core.OneTimeDialog;
 import org.hermit.substrate.hacks.Guts;
 import org.hermit.substrate.hacks.GutsPreferences;
 import org.hermit.substrate.hacks.HappyPlace;
@@ -55,7 +56,7 @@ import android.widget.Toast;
  * this to browse the eye candies, play with different options, hypnotize
  * your children, or something.  Mainly it gives the user
  * something to do when they don't know how to set up live wallpapers yet.
- * Hence, we use a "eula" to tell them how to do this.
+ * Hence, we use a one-time dialog to tell them how to do this.
  */
 public class EyeCandyApp
     extends MainActivity
@@ -89,8 +90,9 @@ public class EyeCandyApp
 
         super.onCreate(icicle);
         
-        // Create our EULA box.
-        createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);       
+        // Create our startup notice box.
+        introNotice = new OneTimeDialog(this, "intro", R.string.intro_title,
+                                        R.string.intro_text, R.string.button_close);
 
         // Set up the standard dialogs.
         createMessageBox(R.string.button_close);
@@ -157,8 +159,8 @@ public class EyeCandyApp
 
         super.onResume();
         
-        // First time round, show the EULA.
-        showFirstEula();
+        // First time round, show the intro notice.
+        introNotice.showFirst();
         
         // If one of our hacks is currently running, set that as the
         // hack to display initially.  Otherwise use whatever restoredHack
@@ -420,6 +422,9 @@ public class EyeCandyApp
     // Private Data.
     // ******************************************************************** //
     
+    // Notice used to display an introduction on first start.
+    private OneTimeDialog introNotice;
+
     // The surface manager for the view.
     private EyeCandyView eyeCandyView = null;
     
