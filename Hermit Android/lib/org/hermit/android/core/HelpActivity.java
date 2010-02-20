@@ -4,7 +4,7 @@
  * 
  * These classes are designed to help build various types of application.
  *
- * <br>Copyright 2009 Ian Cameron Smith
+ * <br>Copyright 2009-2010 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2

@@ -4,7 +4,7 @@
  * 
  * These classes are designed to help build various types of application.
  *
- * <br>Copyright 2009 Ian Cameron Smith
+ * <br>Copyright 2009-2010 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -26,9 +26,7 @@ import org.hermit.android.notice.InfoBox;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 
@@ -143,9 +141,8 @@ public class MainActivity
         super.onCreate(icicle);
         
         appUtils = AppUtils.getInstance(this);
-        appPrefs = PreferenceManager.getDefaultSharedPreferences(this);
     }
-    
+
 
 	// ******************************************************************** //
 	// EULA Dialog.
@@ -162,10 +159,7 @@ public class MainActivity
      * @param   close        Resource ID of the close button.
      */
     public void createEulaBox(int title, int text, int close) {
-        // Create the EULA dialog.
-        eulaTitle = title;
-        eulaText = text;
-        eulaClose = close;
+        eulaDialog = new OneTimeDialog(this, "eula", title, text, close);
     }
 
 
@@ -175,8 +169,8 @@ public class MainActivity
      * calling {@link #createEulaBox(int, int, int)}.
      */
     public void showFirstEula() {
-        if (!isEulaAccepted())
-            showEula();
+        if (eulaDialog != null)
+            eulaDialog.showFirst();
     }
 
 
@@ -186,50 +180,10 @@ public class MainActivity
      * calling {@link #createEulaBox(int, int, int)}.
      */
     public void showEula() {
-        if (eulaDialog == null) {
-            eulaDialog = new InfoBox(this, eulaClose) {
-                @Override
-                protected void okButtonPressed() {
-                    setSeen();
-                    super.okButtonPressed();
-                }
-            };
-        }
-        eulaDialog.show(eulaTitle, eulaText);
+        if (eulaDialog != null)
+            eulaDialog.show();
     }
 
-
-    /**
-     * Query whether the EULA dialog has been shown to the user and accepted.
-     * 
-     * @return              True iff the user has seen the EULA dialog and
-     *                      clicked "OK".
-     */
-    protected boolean isEulaAccepted() {
-        AppUtils.Version version = appUtils.getAppVersion();
-        
-        int seen = -1;
-        try {
-            seen = appPrefs.getInt(PREF_NAME, seen);
-        } catch (Exception e) { }
-        
-        // We consider the EULA accepted if the version seen by the user
-        // most recently is the current version.
-        return seen == version.versionCode;
-    }
-
-
-    /**
-     * Flag that this dialog has been seen, by setting a preference.
-     */
-    private void setSeen() {
-        AppUtils.Version version = appUtils.getAppVersion();
-        
-        SharedPreferences.Editor editor = appPrefs.edit();
-        editor.putInt(PREF_NAME, version.versionCode);
-        editor.commit();
-    }
-    
 
     // ******************************************************************** //
     // Help and About Boxes.
@@ -238,10 +192,9 @@ public class MainActivity
     /**
      * Create a dialog for help / about boxes etc.  If you want to display
      * one of those, set up the info in it by calling
-     * {@link #setAboutInfo(int, int)}, {@link #setHomeInfo(int, int)},
-     * {@link #setManualInfo(int, int)} and {@link #setLicenseInfo(int, int)};
-     * then pop up a dialog by calling
-     * {@link #showAbout()} or {@link #showHelp()}.
+     * {@link #setHomeInfo(int, int)}, {@link #setAboutInfo(int)} and
+     * {@link #setLicenseInfo(int, int)}; then pop up a dialog by calling
+     * {@link #showAbout()}.
      * 
      * @param   close        Resource ID of the close button.
      */
@@ -264,20 +217,6 @@ public class MainActivity
 
 
     /**
-     * Set up the help / about info for dialogs.  See
-     * {@link #createMessageBox(int)}.
-     * 
-     * @param   about        Resource ID of the about text.
-     * @param   help         Resource ID of the help text.
-     */
-    @Deprecated
-    public void setAboutInfo(int about, int help) {
-        aboutText = about;
-        helpText = help;
-    }
-
-
-    /**
      * Set up the homepage info for dialogs.  See
      * {@link #createMessageBox(int)}.
      * 
@@ -287,20 +226,6 @@ public class MainActivity
     public void setHomeInfo(int button, int link) {
         homeButton = button;
         homeLink = link;
-    }
-
-
-    /**
-     * Set up the manual info for dialogs.  See
-     * {@link #createMessageBox(int)}.
-     * 
-     * @param   button       Resource ID of the button text.
-     * @param   link         Resource ID of the URL the button links to.
-     */
-    @Deprecated
-    public void setManualInfo(int button, int link) {
-        manButton = button;
-        manLink = link;
     }
 
 
@@ -320,7 +245,7 @@ public class MainActivity
     /**
      * Show an about dialog.  You need to have created the dialog by
      * calling {@link #createMessageBox(int)}, and configured it by
-     * calling {@link #setAboutInfo(int, int)}, {@link #setHomeInfo(int, int)}
+     * calling {@link #setAboutInfo(int)}, {@link #setHomeInfo(int, int)}
      * and {@link #setLicenseInfo(int, int)}.
      */
     public void showAbout() {
@@ -331,21 +256,6 @@ public class MainActivity
     }
 
     
-    /**
-     * Show a help dialog.  You need to have created the dialog by
-     * calling {@link #createMessageBox(int)}, and configured it by
-     * calling {@link #setAboutInfo(int, int)}, {@link #setHomeInfo(int, int)}
-     * and {@link #setManualInfo(int, int)}.
-     */
-    @Deprecated
-    public void showHelp() {
-        messageDialog.setLinkButton(1, homeButton, homeLink);
-        if (manButton != 0 && manLink != 0)
-            messageDialog.setLinkButton(2, manButton, manLink);
-        messageDialog.show(helpText);
-    }
-
-
     // ******************************************************************** //
     // Sub-Activities.
     // ******************************************************************** //
@@ -413,14 +323,6 @@ public class MainActivity
     }
 
 
-    // ******************************************************************** //
-    // Private Constants.
-    // ******************************************************************** //
-
-    // Name of the preference used to flag that the EULA dialog has been seen.
-    private static final String PREF_NAME = "org.hermit.android.core.eulaVersion";
-    
-
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
@@ -428,9 +330,6 @@ public class MainActivity
     // Application utilities instance, used to get app version.
     private AppUtils appUtils = null;
     
-    // Application's default shared preferences.
-    private SharedPreferences appPrefs = null;
-
     // The next request code available to be used.  Our request codes
     // start at a large number, for no special reason.
     private int nextRequest = 0x60000000;
@@ -440,32 +339,20 @@ public class MainActivity
     // the correct listener.
     private HashMap<Integer, ActivityListener> codeMap =
     							new HashMap<Integer, ActivityListener>();
-    
-    // Resource IDs of the EULA dialog title, the EULA / warning text,
-    // and the close button label.
-    private int eulaTitle = 0;
-    private int eulaText = 0;
-    private int eulaClose = 0;
-
-    // The EULA dialog.
-    private InfoBox eulaDialog;
+ 
+    // The EULA dialog.  Null if the user hasn't set one up.
+    private OneTimeDialog eulaDialog = null;
 
     // Dialog used to display about etc.
     private InfoBox messageDialog;
 
-    // IDs of the button strings and URLs for "Home", "Manual", and "License".
+    // IDs of the button strings and URLs for "Home" and "License".
     private int homeButton = 0;
     private int homeLink = 0;
-    @Deprecated
-    private int manButton = 0;
-    @Deprecated
-    private int manLink = 0;
     private int licButton = 0;
     private int licLink = 0;
 
-    // ID of the help and about text.
-    @Deprecated
-    private int helpText = 0;
+    // ID of the about text.
     private int aboutText = 0;
 
 }
