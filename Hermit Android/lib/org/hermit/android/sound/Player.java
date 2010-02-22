@@ -32,20 +32,6 @@ public class Player
 {
 
     // ******************************************************************** //
-    // Public Types and Constants.
-    // ******************************************************************** //
-
-    /**
-     * Sound play mode.
-     */
-    static enum SoundMode {
-    	NONE,
-    	QUIET,
-    	FULL;
-    }
-
-    
-    // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
 
@@ -107,6 +93,17 @@ public class Player
     // ******************************************************************** //
 
     /**
+     * Set the overall gain for sounds.
+     * 
+     * @param   gain        Desired gain.  1 = normal; 0 means don't play
+     *                      sounds.
+     */
+    public void setGain(float gain) {
+        soundGain = gain;
+    }
+    
+
+    /**
      * Play the given sound effect.
      * 
      * @param   effect      Sound effect to play.
@@ -119,24 +116,23 @@ public class Player
     
 
     /**
-     * Play the given sound effect.
+     * Play the given sound effect.  The sound won't be played if the volume
+     * would be zero or less.
      * 
      * @param   effect      Sound effect to play.
      * @param   rvol        Relative volume for this sound, 0 - 1.
      * @param   loop        If true, loop the sound forever.
      * @return              The ID of the stream which is playing the sound.
-     *                      Zero if it's not playing.
+     *                      Zero if it's not playing; this includes if
+     *                      sounds are disabled, or if the volume is zero.
      */
     public int play(Effect effect, float rvol, boolean loop) {
-        if (soundMode == SoundMode.NONE)
-            return 0;
-        
         // Calculate the play volume.
-        float vol = 1.0f;
-        if (soundMode == SoundMode.QUIET)
-            vol = 0.3f;
-        if (rvol < 1f)
-            vol *= rvol;
+        float vol = soundGain * rvol;
+        if (vol <= 0f)
+            return 0;
+        if (vol > 1f)
+            vol = 1f;
         
         // Set it playing.
         int stream = soundPool.play(effect.getSoundId(), vol, vol, 1, 0, 1f);
@@ -176,8 +172,8 @@ public class Player
     // Sound pool used for sound effects.
     private final SoundPool soundPool;
     
-	// Current sound mode.
-	private SoundMode soundMode;
+	// Current overall sound gain.  If zero, sounds are suppressed.
+	private float soundGain = 1f;
 
 }
 
