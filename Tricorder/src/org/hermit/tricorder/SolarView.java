@@ -31,7 +31,6 @@ import org.hermit.android.instruments.TextGauge;
 import org.hermit.android.net.CachedFile;
 import org.hermit.android.net.WebBasedData;
 import org.hermit.android.net.WebFetcher;
-import org.hermit.tricorder.Tricorder.Sound;
 import org.hermit.utils.CharFormatter;
 
 import android.content.ContentValues;
@@ -357,11 +356,11 @@ class SolarView
 
 	
 	/**
-	 * This view's aux button has been clicked.  Toggle the WiFi power.
+	 * This view's aux button has been clicked.  Toggle the display mode.
 	 */
 	@Override
 	public void auxButtonClick() {
-		appContext.postSound(Sound.BOOP_BEEP);
+		appContext.soundActivate();
 		altMode = !altMode;
 		if (!altMode) {
 			sunCaption.setGeometry(sunCaptionStd);
@@ -530,7 +529,7 @@ class SolarView
 								(altMode && imageBigBounds != null && imageBigBounds.contains(x, y))) {
 					int i = (currentSunImage + 1) % SUN_URLS.length;
 					setDisplayedSunImage(i);
-					appContext.postSound(Sound.CHIRP_LOW);
+					appContext.soundSecondary();
 				}
 			}
 		}

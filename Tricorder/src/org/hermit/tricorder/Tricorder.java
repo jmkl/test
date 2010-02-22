@@ -22,6 +22,8 @@ package org.hermit.tricorder;
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.instruments.AudioAnalyser;
 import org.hermit.android.instruments.Gauge;
+import org.hermit.android.sound.Effect;
+import org.hermit.android.sound.Player;
 import org.hermit.tricorder.TricorderView.ViewDefinition;
 
 import android.content.Context;
@@ -30,7 +32,6 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Typeface;
 import android.media.AudioManager;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
@@ -68,26 +69,6 @@ public class Tricorder
 	 * The colour for graph and guage pointers.
 	 */
 	static final int COL_POINTER = 0xffff0000;
-
-    /**
-     * The sounds that we make.
-     */
-    static enum Sound {
-    	PING(R.raw.ping),
-    	BEEP_BOOP(R.raw.beep_boop),
-    	BOOP_BEEP(R.raw.boop_beep),
-    	CHIRP_LOW(R.raw.chirp_low),
-    	HU(R.raw.hu),
-    	HMU(R.raw.hmu),
-    	HMLU(R.raw.hmlu);
-    	
-    	private Sound(int res) {
-    		soundRes = res;
-    	}
-    	
-        private final int soundRes;     // Resource ID for the sound file.
-        private int soundId = 0;        // Sound ID for playing.
-    }
 
     /**
      * Sound play mode.
@@ -144,8 +125,13 @@ public class Tricorder
         // We want the audio controls to control our sound volume.
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
         
-        // Load the sounds.
-        soundPool = createSoundPool();
+        // Create our sound player.
+        effectsPlayer = new Player(this);
+        switchSound = effectsPlayer.addEffect(R.raw.hu);
+        pingSound = effectsPlayer.addEffect(R.raw.ping);
+        activateSound = effectsPlayer.addEffect(R.raw.boop_beep);
+        deactivateSound = effectsPlayer.addEffect(R.raw.beep_boop);
+        secondarySound = effectsPlayer.addEffect(R.raw.chirp_low);
 
         // Create the application GUI.
         setContentView(createGui());
@@ -625,7 +611,7 @@ public class Tricorder
     	topButton.setViewDef(currentView, aux);
     	navBar.selectDataView(currentView);
     	
-    	postSound(Sound.HU);
+    	switchSound.play();
     }
     
  
@@ -643,42 +629,36 @@ public class Tricorder
 	// ******************************************************************** //
     
     /**
-     * Create a SoundPool containing the app's sound effects.
+     * Get the app's sound effects player.
+     * 
+     * @return              This app's sound player.
      */
-    private SoundPool createSoundPool() {
-        SoundPool pool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        for (Sound sound : Sound.values())
-            sound.soundId = pool.load(this, sound.soundRes, 1);
-        
-        return pool;
+    Player getSoundPlayer() {
+        return effectsPlayer;
+    }
+    
+
+    /**
+     * Make an "activate" sound.
+     */
+    void soundActivate() {
+        activateSound.play();
     }
 
 
     /**
-     * Post a sound to be played on the main app thread.
-     * 
-     * @param   which           ID of the sound to play.
+     * Make a "deactivate" sound.
      */
-    void postSound(final Sound which) {
-        postSound(which, 1f);
+    void soundDeactivate() {
+        deactivateSound.play();
     }
 
 
     /**
-     * Post a sound to be played on the main app thread.
-     * 
-     * @param   which           ID of the sound to play.
-     * @param   rvol            Relative volume for this sound, 0 - 1.
+     * Make a "secondary activation" sound.
      */
-    void postSound(final Sound which, float rvol) {
-//        Message msg = soundHandler.obtainMessage();
-//        Bundle b = new Bundle();
-//        b.putInt("which", which.soundId);
-//        b.putFloat("rvol", rvol);
-//        msg.setData(b);
-//        soundHandler.sendMessage(msg);
-        
-        makeSound(which.soundId, rvol);
+    void soundSecondary() {
+        secondarySound.play();
     }
 
 
@@ -697,35 +677,6 @@ public class Tricorder
     }
 
 
-    /**
-     * Make a sound.
-     * 
-     * @param   soundId         ID of the sound to play.
-     */
-    void makeSound(int soundId) {
-        makeSound(soundId, 1);
-    }
-
-
-    /**
-     * Make a sound.
-     * 
-     * @param   soundId         ID of the sound to play.
-     * @param   rvol            Relative volume for this sound, 0 - 1.
-     */
-    void makeSound(int soundId, float rvol) {
-        if (soundMode == SoundMode.NONE)
-            return;
-        
-        float vol = 1.0f;
-        if (soundMode == SoundMode.QUIET)
-            vol = 0.3f;
-        if (rvol < 1f)
-            vol *= rvol;
-        soundPool.play(soundId, vol, vol, 1, 0, 1f);
-    }
-	
-
 	private final class Pinger extends Thread {
 		public void start(int str) {
 			this.str = str;
@@ -738,13 +689,13 @@ public class Tricorder
 		@Override
 		public void run() {
 			if (!running) return;
-			postSound(Sound.PING);
+			pingSound.play();
 			if (str != 0) try {
 			    int del = 2000 - (str * 20) + 50;
 			    if (del > 10)
 			        sleep(del);
 				if (!running) return;
-				postSound(Sound.PING, (float) str / 100f);
+	            pingSound.play((float) str / 100f);
 			} catch (InterruptedException e) { }
 		}
 		public int str;
@@ -836,8 +787,13 @@ public class Tricorder
 	// Current sound mode.
 	private SoundMode soundMode;
     
-    // Sound pool used for sound effects.
-    private SoundPool soundPool;
+    // Sound player; sound played when we change views; ping sound.
+    private Player effectsPlayer = null;
+    private Effect switchSound = null;
+    private Effect pingSound = null;
+    private Effect activateSound = null;
+    private Effect deactivateSound = null;
+    private Effect secondarySound = null;
 
 	// Whether to ping for WiFi scans.
 	private boolean wifiPing = false;

@@ -20,7 +20,6 @@ package org.hermit.tricorder;
 
 
 import org.hermit.android.core.SurfaceRunner;
-import org.hermit.tricorder.Tricorder.Sound;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -597,7 +596,7 @@ class GeoView
             if (action == MotionEvent.ACTION_DOWN) {
                 if (satBounds != null && satBounds.contains(x, y)) {
                     satElement.toggleMode();
-                    appContext.postSound(Sound.CHIRP_LOW);
+                    appContext.soundSecondary();
                     done = true;
                 }
             }

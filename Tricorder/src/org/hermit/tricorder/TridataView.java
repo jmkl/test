@@ -19,7 +19,6 @@
 package org.hermit.tricorder;
 
 import org.hermit.android.core.SurfaceRunner;
-import org.hermit.tricorder.Tricorder.Sound;
 
 import android.content.res.Configuration;
 import android.graphics.Canvas;
@@ -441,12 +440,12 @@ class TridataView
 			if (action == MotionEvent.ACTION_DOWN) {
 				if (plotBounds != null && plotBounds.contains(x, y)) {
 					setRelativeMode(!relativeMode);
-					appContext.postSound(Sound.CHIRP_LOW);
+					appContext.soundSecondary();
 					done = true;
 				} else if (numBounds != null && numBounds.contains(x, y)) {
 					// Toggle the X/Y/Z display.
 					showXyz = !showXyz;
-					appContext.postSound(Sound.CHIRP_LOW);
+					appContext.soundSecondary();
 					done = true;
 				}
 			}

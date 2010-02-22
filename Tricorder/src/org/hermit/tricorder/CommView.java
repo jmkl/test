@@ -23,7 +23,6 @@ import java.util.List;
 import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
 import org.hermit.android.instruments.TextGauge;
-import org.hermit.tricorder.Tricorder.Sound;
 import org.hermit.utils.CharFormatter;
 
 import android.content.BroadcastReceiver;
@@ -366,7 +365,10 @@ class CommView
 	@Override
 	public void auxButtonClick() {
 		boolean enable = !wifiManager.isWifiEnabled();
-		appContext.postSound(enable ? Sound.BOOP_BEEP : Sound.BEEP_BOOP);
+		if (enable)
+		    appContext.soundActivate();
+		else
+		    appContext.soundDeactivate();
 		wifiManager.setWifiEnabled(enable);
 		
 		// The system starts a scan here, so there's no point in us
