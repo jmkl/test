@@ -74,11 +74,14 @@ public class Tricorder
      * Sound play mode.
      */
     static enum SoundMode {
-    	NONE,
-    	QUIET,
-    	FULL;
+    	NONE(0f),
+    	QUIET(0.3f),
+    	FULL(1f);
+    	SoundMode(float g) {
+    	    this.gain = g;
+    	}
+    	final float gain;
     }
-
 
 	// ******************************************************************** //
     // Activity Lifecycle.
@@ -470,7 +473,7 @@ public class Tricorder
     					PreferenceManager.getDefaultSharedPreferences(this);
     	
         // See if sounds are enabled and how.
-    	soundMode = SoundMode.FULL;
+    	SoundMode soundMode = SoundMode.FULL;
     	try {
     		String smode = prefs.getString("soundMode", null);
     		soundMode = SoundMode.valueOf(smode);
@@ -478,6 +481,7 @@ public class Tricorder
     		Log.e(TAG, "Pref: bad soundMode");
     	}
     	Log.i(TAG, "Prefs: soundMode " + soundMode);
+    	effectsPlayer.setGain(soundMode.gain);
 
     	wifiPing = false;
     	try {
@@ -783,9 +787,6 @@ public class Tricorder
     // to take a lock; non-null indicates that the lock should be taken
     // while we're actually running.
     private PowerManager.WakeLock wakeLock = null;
-
-	// Current sound mode.
-	private SoundMode soundMode;
     
     // Sound player; sound played when we change views; ping sound.
     private Player effectsPlayer = null;
