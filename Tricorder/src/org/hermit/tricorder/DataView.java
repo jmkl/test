@@ -44,7 +44,7 @@ abstract class DataView
 	 * @param	context			Parent application context.
      * @param   parent          Parent surface.
 	 */
-	public DataView(Activity context, SurfaceRunner parent) {
+	DataView(Activity context, SurfaceRunner parent) {
 		super(parent);
 	}
 	
@@ -52,6 +52,28 @@ abstract class DataView
 	// ******************************************************************** //
 	// Configuration.
 	// ******************************************************************** //
+
+    /**
+     * Set the general scanning mode.  This affects whichever views support
+     * it.
+     * 
+     * @param   continuous      If true, scan all the time.  Otherwise,
+     *                          scan only under user control.
+     */
+    void setScanMode(boolean continuous) {
+    }
+
+
+    /**
+     * Set the general scanning mode.  This affects whichever views support
+     * it.
+     * 
+     * @param   enable          If true, play a sound while scanning
+     *                          under user control.  Else don't.
+     */
+    void setScanSound(boolean enable) {
+    }
+
 
 	/**
 	 * Set whether we should simulate data for missing sensors.
@@ -64,16 +86,6 @@ abstract class DataView
 	}
 	
 
-    /**
-     * Called when sensor values have changed.  The length and contents
-     * of the values array vary depending on which sensor is being monitored.
-     *
-     * @param   sensor          The ID of the sensor being monitored.
-     * @param   values          The new values for the sensor.
-     */
-    public void onSensorData(int sensor, float[] values) { }
-
-
 	// ******************************************************************** //
 	// State Management.
 	// ******************************************************************** //
@@ -85,7 +97,7 @@ abstract class DataView
 	 * should not use this to begin any CPU-intensive work; instead,
 	 * wait for start().
 	 */
-	public void appStart() {
+	void appStart() {
 	}
 	
 
@@ -94,7 +106,7 @@ abstract class DataView
 	 * receiving and displaying data.  The view will also get tick events
 	 * starting here.
 	 */
-	public abstract void start();
+	abstract void start();
 	
 
 	/**
@@ -103,14 +115,14 @@ abstract class DataView
 	 * 
 	 * @param	time				The current time in millis.
 	 */
-	public void tick(long time) {
+	void tick(long time) {
 	}
 	
 	
 	/**
 	 * This view's aux button has been clicked.
 	 */
-	public void auxButtonClick() {
+	void auxButtonClick() {
 	}
 	
 
@@ -119,17 +131,31 @@ abstract class DataView
 	 * receiving and displaying data, and generally stop using
 	 * resources.
 	 */
-	public abstract void stop();
+	abstract void stop();
 	
 
 	/**
 	 * Notification that the overall application is stopping (possibly
 	 * to pause).  Views can use this to stop any long-term activity.
 	 */
-	public void appStop() {
+	void appStop() {
 	}
 
-	
+
+    // ******************************************************************** //
+    // Data Handling.
+    // ******************************************************************** //
+
+    /**
+     * Called when sensor values have changed.  The length and contents
+     * of the values array vary depending on which sensor is being monitored.
+     *
+     * @param   sensor          The ID of the sensor being monitored.
+     * @param   values          The new values for the sensor.
+     */
+    public void onSensorData(int sensor, float[] values) { }
+
+
 	// ******************************************************************** //
 	// Input.
 	// ******************************************************************** //

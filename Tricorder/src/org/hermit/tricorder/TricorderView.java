@@ -20,6 +20,8 @@ package org.hermit.tricorder;
 
 
 import org.hermit.android.core.SurfaceRunner;
+import org.hermit.android.sound.Effect;
+import org.hermit.android.sound.Player;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -111,6 +113,11 @@ class TricorderView
     	SensorManager sm = (SensorManager)
     					context.getSystemService(Context.SENSOR_SERVICE);
 
+        // Get the sound effects for scanners.
+        Player player = context.getSoundPlayer();
+        Effect gravSound = player.addEffect(R.raw.scan_low, 0.5f);
+        Effect magSound = player.addEffect(R.raw.scan_high, 0.5f);
+
     	// Create the views.
     	for (ViewDefinition vdef : ViewDefinition.values()) {
     		switch (vdef) {
@@ -120,7 +127,8 @@ class TricorderView
                                            Sensor.TYPE_ACCELEROMETER,
                                            gravUnit, 2.2f,
                                            0xffccccff, 0xffff9e63,
-                                           0xff50d050, 0xffff9e63);
+                                           0xff50d050, 0xffff9e63,
+                                           gravSound);
     	    	vdef.view = gravView;
     	    	break;
     		case MAG:
@@ -129,7 +137,8 @@ class TricorderView
 										  Sensor.TYPE_MAGNETIC_FIELD,
 										  magUnit, 2.2f,
 										  0xff6666ff, 0xffffcc00,
-										  0xffcc6666, 0xffffcc00);
+										  0xffcc6666, 0xffffcc00,
+										  magSound);
                 vdef.view = magView;
     	    	break;
     		case AUD:
@@ -266,6 +275,36 @@ class TricorderView
     		if (enabled && currentView != null)
     			currentView.view.start();
     	}
+    }
+
+    
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Set the general scanning mode.  This affects whichever views support
+     * it.
+     * 
+     * @param   continuous      If true, scan all the time.  Otherwise,
+     *                          scan only under user control.
+     */
+    void setScanMode(boolean continuous) {
+        for (ViewDefinition vdef : ViewDefinition.values())
+            vdef.view.setScanMode(continuous);
+    }
+
+
+    /**
+     * Set the general scanning mode.  This affects whichever views support
+     * it.
+     * 
+     * @param   enable          If true, play a sound while scanning
+     *                          under user control.  Else don't.
+     */
+    void setScanSound(boolean enable) {
+        for (ViewDefinition vdef : ViewDefinition.values())
+            vdef.view.setScanSound(enable);
     }
 
 

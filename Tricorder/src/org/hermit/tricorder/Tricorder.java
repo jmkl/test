@@ -20,6 +20,7 @@ package org.hermit.tricorder;
 
 
 import org.hermit.android.core.MainActivity;
+import org.hermit.android.core.OneTimeDialog;
 import org.hermit.android.instruments.AudioAnalyser;
 import org.hermit.android.instruments.Gauge;
 import org.hermit.android.sound.Effect;
@@ -115,10 +116,17 @@ public class Tricorder
         // Get our power manager for wake locks.
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 
+        // Create the message and info boxes.
         createMessageBox(R.string.button_close);
         setAboutInfo(R.string.about_text);
         setHomeInfo(R.string.button_homepage, R.string.url_homepage);
         setLicenseInfo(R.string.button_license, R.string.url_license);
+        
+        // Create our "new in this version" dialog.
+        versionDialog = new OneTimeDialog(this, "new",
+                                          R.string.newf_title,
+                                          R.string.newf_text,
+                                          R.string.button_close);
 
         // We don't want a title bar or status bar.
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -200,6 +208,9 @@ public class Tricorder
         Log.i(TAG, "onResume()");
         
         super.onResume();
+        
+        // Show the "new features" dialog.
+        versionDialog.showFirst();
         
         // Take the wake lock if we want it.
         if (wakeLock != null && !wakeLock.isHeld())
@@ -471,7 +482,25 @@ public class Tricorder
     private void updatePreferences() {
     	SharedPreferences prefs =
     					PreferenceManager.getDefaultSharedPreferences(this);
-    	
+
+        boolean scanContinuous = false;
+        try {
+            scanContinuous = prefs.getBoolean("scanContinuous", false);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad scanContinuous");
+        }
+        Log.i(TAG, "Prefs: scanContinuous " + scanContinuous);
+        mainView.setScanMode(scanContinuous);
+
+        boolean fakeMissingData = false;
+        try {
+            fakeMissingData = prefs.getBoolean("fakeMissingData", false);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad fakeMissingData");
+        }
+        Log.i(TAG, "Prefs: fakeMissingData " + fakeMissingData);
+        mainView.setSimulateMode(fakeMissingData);
+
         // See if sounds are enabled and how.
     	SoundMode soundMode = SoundMode.FULL;
     	try {
@@ -483,13 +512,22 @@ public class Tricorder
     	Log.i(TAG, "Prefs: soundMode " + soundMode);
     	effectsPlayer.setGain(soundMode.gain);
 
-    	wifiPing = false;
+    	boolean scanSound = true;
     	try {
-    		wifiPing = prefs.getBoolean("wifiPing", false);
+    	    scanSound = prefs.getBoolean("scanSound", true);
     	} catch (Exception e) {
-    		Log.e(TAG, "Pref: bad wifiPing");
+    		Log.e(TAG, "Pref: bad scanSound");
     	}
-    	Log.i(TAG, "Prefs: wifiPing " + wifiPing);
+    	Log.i(TAG, "Prefs: scanSound " + scanSound);
+        mainView.setScanSound(scanSound);
+
+        wifiPing = false;
+        try {
+            wifiPing = prefs.getBoolean("wifiPing", false);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad wifiPing");
+        }
+        Log.i(TAG, "Prefs: wifiPing " + wifiPing);
 
         // Get the desired orientation.
         int orientMode = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
@@ -520,15 +558,6 @@ public class Tricorder
                 wakeLock.release();
             wakeLock = null;
         }
-
-    	boolean fakeMissingData = false;
-    	try {
-    		fakeMissingData = prefs.getBoolean("fakeMissingData", false);
-    	} catch (Exception e) {
-    		Log.e(TAG, "Pref: bad fakeMissingData");
-    	}
-    	Log.i(TAG, "Prefs: fakeMissingData " + fakeMissingData);
-    	mainView.setSimulateMode(fakeMissingData);
 
     	// Options for the audio analyser.
     	AudioAnalyser analyser = mainView.getAudioView().getAudioAnalyser();
@@ -604,7 +633,6 @@ public class Tricorder
      */
     void selectDataView(ViewDefinition viewDef) {
     	currentView = viewDef;
-    	mainView.selectView(currentView);
    	
     	// Set the bar colours to match.
     	swoopCorner.selectDataView(currentView);
@@ -615,6 +643,8 @@ public class Tricorder
     	topButton.setViewDef(currentView, aux);
     	navBar.selectDataView(currentView);
     	
+        mainView.selectView(currentView);
+
     	switchSound.play();
     }
     
@@ -627,7 +657,17 @@ public class Tricorder
     		currentView.view.auxButtonClick();
     }
     
+
+    /**
+     * Set the text displayed in the aux button.
+     * 
+     * @param   textId          Resource ID of the text to show.
+     */
+    void setAuxButton(int textId) {
+        topButton.setText(textId);
+    }
     
+
 	// ******************************************************************** //
 	// Sound.
 	// ******************************************************************** //
@@ -759,6 +799,9 @@ public class Tricorder
     
     // Our power manager.
     private PowerManager powerManager = null;
+    
+    // Dialog used for "new in this version" messages.
+    private OneTimeDialog versionDialog = null;
 
     // The main data display window.
     private TricorderView mainView;

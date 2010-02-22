@@ -19,6 +19,7 @@
 package org.hermit.tricorder;
 
 import org.hermit.android.core.SurfaceRunner;
+import org.hermit.android.sound.Effect;
 
 import android.content.res.Configuration;
 import android.graphics.Canvas;
@@ -60,12 +61,13 @@ class TridataView
 	 * @param	plotCol1		Colour for the graph plot in abs mode.
 	 * @param	gridCol2		Colour for the graph grid in rel mode.
 	 * @param	plotCol2		Colour for the graph plot in rel mode.
+     * @param   sound           Sound to play while scanning.
 	 */
 	public TridataView(Tricorder context, SurfaceRunner parent,
 					   SensorManager sman, int sensor,
 					   float unit, float range,
 					   int gridCol1, int plotCol1,
-					   int gridCol2, int plotCol2)
+					   int gridCol2, int plotCol2, Effect sound)
 	{
 		super(context, parent);
 		
@@ -88,6 +90,7 @@ class TridataView
 	    plotColour1 = plotCol1;
 		gridColour2 = gridCol2;
 	    plotColour2 = plotCol2;
+	    scanSound = sound;
 
 		processedValues = new float[3];
         
@@ -103,6 +106,7 @@ class TridataView
         chartView = new MagnitudeElement(parent, unit, range,
         								 gridCol1, plotCol1,
         								 new String[] { "XXXXXXXXXXXXXXXXXXXX" });
+        chartView.setScrolling(false);
 
         // Add the numeric display.
         numView = new Num3DElement(parent, gridCol1, plotCol1,
@@ -111,10 +115,13 @@ class TridataView
         xyzView = new MagnitudeElement(parent, 3, unit, range,
 				 					   gridCol1, XYZ_PLOT_COLS,
 				 					   new String[] { "XXXXXXXXXXXXXXXXXXXX" }, true);
+        xyzView.setScrolling(false);
 
+        viewEnabled = false;
+        scanEnabled = false;
         setRelativeMode(false);
 	}
-
+	
 
     // ******************************************************************** //
 	// Geometry Management.
@@ -221,6 +228,36 @@ class TridataView
 	// Configuration.
 	// ******************************************************************** //
 
+    /**
+     * Set the general scanning mode.  This affects whichever views support
+     * it.
+     * 
+     * @param   continuous      If true, scan all the time.  Otherwise,
+     *                          scan only under user control.
+     */
+    @Override
+    void setScanMode(boolean continuous) {
+        scanContinuously = continuous;
+        if (scanContinuously)
+            appContext.setAuxButton(R.string.lab_blank);
+        else
+            appContext.setAuxButton(R.string.lab_scan_start);
+    }
+
+
+    /**
+     * Set the general scanning mode.  This affects whichever views support
+     * it.
+     * 
+     * @param   enable          If true, play a sound while scanning
+     *                          under user control.  Else don't.
+     */
+    @Override
+    void setScanSound(boolean enable) {
+        scanPlaySound = enable;
+    }
+
+
 	/**
 	 * Set whether we should simulate data for missing sensors.
 	 * 
@@ -302,13 +339,30 @@ class TridataView
 	 * starting here.
 	 */
 	@Override
-	public void start() {
-	    Sensor sensor = sensorManager.getDefaultSensor(sensorId);
-	    if (sensor != null)
-	        sensorManager.registerListener(this, sensor,
-				   					       SensorManager.SENSOR_DELAY_GAME);
+	void start() {
+        viewEnabled = true;
+        
+        if (scanContinuously)
+            scanStart();
+        else
+            appContext.setAuxButton(R.string.lab_scan_start);
 	}
 	
+    
+    /**
+     * This view's aux button has been clicked.  Toggle the scan mode.
+     * Does nothing in continuous scan mode.
+     */
+    @Override
+    void auxButtonClick() {
+        if (!viewEnabled || scanContinuously)
+            return;
+        if (scanEnabled)
+            scanStop();
+        else
+            scanStart();
+    }
+    
 
 	/**
 	 * Stop this view.  This notifies the view that it should stop
@@ -316,10 +370,38 @@ class TridataView
 	 * resources.
 	 */
 	@Override
-	public void stop() {
-		sensorManager.unregisterListener(this);
+	void stop() {
+	    scanStop();
+        viewEnabled = false;
 	}
 	
+	
+	private void scanStart() {
+        Sensor sensor = sensorManager.getDefaultSensor(sensorId);
+        if (sensor != null)
+            sensorManager.registerListener(this, sensor,
+                                           SensorManager.SENSOR_DELAY_GAME);
+        chartView.setScrolling(true);
+        xyzView.setScrolling(true);
+        appContext.setAuxButton(scanContinuously ?
+                                R.string.lab_blank: R.string.lab_scan_stop);
+        if (scanSound != null && scanPlaySound && !scanContinuously)
+            scanSound.loop();
+        scanEnabled = true;
+	}
+	
+    
+    private void scanStop() {
+        sensorManager.unregisterListener(this);
+        chartView.setScrolling(false);
+        xyzView.setScrolling(false);
+        appContext.setAuxButton(scanContinuously ?
+                                R.string.lab_blank: R.string.lab_scan_start);
+        if (scanSound != null)
+            scanSound.stop();
+        scanEnabled = false;
+    }
+    
 
 	// ******************************************************************** //
 	// Data Management.
@@ -520,6 +602,11 @@ class TridataView
     // Current device orientation, as one of the
     // Configuration.ORIENTATION_XXX flags.
     private int deviceOrientation = 0;
+    
+    // Flags for enabling the view -- when this view is displayed -- and
+    // scanning, when the user presses the scan button.
+    private boolean viewEnabled = false;
+    private boolean scanEnabled = false;
 
 	// Processed data values.
 	private float[] processedValues = null;
@@ -539,6 +626,15 @@ class TridataView
     private int plotColour1 = 0xffff0000;
     private int gridColour2 = 0xff00ff00;
     private int plotColour2 = 0xffff0000;
+
+    // Sound to play while scanning.  null if none.
+    private Effect scanSound = null;
+    
+    // If true, scan continuously; else only when the user says.
+    private boolean scanContinuously = false;
+    
+    // If true, play a sound while scanning under user control.
+    private boolean scanPlaySound = true;
 
     // 3-axis plot, magnitude chart and numeric display for the data.
     // numView and xyzView are two alternative modes for the bottom plot.

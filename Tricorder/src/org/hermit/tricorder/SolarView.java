@@ -317,7 +317,7 @@ class SolarView
 	 * wait for start().
 	 */
 	@Override
-	public void appStart() {
+	void appStart() {
 		// Calling getWritableDatabase() gets the helper to open (and maybe
 		// create / update) the DB, and it also tells all our sources
 		// about it.
@@ -332,7 +332,7 @@ class SolarView
 	 * starting here.
 	 */
 	@Override
-	public void start() {
+	void start() {
 	}
 	
 
@@ -343,7 +343,7 @@ class SolarView
 	 * @param	time				The current time in millis.
 	 */
 	@Override
-	public void tick(long time) {
+	void tick(long time) {
 		// Every minute, give our data sources a chance to check for
 		// currency.
 		if (time - lastDataCheck >= 1000 * 60) {
@@ -359,7 +359,7 @@ class SolarView
 	 * This view's aux button has been clicked.  Toggle the display mode.
 	 */
 	@Override
-	public void auxButtonClick() {
+	void auxButtonClick() {
 		appContext.soundActivate();
 		altMode = !altMode;
 		if (!altMode) {
@@ -378,7 +378,7 @@ class SolarView
 	 * resources.
 	 */
 	@Override
-	public void stop() {
+	void stop() {
 	}
 	
 
@@ -387,7 +387,7 @@ class SolarView
 	 * to pause).  Views can use this to stop any long-term activity.
 	 */
 	@Override
-	public void appStop() {
+	void appStop() {
 		// Don't want any more web data coming in...
 		WebFetcher.killAll();
 

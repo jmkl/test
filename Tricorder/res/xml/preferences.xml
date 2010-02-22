@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  
+    <PreferenceCategory android:title="@string/prefs_cat_data">
+                        
+        <CheckBoxPreference
+                android:key="scanContinuous"
+                android:title="@string/prefs_scancont"
+                android:summaryOff="@string/prefs_scancont_summary_off"
+                android:summaryOn="@string/prefs_scancont_summary_on"
+                android:defaultValue="false" />
+                          
+        <CheckBoxPreference
+                android:key="fakeMissingData"
+                android:title="@string/prefs_fake"
+                android:summaryOff="@string/prefs_fake_summary_off"
+                android:summaryOn="@string/prefs_fake_summary_on"
+                android:defaultValue="false" />
+            
+    </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/prefs_cat_sound">
                            
@@ -12,11 +30,19 @@
                 android:entryValues="@array/prefs_sound_values"
                 android:dialogTitle="@string/prefs_sound_title"
                 android:defaultValue="FULL" />
+                               
+        <CheckBoxPreference
+                android:key="scanSound"
+                android:title="@string/prefs_scansound"
+                android:summaryOff="@string/prefs_scansound_summary_off"
+                android:summaryOn="@string/prefs_scansound_summary_on"
+                android:defaultValue="true" />
                         
         <CheckBoxPreference
                 android:key="wifiPing"
                 android:title="@string/prefs_ping"
-                android:summary="@string/prefs_ping_summary"
+                android:summaryOff="@string/prefs_ping_summary_off"
+                android:summaryOn="@string/prefs_ping_summary_on"
                 android:defaultValue="false" />
             
     </PreferenceCategory>
@@ -37,16 +63,6 @@
                 android:title="@string/prefs_wakelock"
                 android:summaryOff="@string/prefs_wakelock_summary_off"
                 android:summaryOn="@string/prefs_wakelock_summary_on"
-                android:defaultValue="false" />
-            
-    </PreferenceCategory>
-  
-    <PreferenceCategory android:title="@string/prefs_cat_data">
-                        
-        <CheckBoxPreference
-                android:key="fakeMissingData"
-                android:title="@string/prefs_fake"
-                android:summary="@string/prefs_fake_summary"
                 android:defaultValue="false" />
             
     </PreferenceCategory>

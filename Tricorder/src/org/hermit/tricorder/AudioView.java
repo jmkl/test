@@ -170,7 +170,7 @@ class AudioView
 	 * starting here.
 	 */
 	@Override
-	public void start() {
+	void start() {
 	    audioAnalyser.measureStart();
 	}
 	
@@ -182,7 +182,7 @@ class AudioView
 	 * @param	time				The current time in millis.
 	 */
 	@Override
-	public void tick(long time) {
+	void tick(long time) {
 		;
 	}
 
@@ -193,7 +193,7 @@ class AudioView
 	 * resources.
 	 */
 	@Override
-	public void stop() {
+	void stop() {
 	    audioAnalyser.measureStop();
     }
 

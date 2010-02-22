@@ -143,8 +143,12 @@ of the screen.  These allow you to select between the available data views
 (see \"Views\" below).  Additionally, some views have their own controls:\n\
 \n\
 In the <b>GRAV</b> and <b>MAG</b> views:\n\
+• touch the \"SCAN\" button at the top-right to start and stop scanning
+(except in continuous mode; see \"Settings\").\n\
 • touch the X/Y axis plot to switch between absolute and relative modes.\n\
 • touch the numeric data display to toggle it to an X/Y/Z graph plot.\n\
+\n\
+The <b>ACO</b> view is controlled through settings.\n\
 \n\
 In the <b>GEO</b> view, touch the satellite display to change its mode.\n\
 \n\
@@ -215,7 +219,11 @@ sections.</item>
     <!-- Section contents for the screens help. -->
     <string-array name="help_screens_texts">
     
-<item><b>GRAV</b> shows the local gravitational field, showing the individual
+<item><b>GRAV</b> shows the local gravitational field.  To start scanning
+and displaying data, touch the \"SCAN\" button at the top-right; touch it
+again to stop (except in continuous mode; see \"Settings\").\n\
+\n\
+The display shows the individual field
 components on an X/Y plot and a vertical gauge for the Z axis.  Additionally
 an altitude gauge shows the angle above or below the tricorder\'s horizontal
 plane.  The scale lines show multiples of 1g.  Note that gravity is equivalent
@@ -239,10 +247,13 @@ When you enter relative mode, the current values are stored; the plot
 starts displaying changes relative to those values.\n\
 \n\
 Touch the numeric data display to toggle it to an X/Y/Z graph plot; red
-is X, green is Y, and blue is Z.\n\
-</item>
+is X, green is Y, and blue is Z.</item>
 
-<item><b>MAG</b> shows the local magnetic field, showing the individual
+<item><b>MAG</b> shows the local magnetic field.  To start scanning
+and displaying data, touch the \"SCAN\" button at the top-right; touch it
+again to stop (except in continuous mode; see \"Settings\").\n\
+\n\
+The display shows the individual magnetic field
 components on an X/Y plot and a vertical gauge for the Z axis.  Additionally
 an altitude gauge shows the angle above or below the tricorder\'s horizontal
 plane.  The scale lines show multiples of 60 micro-tesla, the maximum
@@ -353,11 +364,11 @@ camera.  Google \"CCD Bakeout\" for more (it\'s interesting).</item>
     <!-- Section titles for the settings help. -->
     <string-array name="help_prefs_titles">
     
+<item>Data</item>  
+    
 <item>Sound</item>
 
 <item>Display</item>
-
-<item>Data</item>  
 
 <item>Audio Analysis</item>  
 
@@ -366,10 +377,22 @@ camera.  Google \"CCD Bakeout\" for more (it\'s interesting).</item>
     <!-- Section contents for the screens help. -->
     <string-array name="help_prefs_texts">
     
+<item><b>Scan continuously</b> tells the GRAV and MAG views to scan
+all the time that they are displayed.  In this mode, the \"SCAN\" button
+no longer appears in those views.  Also, the scanning sound does not play.\n\
+\n\
+<b>Simulate missing</b> tells Tricorder to display simulated data
+for any sensor which is not equipped.  Currently this setting has no
+effect.</item>
+    
 <item><b>Sound level</b> adjusts the base volume of Tricorder\'s sound
 effects: off, quiet, or normal.  The actual volume level is controlled
 by the device\'s \"Media Volume\" setting; inside Tricorder,
 the hardware volume keys can be used to adjust this.\n\
+\n\
+<b>Scanning sound</b> turns the scanning sound in the GRAV and MAG views
+on or off.  Note that the scanning sound does not play in continuous
+scanning mode (see above).\n\
 \n\
 <b>WiFi ping</b> turns the WiFi ping mode on or off.  When enabled,
 in the EMS screen an audible ping will be used to indicate the strength
@@ -384,10 +407,6 @@ on the task context.\n\
 • <b>User preference</b> -- Tricorder will switch orientation according to
 the global device settings.\n\
 • <b>Device orientation</b> -- follow the physical orientation of the device.</item>
-
-<item><b>Simulate missing</b> tells Tricorder to display simulated data
-for any sensor which is not equipped.  Currently this setting has no
-effect.</item>
 
 <item><b>Sample rate</b> sets the audio sampling rate in samples/second.  A
 higher rate will require more processing power.  The

@@ -239,7 +239,7 @@ class GeoView
 	 * starting here.
 	 */
 	@Override
-	public void start() {
+	void start() {
         // Register for location updates.
         for (String name : locationProviders) {
         	LocationProvider prov = locationManager.getProvider(name);
@@ -279,7 +279,7 @@ class GeoView
 	 * @param	time				The current time in millis.
 	 */
 	@Override
-	public void tick(long time) {
+	void tick(long time) {
 		netElement.tick(time);
 		gpsElement.tick(time);
 		if (satCache != null)
@@ -291,7 +291,7 @@ class GeoView
 	 * This view's aux button has been clicked.
 	 */
 	@Override
-	public void auxButtonClick() {
+	void auxButtonClick() {
 		// Here is where we used to toggle the GPS power -- we can't
 	    // any more.
 	}
@@ -303,7 +303,7 @@ class GeoView
 	 * resources.
 	 */
 	@Override
-	public void stop() {
+	void stop() {
 		for (String name : locationProviders) {
 			LocationProvider prov = locationManager.getProvider(name);
 			if (prov != null)

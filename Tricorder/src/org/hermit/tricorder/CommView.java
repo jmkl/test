@@ -286,7 +286,7 @@ class CommView
 	 * wait for start().
 	 */
 	@Override
-	public void appStart() {
+	void appStart() {
         // Register for the intents that tell us about WiFi state changes.
         // Thanks to Kent for the tip.
         IntentFilter wifiFilter = new IntentFilter();
@@ -312,7 +312,7 @@ class CommView
 	 * starting here.
 	 */
 	@Override
-	public void start() {
+	void start() {
 		// Register for telephony events.
         telephonyManager.listen(phoneListener,
 						        PhoneStateListener.LISTEN_CALL_STATE |
@@ -335,7 +335,7 @@ class CommView
 	 * @param	time				The current time in millis.
 	 */
 	@Override
-	public void tick(long time) {
+	void tick(long time) {
 		if (wifiPowerState == WifiManager.WIFI_STATE_ENABLED) {
 			long age = (time - wifiSignalsTime) / 1000;
 			if (wifiSignalsTime == 0)
@@ -363,7 +363,7 @@ class CommView
 	 * This view's aux button has been clicked.  Toggle the WiFi power.
 	 */
 	@Override
-	public void auxButtonClick() {
+	void auxButtonClick() {
 		boolean enable = !wifiManager.isWifiEnabled();
 		if (enable)
 		    appContext.soundActivate();
@@ -383,7 +383,7 @@ class CommView
 	 * resources.
 	 */
 	@Override
-	public void stop() {
+	void stop() {
 		viewRunning = false;
 		 
         telephonyManager.listen(phoneListener,
@@ -399,7 +399,7 @@ class CommView
 	 * to pause).  Views can use this to stop any long-term activity.
 	 */
 	@Override
-	public void appStop() {
+	void appStop() {
 		// Unregister our Wifi listener.
 		appContext.unregisterReceiver(wifiListener);
 	}
