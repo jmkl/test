@@ -135,9 +135,8 @@ public class Player
             vol = 1f;
         
         // Set it playing.
-        int stream = soundPool.play(effect.getSoundId(), vol, vol, 1, 0, 1f);
-        if (stream != 0)
-            soundPool.setLoop(stream, loop ? -1 : 0);
+        int stream = soundPool.play(effect.getSoundId(), vol, vol, 1,
+                                    loop ? -1 : 0, 1f);
         return stream;
     }
 	
