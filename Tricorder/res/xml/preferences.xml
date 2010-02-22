@@ -10,13 +10,6 @@
                 android:summaryOff="@string/prefs_scancont_summary_off"
                 android:summaryOn="@string/prefs_scancont_summary_on"
                 android:defaultValue="false" />
-                          
-        <CheckBoxPreference
-                android:key="fakeMissingData"
-                android:title="@string/prefs_fake"
-                android:summaryOff="@string/prefs_fake_summary_off"
-                android:summaryOn="@string/prefs_fake_summary_on"
-                android:defaultValue="false" />
             
     </PreferenceCategory>
 

@@ -46,9 +46,6 @@ For more information, see the help.</string>
     <string name="prefs_scancont">Scan continuously</string>
     <string name="prefs_scancont_summary_off">Scanning is manual: press the \"SCAN\" button to scan</string>
     <string name="prefs_scancont_summary_on">Scanning is continuous, not under user control</string>
-    <string name="prefs_fake">Simulate missing</string>
-    <string name="prefs_fake_summary_off">Use simulated data for missing sensors</string>
-    <string name="prefs_fake_summary_on">Use simulated data for missing sensors</string>
     <string name="prefs_cat_sound">Sound</string>
     <string name="prefs_sound">Sound level</string>
     <string name="prefs_sound_summary">Set your desired sound level</string>

@@ -75,17 +75,6 @@ abstract class DataView
     }
 
 
-	/**
-	 * Set whether we should simulate data for missing sensors.
-	 * 
-	 * @param	fakeIt			If true, sensors that aren't equipped will
-	 * 							have simulated data displayed.  If false,
-	 * 							they will show "No Data".
-	 */
-	void setSimulateMode(boolean fakeIt) {
-	}
-	
-
 	// ******************************************************************** //
 	// State Management.
 	// ******************************************************************** //

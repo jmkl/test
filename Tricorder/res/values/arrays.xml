@@ -379,12 +379,8 @@ camera.  Google \"CCD Bakeout\" for more (it\'s interesting).</item>
     
 <item><b>Scan continuously</b> tells the GRAV and MAG views to scan
 all the time that they are displayed.  In this mode, the \"SCAN\" button
-no longer appears in those views.  Also, the scanning sound does not play.\n\
-\n\
-<b>Simulate missing</b> tells Tricorder to display simulated data
-for any sensor which is not equipped.  Currently this setting has no
-effect.</item>
-    
+no longer appears in those views.  Also, the scanning sound does not play.</item>
+
 <item><b>Sound level</b> adjusts the base volume of Tricorder\'s sound
 effects: off, quiet, or normal.  The actual volume level is controlled
 by the device\'s \"Media Volume\" setting; inside Tricorder,

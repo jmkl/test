@@ -329,19 +329,6 @@ class TricorderView
 	// ******************************************************************** //
 	// Animation.
 	// ******************************************************************** //
-
-	/**
-	 * Set whether we should simulate data for missing sensors.
-	 * 
-	 * @param	fakeIt			If true, sensors that aren't equipped will
-	 * 							have simulated data displayed.  If false,
-	 * 							they will show "No Data".
-	 */
-	void setSimulateMode(boolean fakeIt) {
-		for (ViewDefinition vdef : ViewDefinition.values())
-			vdef.view.setSimulateMode(fakeIt);
-	}
-	
     
     /**
      * Update the state of the application for the current frame.

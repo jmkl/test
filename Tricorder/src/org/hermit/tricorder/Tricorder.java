@@ -492,15 +492,6 @@ public class Tricorder
         Log.i(TAG, "Prefs: scanContinuous " + scanContinuous);
         mainView.setScanMode(scanContinuous);
 
-        boolean fakeMissingData = false;
-        try {
-            fakeMissingData = prefs.getBoolean("fakeMissingData", false);
-        } catch (Exception e) {
-            Log.e(TAG, "Pref: bad fakeMissingData");
-        }
-        Log.i(TAG, "Prefs: fakeMissingData " + fakeMissingData);
-        mainView.setSimulateMode(fakeMissingData);
-
         // See if sounds are enabled and how.
     	SoundMode soundMode = SoundMode.FULL;
     	try {

@@ -93,9 +93,6 @@ class TridataView
 	    scanSound = sound;
 
 		processedValues = new float[3];
-        
-        // See if the sensor is actually equipped.
-        sensorEquipped = (sensorManager.getSensors() & sensorId) != 0;
 
         // Add the gravity 3-axis plot.
         plotView = new AxisElement(parent, unit, range,
@@ -257,41 +254,6 @@ class TridataView
         scanPlaySound = enable;
     }
 
-
-	/**
-	 * Set whether we should simulate data for missing sensors.
-	 * 
-	 * @param	fakeIt			If true, sensors that aren't equipped will
-	 * 							have simulated data displayed.  If false,
-	 * 							they will show "No Data".
-	 */
-	@Override
-	void setSimulateMode(boolean fakeIt) {
-		// If we're not faking it, reset all the graphs.
-		if (fakeIt && !sensorEquipped) {
-			synchronized (this) {
-				dataGenerator = new DataGenerator(this, sensorId, 3,
-												  dataUnit, dataRange);
-				plotView.setIndicator(true, 0xff0000ff);
-				chartView.setIndicator(true, 0xff0000ff);
-				numView.setIndicator(true, 0xff0000ff);
-				xyzView.setIndicator(true, 0xff0000ff);
-			}
-		} else {
-			synchronized (this) {
-				dataGenerator = null;
-				plotView.setIndicator(false, 0xff0000ff);
-				plotView.clearValues();
-				chartView.setIndicator(false, 0xff0000ff);
-				chartView.clearValue();
-				numView.setIndicator(false, 0xff0000ff);
-				numView.clearValues();
-				xyzView.setIndicator(false, 0xff0000ff);
-				xyzView.clearValue();
-			}
-		}
-	}
-	
 	
 	/**
 	 * Set or reset relative mode.  In relative mode, we report all
@@ -553,10 +515,6 @@ class TridataView
 	@Override
 	public void draw(Canvas canvas, long now, boolean bg) {
 		super.draw(canvas, now, bg);
-		
-    	// If the sensor is not equipped, fake the data if requested to.
-    	if (dataGenerator != null)
-    		dataGenerator.generateValues();
     		
 		// Draw the elements.
 		plotView.draw(canvas, now, bg);
@@ -617,9 +575,6 @@ class TridataView
 	private boolean relativeMode = false;
 	private float[] relativeValues = null;
 
-    // Flag whether we have the sensor.
-    private final boolean sensorEquipped;
-
 	// Colour of the graph grid and plot, in primary (absolute) and
     // secondary (relative) modes.
     private int gridColour1 = 0xff00ff00;
@@ -648,10 +603,6 @@ class TridataView
 
     // Do we show the XYZ display?  If not, it's numView.
     private boolean showXyz = false;
-
-	// Simulate missing sensors.  If not null, sensors that aren't equipped
-	// will have simulated data generated using this generator.
-	private DataGenerator dataGenerator = null;
 
 	// Some useful strings.
     private String title_vect_abs;
