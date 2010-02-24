@@ -630,7 +630,7 @@ class SolarView
 	// Database for solar data.  Bump the version number to nuke the data
 	// and start over.
 	private static final String DB_NAME = "SolarData";
-	private static final int DB_VER = 37;
+	private static final int DB_VER = 38;
 
 	// Source URLs for Sun images.
 	private static URL[] SUN_URLS;
