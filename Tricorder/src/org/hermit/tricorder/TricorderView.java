@@ -115,8 +115,8 @@ class TricorderView
 
         // Get the sound effects for scanners.
         Player player = context.getSoundPlayer();
-        Effect gravSound = player.addEffect(R.raw.scan_low, 0.5f);
-        Effect magSound = player.addEffect(R.raw.scan_high, 0.5f);
+        Effect gravSound = player.addEffect(R.raw.scan_low, 0.85f);
+        Effect magSound = player.addEffect(R.raw.scan_high, 0.65f);
 
     	// Create the views.
     	for (ViewDefinition vdef : ViewDefinition.values()) {
