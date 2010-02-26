@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2007 Google Inc.
  * 
@@ -14,26 +15,24 @@
  * the License.
  */
 
+
 package org.hermit.tiltlander;
 
-import org.hermit.tiltlander.LunarView.LunarThread;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.hardware.SensorListener;
-import android.hardware.SensorManager;
+import org.hermit.android.core.MainActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
 
 /**
- * This is a simple LunarLander activity that houses a single LunarView. It
+ * This is a simple LunarLander activity that houses a single GameView. It
  * demonstrates...
  * <ul>
  * <li>animating by calling invalidate() from draw()
@@ -42,39 +41,153 @@ import android.widget.TextView;
  * </ul>
  */
 public class LunarLander
-	extends Activity
-	implements SensorListener
+	extends MainActivity
 {
-    private static final int MENU_EASY = 1;
-
-    private static final int MENU_HARD = 2;
-
-    private static final int MENU_MEDIUM = 3;
-
-    private static final int MENU_PAUSE = 4;
-
-    private static final int MENU_RESUME = 5;
-
-    private static final int MENU_START = 6;
-
-    private static final int MENU_STOP = 7;
-
-    private static final int MENU_ABOUT = 8;
-
-    private static final int MENU_INVERT = 9;
     
-    /** A handle to the thread that's actually running the animation. */
-    private LunarThread mLunarThread;
+    // ******************************************************************** //
+    // Activity Setup.
+    // ******************************************************************** //
 
-    /** A handle to the View in which the game is running. */
-    private LunarView mLunarView;
-	
-    /** The sensor manager, which we use to interface to all sensors. */
-    private SensorManager sensorManager;
+    /**
+     * Called when the activity is starting.  This is where most
+     * initialization should go: calling setContentView(int) to inflate
+     * the activity's UI, etc.
+     * 
+     * You can call finish() from within this function, in which case
+     * onDestroy() will be immediately called without any of the rest of
+     * the activity lifecycle executing.
+     * 
+     * Derived classes must call through to the super class's implementation
+     * of this method.  If they do not, an exception will be thrown.
+     * 
+     * @param   icicle          If the activity is being re-initialized
+     *                          after previously being shut down then this
+     *                          Bundle contains the data it most recently
+     *                          supplied in onSaveInstanceState(Bundle).
+     *                          Note: Otherwise it is null.
+     */
+    @Override
+    protected void onCreate(Bundle icicle) {
+        Log.i(TAG, "onCreate(): " +
+                        (icicle == null ? "clean start" : "restart"));
+    
+        super.onCreate(icicle);
 
-	// Dialog used to display about etc.
-	private AlertDialog messageDialog;
+        // Set up the standard dialogs.
+        createMessageBox(R.string.button_close);
+        setAboutInfo(R.string.about_text);
+        setHomeInfo(R.string.button_homepage, R.string.url_homepage);
+        setLicenseInfo(R.string.button_license, R.string.url_license);
 
+        // turn off the window's title bar
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        // tell system to use the layout defined in our XML file
+        setContentView(R.layout.lunar_layout);
+
+        // get handles to the GameView from XML.
+        mLunarView = (GameView) findViewById(R.id.lunar);
+
+        // give the LunarView a handle to the TextView used for messages
+        mLunarView.setTextView(findViewById(R.id.overlay), (TextView) findViewById(R.id.text));
+
+        if (icicle == null) {
+            Log.w(this.getClass().getName(), "SIS is null");
+        } else {
+            // we are being restored: resume a previous game
+            mLunarView.restoreState(icicle);
+            Log.w(this.getClass().getName(), "SIS is nonnull");
+        }
+    }
+
+    
+    /**
+     * Called after onCreate(Bundle) or onStop() when the current activity is
+     * now being displayed to the user.  It will be followed by onResume()
+     * if the activity comes to the foreground, or onStop() if it becomes
+     * hidden.
+     * 
+     * Derived classes must call through to the super class's implementation
+     * of this method.  If they do not, an exception will be thrown.
+     */
+    @Override
+    protected void onStart() {
+        Log.i(TAG, "onStart()");
+        super.onStart();
+        
+        mLunarView.onStart();
+    }
+    
+
+    /**
+     * Called after onRestoreInstanceState(Bundle), onRestart(), or onPause(),
+     * for your activity to start interacting with the user. 
+     */
+    @Override
+    protected void onResume() {
+        Log.i(TAG, "onResume()");
+        
+        super.onResume();
+        
+        mLunarView.onResume();
+    }
+
+    
+    /**
+     * Notification that something is about to happen, to give the Activity a
+     * chance to save state.
+     * 
+     * @param outState a Bundle into which this Activity should save its state
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.i(TAG, "onSaveInstanceState()");
+        
+        super.onSaveInstanceState(outState);
+        
+        // just have the View's thread save its state into our Bundle
+        mLunarView.saveState(outState);
+    }
+
+
+    /**
+     * Invoked when the Activity loses user focus.
+     */
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "onPause()");
+
+        super.onPause();
+        
+        mLunarView.onPause();
+    }
+
+    
+    /**
+     * Called when you are no longer visible to the user.  You will next
+     * receive either onStart(), onDestroy(), or nothing, depending on
+     * later user activity.
+     * 
+     * Note that this method may never be called, in low memory situations
+     * where the system does not have enough memory to keep your activity's
+     * process running after its onPause() method is called.
+     * 
+     * Derived classes must call through to the super class's implementation
+     * of this method.  If they do not, an exception will be thrown.
+     */
+    @Override
+    protected void onStop() {
+        Log.i(TAG, "onStop()");
+        super.onStop();
+        
+        mLunarView.onStop();
+    }
+
+    
+    // ******************************************************************** //
+    // Menu Management.
+    // ******************************************************************** //
+    
     /**
      * Invoked during init to give the Activity a chance to set up its Menu.
      * 
@@ -83,21 +196,16 @@ public class LunarLander
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // We must call through to the base implementation.
         super.onCreateOptionsMenu(menu);
-
-        menu.add(0, MENU_START, 0, R.string.menu_start);
-        menu.add(0, MENU_STOP, 0, R.string.menu_stop);
-        menu.add(0, MENU_PAUSE, 0, R.string.menu_pause);
-        menu.add(0, MENU_RESUME, 0, R.string.menu_resume);
-        menu.add(0, MENU_EASY, 0, R.string.menu_easy);
-        menu.add(0, MENU_MEDIUM, 0, R.string.menu_medium);
-        menu.add(0, MENU_HARD, 0, R.string.menu_hard);
-        menu.add(0, MENU_INVERT, 0, R.string.menu_invert);
-        menu.add(0, MENU_ABOUT, 0, R.string.menu_about);
+        
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
 
         return true;
     }
 
+    
     /**
      * Invoked when the user selects an item from the Menu.
      * 
@@ -108,163 +216,54 @@ public class LunarLander
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case MENU_START:
-                mLunarThread.doStart();
+            case R.id.menu_new:
+                mLunarView.doStart();
                 return true;
-            case MENU_STOP:
-                mLunarThread.setState(LunarThread.STATE_LOSE,
-                                      getText(R.string.message_stopped));
+            case R.id.menu_pause:
+                mLunarView.pause();
                 return true;
-            case MENU_PAUSE:
-                mLunarThread.pause();
+            case R.id.skill_easy:
+                mLunarView.setDifficulty(GameView.Difficulty.EASY);
                 return true;
-            case MENU_RESUME:
-                mLunarThread.unpause();
+            case R.id.skill_medium:
+                mLunarView.setDifficulty(GameView.Difficulty.MEDIUM);
                 return true;
-            case MENU_EASY:
-                mLunarThread.setDifficulty(LunarThread.DIFFICULTY_EASY);
+            case R.id.skill_hard:
+                mLunarView.setDifficulty(GameView.Difficulty.HARD);
                 return true;
-            case MENU_MEDIUM:
-                mLunarThread.setDifficulty(LunarThread.DIFFICULTY_MEDIUM);
+            case R.id.menu_invert:
+                mLunarView.toggleTiltInverted();
                 return true;
-            case MENU_HARD:
-                mLunarThread.setDifficulty(LunarThread.DIFFICULTY_HARD);
-                return true;
-            case MENU_INVERT:
-                mLunarThread.toggleTiltInverted();
-                return true;
-            case MENU_ABOUT:
-     			messageDialog.show();
-                return true;
+            case R.id.menu_help:
+                // Launch the help activity as a subactivity.
+                mLunarView.pause();
+                Intent hIntent = new Intent();
+                hIntent.setClass(this, Help.class);
+                startActivity(hIntent);
+                break;
+            case R.id.menu_about:
+                showAbout();
+                break;
        }
 
         return false;
     }
 
-    /**
-     * Invoked when the Activity is created.
-     * 
-     * @param savedInstanceState a Bundle containing state saved from a previous
-     *        execution, or null if this is a new execution
-     */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // turn off the window's title bar
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        // tell system to use the layout defined in our XML file
-        setContentView(R.layout.lunar_layout);
-
-        messageDialog = createDialog();
-
-        // get handles to the LunarView from XML, and its LunarThread
-        mLunarView = (LunarView) findViewById(R.id.lunar);
-        mLunarThread = mLunarView.getThread();
-
-        // give the LunarView a handle to the TextView used for messages
-        mLunarView.setTextView((TextView) findViewById(R.id.text));
-
-        if (savedInstanceState == null) {
-            // we were just launched: set up a new game
-            mLunarThread.setState(LunarThread.STATE_READY);
-            Log.w(this.getClass().getName(), "SIS is null");
-        } else {
-            // we are being restored: resume a previous game
-            mLunarThread.restoreState(savedInstanceState);
-            Log.w(this.getClass().getName(), "SIS is nonnull");
-        }
-
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-    }
     
-    /**
-     * Create the popup dialog for the help and about text.
-     * 
-     * @return					The new dialog.
-     */
-    private AlertDialog createDialog() {
-    	// Create the text view.
-    	LayoutInflater inflater = getLayoutInflater();
-    	View tv = inflater.inflate(R.layout.dialog_text_box, null);
-    	
-    	// Build a dialog around that view.
-    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    	builder.setTitle(R.string.about_title);
-    	builder.setView(tv);
-    	builder.setPositiveButton(R.string.button_ok, null);
-    	
-    	return builder.create();
-    }
+    // ******************************************************************** //
+    // Private Constants.
+    // ******************************************************************** //
 
+    // Debugging tag.
+    private static final String TAG = "netscramble";
 
-    /**
-     * Invoked when the Activity loses user focus.
-     */
-    @Override
-    protected void onPause() {
-        super.onPause();
-        sensorManager.unregisterListener(this);
-        mLunarView.getThread().pause(); // pause game when Activity pauses
-    }
     
-    /**
-     * Called after onRestoreInstanceState(Bundle), onRestart(), or onPause(),
-     * for your activity to start interacting with the user. 
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        
-        sensorManager.registerListener(this, 
-                					   SensorManager.SENSOR_ACCELEROMETER,
-                					   SensorManager.SENSOR_DELAY_GAME);
-    }
-
-
-    /**
-     * Notification that something is about to happen, to give the Activity a
-     * chance to save state.
-     * 
-     * @param outState a Bundle into which this Activity should save its state
-     */
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        // just have the View's thread save its state into our Bundle
-        super.onSaveInstanceState(outState);
-        mLunarThread.saveState(outState);
-        Log.w(this.getClass().getName(), "SIS called");
-    }
+    // ******************************************************************** //
+    // Private Data.
+    // ******************************************************************** //
     
-    
-    /**
-     * Called when sensor values have changed.  The length and contents
-     * of the values array vary depending on which sensor is being monitored.
-     *
-	 * @param	sensor			The ID of the sensor being monitored.
-	 * @param	values			The new values for the sensor.
-     */
-	public void onSensorChanged(int sensor, float[] values) {
-		if (sensor != SensorManager.SENSOR_ACCELEROMETER || values.length < 3)
-			return;
-
-		// Calculate the angle of tilt in X; i.e. the elevation off the Y-Z
-		// plane.  This is pretty easy; the X value is the opposite side,
-		// and the absolute magnitude of the current value is the hypotenuse.
-		// So sin a = x / m.
-		final float x = values[0];
-		final float y = values[1];
-		final float z = values[2];
-		double m = (float) Math.sqrt(x*x + y*y + z*z);
-		double tilt = Math.asin(x / m);
-		
-        mLunarView.getThread().doTilt(Math.toDegrees(tilt));
-	}
-
-	@Override
-	public void onAccuracyChanged(int sensor, int accuracy) {
-		// Don't really need this.
-	}
+    // A handle to the View in which the game is running.
+    private GameView mLunarView;
 
 }
+

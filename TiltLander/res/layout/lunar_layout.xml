@@ -19,14 +19,16 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
     
-    <org.hermit.tiltlander.LunarView
+    <org.hermit.tiltlander.GameView
       android:id="@+id/lunar"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"/>
     
     <RelativeLayout
+        android:id="@+id/overlay"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" >
+        android:layout_height="fill_parent"
+        android:focusable="false" >
         <TextView
           android:id="@+id/text"
 		  android:text="@string/lunar_layout_text_text"
@@ -36,7 +38,8 @@
           android:layout_centerInParent="true"
           android:gravity="center_horizontal"
           android:textColor="#ff00ffff"
-          android:textSize="24sp"/>
+          android:textSize="24sp"
+          android:focusable="false" />
      </RelativeLayout>
          
 </FrameLayout>

@@ -16,42 +16,48 @@
  -->
 
 <resources>
+
 	<string name="app_name">Tilt Lander</string>
-	<string name="app_desc">An accelerometer version of the Android Lunar Lander demo.</string>
 	
-	       
-    <string name="about_text"><b>Lunar Tilt Lander</b> based on the Android
-Lunar Lander demo, with accelerometer support added by
-Ian Cameron Smith (headstay).  This is mainly a simple accelerometer demo;
-if you find if fun to play, all the better.\n\nLand the lander on the
-green landing pad.  Touch the screen
-to fire the engines; you have to be going slow and level when you land, but
-watch your fuel (green bar at top left).  Tilt the device left and right to
-steer.\n\nFor more information and source code see
-the project home page: http://code.google.com/p/tiltlander/\n\nCopyright
-(C) 2007 Google Inc.\n\nLicensed under the Apache License, Version 2.0
-(the "License"); you may not
-use this software except in compliance with the License. You may obtain a copy of
-the License at http://www.apache.org/licenses/LICENSE-2.0\n\n
+	<string name="app_desc">An accelerometer version of the Android Lunar Lander demo.</string>
+
+    <string name="about_title">About</string>
+
+    <string name="about_text"><b>Tilt Lander</b>, a simple game for
+Android.  Based on the Google Android Lunar Lander demo, with accelerometer
+support added by Ian Cameron Smith.\n\
+\n\
+For information and source code see the project home page.\n\
+\n\
+Copyright (C) 2007 Google Inc.\n\
+\n\
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this software except in compliance with the License.  You may obtain a copy of
+the License at http://www.apache.org/licenses/LICENSE-2.0\n\
+\n\
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
 License for the specific language governing permissions and limitations under
-the License.\n</string>
+the License.</string>
+
+    <string name="help_title">Lunar Tilt Lander User\'s Manual</string>
 
 
-    <string name="menu_start">Start</string>
-    <string name="menu_stop">Stop</string>
-    <string name="menu_pause">Pause</string>
-    <string name="menu_resume">Resume</string>
-    <string name="menu_easy">Easy</string>
-    <string name="menu_medium">Medium</string>
-    <string name="menu_hard">Hard</string>
-    <string name="menu_invert">Invert Tilt Controls</string>
+    <string name="menu_game_new">New game</string>
+    <string name="menu_game_pause">Pause</string>
+    <string name="menu_set_skill">Skill level...</string>
+    <string name="menu_skill_easy">Easy</string>
+    <string name="menu_skill_medium">Medium</string>
+    <string name="menu_skill_hard">Hard</string>
+    <string name="menu_invert">Invert tilt</string>
+    <string name="menu_help">Help</string>
     <string name="menu_about">About</string>
     
-    <string name="about_title">About</string>
     <string name="button_ok">OK</string>
+    <string name="button_close">Close</string>
+    <string name="button_license">Show license</string>
+    <string name="button_homepage">Home page</string>
 
     <string name="mode_ready">Lunar Tilt Lander\nPress Up To Play\nTouch screen to thrust\nTilt to turn</string>
 	<string name="mode_pause">Paused\nPress Up To Resume</string>
@@ -65,4 +71,10 @@ the License.\n</string>
 	<string name="message_bad_angle">Bad Angle</string> 
 
     <string name="lunar_layout_text_text"></string>
+    
+    <!-- URLs. -->
+    <string name="url_license">http://www.apache.org/licenses/LICENSE-2.0</string>
+    <string name="url_homepage">http://code.google.com/p/moonblink/wiki/TiltLander</string>
+
 </resources>
+

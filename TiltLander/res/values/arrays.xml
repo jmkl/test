@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    
+    <!-- Help section titles. -->
+    <string-array name="help_titles">
+		<item></item>
+		<item>Playing the Game</item>
+		<item>Skill Levels</item>
+		<item>Menu</item>
+		<item>More Information</item>
+		<item>@array/help_info_titles</item>
+    </string-array>
+
+    <!-- Help section texts. -->
+    <string-array name="help_texts">
+
+<item><b>Tilt Lander</b> is a simple game which requires you to land
+the lunar module safely on a small landing pad on the moon.  You have
+to touch down gently, you have to land level, and you have to do it
+before running out of fuel!\n\
+\n\
+This app is mainly a simple accelerometer demo; if you find if fun
+to play, all the better.\n\
+\n\
+Land the lander on the green landing pad.  Touch the screen
+to fire the engines; you have to be going slow and level when you land, but
+watch your fuel (green bar at top left).  Tilt the device left and right to
+steer.\n\
+\n\
+Use the menu to select different skill levels, pause the game, or start a new
+game.</item>
+
+<item>Tilt Lander is controlled by the touch screen and the
+accelerometer (i.e. tilting the phone).</item>
+
+<item>Tilt Lander has three skill levels.  Higher skill levels
+have larger boards, and the most advanced levels have some special features:\n\
+\n\
+• <b>Easy</b> gives you plenty of fuel, a larger landing pad, and is less
+discriminating about how hard and straight you land.\n\
+\n\
+• <b>Normal</b> level has medium fuel and landing pad.\n\
+\n\
+• <b>Hard</b> level cuts down your available fuel, uses a smaller
+landing pad, requires you to be landing more slowly, and starts you
+off moving at a higher speed.</item>
+
+<item>The device\'s \"menu\" button pops up a menu containing a number
+of options:\n\
+• <b>New Game</b> starts a new game, abandoning the current game if any.\n\
+• <b>Pause</b> pauses the game in progress.  Tap the screen
+to un-pause.\n\
+• <b>Skill Level</b> prompts you to select a skill level, then starts
+a new game at that skill level.\n\
+• <b>Invert tilt</b> reverses the way the lander turns when you tilt
+the phone.\n\
+• <b>Help</b> displays this help.\n\
+• <b>About</b> displays version and license information.</item>
+
+<item>If you would like more information and help with Scrambled Net, or if you
+want to to report a bug, there are some on-line resources which may be of
+interest, as described in the following sections.</item>
+
+<item>@array/help_info_texts</item>
+
+    </string-array>
+    
+    <!-- Section titles for the more info help. -->
+    <string-array name="help_info_titles">
+
+<item>Discussion Groups</item>
+
+<item>Reporting Bugs</item>
+
+    </string-array>
+
+    <!-- Section contents for the more info help. -->
+    <string-array name="help_info_texts">
+
+<item>There is a discussion board where you
+can suggest ideas for Tilt Lander, share experiences and thoughts with
+other users, and generally waffle.  Please note that this group
+is shared with the other Moonblink projects, so mention
+Tilt Lander when you post:\n\
+\n\
+• http://groups.google.com/group/moonblink</item>
+
+<item>If you want to report a bug, you can use the Moonblink Issue tracker.
+Before you post, <b>please</b> look through the existing issues -- including
+closed issues -- before raising a new one.  Your problem may already have been
+solved.\n\
+\n\
+If you do need to raise a new issue:\n\
+• The issue tracker is used by a number of projects.  Please click on the
+\"Product-\" label to set the product you are reporting against.  You can
+also set the other fields as appropriate.\n\
+• Please tell me what device, and what version of Android, you are using.\n\
+• If the bug is a crash, then please attach a log if you possibly can.
+If you don\'t know how, don\'t sweat it.\n\
+\n\
+So, the issue tracker is here:\n\
+\n\
+• http://code.google.com/p/moonblink/issues/list</item>
+
+    </string-array>
+    
+</resources>
+
