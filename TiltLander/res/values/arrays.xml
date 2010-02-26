@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
+                 
+    <!-- ################################################################# -->
+    <!-- Preferences Data.                                                 -->
+    <!-- ################################################################# -->
+                
+    <!-- Entry names for the skill level menu. -->
+    <string-array name="prefs_skill_entries">
+        <item>Easy</item>
+        <item>Medium</item>
+        <item>Hard</item>  
+    </string-array>
+
+    <!-- Values for the skill level menu. -->
+    <string-array name="prefs_skill_values">
+        <item>EASY</item>  
+        <item>MEDIUM</item>  
+        <item>HARD</item>
+    </string-array>
+        
+    <!-- Entry names for the screen orientation menu. -->
+    <string-array name="prefs_orient_entries">
+        <item>System default</item>
+        <item>Portrait</item>
+        <item>Landscape</item>  
+        <item>User preference</item>  
+        <item>Device orientation</item>  
+    </string-array>
+
+    <!-- Values for the screen orientation menu. -->
+    <string-array name="prefs_orient_values">
+        <item>-1</item>
+        <item>1</item>  
+        <item>0</item>
+        <item>2</item>  
+        <item>4</item>  
+    </string-array>
+    
+         
+    <!-- ################################################################# -->
+    <!-- Help.                                                             -->
+    <!-- ################################################################# -->
     
     <!-- Help section titles. -->
     <string-array name="help_titles">

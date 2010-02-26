@@ -20,29 +20,30 @@
 package org.hermit.tiltlander;
 
 
-import org.hermit.android.core.HelpActivity;
-
 import android.os.Bundle;
+import android.preference.PreferenceActivity;
 
 
 /**
- * Simple help activity for Tilt Lander.
+ * Simple preferences activity for Tilt Lander.
  */
-public class Help
-	extends HelpActivity
+public class Preferences
+	extends PreferenceActivity
 {
 
     /**
      * Called when the activity is starting.  This is where most
      * initialization should go: calling setContentView(int) to inflate
      * the activity's UI, etc.
+     * 
+     * @param   icicle          Activity's saved state, if any.
      */
     @Override
-    public void onCreate(Bundle icicle) {
+    protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         
-        // Load the preferences from an XML resource
-        addHelpFromArrays(R.array.help_titles, R.array.help_texts);
+        // Load the preferences from an XML resource.
+        addPreferencesFromResource(R.xml.preferences);
     }
 
 }

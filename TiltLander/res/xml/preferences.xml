@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/prefs_cat_game">
+
+        <ListPreference
+                android:key="skillLevel"
+                android:title="@string/prefs_skill"
+                android:summary="@string/prefs_skill_summary"
+                android:entries="@array/prefs_skill_entries"
+                android:entryValues="@array/prefs_skill_values"
+                android:dialogTitle="@string/prefs_skill_title"
+                android:defaultValue="EASY" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/prefs_cat_controls">
+
+        <CheckBoxPreference
+                android:key="tiltInvert"
+                android:title="@string/prefs_invert"
+                android:summaryOff="@string/prefs_invert_summary_off"
+                android:summaryOn="@string/prefs_invert_summary_on"
+                android:defaultValue="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/prefs_cat_display">
+
+        <ListPreference
+                android:key="orientationMode"
+                android:title="@string/prefs_orient"
+                android:summary="@string/prefs_orient_summary"
+                android:entries="@array/prefs_orient_entries"
+                android:entryValues="@array/prefs_orient_values"
+                android:dialogTitle="@string/prefs_orient_title"
+                android:defaultValue="1" />
+
+        <CheckBoxPreference
+                android:key="keepAwake"
+                android:title="@string/prefs_wakelock"
+                android:summaryOff="@string/prefs_wakelock_summary_off"
+                android:summaryOn="@string/prefs_wakelock_summary_on"
+                android:defaultValue="false" />
+
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="@string/prefs_cat_debug">
+
+        <CheckBoxPreference
+                android:key="debugStats"
+                android:title="@string/prefs_stats"
+                android:summaryOff="@string/prefs_stats_summary_off"
+                android:summaryOn="@string/prefs_stats_summary_on"
+                android:defaultValue="false" />
+
+    </PreferenceCategory>
+  
+</PreferenceScreen>
+

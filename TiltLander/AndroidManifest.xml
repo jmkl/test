@@ -30,6 +30,12 @@
 			</intent-filter>
 		</activity>
 
+		<activity android:name=".Preferences" android:label="@string/prefs_title">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
+		</activity>
+
 		<activity android:name=".Help" android:launchMode="singleTop"
 			android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout"
 			android:label="@string/help_title">

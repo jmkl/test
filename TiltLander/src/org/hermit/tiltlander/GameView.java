@@ -1,23 +1,19 @@
 
 /**
- * NetScramble: unscramble a network and connect all the terminals.
- * The player is given a network diagram with the parts of the network
- * randomly rotated; he/she must rotate them to connect all the terminals
- * to the server.
+ * Tilt Lander: an accelerometer-controlled moon landing game for Android.
+ * <br>Copyright (C) 2007 Google Inc.
  * 
- * This is an Android implementation of the KDE game "knetwalk" by
- * Andi Peredri, Thomas Nagy, and Reinhold Kainhofer.
- *
- * © 2007-2010 Ian Cameron Smith <johantheghost@yahoo.com>
- *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * <p>Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 
@@ -183,7 +179,7 @@ public class GameView
         mWinsInARow = 0;
         mDifficulty = Difficulty.MEDIUM;
 
-        tiltInverted=1;
+        tiltInverted = 1;
 
         scratchHsv = new float[3];
         
@@ -198,7 +194,6 @@ public class GameView
         
         setState(State.READY);
         
-        setDebugPerf(true);
         setDebugPos(0, 100);
     }
 
@@ -382,10 +377,15 @@ public class GameView
     
     /**
      * Set the tilt control direction for this game view.
+     * 
+     * @param   inverted        False for normal -- tilt right to turn
+     *                          clockwise.
+     *                          True for inverted -- tilt right to turn
+     *                          anti-clockwise.
      */
-    public void toggleTiltInverted() {
+    public void setTiltInverted(boolean inverted) {
         synchronized (this) {
-            tiltInverted = -tiltInverted;
+            tiltInverted = inverted ? -1 : 1;
         }
     }
 
@@ -1018,7 +1018,7 @@ public class GameView
         Log.v(TAG, "tilt: " + x + "," + y + "," + z + " -> " + tilt);
 
         // Amplify the user's movements.
-        tilt *= (1.5 * tiltInverted);
+        tilt *= (1.5 * -tiltInverted);
 
         synchronized (this) {
             mTiltAngle = tilt < 0 ? tilt + 360 : tilt;

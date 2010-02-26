@@ -6,35 +6,17 @@
     <item android:id="@+id/menu_new" android:title="@string/menu_game_new"
     	  android:icon="@drawable/ic_menu_play"/>
 
-    <!-- "Pause game". -->
-    <item android:id="@+id/menu_pause" android:title="@string/menu_game_pause" 
-    	  android:icon="@drawable/ic_menu_pause"/>
-
-     <!-- "Set skill level...". -->
-    <item android:id="@+id/skill_menu" android:title="@string/menu_set_skill"
-    	  android:icon="@drawable/ic_menu_preferences">
-        <menu>
-            <group android:id="@+id/skill_group" android:checkableBehavior="single">
-
-                <item android:id="@+id/skill_easy" android:title="@string/menu_skill_easy" />
-                <item android:id="@+id/skill_medium" android:title="@string/menu_skill_medium" />
-                <item android:id="@+id/skill_hard" android:title="@string/menu_skill_hard" />
-                
-            </group>
-        </menu>
-    </item>
-
-    <!-- "Invert tilt". -->
-    <item android:id="@+id/menu_invert" android:title="@string/menu_invert" 
-    	  android:icon="@drawable/ic_menu_swap_calls"/>
+    <!-- "Preferences". -->
+	<item android:id="@+id/menu_prefs" android:title="@string/menu_prefs"
+    	  android:icon="@drawable/ic_menu_preferences"/>
 
     <!-- "Help". -->
 	<item android:id="@+id/menu_help" android:title="@string/menu_help"
-    	  android:icon="@drawable/ic_menu_help"></item>
+    	  android:icon="@drawable/ic_menu_help"/>
 
     <!-- "About". -->
 	<item android:id="@+id/menu_about" android:title="@string/menu_about"
-    	  android:icon="@drawable/ic_menu_info"></item>
+    	  android:icon="@drawable/ic_menu_info"/>
 	
 </menu>
 

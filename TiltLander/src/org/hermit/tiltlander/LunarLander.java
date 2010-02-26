@@ -1,14 +1,15 @@
 
-/*
- * Copyright (C) 2007 Google Inc.
+/**
+ * Tilt Lander: an accelerometer-controlled moon landing game for Android.
+ * <br>Copyright (C) 2007 Google Inc.
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
  * 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
+ * <p>Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
@@ -22,7 +23,11 @@ package org.hermit.tiltlander;
 import org.hermit.android.core.MainActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -73,6 +78,9 @@ public class LunarLander
     
         super.onCreate(icicle);
 
+        // Get our power manager for wake locks.
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+
         // Set up the standard dialogs.
         createMessageBox(R.string.button_close);
         setAboutInfo(R.string.about_text);
@@ -90,6 +98,9 @@ public class LunarLander
 
         // give the LunarView a handle to the TextView used for messages
         mLunarView.setTextView((TextView) findViewById(R.id.text));
+        
+        // Restore our preferences.
+        updatePreferences();
 
         if (icicle == null) {
             Log.w(this.getClass().getName(), "SIS is null");
@@ -129,6 +140,10 @@ public class LunarLander
         
         super.onResume();
         
+        // Take the wake lock if we want it.
+        if (wakeLock != null && !wakeLock.isHeld())
+            wakeLock.acquire();
+
         mLunarView.onResume();
     }
 
@@ -160,6 +175,10 @@ public class LunarLander
         super.onPause();
         
         mLunarView.onPause();
+
+        // Let go the wake lock if we have it.
+        if (wakeLock != null && wakeLock.isHeld())
+            wakeLock.release();
     }
 
     
@@ -219,21 +238,18 @@ public class LunarLander
             case R.id.menu_new:
                 mLunarView.doStart();
                 return true;
-            case R.id.menu_pause:
-                mLunarView.pause();
-                return true;
-            case R.id.skill_easy:
-                mLunarView.setDifficulty(GameView.Difficulty.EASY);
-                return true;
-            case R.id.skill_medium:
-                mLunarView.setDifficulty(GameView.Difficulty.MEDIUM);
-                return true;
-            case R.id.skill_hard:
-                mLunarView.setDifficulty(GameView.Difficulty.HARD);
-                return true;
-            case R.id.menu_invert:
-                mLunarView.toggleTiltInverted();
-                return true;
+            case R.id.menu_prefs:
+                // Launch the preferences activity as a subactivity, so we
+                // know when it returns.
+                Intent pIntent = new Intent();
+                pIntent.setClass(this, Preferences.class);
+                startActivityForResult(pIntent, new MainActivity.ActivityListener() {
+                    @Override
+                    public void onActivityFinished(int resultCode, Intent data) {
+                        updatePreferences();
+                    }
+                });
+                break;
             case R.id.menu_help:
                 // Launch the help activity as a subactivity.
                 mLunarView.pause();
@@ -249,7 +265,80 @@ public class LunarLander
         return false;
     }
 
+
+    // ******************************************************************** //
+    // Preferences Handling.
+    // ******************************************************************** //
+
+    /**
+     * Read our application preferences and configure ourself appropriately.
+     */
+    private void updatePreferences() {
+        SharedPreferences prefs =
+                        PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Get the desired orientation.
+        GameView.Difficulty skillLevel = GameView.Difficulty.EASY;
+        try {
+            String sval = prefs.getString("skillLevel", skillLevel.toString());
+            skillLevel = GameView.Difficulty.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad skillLevel");
+        }
+        Log.i(TAG, "Prefs: skillLevel " + skillLevel);
+        mLunarView.setDifficulty(skillLevel);
+
+        // Get the tilt controls direction.
+        boolean tiltInvert = false;
+        try {
+            tiltInvert = prefs.getBoolean("tiltInvert", false);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad tiltInvert");
+        }
+        Log.i(TAG, "Prefs: tiltInvert " + tiltInvert);
+        mLunarView.setTiltInverted(tiltInvert);
+
+        // Get the desired orientation.
+        int orientMode = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        try {
+            String omode = prefs.getString("orientationMode", null);
+            orientMode = Integer.valueOf(omode);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad orientationMode");
+        }
+        Log.i(TAG, "Prefs: orientationMode " + orientMode);
+        setRequestedOrientation(orientMode);
+
+        boolean keepAwake = false;
+        try {
+            keepAwake = prefs.getBoolean("keepAwake", false);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad keepAwake");
+        }
+        if (keepAwake) {
+            Log.i(TAG, "Prefs: keepAwake true: take the wake lock");
+            if (wakeLock == null)
+                wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+            if (!wakeLock.isHeld())
+                wakeLock.acquire();
+        } else {
+            Log.i(TAG, "Prefs: keepAwake false: release the wake lock");
+            if (wakeLock != null && wakeLock.isHeld())
+                wakeLock.release();
+            wakeLock = null;
+        }
+
+        boolean debugStats = false;
+        try {
+            debugStats = prefs.getBoolean("debugStats", false);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad debugStats");
+        }
+        Log.i(TAG, "Prefs: debugStats " + debugStats);
+        mLunarView.setDebugPerf(debugStats);
+    }
     
+
     // ******************************************************************** //
     // Private Constants.
     // ******************************************************************** //
@@ -262,8 +351,16 @@ public class LunarLander
     // Private Data.
     // ******************************************************************** //
     
+    // Our power manager.
+    private PowerManager powerManager = null;
+
     // A handle to the View in which the game is running.
     private GameView mLunarView;
+    
+    // Wake lock used to keep the screen alive.  Null if we aren't going
+    // to take a lock; non-null indicates that the lock should be taken
+    // while we're actually running.
+    private PowerManager.WakeLock wakeLock = null;
 
 }
 

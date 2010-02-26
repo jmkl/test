@@ -44,15 +44,34 @@ the License.</string>
     <string name="help_title">Lunar Tilt Lander User\'s Manual</string>
 
 
+    <!-- Menu strings. -->
     <string name="menu_game_new">New game</string>
-    <string name="menu_game_pause">Pause</string>
-    <string name="menu_set_skill">Skill level...</string>
-    <string name="menu_skill_easy">Easy</string>
-    <string name="menu_skill_medium">Medium</string>
-    <string name="menu_skill_hard">Hard</string>
-    <string name="menu_invert">Invert tilt</string>
+    <string name="menu_prefs">Settings...</string>
     <string name="menu_help">Help</string>
     <string name="menu_about">About</string>
+        
+        
+    <!-- Preferences strings. -->
+    <string name="prefs_title">Settings</string>
+    <string name="prefs_cat_game">Game Settings</string>
+    <string name="prefs_skill">Skill level</string>
+    <string name="prefs_skill_summary">Set your desired difficulty level</string>
+    <string name="prefs_skill_title">Skill Level</string>
+    <string name="prefs_cat_controls">Controls Settings</string>
+    <string name="prefs_invert">Invert tilt control</string>
+    <string name="prefs_invert_summary_off">Tilt right to turn clockwise.</string>
+    <string name="prefs_invert_summary_on">Tilt right to turn anti-clockwise.</string>
+    <string name="prefs_cat_display">Display Settings</string>
+    <string name="prefs_orient">Screen orientation</string>
+    <string name="prefs_orient_summary">Set your desired screen rotation behaviour</string>
+    <string name="prefs_orient_title">Screen Orientation</string>
+    <string name="prefs_wakelock">Keep device awake</string>
+    <string name="prefs_wakelock_summary_off">The device will sleep normally after the screen times out.</string>
+    <string name="prefs_wakelock_summary_on">The device will stay awake while the app is running.  Warning: battery drain!</string>
+    <string name="prefs_cat_debug">Debug Settings</string>
+    <string name="prefs_stats">Show performance stats</string>
+    <string name="prefs_stats_summary_off">Performance stats are not displayed.</string>
+    <string name="prefs_stats_summary_on">Performance stats are displayed.</string>
     
     <string name="button_ok">OK</string>
     <string name="button_close">Close</string>
