@@ -499,7 +499,7 @@ public abstract class SurfaceRunner
                     }
 
                     // Draw the stats on screen.
-                    canvas.drawBitmap(perfBitmap, 0, 0, null);
+                    canvas.drawBitmap(perfBitmap, perfPosX, perfPosY, null);
                 }
             }
         } finally {
@@ -645,6 +645,18 @@ public abstract class SurfaceRunner
      */
     public void setDebugPerf(boolean enable) {
         showPerf = enable;
+    }
+    
+
+    /**
+     * Set the screen position at which we display performance info.
+     * 
+     * @param   x           Screen X position.
+     * @param   y           Screen Y position.
+     */
+    public void setDebugPos(int x, int y) {
+        perfPosX = x;
+        perfPosY = y;
     }
     
 
@@ -962,6 +974,10 @@ public abstract class SurfaceRunner
     
     // Time of last performance display update.
     private long perfLastTime = 0;
+    
+    // Position to display performance info at.
+    private int perfPosX = 0;
+    private int perfPosY = 0;
 
 }
 
