@@ -31,8 +31,9 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -142,19 +143,24 @@ public class GameView
                             parent.getSystemService(Context.SENSOR_SERVICE);
 
         // Animation delay.
-        setDelay(30);
+//        setDelay(30);
         
         // get handles to some important objects
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message m) {
-                mStatusContainer.setVisibility(m.getData().getInt("viz"));
+                mStatusText.setVisibility(m.getData().getInt("viz"));
                 mStatusText.setText(m.getData().getString("text"));
             }
         };
 
         Resources res = parent.getResources();
         
+        // Cache the strings.
+        speedString = res.getString(R.string.warn_speed);
+        angleString = res.getString(R.string.warn_angle);
+        fuelString = res.getString(R.string.warn_fuel);
+
         // cache handles to our key sprites & other drawables
         mLanderImage = res.getDrawable(R.drawable.lander_plain);
         mFiringImage = res.getDrawable(R.drawable.lander_firing);
@@ -174,17 +180,13 @@ public class GameView
         mLinePaint.setAntiAlias(true);
         mLinePaint.setARGB(255, 0, 255, 0);
 
-        mLinePaintBad = new Paint();
-        mLinePaintBad.setAntiAlias(true);
-        mLinePaintBad.setARGB(255, 120, 180, 0);
-
-        mScratchRect = new RectF(0, 0, 0, 0);
-
         mWinsInARow = 0;
         mDifficulty = Difficulty.MEDIUM;
 
         tiltInverted=1;
 
+        scratchHsv = new float[3];
+        
         // initial show-up of lander (not yet playing)
         mX = mLanderWidth;
         mY = mLanderHeight * 2;
@@ -195,6 +197,9 @@ public class GameView
         mEngineFiring = true;
         
         setState(State.READY);
+        
+        setDebugPerf(true);
+        setDebugPos(0, 100);
     }
 
 
@@ -204,9 +209,10 @@ public class GameView
 
     /**
      * Installs a pointer to the text view used for messages.
+     * 
+     * @param   textView        The text view.
      */
-    public void setTextView(View container, TextView textView) {
-        mStatusContainer = container;
+    public void setTextView(TextView textView) {
         mStatusText = textView;
     }
 
@@ -245,6 +251,22 @@ public class GameView
         // don't forget to resize the background image
         mBackgroundImage = Bitmap.createScaledBitmap(
                 mBackgroundImage, width, height, true);
+        
+        gaugeTop = UI_MARGIN;
+        gaugeMid = gaugeTop + UI_BAR_HEIGHT / 2;
+        gaugeBot = gaugeTop + UI_BAR_HEIGHT;
+        gaugeSpdLeft = UI_MARGIN;
+        gaugeSpdRight = gaugeSpdLeft + UI_BAR;
+        gaugeHorizMid = mCanvasWidth / 2;
+        gaugeHorizLeft = gaugeHorizMid - UI_BAR / 2;
+        gaugeHorizRight = gaugeHorizMid + UI_BAR / 2;
+        gaugeFuelRight = width - UI_MARGIN;
+        gaugeFuelLeft = gaugeFuelRight - UI_BAR;
+        
+        gaugeTextSize = 30f;
+        gaugeTextTop = gaugeBot + (int) gaugeTextSize;
+        mLinePaint.setTypeface(Typeface.DEFAULT_BOLD);
+        mLinePaint.setTextSize(gaugeTextSize);
     }
  
 
@@ -307,15 +329,15 @@ public class GameView
             mX = mCanvasWidth / 2;
             mY = mCanvasHeight - mLanderHeight / 2;
 
-            // start with a little random motion
-            mDY = Math.random() * -speedInit;
-            mDX = Math.random() * 2 * speedInit - speedInit;
+            // Start with a little random motion.
+            mDY = (float) Math.random() * -speedInit;
+            mDX = (float) Math.random() * 2 * speedInit - speedInit;
             mHeading = 0;
 
             // Figure initial spot for landing, not too near center
             while (true) {
                 mGoalX = (int) (Math.random() * (mCanvasWidth - mGoalWidth));
-                if (Math.abs(mGoalX - (mX - mLanderWidth / 2)) > mCanvasHeight / 6)
+                if (Math.abs(mGoalX - (mX - mLanderWidth / 2)) > mCanvasWidth / 5)
                     break;
             }
 
@@ -349,7 +371,7 @@ public class GameView
     /**
      * Sets the current difficulty.
      * 
-     * @param difficulty
+     * @param   difficulty      The desired difficulty level for the game.
      */
     public void setDifficulty(Difficulty difficulty) {
         synchronized (this) {
@@ -357,6 +379,10 @@ public class GameView
         }
     }
 
+    
+    /**
+     * Set the tilt control direction for this game view.
+     */
     public void toggleTiltInverted() {
         synchronized (this) {
             tiltInverted = -tiltInverted;
@@ -538,7 +564,8 @@ public class GameView
         // figure speeds for the end of the period
         mDX += ddx;
         mDY += ddy;
-
+        mSpeed = (float) Math.sqrt(mDX * mDX + mDY * mDY);
+        
         // figure position based on average speed during the period
         mX += elapsed * (mDX + dxOld) / 2;
         mY += elapsed * (mDY + dyOld) / 2;
@@ -546,22 +573,21 @@ public class GameView
         mLastTime = now;
 
         // Evaluate if we have landed ... stop the game
-        double yLowerBound = TARGET_PAD_HEIGHT + mLanderHeight / 2
-                - TARGET_BOTTOM_PADDING;
+        float yLowerBound = TARGET_PAD_HEIGHT + mLanderHeight / 2f -
+                                                    TARGET_BOTTOM_PADDING;
         if (mY <= yLowerBound) {
             mY = yLowerBound;
 
             State result = State.LOSE;
             CharSequence message = "";
             Resources res = parentApp.getResources();
-            double speed = Math.sqrt(mDX * mDX + mDY * mDY);
             boolean onGoal = (mGoalX <= mX - mLanderWidth / 2 && mX
                     + mLanderWidth / 2 <= mGoalX + mGoalWidth);
 
             // "Hyperspace" win -- upside down, going fast,
             // puts you back at the top.
             if (onGoal && Math.abs(mHeading - 180) < mGoalAngle
-                    && speed > PHYS_SPEED_HYPERSPACE) {
+                    && mSpeed > PHYS_SPEED_HYPERSPACE) {
                 result = State.WIN;
                 mWinsInARow++;
                 doStart();
@@ -573,7 +599,7 @@ public class GameView
                 message = res.getText(R.string.message_off_pad);
             } else if (!(mHeading <= mGoalAngle || mHeading >= 360 - mGoalAngle)) {
                 message = res.getText(R.string.message_bad_angle);
-            } else if (speed > mGoalSpeed) {
+            } else if (mSpeed > mGoalSpeed) {
                 message = res.getText(R.string.message_too_fast);
             } else {
                 result = State.WIN;
@@ -608,43 +634,22 @@ public class GameView
         int yTop = mCanvasHeight - ((int) mY + mLanderHeight / 2);
         int xLeft = (int) mX - mLanderWidth / 2;
 
-        // Draw the fuel gauge.
-        int fuelWidth = (int) (UI_BAR * mRemFuel / PHYS_FUEL_MAX);
-        int fcol = Math.round((float) mRemFuel / (float) mTotalFuel * 255f);
-        mLinePaint.setARGB(255, 255 - fcol, fcol, 0);
-        canvas.drawRect(4, 4, 4 + fuelWidth, 4 + UI_BAR_HEIGHT, mLinePaint);
-
-        // Draw the speed gauge, with a two-tone effect
-        double speed = Math.sqrt(mDX * mDX + mDY * mDY);
-        int speedWidth = (int) (UI_BAR * speed / PHYS_SPEED_MAX);
-
-        mLinePaint.setARGB(255, 0, 255, 0);
-        if (speed <= mGoalSpeed) {
-            mScratchRect.set(4 + UI_BAR + 4, 4,
-                    4 + UI_BAR + 4 + speedWidth, 4 + UI_BAR_HEIGHT);
-            canvas.drawRect(mScratchRect, mLinePaint);
-        } else {
-            // Draw the bad color in back, with the good color in front of
-            // it
-            mScratchRect.set(4 + UI_BAR + 4, 4,
-                    4 + UI_BAR + 4 + speedWidth, 4 + UI_BAR_HEIGHT);
-            canvas.drawRect(mScratchRect, mLinePaintBad);
-            int goalWidth = (UI_BAR * mGoalSpeed / PHYS_SPEED_MAX);
-            mScratchRect.set(4 + UI_BAR + 4, 4, 4 + UI_BAR + 4 + goalWidth,
-                    4 + UI_BAR_HEIGHT);
-            canvas.drawRect(mScratchRect, mLinePaint);
-        }
-
-        // Draw the landing pad
+        // Draw the status gauges.
+        drawFuel(canvas, now);
+        drawHorizon(canvas, now);
+        drawSpeed(canvas, now);
+        
+        // Draw the landing pad.
+        mLinePaint.setStyle(Paint.Style.STROKE);
+        mLinePaint.setStrokeWidth(UI_PAD_WIDTH);
+        mLinePaint.setColor(UI_PAD_COL);
         canvas.drawLine(mGoalX, 1 + mCanvasHeight - TARGET_PAD_HEIGHT,
                 mGoalX + mGoalWidth, 1 + mCanvasHeight - TARGET_PAD_HEIGHT,
                 mLinePaint);
 
-
         // Draw the ship with its current rotation
         canvas.save();
-        canvas.rotate((float) mHeading, (float) mX, mCanvasHeight
-                - (float) mY);
+        canvas.rotate((float) mHeading, (float) mX, mCanvasHeight - (float) mY);
         if (mMode == State.LOSE) {
             mCrashedImage.setBounds(xLeft, yTop, xLeft + mLanderWidth, yTop
                     + mLanderHeight);
@@ -659,6 +664,186 @@ public class GameView
             mLanderImage.draw(canvas);
         }
         canvas.restore();
+    }
+
+    
+    /**
+     * Draw the fuel gauge.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   now         Current time in ms.  Will be the same as that
+     *                      passed to doUpdate(), if there was a preceding
+     *                      call to doUpdate().
+     */
+    private void drawFuel(Canvas canvas, long now) {
+        // See what fraction of fuel we're on.
+        float fuelFrac = (float) mRemFuel / (float) mTotalFuel;
+        
+        // Work out what colour to draw the fuel bar in.
+        scratchHsv[0] = fuelFrac * 120f;
+        scratchHsv[1] = 1f;
+        scratchHsv[2] = 1f;
+        int fuelCol = Color.HSVToColor(scratchHsv);
+        
+        // Draw the fuel bar.
+        mLinePaint.setStyle(Paint.Style.FILL);
+        mLinePaint.setColor(fuelCol);
+        float w = (float) UI_BAR * fuelFrac;
+        canvas.drawRect(gaugeFuelLeft, gaugeTop, gaugeFuelLeft + w, gaugeBot, mLinePaint);
+        
+        // Draw the outline.
+        mLinePaint.setStyle(Paint.Style.STROKE);
+        mLinePaint.setStrokeWidth(1f);
+        mLinePaint.setColor(UI_GAUGE_COL);
+        canvas.drawRect(gaugeFuelLeft, gaugeTop, gaugeFuelRight, gaugeBot, mLinePaint);
+        
+        // Draw the warning message if we're low.
+        if (fuelFrac < 0.2f) {
+            // Flash the warning based on time of the second and fuel level.
+            long elap = now - lastFuelWarn;
+            if (elap > 150) {
+                mLinePaint.setStyle(Paint.Style.STROKE);
+                mLinePaint.setStrokeWidth(0f);
+                mLinePaint.setColor(fuelCol);
+                canvas.drawText(fuelString, gaugeFuelLeft, gaugeTextTop, mLinePaint);
+                if (elap > 300 + 400 * fuelFrac * 5f)
+                    lastFuelWarn = now;
+            }
+        }
+    }
+
+    
+    /**
+     * Draw the artificial horizon.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   now         Current time in ms.  Will be the same as that
+     *                      passed to doUpdate(), if there was a preceding
+     *                      call to doUpdate().
+     */
+    private void drawHorizon(Canvas canvas, long now) {
+        // Work out how far we are off level.
+        float offAngle = mHeading < 180f ? mHeading : 360 - mHeading;
+        
+        // Work out what our warning fraction is.  It is zero at or below
+        // the safe angle, and rises to 1 at 2 * safe.
+        float warnFrac = offAngle / mGoalAngle - 1f;
+        if (warnFrac < 0.0f)
+            warnFrac = 0.0f;
+        else if (warnFrac > 1.0f)
+            warnFrac = 1.0f;
+        
+        // Work out what colour to draw the horizon in.  Since we have a
+        // specific goal, below that is green, above shades from yellow to red.
+        int horizCol;
+        if (warnFrac <= 0f)
+            horizCol = 0xff00ff00;
+        else {
+            scratchHsv[0] = (1 - warnFrac) * 60f;
+            scratchHsv[1] = 1f;
+            scratchHsv[2] = 1f;
+            horizCol = Color.HSVToColor(scratchHsv);
+        }
+        
+        // Draw the outline.
+        mLinePaint.setStyle(Paint.Style.STROKE);
+        mLinePaint.setStrokeWidth(1f);
+        mLinePaint.setColor(UI_GAUGE_COL);
+        canvas.drawLine(gaugeHorizLeft, gaugeTop, gaugeHorizRight, gaugeTop, mLinePaint);
+        canvas.drawLine(gaugeHorizLeft, gaugeBot, gaugeHorizRight, gaugeBot, mLinePaint);
+        
+        // Draw the horizon line.
+        mLinePaint.setStyle(Paint.Style.STROKE);
+        mLinePaint.setStrokeWidth(2f);
+        mLinePaint.setColor(horizCol);
+        canvas.save();
+        canvas.rotate(mHeading, gaugeHorizMid, gaugeMid);
+        canvas.drawLine(gaugeHorizLeft, gaugeMid, gaugeHorizRight, gaugeMid, mLinePaint);
+        canvas.drawCircle(gaugeHorizMid, gaugeMid, UI_BAR_HEIGHT / 4f, mLinePaint);
+        canvas.restore();
+
+        // Draw the warning message if we're squint.
+        if (warnFrac > 0f) {
+            // Flash the warning based on the warning level.
+            long elap = now - lastAngleWarn;
+            if (elap > 150) {
+                mLinePaint.setStyle(Paint.Style.STROKE);
+                mLinePaint.setStrokeWidth(0f);
+                mLinePaint.setColor(horizCol);
+                canvas.drawText(angleString, gaugeHorizLeft, gaugeTextTop, mLinePaint);
+                if (elap > 300 + 400 * (1 - warnFrac) * 5f)
+                    lastAngleWarn = now;
+            }
+        }
+    }
+
+    
+    /**
+     * Draw the speed gauge.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   now         Current time in ms.  Will be the same as that
+     *                      passed to doUpdate(), if there was a preceding
+     *                      call to doUpdate().
+     */
+    private void drawSpeed(Canvas canvas, long now) {
+        // See what fraction of max. speed we're at.
+        float speedFrac = (float) mSpeed / (float) PHYS_SPEED_MAX;
+        if (speedFrac > 1f)
+            speedFrac = 1f;
+        
+        // Calculate a safe speed for this altitude.  Below 1/3 of screen
+        // height, it's the goal speed.  Otherwise it rises one multiple
+        // of goal speed per 1.3 height.
+        float safeSpeed = mY / mCanvasHeight * 3f * mGoalSpeed;
+        if (safeSpeed < mGoalSpeed)
+            safeSpeed = mGoalSpeed;
+
+        // Work out what our warning fraction is.  It is zero at or below
+        // the safe speed, and rises to 1 at 2 * safe.
+        float warnFrac = mSpeed / safeSpeed - 1f;
+        if (warnFrac < 0.0f)
+            warnFrac = 0.0f;
+        else if (warnFrac > 1.0f)
+            warnFrac = 1.0f;
+        
+        // Work out what colour to draw the speed bar in.  Since we have a
+        // specific goal, below that is green, above shades from yellow to red.
+        int speedCol;
+        if (mSpeed < mGoalSpeed)
+            speedCol = 0xff00ff00;
+        else {
+            scratchHsv[0] = (1 - warnFrac) * 60f;
+            scratchHsv[1] = 1f;
+            scratchHsv[2] = 1f;
+            speedCol = Color.HSVToColor(scratchHsv);
+        }
+        
+        // Draw the speed bar.
+        mLinePaint.setStyle(Paint.Style.FILL);
+        mLinePaint.setColor(speedCol);
+        float w = (float) UI_BAR * speedFrac;
+        canvas.drawRect(gaugeSpdLeft, gaugeTop, gaugeSpdLeft + w, gaugeBot, mLinePaint);
+        
+        // Draw the outline.
+        mLinePaint.setStyle(Paint.Style.STROKE);
+        mLinePaint.setStrokeWidth(1f);
+        mLinePaint.setColor(UI_GAUGE_COL);
+        canvas.drawRect(gaugeSpdLeft, gaugeTop, gaugeSpdRight, gaugeBot, mLinePaint);
+        
+        // Draw the warning message if we're low.
+        if (warnFrac > 0f) {
+            // Flash the warning based on the warning level.
+            long elap = now - lastSpeedWarn;
+            if (elap > 150) {
+                mLinePaint.setStyle(Paint.Style.STROKE);
+                mLinePaint.setStrokeWidth(0f);
+                mLinePaint.setColor(speedCol);
+                canvas.drawText(speedString, gaugeSpdLeft, gaugeTextTop, mLinePaint);
+                if (elap > 300 + 400 * (1 - warnFrac) * 5f)
+                    lastSpeedWarn = now;
+            }
+        }
     }
 
 
@@ -855,11 +1040,11 @@ public class GameView
      */
     protected void saveState(Bundle outState) {
         outState.putString(KEY_DIFFICULTY, mDifficulty.toString());
-        outState.putDouble(KEY_X, Double.valueOf(mX));
-        outState.putDouble(KEY_Y, Double.valueOf(mY));
-        outState.putDouble(KEY_DX, Double.valueOf(mDX));
-        outState.putDouble(KEY_DY, Double.valueOf(mDY));
-        outState.putDouble(KEY_HEADING, Double.valueOf(mHeading));
+        outState.putFloat(KEY_X, mX);
+        outState.putFloat(KEY_Y, mY);
+        outState.putFloat(KEY_DX, mDX);
+        outState.putFloat(KEY_DY, mDY);
+        outState.putFloat(KEY_HEADING, mHeading);
         outState.putInt(KEY_LANDER_WIDTH, Integer.valueOf(mLanderWidth));
         outState.putInt(KEY_LANDER_HEIGHT, Integer.valueOf(mLanderHeight));
         outState.putInt(KEY_GOAL_X, Integer.valueOf(mGoalX));
@@ -867,8 +1052,8 @@ public class GameView
         outState.putInt(KEY_GOAL_ANGLE, Integer.valueOf(mGoalAngle));
         outState.putInt(KEY_GOAL_WIDTH, Integer.valueOf(mGoalWidth));
         outState.putInt(KEY_WINS, Integer.valueOf(mWinsInARow));
-        outState.putDouble(KEY_TOT_FUEL, Double.valueOf(mTotalFuel));
-        outState.putDouble(KEY_REM_FUEL, Double.valueOf(mRemFuel));
+        outState.putFloat(KEY_TOT_FUEL, mTotalFuel);
+        outState.putFloat(KEY_REM_FUEL, mRemFuel);
     }
 
     
@@ -888,11 +1073,11 @@ public class GameView
         mEngineFiring = false;
 
         mDifficulty = Difficulty.valueOf(savedState.getString(KEY_DIFFICULTY));
-        mX = savedState.getDouble(KEY_X);
-        mY = savedState.getDouble(KEY_Y);
-        mDX = savedState.getDouble(KEY_DX);
-        mDY = savedState.getDouble(KEY_DY);
-        mHeading = savedState.getDouble(KEY_HEADING);
+        mX = savedState.getFloat(KEY_X);
+        mY = savedState.getFloat(KEY_Y);
+        mDX = savedState.getFloat(KEY_DX);
+        mDY = savedState.getFloat(KEY_DY);
+        mHeading = savedState.getFloat(KEY_HEADING);
 
         mLanderWidth = savedState.getInt(KEY_LANDER_WIDTH);
         mLanderHeight = savedState.getInt(KEY_LANDER_HEIGHT);
@@ -901,8 +1086,8 @@ public class GameView
         mGoalAngle = savedState.getInt(KEY_GOAL_ANGLE);
         mGoalWidth = savedState.getInt(KEY_GOAL_WIDTH);
         mWinsInARow = savedState.getInt(KEY_WINS);
-        mTotalFuel = savedState.getDouble(KEY_TOT_FUEL);
-        mRemFuel = savedState.getDouble(KEY_REM_FUEL);
+        mTotalFuel = savedState.getFloat(KEY_TOT_FUEL);
+        mRemFuel = savedState.getFloat(KEY_REM_FUEL);
 
         return true;
     }
@@ -930,7 +1115,6 @@ public class GameView
     private static final int PHYS_DOWN_ACCEL_SEC = 35;
     private static final int PHYS_FIRE_ACCEL_SEC = 80;
     private static final int PHYS_FUEL_INIT = 60;
-    private static final int PHYS_FUEL_MAX = 100;
     private static final int PHYS_FUEL_SEC = 10;
     private static final int PHYS_SLEW_SEC = 100; // degrees/second max rotate
     private static final int PHYS_SPEED_HYPERSPACE = 180;
@@ -949,8 +1133,18 @@ public class GameView
      * UI constants (i.e. the speed & fuel bars)
      */
     private static final int UI_BAR = 100; // width of the bar(s)
-    private static final int UI_BAR_HEIGHT = 10; // height of the bar(s)
+    private static final int UI_BAR_HEIGHT = 16; // height of the bar(s)
     
+    // Margins around the gauges.
+    private static final int UI_MARGIN = 10;
+    
+    // Colour for the gauges' outlines etc.
+    private static final int UI_GAUGE_COL = 0xffffff00;
+   
+    // Landing pad thickness and colour.
+    private static final int UI_PAD_WIDTH = 3;
+    private static final int UI_PAD_COL = 0xff00ffa0;
+
     // Saved state item keys.
     private static final String KEY_DIFFICULTY = "mDifficulty";
     private static final String KEY_X = "mX";
@@ -989,25 +1183,36 @@ public class GameView
     private SensorManager sensorManager;
 
     /** Pointer to the text view to display "Paused.." etc. */
-    private View mStatusContainer;
     private TextView mStatusText;
 
     // The drawable to use as the background of the animation canvas.
     private Bitmap mBackgroundImage;
 
-    /**
-     * Current height of the surface/canvas.
-     * 
-     * @see #setSurfaceSize
-     */
-    private int mCanvasHeight = 1;
-
-    /**
-     * Current width of the surface/canvas.
-     * 
-     * @see #setSurfaceSize
-     */
+    // Current size of the surface/canvas.
     private int mCanvasWidth = 1;
+    private int mCanvasHeight = 1;
+    
+    // Locations and sizes of the gauges.
+    private int gaugeTop = 0;
+    private int gaugeMid = 0;
+    private int gaugeBot = 0;
+    private int gaugeSpdLeft = 0;
+    private int gaugeSpdRight = 0;
+    private int gaugeHorizLeft = 0;
+    private int gaugeHorizMid = 0;
+    private int gaugeHorizRight = 0;
+    private int gaugeFuelLeft = 0;
+    private int gaugeFuelRight = 0;
+    
+    // Size and position for text labels.
+    private float gaugeTextSize = 0;
+    private int gaugeTextTop = 0;
+    
+    // Warning strings for overspeed, bad angle and low fuel.  These are set up
+    // from resources.
+    private String speedString = "";
+    private String angleString = "";
+    private String fuelString = "";
 
     /** What to draw for the Lander when it has crashed */
     private Drawable mCrashedImage;
@@ -1018,11 +1223,10 @@ public class GameView
      */
     private Difficulty mDifficulty;
 
-    /** Velocity dx. */
-    private double mDX;
-
-    /** Velocity dy. */
-    private double mDY;
+    // Velocity in X and Y, and overall speed.
+    private float mDX;
+    private float mDY;
+    private float mSpeed;
 
     /** Is the engine burning? */
     private boolean mEngineFiring;
@@ -1031,11 +1235,16 @@ public class GameView
     private Drawable mFiringImage;
 
     /** Total fuel for this level */
-    private double mTotalFuel;
+    private float mTotalFuel;
 
     /** Fuel remaining */
-    private double mRemFuel;
-
+    private float mRemFuel;
+    
+    // Time of the last speed, angle and fuel warnings, if we're showing them.
+    private long lastSpeedWarn;
+    private long lastAngleWarn;
+    private long lastFuelWarn;
+    
     /** Allowed angle. */
     private int mGoalAngle;
 
@@ -1055,7 +1264,7 @@ public class GameView
      * Lander heading in degrees, with 0 up, 90 right. Kept in the range
      * 0..360.
      */
-    private double mHeading;
+    private float mHeading;
 
     /** Pixel height of lander image. */
     private int mLanderHeight;
@@ -1072,9 +1281,6 @@ public class GameView
     /** Paint to draw the lines on screen. */
     private Paint mLinePaint;
 
-    /** "Bad" speed-too-high variant of the line color. */
-    private Paint mLinePaintBad;
-
     /** The state of the game. One of READY, RUNNING, PAUSE, LOSE, or WIN */
     private State mMode;
 
@@ -1086,22 +1292,22 @@ public class GameView
      * in degrees, with 0 up, 90 right.  Kept in the range
      * 0..360.
      */
-    private double mTiltAngle;
-
-    /** Scratch rect object. */
-    private RectF mScratchRect;
+    private float mTiltAngle;
 
     /** Number of wins in a row. */
     private int mWinsInARow;
 
     /** X of lander center. */
-    private double mX;
+    private float mX;
 
     /** Y of lander center. */
-    private double mY;
+    private float mY;
 
     /** are the controls inverted? */
     private int tiltInverted = 1;
+
+    // Scratch array for HSV conversions.
+    private float[] scratchHsv;
 
 }
 

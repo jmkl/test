@@ -89,7 +89,7 @@ public class LunarLander
         mLunarView = (GameView) findViewById(R.id.lunar);
 
         // give the LunarView a handle to the TextView used for messages
-        mLunarView.setTextView(findViewById(R.id.overlay), (TextView) findViewById(R.id.text));
+        mLunarView.setTextView((TextView) findViewById(R.id.text));
 
         if (icicle == null) {
             Log.w(this.getClass().getName(), "SIS is null");
