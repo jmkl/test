@@ -28,6 +28,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -81,7 +82,8 @@ public abstract class SurfaceRunner
      * @param   app         The application context we're running in.
      */
     public SurfaceRunner(Context app) {
-        this(app, 0);
+        super(app);
+        init(app, 0);
     }
     
 
@@ -94,7 +96,30 @@ public abstract class SurfaceRunner
      */
     public SurfaceRunner(Context app, int options) {
         super(app);
-        
+        init(app, options);
+    }
+    
+
+    /**
+     * Create a SurfaceRunner instance.
+     * 
+     * @param   app         The application context we're running in.
+     * @param   attrs       Layout attributes for this SurfaceRunner.
+     */
+    public SurfaceRunner(Context app, AttributeSet attrs) {
+        super(app, attrs);
+        init(app, 0);
+    }
+    
+
+    /**
+     * Initialize this SurfaceRunner instance.
+     * 
+     * @param   app         The application context we're running in.
+     * @param   options     Options for this SurfaceRunner.  A bitwise OR of
+     *                      SURFACE_XXX constants.
+     */
+    private void init(Context app, int options) {
         appContext = app;
         surfaceOptions = options;
         animationDelay = 0;
@@ -151,8 +176,7 @@ public abstract class SurfaceRunner
      * @param	holder		The SurfaceHolder whose surface is being created.
      */
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.i(TAG, "surfaceCreated");
-        setEnable(ENABLE_SURFACE);
+        setEnable(ENABLE_SURFACE, "surfaceCreated");
     }
 
 
@@ -177,10 +201,8 @@ public abstract class SurfaceRunner
             return;
         }
         
-        Log.i(TAG, "set size " + width + "x" + height);
-        
         setSize(format, width, height);
-        setEnable(ENABLE_SIZE);
+        setEnable(ENABLE_SIZE, "set size " + width + "x" + height);
     }
 
 
@@ -194,13 +216,13 @@ public abstract class SurfaceRunner
      * @param	holder		The SurfaceHolder whose surface is being destroyed.
      */
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.i(TAG, "surfaceDestroyed");
-        clearEnable(ENABLE_SURFACE);
+        clearEnable(ENABLE_SURFACE, "surfaceDestroyed");
     }
 
 
     /**
-     * The application is starting.
+     * The application is starting.  Applications must call this from their
+     * Activity.onStart() method.
      */
     public void onStart() {
         Log.i(TAG, "onStart");
@@ -211,47 +233,46 @@ public abstract class SurfaceRunner
 
 
     /**
-     * We're resuming the app.
+     * We're resuming the app.  Applications must call this from their
+     * Activity.onResume() method.
      */
     public void onResume() {
-        Log.i(TAG, "onResume");
-        
-        setEnable(ENABLE_RESUMED);
+        setEnable(ENABLE_RESUMED, "onResume");
     }
 
 
     /**
-     * Start the surface running.
+     * Start the surface running.  Applications must call this to set
+     * the surface going.  They may use this to implement their own level
+     * of start/stop control, for example to implement a "pause" button.
      */
     public void surfaceStart() {
-        Log.i(TAG, "surfaceStart");
-        
-        setEnable(ENABLE_STARTED);
+        setEnable(ENABLE_STARTED, "surfaceStart");
     }
 
 
     /**
-     * Stop the surface running.
+     * Stop the surface running.  Applications may call this to stop
+     * the surface running.  They may use this to implement their own level
+     * of start/stop control, for example to implement a "pause" button.
      */
     public void surfaceStop() {
-        Log.i(TAG, "surfaceStop");
-        
-        clearEnable(ENABLE_STARTED);
+        clearEnable(ENABLE_STARTED, "surfaceStop");
     }
 
 
     /**
-     * Pause the app.
+     * Pause the app.  Applications must call this from their
+     * Activity.onPause() method.
      */
     public void onPause() {
-        Log.i(TAG, "onPause");
-        
-        clearEnable(ENABLE_RESUMED);
+        clearEnable(ENABLE_RESUMED, "onPause");
     }
 
 
     /**
-     * The application is closing down.
+     * The application is closing down.  Applications must call
+     * this from their Activity.onStop() method.
      */
     public void onStop() {
         Log.i(TAG, "onStop()");
@@ -273,9 +294,9 @@ public abstract class SurfaceRunner
 	@Override
 	public void onWindowFocusChanged(boolean hasWindowFocus) {
 		if (!hasWindowFocus)
-		    clearEnable(ENABLE_FOCUSED);
+		    clearEnable(ENABLE_FOCUSED, "onWindowFocusChanged");
 		else
-            setEnable(ENABLE_FOCUSED);
+            setEnable(ENABLE_FOCUSED, "onWindowFocusChanged");
 	}
 
     
@@ -298,14 +319,17 @@ public abstract class SurfaceRunner
      * Set the given enable flag, and see if we're good to go.
      * 
      * @param   flag        The flag to set.
+     * @param   why         Short tag explaining why, for debugging.
      */
-    private void setEnable(int flag) {
+    private void setEnable(int flag, String why) {
         boolean enabled1 = false;
         boolean enabled2 = false;
         synchronized (surfaceHolder) {
             enabled1 = (enableFlags & ENABLE_ALL) == ENABLE_ALL;
             enableFlags |= flag;
             enabled2 = (enableFlags & ENABLE_ALL) == ENABLE_ALL;
+            
+            Log.i(TAG, "EN + " + why + " -> " + enableString());
         }
 
         // Are we all set?
@@ -318,14 +342,17 @@ public abstract class SurfaceRunner
      * Clear the given enable flag, and see if we need to shut down.
      * 
      * @param   flag        The flag to clear.
+     * @param   why         Short tag explaining why, for debugging.
      */
-    private void clearEnable(int flag) {
+    private void clearEnable(int flag, String why) {
         boolean enabled1 = false;
         boolean enabled2 = false;
         synchronized (surfaceHolder) {
             enabled1 = (enableFlags & ENABLE_ALL) == ENABLE_ALL;
             enableFlags &= ~flag;
             enabled2 = (enableFlags & ENABLE_ALL) == ENABLE_ALL;
+            
+            Log.i(TAG, "EN - " + why + " -> " + enableString());
         }
 
         // Do we need to stop?
@@ -334,6 +361,23 @@ public abstract class SurfaceRunner
     }
 
     
+    /**
+     * Get the current enable state as a string for debugging.
+     * 
+     * @return              The current enable state as a string.
+     */
+    private String enableString() {
+        char[] buf = new char[5];
+        buf[0] = (enableFlags & ENABLE_SURFACE) != 0 ? 'S' : '-';
+        buf[1] = (enableFlags & ENABLE_SIZE) != 0 ? 'Z' : '-';
+        buf[2] = (enableFlags & ENABLE_RESUMED) != 0 ? 'R' : '-';
+        buf[3] = (enableFlags & ENABLE_STARTED) != 0 ? 'A' : '-';
+        buf[4] = (enableFlags & ENABLE_FOCUSED) != 0 ? 'F' : '-';
+
+        return String.valueOf(buf);
+    }
+
+
     /**
      * Start the animation running.  All the conditions we need to
      * run are present (surface, size, resumed).
@@ -873,7 +917,7 @@ public abstract class SurfaceRunner
 	// ******************************************************************** //
 
     // Application handle.
-    private final Context appContext;
+    private Context appContext;
 
     // The surface manager for the view.
     private SurfaceHolder surfaceHolder = null;
