@@ -23,6 +23,7 @@ package org.hermit.tiltlander;
 import org.hermit.android.core.SurfaceRunner;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -193,8 +194,6 @@ public class GameView
         mEngineFiring = true;
         
         setState(State.READY);
-        
-        setDebugPos(0, 100);
     }
 
 
@@ -239,29 +238,45 @@ public class GameView
         // ignore it.
         if (width < 1 || height < 1)
             return;
-        
+
+        // Get our orientation, so that we can adjust the sensor axes
+        // to match the screen axes.
+        Resources res = parentApp.getResources();
+        Configuration conf = res.getConfiguration();
+        deviceOrientation = conf.orientation;
+
         mCanvasWidth = width;
         mCanvasHeight = height;
-
+        final int minDim = width < height ? width : height;
+        
         // don't forget to resize the background image
         mBackgroundImage = Bitmap.createScaledBitmap(
                 mBackgroundImage, width, height, true);
         
-        gaugeTop = UI_MARGIN;
-        gaugeMid = gaugeTop + UI_BAR_HEIGHT / 2;
-        gaugeBot = gaugeTop + UI_BAR_HEIGHT;
-        gaugeSpdLeft = UI_MARGIN;
-        gaugeSpdRight = gaugeSpdLeft + UI_BAR;
-        gaugeHorizMid = mCanvasWidth / 2;
-        gaugeHorizLeft = gaugeHorizMid - UI_BAR / 2;
-        gaugeHorizRight = gaugeHorizMid + UI_BAR / 2;
-        gaugeFuelRight = width - UI_MARGIN;
-        gaugeFuelLeft = gaugeFuelRight - UI_BAR;
+        // Set a good drawing thickness.
+        lineThickness = minDim / 220;
         
-        gaugeTextSize = 30f;
-        gaugeTextTop = gaugeBot + (int) gaugeTextSize;
+        // Work out how big the gauges should be.
+        gaugeWidth = (mCanvasWidth - UI_MARGIN * 4) / 3;
+        gaugeHeight = gaugeWidth / 6;
+        gaugeTop = UI_MARGIN;
+        gaugeMid = gaugeTop + gaugeHeight / 2;
+        gaugeBot = gaugeTop + gaugeHeight;
+        gaugeSpdLeft = UI_MARGIN;
+        gaugeSpdRight = gaugeSpdLeft + gaugeWidth;
+        gaugeHorizMid = mCanvasWidth / 2;
+        gaugeHorizLeft = gaugeHorizMid - gaugeWidth / 2;
+        gaugeHorizRight = gaugeHorizMid + gaugeWidth / 2;
+        gaugeFuelRight = width - UI_MARGIN;
+        gaugeFuelLeft = gaugeFuelRight - gaugeWidth;
+        
+        gaugeTextSize = minDim / 480f * 30f;
+        gaugeTextBase = gaugeBot + (int) gaugeTextSize;
         mLinePaint.setTypeface(Typeface.DEFAULT_BOLD);
         mLinePaint.setTextSize(gaugeTextSize);
+        
+        // Position the debug info.
+        setDebugPos(0, gaugeTextBase + (int) gaugeTextSize);
     }
  
 
@@ -641,7 +656,7 @@ public class GameView
         
         // Draw the landing pad.
         mLinePaint.setStyle(Paint.Style.STROKE);
-        mLinePaint.setStrokeWidth(UI_PAD_WIDTH);
+        mLinePaint.setStrokeWidth(lineThickness * 2);
         mLinePaint.setColor(UI_PAD_COL);
         canvas.drawLine(mGoalX, 1 + mCanvasHeight - TARGET_PAD_HEIGHT,
                 mGoalX + mGoalWidth, 1 + mCanvasHeight - TARGET_PAD_HEIGHT,
@@ -688,12 +703,12 @@ public class GameView
         // Draw the fuel bar.
         mLinePaint.setStyle(Paint.Style.FILL);
         mLinePaint.setColor(fuelCol);
-        float w = (float) UI_BAR * fuelFrac;
+        float w = (float) gaugeWidth * fuelFrac;
         canvas.drawRect(gaugeFuelLeft, gaugeTop, gaugeFuelLeft + w, gaugeBot, mLinePaint);
         
         // Draw the outline.
         mLinePaint.setStyle(Paint.Style.STROKE);
-        mLinePaint.setStrokeWidth(1f);
+        mLinePaint.setStrokeWidth(lineThickness);
         mLinePaint.setColor(UI_GAUGE_COL);
         canvas.drawRect(gaugeFuelLeft, gaugeTop, gaugeFuelRight, gaugeBot, mLinePaint);
         
@@ -705,7 +720,7 @@ public class GameView
                 mLinePaint.setStyle(Paint.Style.STROKE);
                 mLinePaint.setStrokeWidth(0f);
                 mLinePaint.setColor(fuelCol);
-                canvas.drawText(fuelString, gaugeFuelLeft, gaugeTextTop, mLinePaint);
+                canvas.drawText(fuelString, gaugeFuelLeft, gaugeTextBase, mLinePaint);
                 if (elap > 300 + 400 * fuelFrac * 5f)
                     lastFuelWarn = now;
             }
@@ -747,19 +762,19 @@ public class GameView
         
         // Draw the outline.
         mLinePaint.setStyle(Paint.Style.STROKE);
-        mLinePaint.setStrokeWidth(1f);
+        mLinePaint.setStrokeWidth(lineThickness);
         mLinePaint.setColor(UI_GAUGE_COL);
         canvas.drawLine(gaugeHorizLeft, gaugeTop, gaugeHorizRight, gaugeTop, mLinePaint);
         canvas.drawLine(gaugeHorizLeft, gaugeBot, gaugeHorizRight, gaugeBot, mLinePaint);
         
         // Draw the horizon line.
         mLinePaint.setStyle(Paint.Style.STROKE);
-        mLinePaint.setStrokeWidth(2f);
+        mLinePaint.setStrokeWidth(lineThickness);
         mLinePaint.setColor(horizCol);
         canvas.save();
         canvas.rotate(mHeading, gaugeHorizMid, gaugeMid);
         canvas.drawLine(gaugeHorizLeft, gaugeMid, gaugeHorizRight, gaugeMid, mLinePaint);
-        canvas.drawCircle(gaugeHorizMid, gaugeMid, UI_BAR_HEIGHT / 4f, mLinePaint);
+        canvas.drawCircle(gaugeHorizMid, gaugeMid, gaugeHeight / 4f, mLinePaint);
         canvas.restore();
 
         // Draw the warning message if we're squint.
@@ -770,7 +785,7 @@ public class GameView
                 mLinePaint.setStyle(Paint.Style.STROKE);
                 mLinePaint.setStrokeWidth(0f);
                 mLinePaint.setColor(horizCol);
-                canvas.drawText(angleString, gaugeHorizLeft, gaugeTextTop, mLinePaint);
+                canvas.drawText(angleString, gaugeHorizLeft, gaugeTextBase, mLinePaint);
                 if (elap > 300 + 400 * (1 - warnFrac) * 5f)
                     lastAngleWarn = now;
             }
@@ -822,12 +837,12 @@ public class GameView
         // Draw the speed bar.
         mLinePaint.setStyle(Paint.Style.FILL);
         mLinePaint.setColor(speedCol);
-        float w = (float) UI_BAR * speedFrac;
+        float w = (float) gaugeWidth * speedFrac;
         canvas.drawRect(gaugeSpdLeft, gaugeTop, gaugeSpdLeft + w, gaugeBot, mLinePaint);
         
         // Draw the outline.
         mLinePaint.setStyle(Paint.Style.STROKE);
-        mLinePaint.setStrokeWidth(1f);
+        mLinePaint.setStrokeWidth(lineThickness);
         mLinePaint.setColor(UI_GAUGE_COL);
         canvas.drawRect(gaugeSpdLeft, gaugeTop, gaugeSpdRight, gaugeBot, mLinePaint);
         
@@ -839,7 +854,7 @@ public class GameView
                 mLinePaint.setStyle(Paint.Style.STROKE);
                 mLinePaint.setStrokeWidth(0f);
                 mLinePaint.setColor(speedCol);
-                canvas.drawText(speedString, gaugeSpdLeft, gaugeTextTop, mLinePaint);
+                canvas.drawText(speedString, gaugeSpdLeft, gaugeTextBase, mLinePaint);
                 if (elap > 300 + 400 * (1 - warnFrac) * 5f)
                     lastSpeedWarn = now;
             }
@@ -956,23 +971,29 @@ public class GameView
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
-        switch (action) {
-        case MotionEvent.ACTION_DOWN:
-            if (mMode == State.RUNNING) {
+        
+        // If we're stopped, touch screen to start.
+        if (mMode != State.RUNNING) {
+            if (action == MotionEvent.ACTION_DOWN) {
+                if (mMode == State.PAUSE)
+                    unpause();
+                else
+                    doStart();
+                return true;
+            }
+        } else {
+            switch (action) {
+            case MotionEvent.ACTION_DOWN:
                 setFiring(true);
                 return true;
-            }
-            break;
-        case MotionEvent.ACTION_UP:
-            if (mMode == State.RUNNING) {
+            case MotionEvent.ACTION_UP:
                 setFiring(false);
                 return true;
+            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_CANCEL:
+            default:
+                break;
             }
-            break;
-        case MotionEvent.ACTION_MOVE:
-        case MotionEvent.ACTION_CANCEL:
-        default:
-            break;
         }
 
         return false;
@@ -1010,9 +1031,16 @@ public class GameView
         // plane.  This is pretty easy; the X value is the opposite side,
         // and the absolute magnitude of the current value is the hypotenuse.
         // So sin a = x / m.
-        final float x = values[0];
-        final float y = values[1];
-        final float z = values[2];
+        float x, y, z;
+        if (deviceOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            x = -values[1];
+            y = values[0];
+            z = values[2];
+        } else {
+            x = values[0];
+            y = values[1];
+            z = values[2];
+        }
         float m = (float) Math.sqrt(x*x + y*y + z*z);
         float tilt = m == 0 ? 0  : (float) Math.toDegrees(Math.asin(x / m));
         Log.v(TAG, "tilt: " + x + "," + y + "," + z + " -> " + tilt);
@@ -1123,17 +1151,15 @@ public class GameView
     /*
      * Goal condition constants
      */
-    private static final int TARGET_ANGLE = 18; // > this angle means crash
+    private static final int TARGET_ANGLE = 8; // > this angle means crash
     private static final int TARGET_BOTTOM_PADDING = 17; // px below gear
     private static final int TARGET_PAD_HEIGHT = 8; // how high above ground
-    private static final int TARGET_SPEED = 28; // > this speed means crash
+    private static final int TARGET_SPEED = 32; // > this speed means crash
     private static final double TARGET_WIDTH = 1.6; // width of target
     
     /*
      * UI constants (i.e. the speed & fuel bars)
      */
-    private static final int UI_BAR = 100; // width of the bar(s)
-    private static final int UI_BAR_HEIGHT = 16; // height of the bar(s)
     
     // Margins around the gauges.
     private static final int UI_MARGIN = 10;
@@ -1142,7 +1168,6 @@ public class GameView
     private static final int UI_GAUGE_COL = 0xffffff00;
    
     // Landing pad thickness and colour.
-    private static final int UI_PAD_WIDTH = 3;
     private static final int UI_PAD_COL = 0xff00ffa0;
 
     // Saved state item keys.
@@ -1187,12 +1212,21 @@ public class GameView
 
     // The drawable to use as the background of the animation canvas.
     private Bitmap mBackgroundImage;
+    
+    // Current device orientation, as one of the
+    // Configuration.ORIENTATION_XXX flags.
+    private int deviceOrientation = 0;
 
     // Current size of the surface/canvas.
     private int mCanvasWidth = 1;
     private int mCanvasHeight = 1;
     
+    // Thickness to draw lines with.
+    private int lineThickness;
+    
     // Locations and sizes of the gauges.
+    private int gaugeWidth = 0;
+    private int gaugeHeight = 0;
     private int gaugeTop = 0;
     private int gaugeMid = 0;
     private int gaugeBot = 0;
@@ -1206,7 +1240,7 @@ public class GameView
     
     // Size and position for text labels.
     private float gaugeTextSize = 0;
-    private int gaugeTextTop = 0;
+    private int gaugeTextBase = 0;
     
     // Warning strings for overspeed, bad angle and low fuel.  These are set up
     // from resources.

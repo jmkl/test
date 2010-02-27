@@ -78,11 +78,11 @@ the License.</string>
     <string name="button_license">Show license</string>
     <string name="button_homepage">Home page</string>
 
-    <string name="mode_ready">Lunar Tilt Lander\nPress Up To Play\nTouch screen to thrust\nTilt to turn</string>
-	<string name="mode_pause">Paused\nPress Up To Resume</string>
-	<string name="mode_lose">Game Over\nPress Up To Play</string>
+    <string name="mode_ready">Lunar Tilt Lander\nTouch Screen To Play\nTouch screen to thrust\nTilt to turn</string>
+	<string name="mode_pause">Paused\nTouch Screen To Resume</string>
+	<string name="mode_lose">Game Over\nTouch Screen To Play</string>
 	<string name="mode_win_prefix">Success!\n</string> 
-	<string name="mode_win_suffix">in a row\nPress Up to Play</string> 
+	<string name="mode_win_suffix">in a row\nTouch Screen to Play</string> 
 	
 	<string name="message_stopped">Stopped</string>
 	<string name="message_off_pad">Off Landing Pad</string> 
