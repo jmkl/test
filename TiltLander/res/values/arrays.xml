@@ -49,6 +49,8 @@
 		<item>Playing the Game</item>
 		<item>Skill Levels</item>
 		<item>Menu</item>
+		<item>Settings</item>  
+		<item>@array/help_prefs_titles</item>
 		<item>More Information</item>
 		<item>@array/help_info_titles</item>
     </string-array>
@@ -66,17 +68,47 @@ to play, all the better.\n\
 \n\
 Land the lander on the green landing pad.  Touch the screen
 to fire the engines; you have to be going slow and level when you land, but
-watch your fuel (green bar at top left).  Tilt the device left and right to
+watch your fuel (gauge at top right).  Tilt the device left and right to
 steer.\n\
 \n\
 Use the menu to select different skill levels, pause the game, or start a new
 game.</item>
 
 <item>Tilt Lander is controlled by the touch screen and the
-accelerometer (i.e. tilting the phone).</item>
+accelerometer (i.e. tilting the phone).  Tilting the device rotates the lander
+and touching the screen fires the engines; firing the engines pushes you
+in whatever direction the lander is pointing.  So, to control your descent,
+you will need a combination of careful steering and well-timed engine
+use.  As you don\'t have much fuel, finesse is key.\n\
+\n\
+The direction that the lander turns in response to tilting the device
+can be changed in the settings; see \"Settings\" below.  You can press the
+device\'s menu button at any time to pause.  (It also lets you in to the
+menu; see \"Menu\" below.)\n\
+\n\
+To win, you have to land on the landing pad marked in light blue.  You
+have to be completely on the pad.  You also have to be moving quite slowly,
+and you have to be level, or nearly level.\n\
+\n\
+The three gauges at the top of the screen are designed to help you adjust
+your landing.  The left gauge is speed; it will be green when your speed
+is below the maximum landing speed, and otherwise coloured to show how fast
+you are.  You don\'t have to be green all the way down — you may find that
+saving fuel for last-minute engine burns helps — but this gauge must be
+green when you touch down.\n\
+\n\
+The centre gauge shows how level you are.  Again, green is a safe angle for
+landing; you can tilt as much as you like on the way down, but you must
+have this gauge green to land.\n\
+\n\
+The right-hand gauge is your fuel level.  It will warn you when you get low;
+however, landing with no fuel left is fine, as long as you\'re slow and
+level.\n\
+\n\
+Finally, note that speed includes both your horizontal and vertical speed.</item>
 
-<item>Tilt Lander has three skill levels.  Higher skill levels
-have larger boards, and the most advanced levels have some special features:\n\
+<item>Tilt Lander has three skill levels; you can select which level you
+want to play at in the settings (see \"Settings\" below).  The levels are:\n\
 \n\
 • <b>Easy</b> gives you plenty of fuel, a larger landing pad, and is less
 discriminating about how hard and straight you land.\n\
@@ -90,22 +122,71 @@ off moving at a higher speed.</item>
 <item>The device\'s \"menu\" button pops up a menu containing a number
 of options:\n\
 • <b>New Game</b> starts a new game, abandoning the current game if any.\n\
-• <b>Pause</b> pauses the game in progress.  Tap the screen
-to un-pause.\n\
-• <b>Skill Level</b> prompts you to select a skill level, then starts
-a new game at that skill level.\n\
-• <b>Invert tilt</b> reverses the way the lander turns when you tilt
-the phone.\n\
+• <b>Settings</b> opens up the settings screen; see \"Settings\" below.\n\
 • <b>Help</b> displays this help.\n\
 • <b>About</b> displays version and license information.</item>
+              
+<item>Tilt Lander has a number of user-configurable options in its Settings
+screen.  This screen is reached through the menu, as described under \"Menu\"
+above.  The available settings are detailed in the following sections.</item>
 
-<item>If you would like more information and help with Scrambled Net, or if you
+<item>@array/help_prefs_texts</item>
+
+<item>If you would like more information and help with Tilt Lander, or if you
 want to to report a bug, there are some on-line resources which may be of
 interest, as described in the following sections.</item>
 
 <item>@array/help_info_texts</item>
 
     </string-array>
+            
+            
+    <!-- Section titles for the settings help. -->
+    <string-array name="help_prefs_titles">
+
+<item>Game Settings</item>
+
+<item>Controls Settings</item>
+
+<item>Display Settings</item>
+
+<item>Debug Settings</item>
+
+    </string-array>
+
+    <!-- Section contents for the screens help. -->
+    <string-array name="help_prefs_texts">
+
+<item><b>Skill level</b> sets the game difficulty; see \"Skill Levels\"
+above.</item>
+
+<item><b>Invert tilt control</b> switches the way the lander turns when
+you tilt the device.  Normally, tilting right rotates clockwise; with
+this option set, tilting right rotates anti-clockwise.</item>
+
+<item><b>Screen orientation</b> determines whether and how the application
+will switch its display between portrait and landscape:\n\
+• <b>System default</b> — the system will determine the orientation based
+on the task context.\n\
+• <b>Portrait</b> — lock to portrait mode.\n\
+• <b>Landscape</b> — lock to landscape mode.\n\
+• <b>User preference</b> — the app will switch orientation according to
+the global device settings.\n\
+• <b>Device orientation</b> — follow the physical orientation of the device.\n\
+\n\
+<b>Keep device awake</b> tells the application to keep the screen active
+until the user manually leaves the application.  This is useful if you don\'t
+want the screen to time out; however, be aware that it will quickly drain
+your battery.</item>
+
+<item><b>Show performance stats</b> tells Tilt Lander to display certain
+performance statistics on-screen.  These stats are updated every 5
+seconds and include frames per second, computation time, and
+drawing time.</item>
+
+    </string-array>
+          
+    
     
     <!-- Section titles for the more info help. -->
     <string-array name="help_info_titles">
@@ -128,8 +209,8 @@ Tilt Lander when you post:\n\
 • http://groups.google.com/group/moonblink</item>
 
 <item>If you want to report a bug, you can use the Moonblink Issue tracker.
-Before you post, <b>please</b> look through the existing issues -- including
-closed issues -- before raising a new one.  Your problem may already have been
+Before you post, <b>please</b> look through the existing issues — including
+closed issues — before raising a new one.  Your problem may already have been
 solved.\n\
 \n\
 If you do need to raise a new issue:\n\
