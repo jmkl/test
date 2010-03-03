@@ -25,7 +25,9 @@ package org.hermit.geometry;
  * An immutable point in the plane.  This immutable class represents
  * a point as an X and Y co-ordinate.
  */
-public class Point implements Comparable<Point> {
+public class Point
+    implements Comparable<Point>
+{
 
     // ******************************************************************** //
     // Public Constants.
@@ -44,6 +46,18 @@ public class Point implements Comparable<Point> {
      */
     public static final Point UNKNOWN = new Point(Double.NaN, Double.NaN, true);
 
+    /**
+     * Index value which specifies the X co-ordinate within a point.
+     * @see #getComponent(int)
+     */
+    public static final int X_INDEX = 0;
+
+    /**
+     * Index value which specifies the Y co-ordinate within a point.
+     * @see #getComponent(int)
+     */
+    public static final int Y_INDEX = 1;
+   
 
     // ******************************************************************** //
     // Constructors.
@@ -123,6 +137,25 @@ public class Point implements Comparable<Point> {
      */
     public double getY() {
         return y;
+    }
+
+
+    /**
+     * Get the specified co-ordinate of this point.  This method is useful
+     * where Points are passed to methods which can work on either
+     * co-ordinate.
+     * 
+     * @param   i       Index of the desired co-ordinate; either
+     *                  {@link #X_INDEX} or {@link #Y_INDEX}.
+     * @return          The specified co-ordinate of this point.
+     * @throws  IllegalArgumentException  Bad index.
+     */
+    public double getComponent(int i) throws IllegalArgumentException {
+        if (i == X_INDEX)
+            return x;
+        else if (i == Y_INDEX)
+            return y;
+        throw new IllegalArgumentException("Invalid index " + i + " in getComponent");
     }
 
 

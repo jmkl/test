@@ -131,11 +131,30 @@ public class Observation
 		 * Local apparent sidereal time at the moment of the observation.
 		 */
 		LAST_INSTANT,
-		
+       
+        /**
+         * Nutation in longitude.
+         */
 		NUTATION_IN_LONGITUDE,
+        
+        /**
+         * Nutation in obliquity.
+         */
 		NUTATION_IN_OBLIQUITY,
+        
+        /**
+         * Mean obliquity.
+         */
 		MEAN_OBLIQUITY,
+        
+        /**
+         * True obliquity.
+         */
 		TRUE_OBLIQUITY,
+        
+        /**
+         * Apparent LST.
+         */
 		APPARENT_LST;
 
 		private static void register(OField field, Calc calc) {
