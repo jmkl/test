@@ -60,7 +60,7 @@ public class PassageModel
 		private PassageData() {
 		}
 		
-		static PassageData fromCursor(Cursor c) {
+		static PassageData fromCursor(Cursor c) throws IllegalArgumentException {
 			PassageData pd = new PassageData();
 			int i;
 			
@@ -174,7 +174,7 @@ public class PassageModel
     // ******************************************************************** //
 
 	/**
-	 * Create a crew model.  Private since there is only one instance.
+	 * Create a passage model.  Private since there is only one instance.
 	 * 
 	 * @param	context			Parent application.
 	 */
@@ -208,7 +208,7 @@ public class PassageModel
 		databaseHelper = new DbHelper(appContext);
 	}
 
-	
+
 	/**
 	 * Get the passage model, creating it if it doesn't exist.
 	 * 
@@ -295,30 +295,39 @@ public class PassageModel
      */
     public PassageData loadPassage(long id) {
 		// Get the data for the given passage.
-		Cursor c = database.query(PASS_TABLE,
-				  				  PassField.fields,
-				  				  PassField.PASS_ID.name + "=" + id,
-				  				  null, null, null, null);
-		if (!c.moveToFirst())
-			throw new IllegalArgumentException("Loading invalid passage ID " + id);
-		PassageData pd = PassageData.fromCursor(c);
-		c.close();
-		
-		// Get the number of recorded points, and the most recent position.
-		c = database.query(POINT_TABLE, PointField.fields,
-						   PointField.POINT_PASSAGE_ID.name + "=" + pd.id,
-						   null, null, null,
-						   PointField.POINT_TIME.name + " DESC");
-		pd.numPoints = c.getCount();
-		if (c.moveToFirst()) {
-			int latInd = c.getColumnIndexOrThrow(PointField.POINT_LAT.name);
-			int lonInd = c.getColumnIndexOrThrow(PointField.POINT_LON.name);
-			double lat = c.getDouble(latInd);
-			double lon = c.getDouble(lonInd);
-			pd.lastPos = Position.fromDegrees(lat, lon);
-		} else
-			pd.lastPos = null;
-		c.close();
+        Cursor c = null;
+        PassageData pd = null;
+        try {
+            c = database.query(PASS_TABLE, PassField.fields,
+                               PassField.PASS_ID.name + "=?",
+                               new String[] { "" + id },
+                               null, null, null);
+            if (!c.moveToFirst())
+                throw new IllegalArgumentException("Loading invalid passage ID " + id);
+            pd = PassageData.fromCursor(c);
+        } finally {
+            c.close();
+        }
+
+        // Get the number of recorded points, and the most recent position.
+        try {
+            c = database.query(POINT_TABLE, PointField.fields,
+                               PointField.POINT_PASSAGE_ID.name + "=?",
+                               new String[] { "" + pd.id },
+                               null, null,
+                               PointField.POINT_TIME.name + " DESC");
+            pd.numPoints = c.getCount();
+            if (c.moveToFirst()) {
+                int latInd = c.getColumnIndexOrThrow(PointField.POINT_LAT.name);
+                int lonInd = c.getColumnIndexOrThrow(PointField.POINT_LON.name);
+                double lat = c.getDouble(latInd);
+                double lon = c.getDouble(lonInd);
+                pd.lastPos = Position.fromDegrees(lat, lon);
+            } else
+                pd.lastPos = null;
+        } finally {
+            c.close();
+        }
 
 		return pd;
     }

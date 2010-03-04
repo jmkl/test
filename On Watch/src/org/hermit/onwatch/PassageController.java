@@ -34,6 +34,20 @@ import android.widget.AdapterView.OnItemSelectedListener;
 
 /**
  * This class controls the passage data display.
+ * 
+ * Main pane
+ * 
+ * [   Passage list   ]    -- select passage; doesn't affect running passage if any
+ * passage data
+ * . . .
+ * < [New] [Edit] [Del] >  -- New or Edit pops up editor; warning if running
+ * < [      Start     ] >  -- Start/Stop controls passage
+ *                        
+ * Edit window
+ * 
+ * passage data form
+ * . . .
+ * <        Done        >  -- Commit
  */
 public class PassageController
 	extends OnWatchController
@@ -78,7 +92,7 @@ public class PassageController
 			}
         });
 
-		// Get the relevant widgets.  Set a handler on the start button.
+		// Get the relevant widgets.  Set a handlers on the buttons.
         startPlaceField = (TextView) context.findViewById(R.id.pass_start_place);
         startTimeField = (TextView) context.findViewById(R.id.pass_start_time);
         endPlaceField = (TextView) context.findViewById(R.id.pass_end_place);
@@ -86,20 +100,36 @@ public class PassageController
 		statusDescField = (TextView) context.findViewById(R.id.pass_stat_desc);
 		statusAuxField = (TextView) context.findViewById(R.id.pass_stat_aux);
 		
-		startButton = (Button) context.findViewById(R.id.passage_start_button);
+        Button newButton = (Button) context.findViewById(R.id.passage_new_button);
+        newButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                newPassage();
+            }
+        });
+        
+        // Add the handler to the edit button.
+        Button editButton = (Button) context.findViewById(R.id.passage_edit_button);
+        editButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                editPassage();
+            }
+        });
+
+        Button deleteButton = (Button) context.findViewById(R.id.passage_delete_button);
+        deleteButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                deletePassage();
+            }
+        });
+
+        startButton = (Button) context.findViewById(R.id.passage_start_button);
 		startButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
 				startPassage();
-			}
-		});
-	
-		// Add the handler to the edit button.
-		Button editPass = (Button) context.findViewById(R.id.passage_edit_button);
-		editPass.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				editPassage();
 			}
 		});
 
@@ -139,6 +169,24 @@ public class PassageController
 
 
     /**
+     * Create a new passage.
+     */
+    private void newPassage() {
+        // Save the current passage, if any.
+        if (passageData != null) {
+            savePassage();
+            passageData = null;
+        }
+        
+        // Clear the fields and let the user start typing.  Save will
+        // create the new passage.
+        nameField.setText("");
+        fromField.setText("");
+        toField.setText("");
+    }
+
+
+    /**
      * Edit the current passage.
      */
     private void editPassage() {
@@ -146,6 +194,23 @@ public class PassageController
 		intent.setClass(appContext, PassageEditor.class);
 		appContext.startActivity(intent);
     }
+
+
+    /**
+     * Delete the currently-editing passage.
+     */
+    private void deletePassage() {
+        if (passageData == null)
+            return;
+        
+        passageModel.deletePassage(passageData);
+        passageCursor.requery();
+
+        // Clear the fields.
+        nameField.setText("");
+        fromField.setText("");
+        toField.setText("");
+     }
 
 
     /**
@@ -250,7 +315,7 @@ public class PassageController
 	private TextView statusDescField;
     private TextView statusAuxField;
     
-    // Control buttons.
+    // Control buttons.  We need to keep startButton to change its text.
 	private Button startButton;
     
     // Information on the passage we're currently editing.  Null if no passage.

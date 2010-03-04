@@ -73,9 +73,10 @@ public class Chimer
 
 	
 	/**
-	 * Get the time model, creating it if it doesn't exist.
+	 * Get the chimer instance, creating it if it doesn't exist.
 	 * 
-	 * @param	context			Parent application.
+	 * @param	context        Parent application.
+	 * @return                 The chimer instance.
 	 */
 	public static Chimer getInstance(OnWatch context) {
 		if (chimerInstance == null)

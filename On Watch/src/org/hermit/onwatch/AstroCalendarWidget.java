@@ -21,6 +21,7 @@ import java.util.Calendar;
 import org.hermit.astro.AstroError;
 import org.hermit.astro.Body;
 import org.hermit.astro.Observation;
+import org.hermit.geo.Distance;
 import org.hermit.geo.Position;
 import org.hermit.onwatch.LocationModel.GpsState;
 import org.hermit.onwatch.TimeModel.Field;
@@ -32,6 +33,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewParent;
 
 
 /**
@@ -83,7 +85,7 @@ public class AstroCalendarWidget
 		graphPaint = new Paint();
 		graphPaint.setAntiAlias(true);
 
-        // Get the time model.  Get a callback every 10 minutes to update
+        // Get the time model.  Get a callback every hour to update
         // the display.
         timeModel = TimeModel.getInstance(context);
         timeModel.listen(TimeModel.Field.HOUR, new TimeModel.Listener() {
@@ -109,13 +111,25 @@ public class AstroCalendarWidget
             @Override
             public void newPos(GpsState state, String stateMsg,
                                Position pos, String locMsg) {
-                Log.v(TAG, "Astro: newPos");
-                update();
+                // Update if we have a position for the first time, or
+                // if we're 10 miles from the previous one.
+                Distance d = basePosition == null ? null : pos.distance(basePosition);
+                if (d == null || d.getNm() > 10) {
+                    Log.v(TAG, "Astro: pos update: " +
+                               (d == null ? "no prev" : d.formatNm()));
+                    update();
+                } else
+                    Log.v(TAG, "Astro: pos close: " + d.formatNm());
             }
         });
         
         // Create an astro observation for later use.
         astroObservation = new Observation();
+        
+        // Get our parent window, which is likely a scroll view.
+        ViewParent par = getParent();
+        if (par instanceof View)
+            parentScroller = (View) par;
         
         // Get our initial data set up.
         update();
@@ -125,16 +139,6 @@ public class AstroCalendarWidget
     // ******************************************************************** //
 	// Geometry.
 	// ******************************************************************** //
-	
-    /**
-     * Called to pass us the handle of our parent scroller.
-     * 
-     * @param   astroScroller           Parent scroll widget.
-     */
-    void setParentScroller(View astroScroller) {
-        parentScroller = astroScroller;
-    }
-
     
     /**
      * Get this widget's desired minimum width.
@@ -304,7 +308,7 @@ public class AstroCalendarWidget
         graphPaint.setTextSize(labelSize);
         graphPaint.setColor(MAIN_LABEL_COL);
         float textOff = labelSize + 6;
-        float x = parentScroller.getScrollX();
+        float x = parentScroller != null ? parentScroller.getScrollX() : 0;
         float bodyY = 0;
         for (Body.Name n : DISP_BODIES) {
             canvas.drawText(n.name, x, bodyY + textOff, graphPaint);
@@ -668,12 +672,12 @@ public class AstroCalendarWidget
 	// Private Data.
 	// ******************************************************************** //
 
-	// The scrolling window we're in.
-	private View parentScroller;
+	// The scrolling window we're in.  Null if not provided by the app.
+	private View parentScroller = null;
 	
     // The time and location models.
-    private TimeModel timeModel;
-    private LocationModel locationModel;
+    private TimeModel timeModel = null;
+    private LocationModel locationModel = null;
 
 	// Size of the display.
 	private int dispWidth = 0;

@@ -41,6 +41,31 @@
 		</TableRow>
 	</TableLayout>
 
+	<!--  The control button bar. -->
+	
+	<LinearLayout android:orientation="horizontal"
+		android:layout_width="fill_parent" android:layout_height="wrap_content">
+
+		<Button android:id="@+id/passage_new_button"
+			android:layout_width="fill_parent" android:layout_height="fill_parent"
+			android:layout_weight="1" android:background="@drawable/btn_thin"
+			android:text="@string/passage_new" android:textColor="#ffffff"
+			android:textSize="24dip" />
+
+		<Button android:id="@+id/passage_edit_button"
+			android:layout_width="fill_parent" android:layout_height="fill_parent"
+			android:layout_weight="1" android:background="@drawable/btn_thin"
+			android:text="@string/passage_edit" android:textColor="#ffffff"
+			android:textSize="24dip" />
+
+		<Button android:id="@+id/passage_delete_button"
+			android:layout_width="fill_parent" android:layout_height="fill_parent"
+			android:layout_weight="1" android:background="@drawable/btn_thin"
+			android:text="@string/passage_delete" android:textColor="#ffffff"
+			android:textSize="24dip" />
+
+	</LinearLayout>
+
 	<!--  The bottom button bar. -->
 	
 	<LinearLayout android:orientation="horizontal"
@@ -54,12 +79,6 @@
 			android:layout_width="fill_parent" android:layout_height="fill_parent"
 			android:layout_weight="1" android:background="@drawable/btn_thin"
 			android:text="@string/passage_start" android:textColor="#ffffff"
-			android:textSize="24dip" />
-
-		<Button android:id="@+id/passage_edit_button"
-			android:layout_width="fill_parent" android:layout_height="fill_parent"
-			android:layout_weight="1" android:background="@drawable/btn_thin"
-			android:text="@string/passage_edit" android:textColor="#ffffff"
 			android:textSize="24dip" />
 
 		<ImageButton android:id="@+id/flip_right"

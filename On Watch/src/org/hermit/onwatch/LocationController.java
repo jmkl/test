@@ -17,7 +17,6 @@
 package org.hermit.onwatch;
 
 
-import org.hermit.onwatch.LocationModel.GpsState;
 import org.hermit.utils.Angle;
 
 import android.app.Activity;
@@ -54,7 +53,7 @@ public class LocationController
 		locationModel = LocationModel.getInstance(context);
 		locationModel.listen(new LocationModel.Listener() {
 			@Override
-			public void locChange(GpsState state, String stateMsg,
+			public void locChange(LocationModel.GpsState state, String stateMsg,
 								  Location loc, String locMsg) {
 				update(state, stateMsg, loc, locMsg);
 			}
@@ -72,7 +71,7 @@ public class LocationController
     /**
      * Display the current date and time.
      */
-	private void update(GpsState gpsState, String stateMsg,
+	private void update(LocationModel.GpsState gpsState, String stateMsg,
 			  			Location l, String locMsg)
 	{
 //		Log.v(TAG, "Location Display: update");

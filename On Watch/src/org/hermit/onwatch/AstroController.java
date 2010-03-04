@@ -17,12 +17,13 @@
 package org.hermit.onwatch;
 
 
-import android.view.View;
-
-
 /**
  * Controller for the astronomical data view for OnWatch.  This class
  * displays interesting astronomical info such as rise and set times.
+ * 
+ * <p>Currently nothing is needed here.  However, it remains for completeness
+ * of the controller architecture, and as a placeholder for future
+ * functionality.
  *
  * @author	Ian Cameron Smith
  */
@@ -41,30 +42,7 @@ public class AstroController
 	 */
 	public AstroController(OnWatch context) {
 		super(context);
-		
-		// Get the astro calendar widget's handle.  Tell it the ID
-		// of it's parent scroller.
-        astroCal = (AstroCalendarWidget) context.findViewById(R.id.astro_calendar);
-        View astroScroller = context.findViewById(R.id.astro_scroller);
-        astroCal.setParentScroller(astroScroller);
 	}
 	
-
-	// ******************************************************************** //
-	// Class Data.
-	// ******************************************************************** //
-
-    // Debugging tag.
-	@SuppressWarnings("unused")
-	private static final String TAG = "onwatch";
-
-
-	// ******************************************************************** //
-	// Private Data.
-	// ******************************************************************** //
-
-    // The astronomical calendar widget.
-    private AstroCalendarWidget astroCal;
-
 }
 

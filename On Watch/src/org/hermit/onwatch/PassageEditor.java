@@ -25,12 +25,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.SimpleCursorAdapter;
-import android.widget.Spinner;
-import android.widget.AdapterView.OnItemSelectedListener;
 
 
 /**
@@ -74,55 +70,12 @@ public class PassageEditor
         passageModel.open();
         passageCursor = passageModel.getPassageCursor();
 
-        // Get the passage selector widget.  Give it an adapter which maps
-        // on to the passage names list.
-        passagePicker = (Spinner) findViewById(R.id.passage_picker);
-        passageAdapter = new SimpleCursorAdapter(this,
-        							android.R.layout.simple_spinner_item,
-        							passageCursor,
-        							new String[] { "name" },
-        							new int[] { android.R.id.text1 });
-        passageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        passagePicker.setAdapter(passageAdapter);
-
-        passagePicker.setOnItemSelectedListener(new OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> view, View item,
-									   int pos, long id) {
-				selectPassage(id);
-			}
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-        });
-
         // Get the data fields.
         nameField = (EditText) findViewById(R.id.passage_name_field);
         fromField = (EditText) findViewById(R.id.passage_from_field);
         toField = (EditText) findViewById(R.id.passage_to_field);
 
         // Set up the handlers for the control buttons.
-        Button newb = (Button) findViewById(R.id.passage_new_button);
-        newb.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				newPassage();
-			}
-        });
-        Button save = (Button) findViewById(R.id.passage_save_button);
-        save.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				savePassage();
-			}
-        });
-        Button delete = (Button) findViewById(R.id.passage_delete_button);
-        delete.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				deletePassage();
-			}
-        });
         Button done = (Button) findViewById(R.id.passage_done_button);
         done.setOnClickListener(new OnClickListener() {
 			@Override
@@ -208,39 +161,6 @@ public class PassageEditor
 	// ******************************************************************** //
 
     /**
-     * Create a new passage.
-     */
-    private void newPassage() {
-    	// Save the current passage, if any.
-    	if (passageData != null) {
-    		savePassage();
-    		passageData = null;
-    	}
-    	
-    	// Clear the fields and let the user start typing.  Save will
-    	// create the new passage.
-        nameField.setText("");
-        fromField.setText("");
-        toField.setText("");
-    }
-
-
-    /**
-     * Select and edit the indicated passage.
-     * 
-     * @param	id			ID of the passage to load.
-     */
-    private void selectPassage(long id) {
-    	// Save the current passage, if any.
-    	if (passageData != null)
-    		savePassage();
-    	
-    	// Load and display the requested passage.
-    	showPassage(passageModel.loadPassage(id));
-    }
-
-
-    /**
      * Save the passage data in the editor.
      */
     private void savePassage() {
@@ -259,23 +179,6 @@ public class PassageEditor
         passageModel.savePassage(passageData);
     	passageCursor.requery();
     }
-
-
-    /**
-     * Delete the currently-editing passage.
-     */
-    private void deletePassage() {
-    	if (passageData == null)
-    		return;
-    	
-        passageModel.deletePassage(passageData);
-    	passageCursor.requery();
-
-    	// Clear the fields.
-        nameField.setText("");
-        fromField.setText("");
-        toField.setText("");
-     }
 
 
     /**
@@ -324,13 +227,6 @@ public class PassageEditor
 
     // Cursor used to access the passage list.
     private Cursor passageCursor = null;
-
-    // The passage selector widget.
-    private Spinner passagePicker;
-    
-    // The data adapter used to map the passage list from the database onto
-    // the passage picker.
-    private SimpleCursorAdapter passageAdapter;
 
     // Input field widgets.
     private EditText nameField;
