@@ -17,11 +17,15 @@
 package org.hermit.onwatch;
 
 
-import org.hermit.onwatch.PassageModel.PassageData;
+import org.hermit.provider.PassageData;
 
 import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -62,27 +66,56 @@ public class PassageEditor
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
+        // Figure out what we're being asked to do here.
+        final Intent intent = getIntent();
+        final String action = intent.getAction();
+        if (action == null) {
+            Log.e(TAG, "No action specified, exiting");
+            finish();
+            return;
+        }
+        final Uri uri = intent.getData();
+        if (uri == null) {
+            Log.e(TAG, "No URI specified, exiting");
+            finish();
+            return;
+        }
+        
+        if (action.equals(Intent.ACTION_EDIT)) {
+            // Requested to edit: set that state, and the data being edited.
+            inserting = false;
+            passageUri = uri;
+        } else if (action.equals(Intent.ACTION_INSERT)) {
+            // Requested to insert: set that state, and create a new entry
+            // in the container.
+            inserting = true;
+            passageUri = getContentResolver().insert(uri, null);
+
+            // If we were unable to create a new note, then just finish
+            // this activity.  A RESULT_CANCELED will be sent back to the
+            // original activity if they requested a result.
+            if (passageUri == null) {
+                Log.e(TAG, "Failed to insert new passage into " + uri);
+                finish();
+                return;
+            }
+
+            // The new entry was created, so assume all will end well and
+            // set the result to be returned.
+            Intent result = new Intent();
+            result.setAction(passageUri.toString());
+            setResult(RESULT_OK, result);
+        } else {
+            Log.e(TAG, "Unknown action \"" + action + "\", exiting");
+            finish();
+            return;
+        }
+
         // Create the application GUI.
-        setContentView(R.layout.passage_editor);
+        setupGui();
 
-        // Get or create the passage model.
-		passageModel = PassageModel.getInstance(this);
-        passageModel.open();
-        passageCursor = passageModel.getPassageCursor();
-
-        // Get the data fields.
-        nameField = (EditText) findViewById(R.id.passage_name_field);
-        fromField = (EditText) findViewById(R.id.passage_from_field);
-        toField = (EditText) findViewById(R.id.passage_to_field);
-
-        // Set up the handlers for the control buttons.
-        Button done = (Button) findViewById(R.id.passage_done_button);
-        done.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				close();
-			}
-        });
+        // Get the passage we're editing.
+        passageCursor = managedQuery(passageUri, PROJECTION, null, null, null);
     }
     
     
@@ -100,6 +133,8 @@ public class PassageEditor
         Log.i(TAG, "onResume()");
         
         super.onResume();
+        
+        showPassage();
     }
 
 
@@ -121,6 +156,8 @@ public class PassageEditor
         Log.i(TAG, "onPause()");
         
         super.onPause();
+        
+        savePassage();
     }
 
     
@@ -151,33 +188,69 @@ public class PassageEditor
         Log.i(TAG, "onDestroy()");
         
         super.onDestroy();
-        
-        passageModel.close();
     }
     
 
 	// ******************************************************************** //
-	// Passage Data Management.
+	// User Interface.
 	// ******************************************************************** //
+    
+    /**
+     * Set up the user interface.
+     */
+    private void setupGui() {
+        setContentView(R.layout.passage_editor);
+
+        // Get the data fields.
+        nameField = (EditText) findViewById(R.id.passage_name_field);
+        fromField = (EditText) findViewById(R.id.passage_from_field);
+        toField = (EditText) findViewById(R.id.passage_to_field);
+
+        // Set up the handlers for the control buttons.
+        Button done = (Button) findViewById(R.id.passage_done_button);
+        done.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                close();
+            }
+        });
+    }
+
+
+    // ******************************************************************** //
+    // Passage Data Management.
+    // ******************************************************************** //
 
     /**
      * Save the passage data in the editor.
      */
     private void savePassage() {
-        String name = nameField.getText().toString();
-        String from = fromField.getText().toString();
-        String to = toField.getText().toString();
-    	if (passageData == null) {
-			Log.i(TAG, "PEdit: new: " + name);
-    		passageData = new PassageData(name, from, to, null);
-    	} else {
-			Log.i(TAG, "PEdit: Update: " + passageData.name + " -> " + name);
-    		passageData.name = name;
-    		passageData.start = from;
-    		passageData.dest = to;
+        // The user is going somewhere else, so make sure their current
+        // changes are safely saved away in the provider.  We don't need
+        // to do this if only editing.
+    	if (passageCursor != null) {
+            String name = nameField.getText().toString();
+            String from = fromField.getText().toString();
+            String to = toField.getText().toString();
+
+    	    // If we are creating a new passage, then we want to also create
+    	    // an initial title for it, if there isn't one.
+    	    if (inserting && TextUtils.isEmpty(name)) {
+    	        if (!TextUtils.isEmpty(from) && !TextUtils.isEmpty(to))
+    	            name = from + " to " + to;
+    	    }
+
+    	    // Write the passage back into the provider.
+    	    ContentValues values = new ContentValues();
+    	    values.put(PassageData.Passages.NAME, name);
+    	    values.put(PassageData.Passages.START_NAME, from);
+    	    values.put(PassageData.Passages.DEST_NAME, to);
+
+    	    // Commit all of our changes to persistent storage.  When the
+    	    // update completes the content provider will notify the
+    	    // cursor of the change, which will cause the UI to be updated.
+    	    getContentResolver().update(passageUri, values, null, null);
     	}
-        passageModel.savePassage(passageData);
-    	passageCursor.requery();
     }
 
 
@@ -186,13 +259,29 @@ public class PassageEditor
      * 
      * @param	pd			The passage to edit.
      */
-    private void showPassage(PassageData pd) {
-    	passageData = pd;
-    	
-    	// Set the fields.
-        nameField.setText(passageData.name);
-        fromField.setText(passageData.start);
-        toField.setText(passageData.dest);
+    private void showPassage() {
+        // If we didn't have any trouble retrieving the data, it is now
+        // time to get at the stuff.
+        if (passageCursor != null) {
+            // Make sure we are at the one and only row in the cursor.
+            passageCursor.moveToFirst();
+
+            // Modify our overall title depending on the mode we are running in.
+            if (!inserting)
+                setTitle(getText(R.string.passage_edit_title));
+            else
+                setTitle(getText(R.string.passage_new_title));
+
+            // Set up the editing fields.
+            String name = passageCursor.getString(COLUMN_NAME);
+            nameField.setText(name);
+            String from = passageCursor.getString(COLUMN_START_NAME);
+            fromField.setText(from);
+            String dest = passageCursor.getString(COLUMN_DEST_NAME);
+            toField.setText(dest);
+        } else {
+            setTitle(getText(R.string.passage_error_title));
+        }
     }
 
 
@@ -200,10 +289,7 @@ public class PassageEditor
      * Close the editor.
      */
     private void close() {
-    	// Save the current passage, if any.
-    	if (passageData != null)
-    		savePassage();
-    	
+        savePassage();
     	passageCursor.close();
     	finish();
     }
@@ -215,26 +301,40 @@ public class PassageEditor
 
     // Debugging tag.
 	@SuppressWarnings("unused")
-	private static final String TAG = "onwatch";
+	private static final String TAG = "PassageEditor";
+
+    // Standard projection for reading a passage.
+    private static final String[] PROJECTION = new String[] {
+        PassageData.Passages._ID,
+        PassageData.Passages.NAME,
+        PassageData.Passages.START_NAME,
+        PassageData.Passages.DEST_NAME,
+    };
     
+    // The indices of the columns in the projection.
+    private static final int COLUMN_NAME = 1;
+    private static final int COLUMN_START_NAME = 2;
+    private static final int COLUMN_DEST_NAME = 3;
+
 
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-	
-	// The passage model.
-	private PassageModel passageModel;
-
-    // Cursor used to access the passage list.
-    private Cursor passageCursor = null;
 
     // Input field widgets.
     private EditText nameField;
     private EditText fromField;
     private EditText toField;
     
-    // Information on the passage we're currently editing.  Null if no passage.
-	private PassageData passageData = null;
+    // URI of the passage we're currently editing.
+    private Uri passageUri;
+
+    // Cursor used to access the passage list.
+    private Cursor passageCursor = null;
+    
+    // Flag if we are inserting a new passage, as opposed to editing an
+    // existing one.
+    private boolean inserting = false;
 
 }
 

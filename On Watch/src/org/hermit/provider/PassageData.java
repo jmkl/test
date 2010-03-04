@@ -16,88 +16,56 @@
 
 package org.hermit.provider;
 
-import android.net.Uri;
-import android.provider.BaseColumns;
+
+import org.hermit.android.provider.TableProvider;
 
 
 /**
  * Convenience definitions for the passage data content provider.
  */
-public final class PassageData {
-    
-    /**
-     * Overall authority.
-     */
-    public static final String AUTHORITY = "org.hermit.provider.PassageData";
-
+public final class PassageData
+    extends TableProvider.Db
+{
     
     /**
      * Configuration table.
      */
-    public static final class Config implements BaseColumns {
-
-        /**
-         * The content:// style URL for this table
-         */
-        public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/config");
-
-        /**
-         * Basic type for this table.
-         */
-        public static final String BASE_TYPE = "vnd.hermit.org.passage.config";
-
-        /**
-         * The MIME type of {@link #CONTENT_URI} providing a directory of notes.
-         */
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + BASE_TYPE;
-
-        /**
-         * The MIME type of a {@link #CONTENT_URI} sub-directory of a single note.
-         */
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + BASE_TYPE;
-
-        /**
-         * The default sort order for this table.
-         */
-        public static final String DEFAULT_SORT_ORDER = "current ASC";
+    public static final class Config
+        extends TableProvider.Table
+    {
 
         /**
          * The ID of the current passage.
          * <P>Type: INTEGER (long)</P>
          */
         public static final String CURRENT = "current";
+        
+        // Definitions of the fields.
+        private static final String[][] FIELDS = {
+            { CURRENT, "INTEGER" },
+        };
+        
+        // The database table name.
+        private static final String TABLE_NAME = "config";
+        
+        // Basic type for this table.
+        private static final String BASE_TYPE = "vnd.hermit.org.passage.config";
+
+        // The default sort order for this table.
+        private static final String SORT_ORDER = "current ASC";
+        
+        private Config() {
+            super(TABLE_NAME, BASE_TYPE, SORT_ORDER, FIELDS);
+        }
     }
 
 
     /**
      * Passages table.
      */
-    public static final class Passages implements BaseColumns {
-        
-        /**
-         * The content:// style URL for this table.
-         */
-        public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/passage");
-
-        /**
-         * Basic type for this table.
-         */
-        public static final String BASE_TYPE = "vnd.hermit.org.passage.passage";
-
-        /**
-         * The MIME type of {@link #CONTENT_URI} providing a directory of notes.
-         */
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + BASE_TYPE;
-
-        /**
-         * The MIME type of a {@link #CONTENT_URI} sub-directory of a single note.
-         */
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + BASE_TYPE;
-
-        /**
-         * The default sort order for this table.
-         */
-        public static final String DEFAULT_SORT_ORDER = "start_time ASC";
+    public static final class Passages
+        extends TableProvider.Table
+    {
 
         /**
          * The name of the passage.
@@ -158,38 +126,42 @@ public final class PassageData {
          * <P>Type: INTEGER (long)</P>
          */
         public static final String DISTANCE = "distance";
+        
+        // Definitions of the fields.
+        private static final String[][] FIELDS = {
+            { NAME, "TEXT" },
+            { START_NAME, "TEXT" },
+            { START_TIME, "INTEGER" },
+            { START_LAT, "REAL" },
+            { START_LON, "REAL" },
+            { DEST_NAME, "TEXT" },
+            { DEST_TIME, "INTEGER" },
+            { DEST_LAT, "REAL" },
+            { DEST_LON, "REAL" },
+            { DISTANCE, "INTEGER" },
+        };
+        
+        // The database table name.
+        private static final String TABLE_NAME = "passages";
+        
+        // Basic type for this table.
+        private static final String BASE_TYPE = "vnd.hermit.org.passage.passage";
+
+        // The default sort order for this table.
+        private static final String SORT_ORDER = "start_time ASC";
+        
+        private Passages() {
+            super(TABLE_NAME, BASE_TYPE, SORT_ORDER, FIELDS);
+        }
     }
 
 
     /**
-     * Passages table.
+     * Points table.
      */
-    public static final class Points implements BaseColumns {
-        
-        /**
-         * The content:// style URL for this table.
-         */
-        public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/point");
-
-        /**
-         * Basic type for this table.
-         */
-        public static final String BASE_TYPE = "vnd.hermit.org.passage.point";
-
-        /**
-         * The MIME type of {@link #CONTENT_URI} providing a directory of notes.
-         */
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + BASE_TYPE;
-
-        /**
-         * The MIME type of a {@link #CONTENT_URI} sub-directory of a single note.
-         */
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + BASE_TYPE;
-
-        /**
-         * The default sort order for this table.
-         */
-        public static final String DEFAULT_SORT_ORDER = "time ASC";
+    public static final class Points
+        extends TableProvider.Table
+    {
 
         /**
          * The name of the point, if any.
@@ -232,6 +204,49 @@ public final class PassageData {
          * <P>Type: INTEGER (long)</P>
          */
         public static final String TOT_DIST = "tot_dist";
+        
+        // Definitions of the fields.
+        private static final String[][] FIELDS = {
+            { NAME, "TEXT" },
+            { PASSAGE, "INTEGER" },
+            { TIME, "INTEGER" },
+            { LAT, "REAL" },
+            { LON, "REAL" },
+            { DIST, "INTEGER" },
+            { TOT_DIST, "INTEGER" },
+        };
+        
+        // The database table name.
+        private static final String TABLE_NAME = "points";
+        
+        // Basic type for this table.
+        private static final String BASE_TYPE = "vnd.hermit.org.passage.point";
+
+        // The default sort order for this table.
+        private static final String SORT_ORDER = "time ASC";
+        
+        private Points() {
+            super(TABLE_NAME, BASE_TYPE, SORT_ORDER, FIELDS);
+        }
+    }
+    
+    // Database name and version.
+    private static final String DB_NAME = "passages.db";
+    private static final int DB_VER = 1;
+    
+    // Overall authority.
+    private static final String AUTHORITY = "org.hermit.provider.PassageData";
+
+    // Tables in this provider.
+    private static final TableProvider.Table[] TABLES = {
+        new Config(),
+    };
+    
+    /**
+     * Construct an instance of this schema.
+     */
+    public PassageData() {
+        super(DB_NAME, DB_VER, AUTHORITY, TABLES);
     }
 
 }

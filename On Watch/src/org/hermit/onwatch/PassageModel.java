@@ -47,8 +47,8 @@ public class PassageModel
      * all the data on a passage, and provides methods to convert
      * to and from database records.
      */
-	static final class PassageData {
-		PassageData(String name, String from, String to, Position dest) {
+	static final class PassageRecord {
+		PassageRecord(String name, String from, String to, Position dest) {
 			this.name = name;
 			this.start = from;
 			this.dest = to;
@@ -57,11 +57,11 @@ public class PassageModel
 			this.distance = Distance.ZERO;
 		}
 		
-		private PassageData() {
+		private PassageRecord() {
 		}
 		
-		static PassageData fromCursor(Cursor c) throws IllegalArgumentException {
-			PassageData pd = new PassageData();
+		static PassageRecord fromCursor(Cursor c) throws IllegalArgumentException {
+			PassageRecord pd = new PassageRecord();
 			int i;
 			
 			i = c.getColumnIndexOrThrow(PassField.PASS_ID.name);
@@ -293,10 +293,10 @@ public class PassageModel
      * @return              The passage data for the passage with the
      *                      given ID.
      */
-    public PassageData loadPassage(long id) {
+    public PassageRecord loadPassage(long id) {
 		// Get the data for the given passage.
         Cursor c = null;
-        PassageData pd = null;
+        PassageRecord pd = null;
         try {
             c = database.query(PASS_TABLE, PassField.fields,
                                PassField.PASS_ID.name + "=?",
@@ -304,7 +304,7 @@ public class PassageModel
                                null, null, null);
             if (!c.moveToFirst())
                 throw new IllegalArgumentException("Loading invalid passage ID " + id);
-            pd = PassageData.fromCursor(c);
+            pd = PassageRecord.fromCursor(c);
         } finally {
             c.close();
         }
@@ -338,15 +338,15 @@ public class PassageModel
      * 
      * @return              The passage data for the most recent passage.
      */
-    public PassageData loadNewestPassage() {
+    public PassageRecord loadNewestPassage() {
     	// Query for the newest passage.
     	Cursor c = database.query(PASS_TABLE,
     							  PassField.fields,
     							  null, null, null, null,
     							  PassField.PASS_START_TIME.name + " DESC", "1");
-    	PassageData pd = null;
+    	PassageRecord pd = null;
     	if (c.moveToFirst())
-    		pd = PassageData.fromCursor(c);
+    		pd = PassageRecord.fromCursor(c);
     	c.close();
 
     	return pd;
@@ -361,7 +361,7 @@ public class PassageModel
 	 * @return				The row ID of the newly inserted or updated
 	 * 						passage, or -1 if an error occurred.
 	 */
-	public long savePassage(PassageData pd) {
+	public long savePassage(PassageRecord pd) {
 		ContentValues values = new ContentValues();
 		pd.toContentValues(values);
 		
@@ -386,7 +386,7 @@ public class PassageModel
 	 * 
 	 * @param	pd			The passage data to delete.
 	 */
-	public void deletePassage(PassageData pd) {
+	public void deletePassage(PassageRecord pd) {
 		// Delete all points belonging to the passage.
     	database.delete(POINT_TABLE,
     					PointField.POINT_PASSAGE_ID.name + "=" + pd.id,
@@ -410,7 +410,7 @@ public class PassageModel
 	 * @param  id           The ID of the desired passage.
 	 * @return				The passage data for the selected passage.
 	 */
-	public PassageData selectPassage(long id) {
+	public PassageRecord selectPassage(long id) {
 		// Get the data for the given passage.
 		passageData = loadPassage(id);
 
@@ -672,7 +672,7 @@ public class PassageModel
 	 
 	// Database for crew data.  Bump the version number to nuke the data
 	// and start over.
-	private static final String DB_NAME = "PassageData";
+	private static final String DB_NAME = "PassageRecord";
 	private static final int DB_VER = 5;
 
 	// Configuration data table.
@@ -768,7 +768,7 @@ public class PassageModel
     private SQLiteDatabase database = null;
     
     // Information on the current passage.  Null if no passage.
-	private PassageData passageData = null;
+	private PassageRecord passageData = null;
  
 }
 

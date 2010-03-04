@@ -17,7 +17,7 @@
 package org.hermit.onwatch;
 
 
-import org.hermit.onwatch.PassageModel.PassageData;
+import org.hermit.onwatch.PassageModel.PassageRecord;
 
 import android.content.Context;
 import android.content.Intent;
@@ -319,7 +319,7 @@ public class PassageController
 	private Button startButton;
     
     // Information on the passage we're currently editing.  Null if no passage.
-	private PassageData passageData = null;
+	private PassageRecord passageData = null;
 
 }
 
