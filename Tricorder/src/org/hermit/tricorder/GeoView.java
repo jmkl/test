@@ -229,6 +229,22 @@ class GeoView
     }
 
 
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Set the units in which to display numeric data.
+     * 
+     * @param   unit            Units to display.
+     */
+    @Override
+    void setDataUnits(Tricorder.Unit unit) {
+        netElement.setDataUnits(unit);
+        gpsElement.setDataUnits(unit);
+    }
+
+
 	// ******************************************************************** //
 	// Data Management.
 	// ******************************************************************** //

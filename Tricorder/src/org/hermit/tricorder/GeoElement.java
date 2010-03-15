@@ -202,6 +202,21 @@ class GeoElement
 	}
 	
 
+    // ******************************************************************** //
+    // Configuration.
+    // ******************************************************************** //
+
+    /**
+     * Set the units in which to display numeric data.
+     * 
+     * @param   unit            Units to display.
+     */
+    void setDataUnits(Tricorder.Unit unit) {
+        dataUnits = unit;
+        displayLocation(currentLocation, System.currentTimeMillis());
+    }
+
+
 	// ******************************************************************** //
 	// Data Management.
 	// ******************************************************************** //
@@ -317,14 +332,31 @@ class GeoElement
 		CharFormatter.formatDegMin(pos[1][0], 0, l.getLongitude(), 'E', 'W', false);
 
 		if (l.hasAltitude()) {
-		    CharFormatter.formatFloat(pos[0][2], 0, l.getAltitude(), 7, 1, true);
-		    pos[0][2][7] = 'm';
+		    double metres = l.getAltitude();
+		    if (dataUnits == Tricorder.Unit.SI) {
+		        CharFormatter.formatFloat(pos[0][2], 0, metres, 7, 1, true);
+		        pos[0][2][7] = 'm';
+		    } else {
+		        int feet = (int) Math.round(metres / 0.3048);
+                CharFormatter.formatInt(pos[0][2], 0, feet, 6, true);
+                pos[0][2][6] = 'f';
+                pos[0][2][7] = 't';
+		    }
 		} else {
 		    CharFormatter.blank(pos[0][1], 0, -1);
 		    CharFormatter.blank(pos[0][2], 0, -1);
 		}
-		CharFormatter.formatFloat(pos[1][2], 0, l.getAccuracy(), 7, 1, false);
-		pos[1][2][7] = 'm';
+		
+		double acc = l.getAccuracy();
+        if (dataUnits == Tricorder.Unit.SI) {
+            CharFormatter.formatFloat(pos[1][2], 0, acc, 7, 1, false);
+            pos[1][2][7] = 'm';
+        } else {
+            int feet = (int) Math.round(acc / 0.3048);
+            CharFormatter.formatInt(pos[1][2], 0, feet, 6, false);
+            pos[1][2][6] = 'f';
+            pos[1][2][7] = 't';
+        }
 
 		if (course != null) {
 		    if (l.hasBearing()) {
@@ -334,8 +366,15 @@ class GeoElement
 		        CharFormatter.blank(course[0][1], 0, -1);
 		    CharFormatter.blank(course[0][2], 0, -1);
 		    if (l.hasSpeed()) {
-		        CharFormatter.formatFloat(course[0][4], 0, l.getSpeed(), 5, 1, false);
-		        CharFormatter.formatString(course[0][4], 5, "m/s", -1);
+		        double ms = l.getSpeed();
+		        if (dataUnits == Tricorder.Unit.SI) {
+	                CharFormatter.formatFloat(course[0][4], 0, ms, 5, 1, false);
+	                CharFormatter.formatString(course[0][4], 5, "m/s", -1);
+		        } else {
+		            double mph = ms / 0.44704;
+                    CharFormatter.formatFloat(course[0][4], 0, mph, 5, 1, false);
+                    CharFormatter.formatString(course[0][4], 5, "mph", -1);
+		        }
 		    } else
 		        CharFormatter.blank(course[0][4], 0, -1);
 		}
@@ -431,6 +470,9 @@ class GeoElement
 
 	// The left-side bar (just a solid colour bar).
 	private Gauge rightBar;
+    
+    // Units in which to display data.
+    private Tricorder.Unit dataUnits = Tricorder.Unit.SI;
 
     // Text field buffers for the data display.
     private char[][][] posBuffers;

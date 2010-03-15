@@ -308,6 +308,17 @@ class TricorderView
     }
 
 
+    /**
+     * Set the units in which to display numeric data.
+     * 
+     * @param   unit            Units to display.
+     */
+    void setDataUnits(Tricorder.Unit unit) {
+        for (ViewDefinition vdef : ViewDefinition.values())
+            vdef.view.setDataUnits(unit);
+    }
+
+
 	// ******************************************************************** //
 	// Input.
 	// ******************************************************************** //

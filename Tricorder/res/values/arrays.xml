@@ -15,6 +15,18 @@
         <item>QUIET</item>
         <item>FULL</item>  
     </string-array>
+       
+    <!-- Entry names for the units menu. -->
+    <string-array name="prefs_units_entries">
+        <item>SI (metric)</item>
+        <item>Imperial</item>
+    </string-array>
+
+    <!-- Values for the units menu. -->
+    <string-array name="prefs_units_values">
+        <item>SI</item>
+        <item>IMPERIAL</item>
+    </string-array>
     
     <!-- Entry names for the screen orientation menu. -->
     <string-array name="prefs_orient_entries">
@@ -25,7 +37,7 @@
         <item>Device orientation</item>  
     </string-array>
 
-    <!-- Values for the sound preferences menu. -->
+    <!-- Values for the screen orientation menu. -->
     <string-array name="prefs_orient_values">
         <item>-1</item>
         <item>1</item>  
@@ -299,13 +311,14 @@ a background bar displays a rolling average.  The rolling average is also
 displayed numerically.</item>
 
 <item><b>GEO</b> shows geographic information from the various providers which
-your device has.  \"Cellular\" displays location from the cellular phone network;
-\"GPS\" is the reported GPS location, if GPS is enabled.  Locations are shown
-in latitude and longitude degrees and minutes, with fractional minutes.
-\"Alt\" is the altitude in metres, and \"Acc\" is the estimated accuracy of
-the fix in metres.  If the location provider provides course data,
-then \"Head\" is the direction you are moving in, and \"Spd\" is your speed
-in metres per second.\n\
+your device has.  \"Network\" displays location from the cellular phone or
+WiFi network; \"GPS\" is the reported GPS location, if GPS is enabled.
+Locations are shown in latitude and longitude degrees and minutes, with
+fractional minutes.  \"Alt\" is the altitude, and \"Acc\" is the estimated
+accuracy of the fix.  If the location provider provides course data,
+then \"Head\" is the direction you are moving in, and \"Spd\" is your
+speed.  Distances and speeds are shown in your selected units; see
+\"Settings\".\n\
 \n\
 The latest available fix data, if there is any, will always be displayed.
 Note that this data may be old.  The data is coloured to indicate its
@@ -394,7 +407,10 @@ scanning mode (see above).\n\
 in the EMS screen an audible ping will be used to indicate the strength
 of the strongest available WiFi signal.</item>
 
-<item><b>Screen orientation</b> determines whether and how Tricorder will
+<item><b>Data units</b> allows you to select your preferred units for the
+display of common physical measures such as distance and speed.\n\
+\n\
+<b>Screen orientation</b> determines whether and how Tricorder will
 switch its display between portrait and landscape:\n\
 • <b>System default</b> -- the system will determine the orientation based
 on the task context.\n\
@@ -402,7 +418,12 @@ on the task context.\n\
 • <b>Landscape</b> -- lock to landscape mode.\n\
 • <b>User preference</b> -- Tricorder will switch orientation according to
 the global device settings.\n\
-• <b>Device orientation</b> -- follow the physical orientation of the device.</item>
+• <b>Device orientation</b> -- follow the physical orientation of the device.\n\
+\n\
+<b>Keep device awake</b> tells the application to keep the screen active
+until you manually leave the application.  This is useful if you want
+to set Tricorder up to continually display data over a long
+period; however, be aware that it will quickly drain your battery.</item>
 
 <item><b>Sample rate</b> sets the audio sampling rate in samples/second.  A
 higher rate will require more processing power.  The

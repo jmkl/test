@@ -57,6 +57,9 @@ For more information, see the help.</string>
     <string name="prefs_ping_summary_off">No audible ping in WiFi scanning</string>
     <string name="prefs_ping_summary_on">Indicate WiFi signals by audible ping</string>
     <string name="prefs_cat_display">Display</string>
+    <string name="prefs_units">Data units</string>
+    <string name="prefs_units_summary">Set your preferred data units</string>
+    <string name="prefs_units_title">Data Units</string>
     <string name="prefs_orient">Screen orientation</string>
     <string name="prefs_orient_summary">Set your desired screen rotation behaviour</string>
     <string name="prefs_orient_title">Screen Orientation</string>
@@ -101,7 +104,7 @@ For more information, see the help.</string>
     <string name="title_num_rel">Relative Data</string>
     <string name="title_xyz_abs">Absolute X, Y, Z</string>
     <string name="title_xyz_rel">Relative X, Y, Z</string>
-    <string name="title_network">Cellular</string>
+    <string name="title_network">Network</string>
     <string name="title_gps">GPS</string>
     <string name="title_sats">Satellites</string>
 

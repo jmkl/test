@@ -84,6 +84,13 @@ public class Tricorder
     	final float gain;
     }
 
+    /**
+     * Data units.
+     */
+    static enum Unit {
+        SI, IMPERIAL;
+    }
+
 	// ******************************************************************** //
     // Activity Lifecycle.
     // ******************************************************************** //
@@ -520,6 +527,17 @@ public class Tricorder
         }
         Log.i(TAG, "Prefs: wifiPing " + wifiPing);
 
+        // Get the desired units.
+        Unit dataUnits = Unit.SI;
+        try {
+            String sval = prefs.getString("unitsMode", String.valueOf(dataUnits));
+            dataUnits = Unit.valueOf(sval);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad unitsMode");
+        }
+        Log.i(TAG, "Prefs: unitsMode " + dataUnits);
+        mainView.setDataUnits(dataUnits);
+
         // Get the desired orientation.
         int orientMode = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         try {
@@ -830,9 +848,9 @@ public class Tricorder
     private Effect deactivateSound = null;
     private Effect secondarySound = null;
 
-	// Whether to ping for WiFi scans.
-	private boolean wifiPing = false;
-	
+    // Whether to ping for WiFi scans.
+    private boolean wifiPing = false;
+    
 	// Current ping effect; null if none.
 	private Pinger pinger = null;
 

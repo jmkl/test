@@ -75,6 +75,15 @@ abstract class DataView
     }
 
 
+    /**
+     * Set the units in which to display numeric data.
+     * 
+     * @param   unit            Units to display.
+     */
+    void setDataUnits(Tricorder.Unit unit) {
+    }
+
+
 	// ******************************************************************** //
 	// State Management.
 	// ******************************************************************** //
