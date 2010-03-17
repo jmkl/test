@@ -1,18 +1,16 @@
 
-/*
- * Copyright (C) 2008 The Android Open Source Project
+/**
+ * Dazzle: a screen brightness control widget for Android.
+ * <br>Copyright 2010 Ian Cameron Smith
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
+ * 
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -33,10 +31,10 @@ import java.util.ArrayList;
 
 
 /**
- * The configuration screen for the ExampleAppWidgetProvider widget sample.
+ * The configuration screen for the DazzleProvider widget sample.
  */
-public class ExampleAppWidgetConfigure extends Activity {
-    static final String TAG = "ExampleAppWidgetConfigure";
+public class DazzleConfigure extends Activity {
+    static final String TAG = "DazzleConfigure";
 
     private static final String PREFS_NAME
             = "com.example.android.apis.appwidget.ExampleAppWidgetProvider";
@@ -45,7 +43,7 @@ public class ExampleAppWidgetConfigure extends Activity {
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     EditText mAppWidgetPrefix;
 
-    public ExampleAppWidgetConfigure() {
+    public DazzleConfigure() {
         super();
     }
 
@@ -58,7 +56,7 @@ public class ExampleAppWidgetConfigure extends Activity {
         setResult(RESULT_CANCELED);
 
         // Set the view layout resource to use.
-        setContentView(R.layout.appwidget_configure);
+        setContentView(R.layout.dazzle_configure);
 
         // Find the EditText
         mAppWidgetPrefix = (EditText)findViewById(R.id.appwidget_prefix);
@@ -79,12 +77,12 @@ public class ExampleAppWidgetConfigure extends Activity {
             finish();
         }
 
-        mAppWidgetPrefix.setText(loadTitlePref(ExampleAppWidgetConfigure.this, mAppWidgetId));
+        mAppWidgetPrefix.setText(loadTitlePref(DazzleConfigure.this, mAppWidgetId));
     }
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
         public void onClick(View v) {
-            final Context context = ExampleAppWidgetConfigure.this;
+            final Context context = DazzleConfigure.this;
 
             // When the button is clicked, save the string in our prefs and return that they
             // clicked OK.
@@ -93,7 +91,7 @@ public class ExampleAppWidgetConfigure extends Activity {
 
             // Push widget update to surface with newly set prefix
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            ExampleAppWidgetProvider.updateAppWidget(context, appWidgetManager,
+            DazzleProvider.updateAppWidget(context, appWidgetManager,
                     mAppWidgetId, titlePrefix);
 
             // Make sure we pass back the original appWidgetId
