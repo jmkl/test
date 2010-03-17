@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <string name="hello">Hello World, Dazzle!</string>
+    <string name="app_name">Dazzle</string>
+    
+    
+    <!-- ============================ -->
+    <!--  AppWidget examples strings  -->
+    <!-- ============================ -->
+
+    <string name="appwidget_configure_instructions">This text will be shown before the date in our example widget.</string>
+    <string name="appwidget_prefix_default">Oh hai</string>
+    <string name="appwidget_text_format">%1$s %2$s</string>
+    
+</resources>
+
