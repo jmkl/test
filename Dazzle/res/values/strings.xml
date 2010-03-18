@@ -2,17 +2,14 @@
 
 <resources>
 
-    <string name="hello">Hello World, Dazzle!</string>
     <string name="app_name">Dazzle</string>
     
-    
-    <!-- ============================ -->
-    <!--  AppWidget examples strings  -->
-    <!-- ============================ -->
-
-    <string name="appwidget_configure_instructions">This text will be shown before the date in our example widget.</string>
-    <string name="appwidget_prefix_default">Oh hai</string>
-    <string name="appwidget_text_format">%1$s %2$s</string>
+        
+    <!-- Button labels. -->
+    <string name="button_low">Low</string>
+    <string name="button_med">Med</string>
+    <string name="button_high">Full</string>
+    <string name="button_auto">Auto</string>
     
 </resources>
 

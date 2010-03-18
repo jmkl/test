@@ -17,13 +17,13 @@
 package org.hermit.dazzle;
 
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.SystemClock;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -59,10 +59,6 @@ public class DazzleProvider
     public void onEnabled(Context context) {
         Log.d(TAG, "onEnabled()");
         
-        // When the first widget is created, register for the TIMEZONE_CHANGED and TIME_CHANGED
-        // broadcasts.  We don't want to be listening for these if nobody has our widget active.
-        // This setting is sticky across reboots, but that doesn't matter, because this will
-        // be called after boot if there is a widget instance for this provider.
         PackageManager pm = context.getPackageManager();
         pm.setComponentEnabledSetting(
                 new ComponentName("org.hermit.dazzle", ".ExampleBroadcastReceiver"),
@@ -95,18 +91,28 @@ public class DazzleProvider
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         Log.d(TAG, "onUpdate()");
         
-        // For each widget that needs an update, get the text that we should display:
-        //   - Create a RemoteViews object for it
-        //   - Set the text in the RemoteViews object
-        //   - Tell the AppWidgetManager to show that views object for the widget.
         final int num = ids.length;
-        
         for (int i = 0; i < num; ++i) {
             int id = ids[i];
-            updateAppWidget(context, manager, id, "NUX");
+            
+            // Create an Intent to launch ExampleActivity
+            Intent intent = new Intent(context, DazzleControl.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+
+            // Get the layout for the App Widget and attach an on-click listener to the button
+            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.dazzle_1_1);
+            views.setOnClickPendingIntent(R.id.dazzle_button, pendingIntent);
+            
+            // Set the button label.
+            String label = Brightness.getModeString(context);
+            views.setTextViewText(R.id.dazzle_button, label);
+
+            // Tell the AppWidgetManager to perform an update on the current
+            // App Widget.
+            manager.updateAppWidget(id, views);
         }
     }
-    
+        
     
     /**
      * Called when one or more AppWidget instances have been deleted.
@@ -121,11 +127,6 @@ public class DazzleProvider
     public void onDeleted(Context context, int[] ids) {
         Log.d(TAG, "onDeleted()");
         
-        // When the user deletes the widget, delete the preference associated with it.
-        final int N = ids.length;
-        for (int i=0; i<N; i++) {
-            DazzleConfigure.deleteTitlePref(context, ids[i]);
-        }
     }
 
 
@@ -139,9 +140,8 @@ public class DazzleProvider
      */
     @Override
     public void onDisabled(Context context) {
-        // When the first widget is created, stop listening for the TIMEZONE_CHANGED and
-        // TIME_CHANGED broadcasts.
-        Log.d(TAG, "onDisabled");
+        Log.d(TAG, "onDisabled()");
+        
         PackageManager pm = context.getPackageManager();
         pm.setComponentEnabledSetting(
                 new ComponentName("org.hermit.dazzle", ".ExampleBroadcastReceiver"),
@@ -151,79 +151,12 @@ public class DazzleProvider
 
 
     // ******************************************************************** //
-    // Update Handling.
-    // ******************************************************************** //
-
-    static void updateAppWidget(Context context,
-                                AppWidgetManager manager,
-                                int id, String nux)
-    {
-        Log.d(TAG, "updateAppWidget appWidgetId=" + id + " label=" + nux);
-        
-        boolean auto = isAuto(context);
-        int bright = getBrightness(context);
-        String label = auto ? "A" : "" + bright;
-
-        // Construct the RemoteViews object.  It takes the package name (in our case, it's our
-        // package, but it needs this because on the other side it's the widget host inflating
-        // the layout from our package).
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.dazzle_1_1);
-        views.setTextViewText(R.id.dazzle_button, label);
-
-        // Tell the widget manager
-        manager.updateAppWidget(id, views);
-    }
-
-
-    // ******************************************************************** //
-    // Screen Brightness Handling.
-    // ******************************************************************** //
-
-    private static boolean isAuto(Context context) {
-        int mode = Settings.System.getInt(context.getContentResolver(),
-                SCREEN_BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_MANUAL);
-        return mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
-    }
-
-
-    private static int getBrightness(Context context) {
-        return Settings.System.getInt(context.getContentResolver(),
-                Settings.System.SCREEN_BRIGHTNESS, BRIGHTNESS_DIM);
-    }
-
-
-    private static void setMode(Context context, boolean auto, int brightness) {
-        int mode = auto ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC : SCREEN_BRIGHTNESS_MODE_MANUAL;
-        Settings.System.putInt(context.getContentResolver(),
-                               SCREEN_BRIGHTNESS_MODE, mode);
-        Settings.System.putInt(context.getContentResolver(), 
-                               Settings.System.SCREEN_BRIGHTNESS,
-                               brightness);
-    }
-
-    
-    // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
 
     // Debugging tag.
     @SuppressWarnings("unused")
     private static final String TAG = "DazzleProvider";
-    
-    // Constants for the screen brightness settings.
-    private static final String SCREEN_BRIGHTNESS_MODE = "screen_brightness_mode";
-    private static final int SCREEN_BRIGHTNESS_MODE_MANUAL = 0;
-    private static final int SCREEN_BRIGHTNESS_MODE_AUTOMATIC = 1;
-
-    // Brightness values: fully off, dim, fully on.
-    private static final int BRIGHTNESS_OFF = 0;
-    private static final int BRIGHTNESS_DIM = 20;
-    private static final int BRIGHTNESS_ON = 255;
-  
-    // Backlight range is from 0 - 255. Need to make sure that user
-    // doesn't set the backlight to 0 and get stuck
-    private static final int MINIMUM_BACKLIGHT = BRIGHTNESS_DIM + 10;
-    private static final int MAXIMUM_BACKLIGHT = BRIGHTNESS_ON;
 
 }
 

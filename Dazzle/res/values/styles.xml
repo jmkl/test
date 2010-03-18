@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- A dialog theme with a translucent background. -->
+    <style name="Theme.Translucent" parent="android:style/Theme.Dialog">
+        <item name="android:windowBackground">@drawable/translucent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:colorForeground">#fff</item>
+    </style>
+
+</resources>
+
