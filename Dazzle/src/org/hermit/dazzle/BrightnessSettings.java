@@ -17,28 +17,30 @@
 package org.hermit.dazzle;
 
 
-import android.appwidget.AppWidgetProvider;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.provider.Settings;
 
 
 /**
- * This static class provides utilities to read and control the screen
- * brightness.
+ * This static class provides utilities to read and write the screen
+ * brightness settings in the system settings content provider.
  */
-class Brightness
-    extends AppWidgetProvider
+class BrightnessSettings
 {
 
     // ******************************************************************** //
     // Public Constants.
     // ******************************************************************** //
 
-    // Brightness values: fully off, dim, fully on.
-    static final int BRIGHTNESS_OFF = 0;
-    static final int BRIGHTNESS_DIM = 20;
-    static final int BRIGHTNESS_ON = 255;
+    // BrightnessSettings values: fully off, dim, fully on.
+    private static final int SETTING_DIM = 20;
+    private static final int SETTING_MAX = 255;
+
+    // BrightnessSettings values: fully off, dim, fully on.
+    static final float BRIGHTNESS_OFF = 0.00f;
+    static final float BRIGHTNESS_DIM = 0.08f;
+    static final float BRIGHTNESS_MAX = 1.00f;
     
 
     // ******************************************************************** //
@@ -48,12 +50,12 @@ class Brightness
     /**
      * Constructor -- hidden, as this class is non-instantiable.
      */
-    private Brightness() {
+    private BrightnessSettings() {
     }
     
 
     // ******************************************************************** //
-    // Screen Brightness Handling.
+    // Screen BrightnessSettings Handling.
     // ******************************************************************** //
 
     static boolean isAuto(Context context) {
@@ -63,9 +65,11 @@ class Brightness
     }
 
 
-    static int getBrightness(Context context) {
-        return Settings.System.getInt(context.getContentResolver(),
-                Settings.System.SCREEN_BRIGHTNESS, BRIGHTNESS_DIM);
+    static float getBrightness(Context context) {
+        int lev = Settings.System.getInt(context.getContentResolver(),
+                                         Settings.System.SCREEN_BRIGHTNESS,
+                                         SETTING_DIM);
+        return (float) lev / (float) SETTING_MAX;
     }
 
 
@@ -78,13 +82,14 @@ class Brightness
         boolean auto = mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
         int bright = Settings.System.getInt(resolver,
                                             Settings.System.SCREEN_BRIGHTNESS,
-                                            BRIGHTNESS_DIM);
+                                            SETTING_DIM);
         
-        return auto ? "A" : "" + bright;
+        bright = Math.round((float) bright / (float) SETTING_MAX * 100f);
+        return auto ? "A" : "" + bright + "%";
     }
 
 
-    static void setMode(Context context, boolean auto, int brightness) {
+    static void setMode(Context context, boolean auto, float brightness) {
         ContentResolver resolver = context.getContentResolver();
         
         int mode = auto ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC : SCREEN_BRIGHTNESS_MODE_MANUAL;
@@ -92,7 +97,7 @@ class Brightness
                                SCREEN_BRIGHTNESS_MODE, mode);
         Settings.System.putInt(resolver, 
                                Settings.System.SCREEN_BRIGHTNESS,
-                               brightness);
+                               Math.round(brightness * (float) SETTING_MAX));
     }
 
     

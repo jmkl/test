@@ -23,7 +23,6 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -58,12 +57,6 @@ public class DazzleProvider
     @Override
     public void onEnabled(Context context) {
         Log.d(TAG, "onEnabled()");
-        
-        PackageManager pm = context.getPackageManager();
-        pm.setComponentEnabledSetting(
-                new ComponentName("org.hermit.dazzle", ".ExampleBroadcastReceiver"),
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP);
     }
     
 
@@ -94,21 +87,7 @@ public class DazzleProvider
         final int num = ids.length;
         for (int i = 0; i < num; ++i) {
             int id = ids[i];
-            
-            // Create an Intent to launch ExampleActivity
-            Intent intent = new Intent(context, DazzleControl.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-
-            // Get the layout for the App Widget and attach an on-click listener to the button
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.dazzle_1_1);
-            views.setOnClickPendingIntent(R.id.dazzle_button, pendingIntent);
-            
-            // Set the button label.
-            String label = Brightness.getModeString(context);
-            views.setTextViewText(R.id.dazzle_button, label);
-
-            // Tell the AppWidgetManager to perform an update on the current
-            // App Widget.
+            RemoteViews views = buildViews(context);
             manager.updateAppWidget(id, views);
         }
     }
@@ -141,12 +120,44 @@ public class DazzleProvider
     @Override
     public void onDisabled(Context context) {
         Log.d(TAG, "onDisabled()");
-        
-        PackageManager pm = context.getPackageManager();
-        pm.setComponentEnabledSetting(
-                new ComponentName("org.hermit.dazzle", ".ExampleBroadcastReceiver"),
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP);
+    }
+
+
+    // ******************************************************************** //
+    // Update Management.
+    // ******************************************************************** //
+
+    /**
+     * Immediately update the widget state.
+     * 
+     * @param   context     The context in which this update is running.
+     */
+    static void updateWidgets(Context context) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        ComponentName comp = new ComponentName(context, DazzleProvider.class);
+        RemoteViews views = buildViews(context);
+        manager.updateAppWidget(comp, views);
+    }
+
+
+    /**
+     * Create a RemoteViews object representing the current state of the
+     * widget.
+     * 
+     * @param   context     The context in which this update is running.
+     * @return              The new RemoteViews.
+     */
+    private static RemoteViews buildViews(Context context) {
+         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.dazzle_1_1);
+
+         Intent intent = new Intent(context, DazzleControl.class);
+         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+         views.setOnClickPendingIntent(R.id.dazzle_button, pendingIntent);
+         
+         String label = BrightnessSettings.getModeString(context);
+         views.setTextViewText(R.id.dazzle_button, label);
+         
+         return views;
     }
 
 

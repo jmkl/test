@@ -1,29 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    	android:layout_width="fill_parent"
-    	android:layout_height="fill_parent"
-    	android:orientation="horizontal">
+	android:orientation="vertical" android:layout_height="wrap_content"
+	android:layout_width="wrap_content" android:padding="30dp">
 
-	<Button android:id="@+id/button_low"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="@string/button_low" />
+	<LinearLayout android:id="@+id/button_row"
+		android:layout_width="wrap_content" android:layout_height="wrap_content"
+		android:orientation="horizontal">
 
-	<Button android:id="@+id/button_med"
-			android:layout_width="wrap_content"
+		<ToggleButton android:id="@+id/button_low"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.25"
+				android:textOff="@string/button_low"
+				android:textOn="@string/button_low" />
+		<ToggleButton android:id="@+id/button_med"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.25"
+				android:textOff="@string/button_med"
+				android:textOn="@string/button_med" />
+		<ToggleButton android:id="@+id/button_high"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.25"
+				android:textOff="@string/button_high"
+				android:textOn="@string/button_high" />
+		<ToggleButton android:id="@+id/button_auto"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.25"
+				android:textOff="@string/button_auto"
+				android:textOn="@string/button_auto" />
+
+	</LinearLayout>
+
+	<SeekBar android:id="@+id/slider"
+			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:text="@string/button_med" />
-			
-	<Button android:id="@+id/button_high"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="@string/button_high" />
-			
-	<Button android:id="@+id/button_auto"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="@string/button_auto" />
-			
+			android:padding="6dp" />
+
 </LinearLayout>
 
