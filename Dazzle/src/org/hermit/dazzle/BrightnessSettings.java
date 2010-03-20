@@ -33,13 +33,10 @@ class BrightnessSettings
     // Public Constants.
     // ******************************************************************** //
 
-    // BrightnessSettings values: fully off, dim, fully on.
-    private static final int SETTING_DIM = 20;
-    private static final int SETTING_MAX = 255;
-
-    // BrightnessSettings values: fully off, dim, fully on.
+    // BrightnessSettings values: fully off, dim, medium, fully on.
     static final float BRIGHTNESS_OFF = 0.00f;
     static final float BRIGHTNESS_DIM = 0.08f;
+    static final float BRIGHTNESS_MED = 0.50f;
     static final float BRIGHTNESS_MAX = 1.00f;
     
 
@@ -108,7 +105,11 @@ class BrightnessSettings
     // Debugging tag.
     @SuppressWarnings("unused")
     private static final String TAG = "DazzleProvider";
-    
+
+    // BrightnessSettings values: fully off, dim, fully on.
+    private static final int SETTING_MAX = 255;
+    private static final int SETTING_DIM = Math.round(SETTING_MAX * BRIGHTNESS_DIM);
+
     // Constants for the screen brightness settings.
     private static final String SCREEN_BRIGHTNESS_MODE = "screen_brightness_mode";
     private static final int SCREEN_BRIGHTNESS_MODE_MANUAL = 0;

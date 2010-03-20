@@ -18,7 +18,9 @@ package org.hermit.dazzle;
 
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -61,57 +63,29 @@ public class DazzleControl
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         
+        // Get our preferences.
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        
+        // Create the UI.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         setContentView(R.layout.control_activity);
         
         // Set handlers on all the widgets.
         lowBut = (ToggleButton) findViewById(R.id.button_low);
-        lowBut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setMode(false, BrightnessSettings.BRIGHTNESS_OFF);
-            }
-        });
+        lowBut.setOnClickListener(buttonChecked);
         
         medBut = (ToggleButton) findViewById(R.id.button_med);
-        medBut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setMode(false, BrightnessSettings.BRIGHTNESS_DIM);
-            }
-        });
+        medBut.setOnClickListener(buttonChecked);
         
         highBut = (ToggleButton) findViewById(R.id.button_high);
-        highBut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setMode(false, BrightnessSettings.BRIGHTNESS_MAX);
-            }
-        });
+        highBut.setOnClickListener(buttonChecked);
         
         autoBut = (ToggleButton) findViewById(R.id.button_auto);
-        autoBut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setMode(true, 0);
-            }
-        });
+        autoBut.setOnClickListener(buttonChecked);
         
         levelSlider = (SeekBar) findViewById(R.id.slider);
         levelSlider.setMax(1000);
-        levelSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) { }
-        
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) { }
-        
-            @Override
-            public void onProgressChanged(SeekBar bar, int n, boolean user) {
-                setMode(false, (float) n / 1000.0f);
-            }
-        });
+        levelSlider.setOnSeekBarChangeListener(levelChanged);
     }
 
 
@@ -130,16 +104,24 @@ public class DazzleControl
 
         super.onResume();
         
+        // Get the user-configured "medium" level.
+        try {
+            userLevel = sharedPrefs.getFloat("userLevel", BrightnessSettings.BRIGHTNESS_MED);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad userLevel");
+        }
+        if (userLevel < 0f)
+            userLevel = 0f;
+        else if (userLevel > 1f)
+            userLevel = 1f;
+        Log.i(TAG, "Prefs: userLevel " + userLevel);
+
         // Get the current level.
         isAuto = BrightnessSettings.isAuto(this);
         currentBrightness = BrightnessSettings.getBrightness(this);
         
         // Set the widgets up.
-        lowBut.setChecked(!isAuto && currentBrightness == 0f);
-        medBut.setChecked(!isAuto && currentBrightness > 0f && currentBrightness < 1f);
-        highBut.setChecked(!isAuto && currentBrightness == 1f);
-        autoBut.setChecked(isAuto);
-        levelSlider.setProgress(Math.round(currentBrightness * 1000));
+        setControls();
     }
 
     
@@ -163,6 +145,78 @@ public class DazzleControl
     // Input Handling.
     // ******************************************************************** //
    
+    private View.OnClickListener buttonChecked = new View.OnClickListener() {
+        @Override
+        public void onClick(View but) {
+            // Set the appropriate mode.  We do this any time the user
+            // taps the button, even if it was already checked.
+            switch (but.getId()) {
+            case R.id.button_low:
+                Log.v(TAG, "set low");
+                setMode(false, BrightnessSettings.BRIGHTNESS_OFF);
+                break;
+            case R.id.button_med:
+                Log.v(TAG, "set med");
+                setMode(false, userLevel);
+                break;
+            case R.id.button_high:
+                Log.v(TAG, "set high");
+                setMode(false, BrightnessSettings.BRIGHTNESS_MAX);
+                break;
+            case R.id.button_auto:
+                Log.v(TAG, "set auto");
+                setMode(true, BrightnessSettings.BRIGHTNESS_DIM);
+                break;
+            }
+            
+            // Re-set all the controls.
+            setControls();
+        }
+    };
+    
+    
+    private SeekBar.OnSeekBarChangeListener levelChanged =
+                            new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+        
+        @Override
+        public void onProgressChanged(SeekBar bar, int n, boolean user) {
+            if (user) {
+                Log.v(TAG, "user slid to " + n);
+                userLevel = (float) n / 1000.0f;
+                setMode(false, userLevel, false);
+            }
+            
+            // Re-set all the controls.
+            setControls();
+        }
+    
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            setMode(false, userLevel);
+            
+            // Save the user's "medium" level.
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putFloat("userLevel", userLevel);
+            editor.commit();
+        }
+    };
+    
+    
+    /**
+     * Set the controls to reflect the current state.
+     */
+    private void setControls() {
+        lowBut.setChecked(!isAuto && currentBrightness == 0f);
+        medBut.setChecked(!isAuto && currentBrightness > 0f && currentBrightness < 1f);
+        highBut.setChecked(!isAuto && currentBrightness == 1f);
+        autoBut.setChecked(isAuto);
+        levelSlider.setProgress(Math.round(userLevel * 1000));
+    }
+
+
     /**
      * Set the screen mode and brightness.
      * 
@@ -170,11 +224,30 @@ public class DazzleControl
      * @param   level       If not auto, desired level, 0-1.
      */
     private void setMode(boolean auto, float level) {
+        setMode(auto, level, true);
+    }
+
+
+    /**
+     * Set the screen mode and brightness.
+     * 
+     * @param   mode        True for auto-brightness; false for manual.
+     * @param   level       If not auto, desired level, 0-1.
+     * @param   commit      If true, save the changes.  Otherwise, just
+     *                      adjust the screen -- this is useful when we
+     *                      need a fast response, but you must commit at
+     *                      some point.
+     */
+    private void setMode(boolean auto, float level, boolean commit) {
+        Log.v(TAG, "set screen " + (auto ? "A" : "M") + level);
+        
         // Don't let the user set it black and get stuck.
         if (level < BrightnessSettings.BRIGHTNESS_DIM)
             level = BrightnessSettings.BRIGHTNESS_DIM;
         
-        BrightnessSettings.setMode(this, auto, level);
+        if (commit)
+            BrightnessSettings.setMode(this, auto, level);
+        
         if (!auto) {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
             lp.screenBrightness = level;
@@ -182,7 +255,8 @@ public class DazzleControl
         }
         
         // Signal the widget manager to update all the widgets.
-        DazzleProvider.updateWidgets(this);
+        if (commit)
+            DazzleProvider.updateWidgets(this);
         
         isAuto = auto;
         currentBrightness = level;
@@ -195,12 +269,15 @@ public class DazzleControl
 
     // Debugging tag.
     @SuppressWarnings("unused")
-    private static final String TAG = "DazzleProvider";
+    private static final String TAG = "DazzleControl";
 
 
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
+
+    // Our preferences.
+    private SharedPreferences sharedPrefs = null;
 
     // The UI widgets.
     private ToggleButton lowBut = null;
@@ -212,6 +289,9 @@ public class DazzleControl
     // Current auto flag.
     private boolean isAuto = false;
     
+    // User-configured "medium" brightness level, 0-1.
+    private float userLevel = BrightnessSettings.BRIGHTNESS_DIM;
+  
     // Current brightness level, 0-1.
     private float currentBrightness = BrightnessSettings.BRIGHTNESS_DIM;
     
