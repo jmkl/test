@@ -152,25 +152,23 @@ public class DazzleControl
             // taps the button, even if it was already checked.
             switch (but.getId()) {
             case R.id.button_low:
-                Log.v(TAG, "set low");
                 setMode(false, BrightnessSettings.BRIGHTNESS_OFF);
                 break;
             case R.id.button_med:
-                Log.v(TAG, "set med");
                 setMode(false, userLevel);
                 break;
             case R.id.button_high:
-                Log.v(TAG, "set high");
                 setMode(false, BrightnessSettings.BRIGHTNESS_MAX);
                 break;
             case R.id.button_auto:
-                Log.v(TAG, "set auto");
-                setMode(true, BrightnessSettings.BRIGHTNESS_DIM);
+                setMode(true, userLevel);
                 break;
             }
             
             // Re-set all the controls.
             setControls();
+            
+            finish();
         }
     };
     
@@ -184,7 +182,6 @@ public class DazzleControl
         @Override
         public void onProgressChanged(SeekBar bar, int n, boolean user) {
             if (user) {
-                Log.v(TAG, "user slid to " + n);
                 userLevel = (float) n / 1000.0f;
                 setMode(false, userLevel, false);
             }
@@ -209,9 +206,13 @@ public class DazzleControl
      * Set the controls to reflect the current state.
      */
     private void setControls() {
-        lowBut.setChecked(!isAuto && currentBrightness == 0f);
-        medBut.setChecked(!isAuto && currentBrightness > 0f && currentBrightness < 1f);
-        highBut.setChecked(!isAuto && currentBrightness == 1f);
+        boolean low = currentBrightness < 0.005f;
+        boolean max = currentBrightness > 0.995f;
+        boolean med = !low && !max;
+        
+        lowBut.setChecked(!isAuto && low);
+        medBut.setChecked(!isAuto && med);
+        highBut.setChecked(!isAuto && max);
         autoBut.setChecked(isAuto);
         levelSlider.setProgress(Math.round(userLevel * 1000));
     }
@@ -239,18 +240,14 @@ public class DazzleControl
      *                      some point.
      */
     private void setMode(boolean auto, float level, boolean commit) {
-        Log.v(TAG, "set screen " + (auto ? "A" : "M") + level);
-        
-        // Don't let the user set it black and get stuck.
-        if (level < BrightnessSettings.BRIGHTNESS_DIM)
-            level = BrightnessSettings.BRIGHTNESS_DIM;
+        Log.v(TAG, "set screen " + (auto ? "A " : "M ") + level);
         
         if (commit)
             BrightnessSettings.setMode(this, auto, level);
         
         if (!auto) {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.screenBrightness = level;
+            BrightnessSettings.fractionToParams(level, lp);
             getWindow().setAttributes(lp);
         }
         
@@ -290,10 +287,10 @@ public class DazzleControl
     private boolean isAuto = false;
     
     // User-configured "medium" brightness level, 0-1.
-    private float userLevel = BrightnessSettings.BRIGHTNESS_DIM;
+    private float userLevel = BrightnessSettings.BRIGHTNESS_MED;
   
     // Current brightness level, 0-1.
-    private float currentBrightness = BrightnessSettings.BRIGHTNESS_DIM;
+    private float currentBrightness = BrightnessSettings.BRIGHTNESS_MED;
     
 }
 

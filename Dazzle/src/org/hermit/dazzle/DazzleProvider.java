@@ -154,8 +154,8 @@ public class DazzleProvider
          PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
          views.setOnClickPendingIntent(R.id.dazzle_button, pendingIntent);
          
-         String label = BrightnessSettings.getModeString(context);
-         views.setTextViewText(R.id.dazzle_button, label);
+         int icon = BrightnessSettings.getModeIcon(context);
+         views.setImageViewResource(R.id.dazzle_button, icon);
          
          return views;
     }

@@ -20,6 +20,8 @@ package org.hermit.dazzle;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.provider.Settings;
+import android.util.Log;
+import android.view.WindowManager;
 
 
 /**
@@ -35,7 +37,6 @@ class BrightnessSettings
 
     // BrightnessSettings values: fully off, dim, medium, fully on.
     static final float BRIGHTNESS_OFF = 0.00f;
-    static final float BRIGHTNESS_DIM = 0.08f;
     static final float BRIGHTNESS_MED = 0.50f;
     static final float BRIGHTNESS_MAX = 1.00f;
     
@@ -57,7 +58,8 @@ class BrightnessSettings
 
     static boolean isAuto(Context context) {
         int mode = Settings.System.getInt(context.getContentResolver(),
-                SCREEN_BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_MANUAL);
+                                          SCREEN_BRIGHTNESS_MODE,
+                                          SCREEN_BRIGHTNESS_MODE_MANUAL);
         return mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
     }
 
@@ -65,24 +67,30 @@ class BrightnessSettings
     static float getBrightness(Context context) {
         int lev = Settings.System.getInt(context.getContentResolver(),
                                          Settings.System.SCREEN_BRIGHTNESS,
-                                         SETTING_DIM);
-        return (float) lev / (float) SETTING_MAX;
+                                         SETTING_MAX);
+        return settingToFraction(lev);
     }
 
 
-    static String getModeString(Context context) {
+    static int getModeIcon(Context context) {
         ContentResolver resolver = context.getContentResolver();
         
         int mode = Settings.System.getInt(resolver,
                                           SCREEN_BRIGHTNESS_MODE,
                                           SCREEN_BRIGHTNESS_MODE_MANUAL);
-        boolean auto = mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+        if (mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC)
+            return R.drawable.auto;
+        
         int bright = Settings.System.getInt(resolver,
                                             Settings.System.SCREEN_BRIGHTNESS,
-                                            SETTING_DIM);
-        
-        bright = Math.round((float) bright / (float) SETTING_MAX * 100f);
-        return auto ? "A" : "" + bright + "%";
+                                            SETTING_MAX);
+        float frac = settingToFraction(bright);
+        if (frac < 0.005f)
+            return R.drawable.min;
+        else if (frac > 0.995f)
+            return R.drawable.high;
+        else
+            return R.drawable.user;
     }
 
 
@@ -90,14 +98,36 @@ class BrightnessSettings
         ContentResolver resolver = context.getContentResolver();
         
         int mode = auto ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC : SCREEN_BRIGHTNESS_MODE_MANUAL;
+        int lev = fractionToSetting(brightness);
+        
+        Log.v(TAG, "save settings " + (auto ? "A " : "M ") + lev);
+
         Settings.System.putInt(resolver,
                                SCREEN_BRIGHTNESS_MODE, mode);
         Settings.System.putInt(resolver, 
                                Settings.System.SCREEN_BRIGHTNESS,
-                               Math.round(brightness * (float) SETTING_MAX));
+                               lev);
     }
 
     
+    static final float settingToFraction(int setting) {
+        float base = (float) setting / (float) SETTING_MAX;
+        return (base - LEVEL_MIN) / LEVEL_RANGE;
+    }
+    
+
+    static final int fractionToSetting(float frac) {
+        float actual = frac * LEVEL_RANGE + LEVEL_MIN;
+        return Math.round(actual * SETTING_MAX);
+    }
+    
+
+    static final void fractionToParams(float frac, WindowManager.LayoutParams lp) {
+        float actual = frac * LEVEL_RANGE + LEVEL_MIN;
+        lp.screenBrightness = actual;
+    }
+    
+
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
@@ -106,9 +136,12 @@ class BrightnessSettings
     @SuppressWarnings("unused")
     private static final String TAG = "DazzleProvider";
 
+    // Minimum brightness fraction.
+    private static final float LEVEL_MIN = 0.06f;
+    private static final float LEVEL_RANGE = 1f - LEVEL_MIN;
+  
     // BrightnessSettings values: fully off, dim, fully on.
     private static final int SETTING_MAX = 255;
-    private static final int SETTING_DIM = Math.round(SETTING_MAX * BRIGHTNESS_DIM);
 
     // Constants for the screen brightness settings.
     private static final String SCREEN_BRIGHTNESS_MODE = "screen_brightness_mode";
