@@ -6,9 +6,9 @@
     
         
     <!-- Button labels. -->
-    <string name="button_low">Low</string>
-    <string name="button_med">Med</string>
-    <string name="button_high">Full</string>
+    <string name="button_low">Min</string>
+    <string name="button_med">User</string>
+    <string name="button_high">Max</string>
     <string name="button_auto">Auto</string>
     
 </resources>

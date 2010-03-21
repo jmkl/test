@@ -198,6 +198,8 @@ public class DazzleControl
             SharedPreferences.Editor editor = sharedPrefs.edit();
             editor.putFloat("userLevel", userLevel);
             editor.commit();
+            
+            finish();
         }
     };
     
