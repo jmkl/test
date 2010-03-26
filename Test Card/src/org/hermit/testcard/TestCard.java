@@ -28,6 +28,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 
 
 /**
@@ -75,9 +77,9 @@ public class TestCard
         setLicenseInfo(R.string.button_license, R.string.url_license);
 
         // We don't want a title bar or status bar.
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         
         // Create the application GUI.
         setContentView(R.layout.main);

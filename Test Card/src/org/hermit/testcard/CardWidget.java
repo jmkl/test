@@ -27,6 +27,7 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
 
 
@@ -65,12 +66,21 @@ public class CardWidget
 
 	
 	private void init(Activity context) {
+        // Get the physical display size to show to the user.
+	    Display display = context.getWindowManager().getDefaultDisplay();
+	    dispWidth = display.getWidth();
+	    dispHeight = display.getHeight();
+	    
+	    // This info appears to be junk.
+//	    dispFormat = pixelFormatName(display.getPixelFormat());
+
         // Get the font scale based on the display's resolution.
         DisplayMetrics metrics = new DisplayMetrics();
-        context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        display.getMetrics(metrics);
         float fontScale = metrics.scaledDensity;
 
         textSize = 16f * fontScale;
+        blockSize = (int) textSize;
 	    
         textPaint = new Paint();
         textPaint.setAntiAlias(true);
@@ -84,11 +94,28 @@ public class CardWidget
 		cardPaint.setAntiAlias(false);
 		
 		textBase = textPaint.ascent();
+        labelWidth = (int) textPaint.measureText("MMMM");
 		
 		testPatterns = new ArrayList<Pattern>();
 	}
 
+	
+//	private String pixelFormatName(int fmt) {
+//	    switch (fmt) {
+//	    case PixelFormat.L_8:
+//	        return "L:8";
+//	    case PixelFormat.RGB_332:
+//	        return "RGB:332";
+//	    case PixelFormat.RGB_565:
+//	        return "RGB:565";
+//	    case PixelFormat.RGB_888:
+//	        return "RGB:888";
+//	    default:
+//	        return "Unk:" + fmt;
+//	    }
+//	}
 
+	
     // ******************************************************************** //
 	// Geometry.
 	// ******************************************************************** //
@@ -117,26 +144,48 @@ public class CardWidget
     	// Add all our patterns.
     	int y = PAD;
     	
+    	// Create the display info label.  Pixel format would be great, but
+    	// the value from the system looks like junk.
+    	String dispInfo = "" + dispWidth + "x" + dispHeight;
+        Label info = new Label(dispInfo, PAD, PAD);
+        testPatterns.add(info);
+        y += textSize + PAD;
+
         for (int i = 0; i < testColours.length; ++i) {
-    	    Pattern p = new PointPattern(testNames[i], PAD, y, testColours[i]);
+            int x = PAD;
+            
+            Label l = new Label(testNames[i], x, y);
+            testPatterns.add(l);
+            x += labelWidth + PAD;
+            
+    	    Pattern p = new PointPattern(x, y, testColours[i]);
     	    testPatterns.add(p);
+    	    x += p.getWidth() + PAD;
+    	    
+            p = new LinePattern(x, y, testColours[i]);
+            testPatterns.add(p);
+    
     	    y += p.getHeight();
     	}
+        
     	y += PAD;
     	
-        for (int i = 0; i < testColours.length; ++i) {
-            Pattern p = new LinePattern(testNames[i], PAD, y, testColours[i]);
-            testPatterns.add(p);
-            y += p.getHeight();
-        }
-        y += PAD;
-        
         for (int i = 0; i < testCombos.length; ++i) {
-            Pattern p = new GridPattern(comboNames[i], PAD, y, testCombos[i]);
+            int x = PAD;
+            
+            Label l = new Label(comboNames[i], x, y);
+            testPatterns.add(l);
+            x += labelWidth + PAD;
+            
+            Pattern p = new BarPattern(x, y, testCombos[i]);
             testPatterns.add(p);
+            x += p.getWidth() + PAD;
+        
+            p = new GridPattern(x, y, testCombos[i]);
+            testPatterns.add(p);
+            
             y += p.getHeight();
         }
-        y += PAD;
         
     	// Need to re-draw.
     	invalidate();
@@ -170,133 +219,140 @@ public class CardWidget
 	// ******************************************************************** //
 
     private abstract class Pattern {
-        Pattern(String lab, int x, int y, int col) {
-            this.label = lab;
-            this.baseX = x;
-            this.baseY = y;
-            this.patternX = x + 80;
+        Pattern(int x, int y, int col) {
+            this.patternX = x;
             this.patternY = y;
             this.paint = new Paint();
             this.paint.setAntiAlias(false);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(1f);
             this.paint.setColor(col);
         }
-        abstract int getWidth();
-        abstract int getHeight();
-        void draw(Canvas canvas) {
-            canvas.drawText(label, baseX, baseY - textBase, textPaint);
+        int getWidth() {
+            float perA = NUM_BLOCKS / 2f + 4;
+            return Math.round(perA * (NUM_BLOCKS - 1) + blockSize * NUM_BLOCKS);
         }
-        final String label;
-        final int baseX;
-        final int baseY;
+        int getHeight() {
+            return blockSize;
+        }
+        void draw(Canvas canvas) {
+            int x = patternX;
+            int y = patternY;
+            for (int i = 0; i < NUM_BLOCKS; ++i) {
+                drawBlock(canvas, x, y, i);
+                x += i + 4 + blockSize;
+            }
+        }
+        void drawBlock(Canvas canvas, int sx, int sy, int index) { }
+
         final int patternX;
         final int patternY;
         final Paint paint;
     }
     
 
-    private final class PointPattern extends Pattern {
-        PointPattern(String lab, int x, int y, int col) {
-            super(lab, x, y, col);
+    private final class Label extends Pattern {
+        Label(String lab, int x, int y) {
+            super(x, y, 0xffffffff);
+            this.label = lab;
         }
         @Override
         int getWidth() {
-            return Math.round((NUM_POINTS / 2f + 4) * (NUM_POINTS - 1) + 1);
+            return labelWidth;
         }
         @Override
         int getHeight() {
-            return Math.round(textSize);
+            return blockSize;
         }
-       
         @Override
-        void draw(Canvas canvas) {
-            super.draw(canvas);
-            int x = patternX;
-            int y = patternY + (int) (textSize / 2);
-            for (int i = 0; i < NUM_POINTS; ++i) {
-                canvas.drawPoint(x, y, paint);
-                x += i + 4;
-            }
+        final void draw(Canvas canvas) {
+            canvas.drawText(label, patternX, patternY - textBase, textPaint);
         }
         
-        private static final int NUM_POINTS = 11;
+        final String label;
     }
     
 
-    private final class LinePattern extends Pattern {
-        LinePattern(String lab, int x, int y, int col) {
-            super(lab, x, y, col);
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(1f);
-        }
-        @Override
-        int getWidth() {
-            float perA = NUM_LINES / 2f + 4 + textSize;
-            float perB = NUM_LINES / 2f + 5;
-            return Math.round((perA + perB) * (NUM_LINES - 1) + 1);
-        }
-        @Override
-        int getHeight() {
-            return Math.round(textSize);
-        }
-       
-        @Override
-        void draw(Canvas canvas) {
-            super.draw(canvas);
-            int x = patternX;
-            int y = patternY;
-            for (int i = 0; i < NUM_LINES; ++i) {
-                canvas.drawLine(x, y + i, x + textSize, y + i, paint);
-                x += i + 4 + textSize;
-                canvas.drawLine(x, y, x, y + (int) textSize, paint);
-                x += i + 5;
-            }
-        }
-        
-        private static final int NUM_LINES = 3;
-    }
-    
-
-    private final class GridPattern extends Pattern {
-        GridPattern(String lab, int x, int y, int[] cols) {
-            super(lab, x, y, cols[0]);
+    private abstract class MultiPattern extends Pattern {
+        MultiPattern(int x, int y, int[] cols) {
+            super(x, y, cols[0]);
             gridCols = cols;
             numCols = gridCols.length;
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(1f);
         }
+        
+        final int[] gridCols;
+        final int numCols;
+    }
+    
+
+    private final class PointPattern extends Pattern {
+        PointPattern(int x, int y, int col) {
+            super(x, y, col);
+        }
+        
         @Override
-        int getWidth() {
-            float perA = NUM_GRIDS / 2f + 4 + GRID_DIM;
-            return Math.round(perA * (NUM_GRIDS - 1) + 1);
-        }
-        @Override
-        int getHeight() {
-            return GRID_DIM;
-        }
-       
-        @Override
-        void draw(Canvas canvas) {
-            super.draw(canvas);
-            int x = patternX;
-            int y = patternY;
-            for (int i = 0; i < NUM_GRIDS; ++i) {
-                drawGrid(canvas, x, y);
-                x += i + 4 + GRID_DIM;
-            }
-        }
-        private void drawGrid(Canvas canvas, int sx, int sy) {
-            for (int y = 0; y < GRID_DIM; ++y) {
-                for (int x = 0; x < GRID_DIM; ++x) {
-                    paint.setColor(gridCols[(y * GRID_DIM + x) % numCols]);
+        void drawBlock(Canvas canvas, int sx, int sy, int index) {
+            for (int y = index % 3; y < blockSize; y = y * 2 + 2) {
+                for (int x = 0; x < blockSize; x = x * 2 + 2) {
                     canvas.drawPoint(sx + x, sy + y, paint);
                 }
             }
         }
+    }
+    
+
+    private final class LinePattern extends Pattern {
+        LinePattern(int x, int y, int col) {
+            super(x, y, col);
+        }
         
-        private static final int GRID_DIM = 29;
-        private static final int NUM_GRIDS = 3;
-        private final int[] gridCols;
-        private final int numCols;
+        @Override
+        void drawBlock(Canvas canvas, int sx, int sy, int index) {
+            int mid = (int) (blockSize / 2);
+            int off = mid + index - NUM_BLOCKS / 2;
+            canvas.drawLine(sx, sy + off, sx + blockSize, sy + off, paint);
+            canvas.drawLine(sx + off, sy, sx + off, sy + blockSize, paint);
+        }
+    }
+    
+
+    private final class BarPattern extends MultiPattern {
+        BarPattern(int x, int y, int[] cols) {
+            super(x, y, cols);
+        }
+        
+        @Override
+        void drawBlock(Canvas canvas, int sx, int sy, int index) {
+            // Draw vertical bars in the top half.
+            int half = blockSize / 2;
+            for (int x = 0; x < blockSize; ++x) {
+                paint.setColor(gridCols[x % numCols]);
+                canvas.drawLine(sx + x, sy, sx + x, sy + half, paint);
+            }
+            
+            // Draw horizontal bars in the bottom half.
+            for (int y = half; y < blockSize; ++y) {
+                paint.setColor(gridCols[(y + index) % numCols]);
+                canvas.drawLine(sx, sy + y, sx + blockSize, sy + y, paint);
+            }
+        }
+    }
+
+
+    private final class GridPattern extends MultiPattern {
+        GridPattern(int x, int y, int[] cols) {
+            super(x, y, cols);
+        }
+        
+        @Override
+        void drawBlock(Canvas canvas, int sx, int sy, int index) {
+            for (int y = 0; y < blockSize; ++y) {
+                for (int x = 0; x < blockSize; ++x) {
+                    paint.setColor(gridCols[(y + x) % numCols]);
+                    canvas.drawPoint(sx + x, sy + y, paint);
+                }
+            }
+        }
     }
     
 
@@ -310,6 +366,9 @@ public class CardWidget
 
 	// Padding to leave around items.
 	private static final int PAD = 10;
+
+    // Number of pattern blocks to draw in each test.
+    private static final int NUM_BLOCKS = 3;
 
 	// List of all colours we will draw for each pattern.
 	private int[] testColours = {
@@ -342,6 +401,10 @@ public class CardWidget
 	// Private Data.
 	// ******************************************************************** //
 
+    // Physical display width and height and pixel format.
+    private int dispWidth = 0;
+    private int dispHeight = 0;
+
 	// Our window width and height.
 	private int winWidth = 0;
 	private int winHeight = 0;
@@ -352,11 +415,17 @@ public class CardWidget
 	
 	// Size for text labels.
 	private float textSize;
-	
+    
+    // Width allowance for text labels.
+    private int labelWidth;
+	   
+    // Size for pattern blocks.
+    private int blockSize;
+
     // Baseline position for text, relative to the top of its area.
     private float textBase = 0;
     
-    // List of all the patterns we have on screen
+    // List of all the patterns we have on screen.
     private ArrayList<Pattern> testPatterns;
 
 }
