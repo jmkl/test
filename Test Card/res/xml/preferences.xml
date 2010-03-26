@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  
+    <PreferenceCategory android:title="@string/prefs_cat_display">
+
+        <CheckBoxPreference
+                android:key="keepAwake"
+                android:title="@string/prefs_wakelock"
+                android:summaryOff="@string/prefs_wakelock_summary_off"
+                android:summaryOn="@string/prefs_wakelock_summary_on"
+                android:defaultValue="false" />
+
+    </PreferenceCategory>
+  
+</PreferenceScreen>
+
