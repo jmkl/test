@@ -18,6 +18,7 @@ package org.hermit.testcard;
 
 
 import org.hermit.android.core.MainActivity;
+import org.hermit.android.core.OneTimeDialog;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -75,6 +76,12 @@ public class TestCard
         setAboutInfo(R.string.about_text);
         setHomeInfo(R.string.button_homepage, R.string.url_homepage);
         setLicenseInfo(R.string.button_license, R.string.url_license);
+        
+        // Create our "new in this version" dialog.
+        versionDialog = new OneTimeDialog(this, "new",
+                                          R.string.newf_title,
+                                          R.string.newf_text,
+                                          R.string.button_close);
 
         // We don't want a title bar or status bar.
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -109,6 +116,9 @@ public class TestCard
 
         super.onResume();
         
+        // Show the "new features" dialog.
+        versionDialog.showFirst();
+
         // Take the wake lock if we want it.
         if (wakeLock != null && !wakeLock.isHeld())
             wakeLock.acquire();
@@ -273,6 +283,9 @@ public class TestCard
     // Our power manager.
     private PowerManager powerManager = null;
     
+    // Dialog used for "new in this version" messages.
+    private OneTimeDialog versionDialog = null;
+
     // Wake lock used to keep the screen alive.  Null if we aren't going
     // to take a lock; non-null indicates that the lock should be taken
     // while we're actually running.

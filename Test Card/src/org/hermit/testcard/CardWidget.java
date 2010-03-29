@@ -80,7 +80,7 @@ public class CardWidget
         float fontScale = metrics.scaledDensity;
 
         textSize = 16f * fontScale;
-        blockSize = (int) textSize;
+        blockSize = (int) (20f * fontScale);
 	    
         textPaint = new Paint();
         textPaint.setAntiAlias(true);
@@ -368,7 +368,7 @@ public class CardWidget
 	private static final int PAD = 10;
 
     // Number of pattern blocks to draw in each test.
-    private static final int NUM_BLOCKS = 3;
+    private static final int NUM_BLOCKS = 4;
 
 	// List of all colours we will draw for each pattern.
 	private int[] testColours = {
@@ -388,12 +388,13 @@ public class CardWidget
         { Color.RED, Color.BLUE, },
         { Color.GREEN, Color.BLUE, },
         { Color.YELLOW, Color.CYAN, Color.MAGENTA, },
-        { Color.WHITE, Color.RED, Color.GREEN, Color.BLUE, },
-        { Color.WHITE, Color.YELLOW, Color.CYAN, Color.MAGENTA, },
+        { Color.RED, Color.CYAN, },
+        { Color.GREEN, Color.MAGENTA, },
+        { Color.BLUE, Color.YELLOW, },
     };
     private String[] comboNames = {
         "WK", "RGB", "RG", "RB", "GB",
-        "YCM", "WRGB", "WYCM",
+        "YCM", "RC", "GM", "BY",
     };
 
 

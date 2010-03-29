@@ -14,6 +14,7 @@
     <!-- Help section titles. -->
     <string-array name="help_titles">
 		<item></item>
+		<item>Display</item>  
 		<item>Menu</item>
 		<item>Settings</item>  
 		<item>More Information</item>
@@ -22,19 +23,43 @@
 
     <!-- Help section texts. -->
     <string-array name="help_texts">
-    
+
 <item><b>Test Card</b> is a very simple screen test app for Android.  It
 displays a simple test pattern which you can examine with a loupe.  Right now
-it's geared towards letting you examine the pixel density and format
-on your device.</item>
-			  
+it\'s geared towards letting you examine the pixel density and format
+on your device.\n\
+\n\
+On many devices, the display will be utterly uninteresting.  However, on
+some, notably AMOLED devices, the results — when viewed under magnification —
+are much more interesting.  Comparing a Motorola Droid with a Nexus One,
+for example, shows a significant difference in the display quality.</item>
+
+<item>The display shows test patterns which are intended to let you see
+the structure of individual pixels, and the effect that has on the
+overall quality of the display.  Four main types of patterns are shown,
+in a range of colours; the colours are labelled with their initial letters,
+\"B\" being blue and \"K\" being black\n\
+\n\
+Two types of single-colour patterns are shown: dots and lines.  They are
+shown multiple times at different offsets, so that if a screen has pixels with
+different colour components — as some AMOLED displays — you can see how
+the patterns look on different pixel alignments.  On some displays this will
+have no effect, on others a very marked effect.\n\
+\n\
+Below this, two types of multi-colour patterns are shown: lines and dot grids.
+The line blocks show vertical (top half) and horizontal (bottom half) blocks
+made of lines of alternating colours; the dot grids show grids of dots
+of the same colours.  The labels show which colours are used in each pattern,
+so \"YCM\" is yellow, cyan and magenta.  Again, the patterns are shown
+in different offsets to align with the pixel grids in different ways.</item>
+
 <item>The device\'s \"menu\" button pops up a menu containing a number
 of options:\n\
 • <b>Settings</b> takes you to the settings screen; see \"Settings\" below.\n\
 • <b>Help</b> displays this help.\n\
 • <b>About</b> displays an about box, with links to the license and
 the project home page.</item>
-              
+
 <item>Test Card has a number of user-configurable options in its Settings
 screen.  This screen is reached through the menu, as described under \"Menu\"
 above.  The available settings are:\n\
@@ -52,8 +77,8 @@ sections.</item>
 <item>@array/help_info_texts</item>
 
     </string-array>
-        
-                             
+
+
     <!-- ################################################################# -->
     <!-- Project Help.                                                     -->
     <!-- ################################################################# -->
