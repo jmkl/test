@@ -300,11 +300,9 @@ public class CardWidget
         
         @Override
         void drawBlock(Canvas canvas, int sx, int sy, int index) {
-            for (int y = index % 3; y < blockSize; y = y * 2 + 2) {
-                for (int x = 0; x < blockSize; x = x * 2 + 2) {
-                    canvas.drawPoint(sx + x, sy + y, paint);
-                }
-            }
+            for (int y = 0; y < blockSize; y = y * 2 + 2)
+                for (int x = 0; x < blockSize; x = x * 2 + 2)
+                    canvas.drawPoint(sx + x, sy + y + index % 3, paint);
         }
     }
     
