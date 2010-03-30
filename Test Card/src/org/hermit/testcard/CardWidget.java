@@ -150,6 +150,14 @@ public class CardWidget
         Label info = new Label(dispInfo, PAD, PAD);
         testPatterns.add(info);
         y += textSize + PAD;
+        
+        // Check the screen height available for the test patterns.
+        // Reduce the pattern size to fit if necessary.
+        int np = testColours.length + testCombos.length;
+        int totPad = np * PAD / 2 + PAD;
+        int ps = ((winHeight - y - PAD / 2) - totPad) / np;
+        if (ps < blockSize)
+            blockSize = ps;
 
         for (int i = 0; i < testColours.length; ++i) {
             int x = PAD;
@@ -165,7 +173,7 @@ public class CardWidget
             p = new LinePattern(x, y, testColours[i]);
             testPatterns.add(p);
     
-    	    y += p.getHeight();
+    	    y += p.getHeight() + PAD / 2;
     	}
         
     	y += PAD;
@@ -184,7 +192,7 @@ public class CardWidget
             p = new GridPattern(x, y, testCombos[i]);
             testPatterns.add(p);
             
-            y += p.getHeight();
+            y += p.getHeight() + PAD / 2;
         }
         
     	// Need to re-draw.
