@@ -39,8 +39,11 @@ import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
+import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
+import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
+import android.util.Log;
 
 
 /**
@@ -313,14 +316,19 @@ class CommView
 	 */
 	@Override
 	void start() {
-		// Register for telephony events.
+		// Register for telephony events.  The type of signal strength
+	    // notification depends on the Android version.
+	    int strCode = android.os.Build.VERSION.SDK_INT <
+	                                    android.os.Build.VERSION_CODES.ECLAIR ?
+	                        PhoneStateListener.LISTEN_SIGNAL_STRENGTH :
+	                        PhoneStateListener.LISTEN_SIGNAL_STRENGTHS;
         telephonyManager.listen(phoneListener,
 						        PhoneStateListener.LISTEN_CALL_STATE |
 						        PhoneStateListener.LISTEN_CELL_LOCATION |
 						        PhoneStateListener.LISTEN_DATA_ACTIVITY |
 						        PhoneStateListener.LISTEN_DATA_CONNECTION_STATE |
 						        PhoneStateListener.LISTEN_SERVICE_STATE |
-						        PhoneStateListener.LISTEN_SIGNAL_STRENGTH);
+						        strCode);
         
         // We already set up WiFi monitoring in appStart().
         
@@ -423,6 +431,10 @@ class CommView
 					GsmCellLocation gloc = (GsmCellLocation) location;
 					cellId = gloc.getCid();
 					updateHead();
+                } else if (location instanceof CdmaCellLocation) {
+                    CdmaCellLocation gloc = (CdmaCellLocation) location;
+                    cellId = gloc.getBaseStationId();
+                    updateHead();
                 }
 			}
 		}
@@ -471,6 +483,7 @@ class CommView
 		@Override
 		public void onSignalStrengthChanged(int asu) {
 			synchronized (this) {
+                Log.v(TAG, "OLD SIG: ASU=" + asu);
 				cellAsu = asu;
 				updateHead();
 				if (cellState == ServiceState.STATE_IN_SERVICE ||
@@ -479,6 +492,31 @@ class CommView
 			}
 		}
 		
+		@Override
+		public void onSignalStrengthsChanged(SignalStrength signalStrength) {
+		    synchronized (this) {
+		        if (signalStrength.isGsm()) {
+		            cellAsu = signalStrength.getGsmSignalStrength();
+		            Log.v(TAG, "NEW SIG: GSM=" + cellAsu);
+		        } else {
+		            int cdma = signalStrength.getCdmaDbm();
+		            int evdo = signalStrength.getEvdoDbm();
+		            
+		            // TODO: The EVDO numbers seem crazy big.  Using just the
+		            // CDMA number gives nice results.
+		            int max = cdma; // evdo > cdma ? evdo : cdma;
+
+		            // Convert to ASU.  (Sort of.)
+		            cellAsu = Math.round((max + 113f) / 2f);
+		            Log.v(TAG, "NEW SIG: CDMA=" + cdma + "; evdo=" + evdo + "; asu=" + cellAsu);
+		        }
+		        updateHead();
+		        if (cellState == ServiceState.STATE_IN_SERVICE ||
+		                cellState == ServiceState.STATE_EMERGENCY_ONLY)
+		            cellBar.setValue(cellAsu);
+		    }
+		}
+
 		private void updateHead() {
 			// Update the header widget.
 			switch (cellState) {
