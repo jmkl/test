@@ -641,8 +641,11 @@ public class Tricorder
      * @param	viewDef			View definition of the view to show.
      */
     void selectDataView(ViewDefinition viewDef) {
-    	currentView = viewDef;
-   	
+        // Stop the old view.
+    	mainView.deselectView();
+    	
+        currentView = viewDef;
+        
     	// Set the bar colours to match.
     	swoopCorner.selectDataView(currentView);
     	topLabel.setViewDef(currentView, currentView.titleId);

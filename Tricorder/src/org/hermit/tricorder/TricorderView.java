@@ -263,7 +263,21 @@ class TricorderView
     
 
     /**
-     * Select and display the given view.
+     * Stop the current view (if any) and de-select it, so we have no
+     * current view.
+     */
+    void deselectView() {
+        synchronized (this) {
+            if (currentView != null) {
+                currentView.view.stop();
+                currentView = null;
+            }
+        }
+    }
+
+
+    /**
+     * Select and display the given view.  You should call stopView() first.
      * 
      * @param	viewDef			View definition of the view to show.
      */
@@ -357,7 +371,7 @@ class TricorderView
     @Override
     protected void doUpdate(long now) {
         // If 1 second has passed, give the view a 1-sec tick.
-        if (now - lastTick > 1000) {
+        if (currentView != null && now - lastTick > 1000) {
             currentView.view.tick(now);
             lastTick = now;
         }
@@ -378,8 +392,10 @@ class TricorderView
      */
     @Override
     protected void doDraw(Canvas canvas, long now) {
-        canvas.drawColor(Tricorder.COL_BG);
-        currentView.view.draw(canvas, now, true);
+        if (currentView != null) {
+            canvas.drawColor(Tricorder.COL_BG);
+            currentView.view.draw(canvas, now, true);
+        }
     }
 
 
