@@ -75,7 +75,7 @@ public class InfoBox
     	setContentView(content);
 	}
 
-	
+
     /**
      * Create the popup dialog UI.
      */
@@ -231,6 +231,18 @@ public class InfoBox
      * @param	text			Text to display in the dialog.
      */
     public void show(int text) {
+        textView.setText(text);
+        show();
+    }
+    
+
+    /**
+     * Start the dialog and display it on screen.  The window is placed in
+     * the application layer and opaque.
+     * 
+     * @param   text            Text to display in the dialog.
+     */
+    public void show(String text) {
         textView.setText(text);
         show();
     }
