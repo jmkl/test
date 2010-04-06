@@ -124,8 +124,10 @@ public class AudioReader
         
         // Kill the audio input.
         synchronized (this) {
-            audioInput.release();
-            audioInput = null;
+            if (audioInput != null) {
+                audioInput.release();
+                audioInput = null;
+            }
         }
         
         Log.i(TAG, "Reader: Thread Stopped");
