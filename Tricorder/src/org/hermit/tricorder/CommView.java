@@ -115,16 +115,17 @@ class CommView
 		//     - ASU=0 means "-113 dBm or less"
 		//     - ASU=31 means "-51 dBm or greater"
 		//     Current signal strength in dBm ranges from -113 - -51dBm
-		// We'll assume an ASU range from 0 to 31.
+		// We'll assume an ASU range from 0 to 32 -- I got 32 on CDMA
+    	// parked beside the tower.
 		String[] ctext = { "000000000", "#", "T - Mobile X", "00" };
-		cellBar = new BargraphElement(parent, 5f, 6.2f,
+		cellBar = new BargraphElement(parent, 5f, 6.4f,
 									  COLOUR_GRID, COLOUR_PLOT_HI, ctext, 1);
         cellBar.clearCid();
         cellBar.setLabel(msgNoData);
         cellBar.clearAsu();
 		cellBars = new BargraphElement[MAX_CELL];
 		for (int c = 0; c < MAX_CELL; ++c) {
-			cellBars[c] = new BargraphElement(parent, 5f, 6.2f,
+			cellBars[c] = new BargraphElement(parent, 5f, 6.4f,
 					                          COLOUR_GRID, COLOUR_PLOT, ctext, 1);
 	        cellBars[c].clearCid();
 	        cellBars[c].setLabel(msgNoData);
@@ -136,7 +137,7 @@ class CommView
 		wifiBars = new BargraphElement[MAX_WIFI];
 		String[] wtext = { "2.456", "#", "aw19.alamedawireless.o", "00" };
 		for (int w = 0; w < MAX_WIFI; ++w) {
-			wifiBars[w] = new BargraphElement(parent, 5f, 8.2f,
+			wifiBars[w] = new BargraphElement(parent, 5f, 8.4f,
 											  COLOUR_GRID, COLOUR_PLOT,
 					  						  wtext, 1);
 		}
