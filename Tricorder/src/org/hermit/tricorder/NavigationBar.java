@@ -116,7 +116,11 @@ class NavigationBar
      * @param	but				The button.
      */
     private void clicked(NavButton but) {
-    	parentApp.selectDataView(but.getViewDef());
+        try {
+            parentApp.selectDataView(but.getViewDef());
+        } catch (Exception e) {
+            parentApp.reportException(e);
+        }
     }
 
 

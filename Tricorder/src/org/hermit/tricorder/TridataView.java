@@ -475,25 +475,29 @@ class TridataView
      */
 	@Override
 	public boolean handleTouchEvent(MotionEvent event) {
-		final int x = (int) event.getX();
-		final int y = (int) event.getY();
-		final int action = event.getAction();
-		boolean done = false;
+        boolean done = false;
+	    try {
+	        final int x = (int) event.getX();
+	        final int y = (int) event.getY();
+	        final int action = event.getAction();
 
-		synchronized (this) {
-			if (action == MotionEvent.ACTION_DOWN) {
-				if (plotBounds != null && plotBounds.contains(x, y)) {
-					setRelativeMode(!relativeMode);
-					appContext.soundSecondary();
-					done = true;
-				} else if (numBounds != null && numBounds.contains(x, y)) {
-					// Toggle the X/Y/Z display.
-					showXyz = !showXyz;
-					appContext.soundSecondary();
-					done = true;
-				}
-			}
-		}
+	        synchronized (this) {
+	            if (action == MotionEvent.ACTION_DOWN) {
+	                if (plotBounds != null && plotBounds.contains(x, y)) {
+	                    setRelativeMode(!relativeMode);
+	                    appContext.soundSecondary();
+	                    done = true;
+	                } else if (numBounds != null && numBounds.contains(x, y)) {
+	                    // Toggle the X/Y/Z display.
+	                    showXyz = !showXyz;
+	                    appContext.soundSecondary();
+	                    done = true;
+	                }
+	            }
+	        }
+	    } catch (Exception e) {
+	        appContext.reportException(e);
+	    }
 
 		event.recycle();
 		return done;

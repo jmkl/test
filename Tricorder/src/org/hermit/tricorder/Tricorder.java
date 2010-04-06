@@ -665,8 +665,12 @@ public class Tricorder
      * The aux button has been clicked; pass it to the view.
      */
     void viewButtonClicked() {
-    	if (currentView != null)
-    		currentView.view.auxButtonClick();
+        try {
+            if (currentView != null)
+                currentView.view.auxButtonClick();
+        } catch (Exception e) {
+            reportException(e);
+        }
     }
     
 

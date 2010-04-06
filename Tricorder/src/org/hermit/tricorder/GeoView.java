@@ -603,19 +603,23 @@ class GeoView
      */
     @Override
     public boolean handleTouchEvent(MotionEvent event) {
-        final int x = (int) event.getX();
-        final int y = (int) event.getY();
-        final int action = event.getAction();
         boolean done = false;
+        try {
+            final int x = (int) event.getX();
+            final int y = (int) event.getY();
+            final int action = event.getAction();
 
-        synchronized (this) {
-            if (action == MotionEvent.ACTION_DOWN) {
-                if (satBounds != null && satBounds.contains(x, y)) {
-                    satElement.toggleMode();
-                    appContext.soundSecondary();
-                    done = true;
+            synchronized (this) {
+                if (action == MotionEvent.ACTION_DOWN) {
+                    if (satBounds != null && satBounds.contains(x, y)) {
+                        satElement.toggleMode();
+                        appContext.soundSecondary();
+                        done = true;
+                    }
                 }
             }
+        } catch (Exception e) {
+            appContext.reportException(e);
         }
 
         event.recycle();
