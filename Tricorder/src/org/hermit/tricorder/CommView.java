@@ -420,103 +420,123 @@ class CommView
 	 */
 	private PhoneStateListener phoneListener = new PhoneStateListener() {
 		
-		@Override
-		public void onCallStateChanged(int state, String incomingNumber) {
+	    @Override
+	    public void onCallStateChanged(int state, String incomingNumber) {
 
-		}
-		
-		@Override
-		public void onCellLocationChanged(CellLocation location) {
-			synchronized (this) {
-				if (location instanceof GsmCellLocation) {
-					GsmCellLocation gloc = (GsmCellLocation) location;
-					cellId = gloc.getCid();
-					updateHead();
-                } else if (location instanceof CdmaCellLocation) {
-                    CdmaCellLocation gloc = (CdmaCellLocation) location;
-                    cellId = gloc.getBaseStationId();
-                    updateHead();
-                }
-			}
-		}
-		
-		@Override
-		public void onDataActivity(int direction) {
-			synchronized (this) {
-				switch (direction) {
-				case TelephonyManager.DATA_ACTIVITY_NONE:
-					cellHead.setTopIndicator(false, 0xffff0000);
-					cellHead.setBotIndicator(false, 0xff00a000);
-					break;
-				case TelephonyManager.DATA_ACTIVITY_IN:
-					cellHead.setTopIndicator(false, 0xffff0000);
-					cellHead.setBotIndicator(true, 0xff00a000);
-					break;
-				case TelephonyManager.DATA_ACTIVITY_OUT:
-					cellHead.setTopIndicator(true, 0xffff0000);
-					cellHead.setBotIndicator(false, 0xff00a000);
-					break;
-				case TelephonyManager.DATA_ACTIVITY_INOUT:
-					cellHead.setTopIndicator(true, 0xffff0000);
-					cellHead.setBotIndicator(true, 0xff00a000);
-					break;
-				}
-			}
-		}
-		
-		@Override
-		public void onDataConnectionStateChanged(int state) {
+	    }
 
-		}
-		
-		@Override
-		public void onServiceStateChanged(ServiceState serviceState) {
-			synchronized (this) {
-				cellState = serviceState.getState();
-				cellOp = serviceState.getOperatorAlphaLong();
-				updateHead();
-				if (cellState == ServiceState.STATE_OUT_OF_SERVICE ||
-								cellState == ServiceState.STATE_POWER_OFF)
-					cellBar.clearValue();
-			}
-		}
-		
-		@Override
-		public void onSignalStrengthChanged(int asu) {
-			synchronized (this) {
-                Log.v(TAG, "OLD SIG: ASU=" + asu);
-				cellAsu = asu;
-				updateHead();
-				if (cellState == ServiceState.STATE_IN_SERVICE ||
-						cellState == ServiceState.STATE_EMERGENCY_ONLY)
-					cellBar.setValue(cellAsu);
-			}
-		}
-		
-		@Override
-		public void onSignalStrengthsChanged(SignalStrength signalStrength) {
-		    synchronized (this) {
-		        if (signalStrength.isGsm()) {
-		            cellAsu = signalStrength.getGsmSignalStrength();
-		            Log.v(TAG, "NEW SIG: GSM=" + cellAsu);
-		        } else {
-		            int cdma = signalStrength.getCdmaDbm();
-		            int evdo = signalStrength.getEvdoDbm();
-		            
-		            // TODO: The EVDO numbers seem crazy big.  Using just the
-		            // CDMA number gives nice results.
-		            int max = cdma; // evdo > cdma ? evdo : cdma;
+	    @Override
+	    public void onCellLocationChanged(CellLocation location) {
+	        try {
+	            synchronized (this) {
+	                if (location instanceof GsmCellLocation) {
+	                    GsmCellLocation gloc = (GsmCellLocation) location;
+	                    cellId = gloc.getCid();
+	                    updateHead();
+	                } else if (location instanceof CdmaCellLocation) {
+	                    CdmaCellLocation gloc = (CdmaCellLocation) location;
+	                    cellId = gloc.getBaseStationId();
+	                    updateHead();
+	                }
+	            }
+	        } catch (Exception e) {
+	            appContext.reportException(e);
+	        }
+	    }
 
-		            // Convert to ASU.  (Sort of.)
-		            cellAsu = Math.round((max + 113f) / 2f);
-		            Log.v(TAG, "NEW SIG: CDMA=" + cdma + "; evdo=" + evdo + "; asu=" + cellAsu);
-		        }
-		        updateHead();
-		        if (cellState == ServiceState.STATE_IN_SERVICE ||
-		                cellState == ServiceState.STATE_EMERGENCY_ONLY)
-		            cellBar.setValue(cellAsu);
-		    }
-		}
+	    @Override
+	    public void onDataActivity(int direction) {
+	        try {
+	            synchronized (this) {
+	                switch (direction) {
+	                case TelephonyManager.DATA_ACTIVITY_NONE:
+	                    cellHead.setTopIndicator(false, 0xffff0000);
+	                    cellHead.setBotIndicator(false, 0xff00a000);
+	                    break;
+	                case TelephonyManager.DATA_ACTIVITY_IN:
+	                    cellHead.setTopIndicator(false, 0xffff0000);
+	                    cellHead.setBotIndicator(true, 0xff00a000);
+	                    break;
+	                case TelephonyManager.DATA_ACTIVITY_OUT:
+	                    cellHead.setTopIndicator(true, 0xffff0000);
+	                    cellHead.setBotIndicator(false, 0xff00a000);
+	                    break;
+	                case TelephonyManager.DATA_ACTIVITY_INOUT:
+	                    cellHead.setTopIndicator(true, 0xffff0000);
+	                    cellHead.setBotIndicator(true, 0xff00a000);
+	                    break;
+	                }
+	            }
+	        } catch (Exception e) {
+	            appContext.reportException(e);
+	        }
+	    }
+
+	    @Override
+	    public void onDataConnectionStateChanged(int state) {
+
+	    }
+
+	    @Override
+	    public void onServiceStateChanged(ServiceState serviceState) {
+	        try {
+	            synchronized (this) {
+	                cellState = serviceState.getState();
+	                cellOp = serviceState.getOperatorAlphaLong();
+	                updateHead();
+	                if (cellState == ServiceState.STATE_OUT_OF_SERVICE ||
+	                        cellState == ServiceState.STATE_POWER_OFF)
+	                    cellBar.clearValue();
+	            }
+	        } catch (Exception e) {
+	            appContext.reportException(e);
+	        }
+	    }
+
+	    @Override
+	    public void onSignalStrengthChanged(int asu) {
+	        try {
+	            synchronized (this) {
+	                Log.v(TAG, "OLD SIG: ASU=" + asu);
+	                cellAsu = asu;
+	                updateHead();
+	                if (cellState == ServiceState.STATE_IN_SERVICE ||
+	                        cellState == ServiceState.STATE_EMERGENCY_ONLY)
+	                    cellBar.setValue(cellAsu);
+	            }
+	        } catch (Exception e) {
+	            appContext.reportException(e);
+	        }
+	    }
+
+	    @Override
+	    public void onSignalStrengthsChanged(SignalStrength signalStrength) {
+	        try {
+	            synchronized (this) {
+	                if (signalStrength.isGsm()) {
+	                    cellAsu = signalStrength.getGsmSignalStrength();
+	                    Log.v(TAG, "NEW SIG: GSM=" + cellAsu);
+	                } else {
+	                    int cdma = signalStrength.getCdmaDbm();
+	                    int evdo = signalStrength.getEvdoDbm();
+
+	                    // TODO: The EVDO numbers seem crazy big.  Using just the
+	                    // CDMA number gives nice results.
+	                    int max = cdma; // evdo > cdma ? evdo : cdma;
+
+	                    // Convert to ASU.  (Sort of.)
+	                    cellAsu = Math.round((max + 113f) / 2f);
+	                    Log.v(TAG, "NEW SIG: CDMA=" + cdma + "; evdo=" + evdo + "; asu=" + cellAsu);
+	                }
+	                updateHead();
+	                if (cellState == ServiceState.STATE_IN_SERVICE ||
+	                        cellState == ServiceState.STATE_EMERGENCY_ONLY)
+	                    cellBar.setValue(cellAsu);
+	            }
+	        } catch (Exception e) {
+	            appContext.reportException(e);
+	        }
+	    }
 
 		private void updateHead() {
 			// Update the header widget.
@@ -564,21 +584,25 @@ class CommView
 	private BroadcastReceiver wifiListener = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context c, Intent i) {
-			final String action = i.getAction();
-	        if (action.equals(WifiManager.NETWORK_IDS_CHANGED_ACTION))
-	        	;
-	        else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION))
-	        	getWifiConnection();
-	        else if (action.equals(WifiManager.RSSI_CHANGED_ACTION))
-	        	getWifiConnection();
-	        else if (action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION))
-	        	getScanResults();
-	        else if (action.equals(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION))
-	        	getWifiConnection();
-	        else if (action.equals(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION))
-	        	getWifiConnection();
-	        else if (action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION))
-	        	getWifiState();
+		    try {
+		        final String action = i.getAction();
+		        if (action.equals(WifiManager.NETWORK_IDS_CHANGED_ACTION))
+		            ;
+		        else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION))
+		            getWifiConnection();
+		        else if (action.equals(WifiManager.RSSI_CHANGED_ACTION))
+		            getWifiConnection();
+		        else if (action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION))
+		            getScanResults();
+		        else if (action.equals(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION))
+		            getWifiConnection();
+		        else if (action.equals(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION))
+		            getWifiConnection();
+		        else if (action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION))
+		            getWifiState();
+		    } catch (Exception e) {
+		        appContext.reportException(e);
+		    }
 		}
 	};
 

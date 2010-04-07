@@ -384,10 +384,14 @@ class TridataView
      * Called when sensor values have changed.
      *
 	 * @param	event			The sensor event.
-     */
-	public void onSensorChanged(SensorEvent event) {
-	    onSensorData(event.sensor.getType(), event.values);
-	}
+	 */
+    public void onSensorChanged(SensorEvent event) {
+        try {
+            onSensorData(event.sensor.getType(), event.values);
+        } catch (Exception e) {
+            appContext.reportException(e);
+        }
+    }
 
 
     /**

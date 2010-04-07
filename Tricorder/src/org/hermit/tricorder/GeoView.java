@@ -341,16 +341,43 @@ class GeoView
 	 * @param	loc			   The new location, as a Location object.
 	 */
 	public void onLocationChanged(Location loc) {
-		synchronized (this) {
-			if (loc.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
-			    netLocation = loc;
-                netElement.setValue(loc);
-			} else if (loc.getProvider().equals(LocationManager.GPS_PROVIDER)) {
-			    gpsLocation = loc;
-				gpsElement.setValue(loc);
-			}
-		}
+	    try {
+	        synchronized (this) {
+	            if (loc.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+	                netLocation = loc;
+	                netElement.setValue(loc);
+	            } else if (loc.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+	                gpsLocation = loc;
+	                gpsElement.setValue(loc);
+	            }
+	        }
+	    } catch (Exception e) {
+	        appContext.reportException(e);
+	    }
 	}
+
+
+    /**
+     * Called when the provider is enabled by the user.
+     * 
+     * @param   provider        The name of the location provider
+     *                          associated with this update.
+     */
+    public void onProviderEnabled(String provider) {
+        try {
+            Log.i(TAG, "Provider enabled: " + provider);
+            synchronized (this) {
+                if (provider.equals(LocationManager.NETWORK_PROVIDER))
+                    netElement.setStatus(null);
+                else if (provider.equals(LocationManager.GPS_PROVIDER)) {
+                    gpsElement.setStatus(null);
+                    satElement.clearValues();
+                }
+            }
+        } catch (Exception e) {
+            appContext.reportException(e);
+        }
+    }
 
 
 	/**
@@ -362,37 +389,22 @@ class GeoView
 	 * 							associated with this update.
 	 */
 	public void onProviderDisabled(String provider) {
-		Log.i(TAG, "Provider disabled: " + provider);
-		synchronized (this) {
-			if (provider.equals(LocationManager.NETWORK_PROVIDER))
-				netElement.setStatus(msgDisabled);
-			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
-				gpsElement.setStatus(msgDisabled);
-                satElement.clearValues();
-			}
-		}
+	    try {
+	        Log.i(TAG, "Provider disabled: " + provider);
+	        synchronized (this) {
+	            if (provider.equals(LocationManager.NETWORK_PROVIDER))
+	                netElement.setStatus(msgDisabled);
+	            else if (provider.equals(LocationManager.GPS_PROVIDER)) {
+	                gpsElement.setStatus(msgDisabled);
+	                satElement.clearValues();
+	            }
+	        }
+	    } catch (Exception e) {
+	        appContext.reportException(e);
+	    }
 	}
 	 
 	 
-	/**
-	 * Called when the provider is enabled by the user.
-	 * 
-	 * @param	provider		The name of the location provider
-	 * 							associated with this update.
-	 */
-	public void onProviderEnabled(String provider) {
-		Log.i(TAG, "Provider enabled: " + provider);
-		synchronized (this) {
-			if (provider.equals(LocationManager.NETWORK_PROVIDER))
-				netElement.setStatus(null);
-			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
-				gpsElement.setStatus(null);
-                satElement.clearValues();
-			}
-		}
-	}
-
-
 	/**
 	 * Called when the provider status changes.  This method is called
 	 * when a provider is unable to fetch a location or if the provider
@@ -414,93 +426,101 @@ class GeoView
 	 * 											   used to derive the fix.
 	 */
 	public void onStatusChanged(String provider, int status, Bundle extras) {
-		Log.i(TAG, "Provider status: " + provider + "=" + status);
-		synchronized (this) {
-			String msg = null;
-			if (status == LocationProvider.OUT_OF_SERVICE)
-				msg = msgOffline;
-			if (provider.equals(LocationManager.NETWORK_PROVIDER))
-				netElement.setStatus(msg);
-			else if (provider.equals(LocationManager.GPS_PROVIDER)) {
-				gpsElement.setStatus(msg);
-			}
-		}
+	    try {
+	        Log.i(TAG, "Provider status: " + provider + "=" + status);
+	        synchronized (this) {
+	            String msg = null;
+	            if (status == LocationProvider.OUT_OF_SERVICE)
+	                msg = msgOffline;
+	            if (provider.equals(LocationManager.NETWORK_PROVIDER))
+	                netElement.setStatus(msg);
+	            else if (provider.equals(LocationManager.GPS_PROVIDER)) {
+	                gpsElement.setStatus(msg);
+	            }
+	        }
+	    } catch (Exception e) {
+	        appContext.reportException(e);
+	    }
 	}
 
-	
+
     /**
      * Called to report changes in the GPS status.
      * 
      * @param   event           Event number describing what has changed.
      */
-    @Override
-    public void onGpsStatusChanged(int event) {
-        switch (event) {
-        case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-            gpsStatus = locationManager.getGpsStatus(gpsStatus);
-            Iterable<GpsSatellite> sats = gpsStatus.getSatellites();
-            long time = System.currentTimeMillis();
-            for (GpsSatellite sat : sats) {
-                int prn = sat.getPrn();
-                if (prn < 1 || prn > NUM_SATS)
-                    continue;
-                
-                GpsInfo ginfo = satCache[prn];
-                ginfo.time = time;
-                ginfo.azimuth = sat.getAzimuth();
-                ginfo.elev = sat.getElevation();
-                ginfo.snr = sat.getSnr();
-                ginfo.hasAl = sat.hasAlmanac();
-                ginfo.hasEph = sat.hasEphemeris();
-                ginfo.used = sat.usedInFix();
-            }
-            
-//            // Fake some satellites, for testing.
-//            Random r = new Random();
-//            r.setSeed(4232);
-//            for (int i = 1; i <= NUM_SATS; ++i) {
-//                GpsInfo ginfo = satCache[i];
-//                if (i % 3 == 0) {
-//                    ginfo.time = time - r.nextInt(5000);
-//                    ginfo.azimuth = r.nextFloat() * 360.0f;
-//                    ginfo.elev = r.nextFloat() * 90.0f;
-//                    ginfo.snr = 12;
-//                    ginfo.hasAl = r.nextInt(4) != 0;
-//                    ginfo.hasEph = ginfo.hasAl && r.nextInt(3) != 0;
-//                    ginfo.used = ginfo.hasEph && r.nextBoolean();
-//                } else {
-//                    ginfo.time = 0;
-//                }
-//            }
+	@Override
+	public void onGpsStatusChanged(int event) {
+	    try {
+	        switch (event) {
+	        case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+	            gpsStatus = locationManager.getGpsStatus(gpsStatus);
+	            Iterable<GpsSatellite> sats = gpsStatus.getSatellites();
+	            long time = System.currentTimeMillis();
+	            for (GpsSatellite sat : sats) {
+	                int prn = sat.getPrn();
+	                if (prn < 1 || prn > NUM_SATS)
+	                    continue;
 
-            // Post-process the sats.
-            numSats = 0;
-            for (int prn = 1; prn <= NUM_SATS; ++prn) {
-                GpsInfo ginfo = satCache[prn];
-                if (time - ginfo.time > DATA_CACHE_TIME) {
-                    ginfo.time = 0;
-                    ginfo.usedTime = 0;
-                } else {
-                    if (ginfo.used)
-                        ginfo.usedTime = time;
-                    else if (time - ginfo.usedTime <= DATA_CACHE_TIME)
-                        ginfo.used = true;
-                    else
-                        ginfo.usedTime = 0;
-                    int colour = ginfo.used ? 0 : ginfo.hasEph ? 1 : ginfo.hasAl ? 2 : 3;
-                    ginfo.colour = COLOUR_PLOT[colour];
-                    ++numSats;
-                }
-            }
-           
-            satElement.setValues(satCache, numSats);
-            break;
-        case GpsStatus.GPS_EVENT_STARTED:
-        case GpsStatus.GPS_EVENT_STOPPED:
-        case GpsStatus.GPS_EVENT_FIRST_FIX:
-            break;
-        }
-    }
+	                GpsInfo ginfo = satCache[prn];
+	                ginfo.time = time;
+	                ginfo.azimuth = sat.getAzimuth();
+	                ginfo.elev = sat.getElevation();
+	                ginfo.snr = sat.getSnr();
+	                ginfo.hasAl = sat.hasAlmanac();
+	                ginfo.hasEph = sat.hasEphemeris();
+	                ginfo.used = sat.usedInFix();
+	            }
+
+	            //            // Fake some satellites, for testing.
+	            //            Random r = new Random();
+	            //            r.setSeed(4232);
+	            //            for (int i = 1; i <= NUM_SATS; ++i) {
+	            //                GpsInfo ginfo = satCache[i];
+	            //                if (i % 3 == 0) {
+	            //                    ginfo.time = time - r.nextInt(5000);
+	            //                    ginfo.azimuth = r.nextFloat() * 360.0f;
+	            //                    ginfo.elev = r.nextFloat() * 90.0f;
+	            //                    ginfo.snr = 12;
+	            //                    ginfo.hasAl = r.nextInt(4) != 0;
+	            //                    ginfo.hasEph = ginfo.hasAl && r.nextInt(3) != 0;
+	            //                    ginfo.used = ginfo.hasEph && r.nextBoolean();
+	            //                } else {
+	            //                    ginfo.time = 0;
+	            //                }
+	            //            }
+
+	            // Post-process the sats.
+	            numSats = 0;
+	            for (int prn = 1; prn <= NUM_SATS; ++prn) {
+	                GpsInfo ginfo = satCache[prn];
+	                if (time - ginfo.time > DATA_CACHE_TIME) {
+	                    ginfo.time = 0;
+	                    ginfo.usedTime = 0;
+	                } else {
+	                    if (ginfo.used)
+	                        ginfo.usedTime = time;
+	                    else if (time - ginfo.usedTime <= DATA_CACHE_TIME)
+	                        ginfo.used = true;
+	                    else
+	                        ginfo.usedTime = 0;
+	                    int colour = ginfo.used ? 0 : ginfo.hasEph ? 1 : ginfo.hasAl ? 2 : 3;
+	                    ginfo.colour = COLOUR_PLOT[colour];
+	                    ++numSats;
+	                }
+	            }
+
+	            satElement.setValues(satCache, numSats);
+	            break;
+	        case GpsStatus.GPS_EVENT_STARTED:
+	        case GpsStatus.GPS_EVENT_STOPPED:
+	        case GpsStatus.GPS_EVENT_FIRST_FIX:
+	            break;
+	        }
+	    } catch (Exception e) {
+	        appContext.reportException(e);
+	    }
+	}
 
 
     // ******************************************************************** //
@@ -551,43 +571,47 @@ class GeoView
      * @param   event           The sensor event.
      */
     public void onSensorChanged(SensorEvent event) {
-        final float[] values = event.values;
-        if (values.length < 3)
-            return;
-        
-        int type = event.sensor.getType();
-        if (type == Sensor.TYPE_ACCELEROMETER) {
-            if (accelValues == null)
-                accelValues = new float[3];
-            accelValues[0] = values[0];
-            accelValues[1] = values[1];
-            accelValues[2] = values[2];
-        } else if (type == Sensor.TYPE_MAGNETIC_FIELD) {
-            if (magValues == null)
-                magValues = new float[3];
-            magValues[0] = values[0];
-            magValues[1] = values[1];
-            magValues[2] = values[2];
+        try {
+            final float[] values = event.values;
+            if (values.length < 3)
+                return;
+
+            int type = event.sensor.getType();
+            if (type == Sensor.TYPE_ACCELEROMETER) {
+                if (accelValues == null)
+                    accelValues = new float[3];
+                accelValues[0] = values[0];
+                accelValues[1] = values[1];
+                accelValues[2] = values[2];
+            } else if (type == Sensor.TYPE_MAGNETIC_FIELD) {
+                if (magValues == null)
+                    magValues = new float[3];
+                magValues[0] = values[0];
+                magValues[1] = values[1];
+                magValues[2] = values[2];
+            }
+            checkGeomag();
+            if (accelValues == null || magValues == null || geomagneticField == null)
+                return;
+
+            // Get the device rotation matrix.
+            float[] rotate = new float[9];
+            boolean ok = SensorManager.getRotationMatrix(rotate, null, accelValues, magValues);
+            if (!ok)
+                return;
+
+            // Compute the device's orientation based on the rotation matrix.
+            final float[] orient = new float[3];
+            SensorManager.getOrientation(rotate, orient);
+
+            // Get the azimuth of device Y from magnetic north.  Compensate for
+            // magnetic declination.
+            final float azimuth = (float) Math.toDegrees(orient[0]);
+            final float dec = geomagneticField.getDeclination();
+            satElement.setAzimuth(azimuth + dec, dec);
+        } catch (Exception e) {
+            appContext.reportException(e);
         }
-        checkGeomag();
-        if (accelValues == null || magValues == null || geomagneticField == null)
-            return;
-
-        // Get the device rotation matrix.
-        float[] rotate = new float[9];
-        boolean ok = SensorManager.getRotationMatrix(rotate, null, accelValues, magValues);
-        if (!ok)
-            return;
-
-        // Compute the device's orientation based on the rotation matrix.
-        final float[] orient = new float[3];
-        SensorManager.getOrientation(rotate, orient);
-
-        // Get the azimuth of device Y from magnetic north.  Compensate for
-        // magnetic declination.
-        final float azimuth = (float) Math.toDegrees(orient[0]);
-        final float dec = geomagneticField.getDeclination();
-        satElement.setAzimuth(azimuth + dec, dec);
     }
 
 

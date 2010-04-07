@@ -409,10 +409,14 @@ class SolarView
 	 * @param	arg				The update argument.
 	 */
 	public void update(Observable o, Object arg) {
-		if (o instanceof WebBasedData && arg instanceof Long)
-			updateData((WebBasedData) o, (Long) arg);
-		else if (o instanceof CachedFile && arg instanceof URL)
-			updateImage((CachedFile) o, (URL) arg);
+	    try {
+	        if (o instanceof WebBasedData && arg instanceof Long)
+	            updateData((WebBasedData) o, (Long) arg);
+	        else if (o instanceof CachedFile && arg instanceof URL)
+	            updateImage((CachedFile) o, (URL) arg);
+	    } catch (Exception e) {
+	        appContext.reportException(e);
+	    }
 	}
 	
 	
@@ -518,24 +522,28 @@ class SolarView
      */
 	@Override
 	public boolean handleTouchEvent(MotionEvent event) {
-		final int x = (int) event.getX();
-		final int y = (int) event.getY();
-		final int action = event.getAction();
-		boolean done = false;
+        boolean done = false;
+	    try {
+	        final int x = (int) event.getX();
+	        final int y = (int) event.getY();
+	        final int action = event.getAction();
 
-		synchronized (this) {
-			if (action == MotionEvent.ACTION_DOWN) {
-				if ((!altMode && imageBounds != null && imageBounds.contains(x, y)) ||
-								(altMode && imageBigBounds != null && imageBigBounds.contains(x, y))) {
-					int i = (currentSunImage + 1) % SUN_URLS.length;
-					setDisplayedSunImage(i);
-					appContext.soundSecondary();
-				}
-			}
-		}
+	        synchronized (this) {
+	            if (action == MotionEvent.ACTION_DOWN) {
+	                if ((!altMode && imageBounds != null && imageBounds.contains(x, y)) ||
+	                        (altMode && imageBigBounds != null && imageBigBounds.contains(x, y))) {
+	                    int i = (currentSunImage + 1) % SUN_URLS.length;
+	                    setDisplayedSunImage(i);
+	                    appContext.soundSecondary();
+	                }
+	            }
+	        }
 
-		event.recycle();
-		return done;
+	        event.recycle();
+	    } catch (Exception e) {
+	        appContext.reportException(e);
+	    }
+        return done;
 	}
 
 
