@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 import org.hermit.android.core.SurfaceRunner;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -75,7 +75,7 @@ public abstract class InstrumentSurface
      * 
      * @param   app         The application context we're running in.
      */
-    public InstrumentSurface(Context app) {
+    public InstrumentSurface(Activity app) {
         super(app);
         init();
     }
@@ -88,7 +88,7 @@ public abstract class InstrumentSurface
      * @param   options     Options for this SurfaceRunner.  A bitwise OR of
      *                      SURFACE_XXX constants.
      */
-    public InstrumentSurface(Context app, int options) {
+    public InstrumentSurface(Activity app, int options) {
         super(app, options);
         init();
     }

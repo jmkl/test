@@ -22,6 +22,7 @@ package org.hermit.android.core;
 
 import org.hermit.utils.CharFormatter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -81,7 +82,7 @@ public abstract class SurfaceRunner
      * 
      * @param   app         The application context we're running in.
      */
-    public SurfaceRunner(Context app) {
+    public SurfaceRunner(Activity app) {
         super(app);
         init(app, 0);
     }
@@ -94,7 +95,7 @@ public abstract class SurfaceRunner
      * @param   options     Options for this SurfaceRunner.  A bitwise OR of
      *                      SURFACE_XXX constants.
      */
-    public SurfaceRunner(Context app, int options) {
+    public SurfaceRunner(Activity app, int options) {
         super(app);
         init(app, options);
     }
@@ -108,7 +109,7 @@ public abstract class SurfaceRunner
      */
     public SurfaceRunner(Context app, AttributeSet attrs) {
         super(app, attrs);
-        init(app, 0);
+        init((Activity) app, 0);
     }
     
 
@@ -119,8 +120,9 @@ public abstract class SurfaceRunner
      * @param   options     Options for this SurfaceRunner.  A bitwise OR of
      *                      SURFACE_XXX constants.
      */
-    private void init(Context app, int options) {
+    private void init(Activity app, int options) {
         appContext = app;
+        errorReporter = Errors.getInstance(app);
         surfaceOptions = options;
         animationDelay = 0;
 
@@ -385,8 +387,12 @@ public abstract class SurfaceRunner
     private void startRun() {
         synchronized (surfaceHolder) {
             // Tell the subclass we're running.
-            animStart();
-            
+            try {
+                animStart();
+            } catch (Exception e) {
+                errorReporter.reportException(e);
+            }
+       
             if (animTicker != null && animTicker.isAlive())
                 animTicker.kill();
             Log.i(TAG, "set running: start ticker");
@@ -411,7 +417,11 @@ public abstract class SurfaceRunner
             ticker.killAndWait();
         
         // Tell the subclass we've stopped.
-        animStop();
+        try {
+            animStop();
+        } catch (Exception e) {
+            errorReporter.reportException(e);
+        }
     }
     
 
@@ -459,16 +469,20 @@ public abstract class SurfaceRunner
     // ******************************************************************** //
 
     private void tick() {
-        // Do the application's physics.
-        long now = System.currentTimeMillis();
-        doUpdate(now);
-        if (showPerf)
-            statsTimeInt(1, (System.currentTimeMillis() - now) * 1000);
-        
-        // And update the screen.
-        refreshScreen(now);
+        try {
+            // Do the application's physics.
+            long now = System.currentTimeMillis();
+            doUpdate(now);
+            if (showPerf)
+                statsTimeInt(1, (System.currentTimeMillis() - now) * 1000);
+
+            // And update the screen.
+            refreshScreen(now);
+        } catch (Exception e) {
+            errorReporter.reportException(e);
+        }
     }
-    
+
     
     /**
      * Draw the game board to the screen in its current state, as a one-off.
@@ -929,7 +943,10 @@ public abstract class SurfaceRunner
 	// ******************************************************************** //
 
     // Application handle.
-    private Context appContext;
+    private Activity appContext;
+
+    // Error reporter.
+    private Errors errorReporter;
 
     // The surface manager for the view.
     private SurfaceHolder surfaceHolder = null;

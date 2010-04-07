@@ -215,6 +215,9 @@ public class WebBasedData
      * @param	now				The current time in millis.
      */
     public void update(long now) {
+        if (database == null)
+            return;
+        
         URL[] urls = null;
         String name = null;
         long earliest = 0;

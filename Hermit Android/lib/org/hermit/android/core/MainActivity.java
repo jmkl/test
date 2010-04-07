@@ -25,7 +25,6 @@ import java.util.HashMap;
 import org.hermit.android.notice.InfoBox;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -140,11 +139,9 @@ public class MainActivity
     @Override
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        
-        // Create the exception counters.
-        exceptionCounts = new HashMap<String, Integer>();
 
         appUtils = AppUtils.getInstance(this);
+        errorReporter = Errors.getInstance(this);
     }
 
 
@@ -265,54 +262,17 @@ public class MainActivity
     // ******************************************************************** //
 
     /**
-     * Report an unexpected exception to the user by popping up a toast
+     * Report an unexpected exception to the user by popping up a dialog
      * with some debug info.  Don't report the same exception more than twice,
      * and if we get floods of exceptions, just bomb out.
      * 
+     * <p>This method may be called from any thread.  The reporting will be
+     * deferred to the UI thread.
+     * 
      * @param   e           The exception.
      */
-    public void reportException(Exception e) {
-        StringBuilder text = new StringBuilder();
-        
-        text.append("Exception: ");
-        text.append(e.getClass().getName());
-        
-        String msg = e.getMessage();
-        if (msg != null)
-            text.append(": \"" + msg + "\"");
-
-        StackTraceElement[] trace = e.getStackTrace();
-        if (trace != null && trace.length > 0) {
-            StackTraceElement where = trace[0];
-            String file = where.getFileName();
-            int line = where.getLineNumber();
-            if (file != null && line > 0)
-                text.append("; " + file + " line " + line);
-            
-            String meth = where.getMethodName();
-            if (meth != null && meth.length() > 0)
-                text.append(" in " + meth + "()");
-        }
-
-        // Bump the counter for this exception.
-        String exString = text.toString();
-        Integer count = exceptionCounts.get(exString);
-        if (count == null)
-            count = 1;
-        else
-            count = count + 1;
-        exceptionCounts.put(exString, count);
-
-        // Now, if we've had fewer than three, report it.
-        if (count < 3) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(exString)
-                   .setCancelable(false)
-                   .setTitle("Unexpected Exception")
-                   .setPositiveButton("OK", null);
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
+    public void reportException(final Exception e) {
+        errorReporter.reportException(e);
     }
 
 
@@ -389,7 +349,10 @@ public class MainActivity
     
     // Application utilities instance, used to get app version.
     private AppUtils appUtils = null;
-    
+
+    // Exception reporter.
+    private Errors errorReporter;
+
     // The next request code available to be used.  Our request codes
     // start at a large number, for no special reason.
     private int nextRequest = 0x60000000;
@@ -414,9 +377,6 @@ public class MainActivity
 
     // ID of the about text.
     private int aboutText = 0;
-
-    // Counts of how often we've seen each exception type.
-    private HashMap<String, Integer> exceptionCounts;
 
 }
 
