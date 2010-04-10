@@ -17,7 +17,6 @@
 package org.hermit.dazzle;
 
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -25,8 +24,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -38,6 +42,7 @@ import android.widget.Toast;
  */
 public abstract class DazzleProvider
     extends AppWidgetProvider
+    implements LocationListener
 {
 
     // ******************************************************************** //
@@ -64,6 +69,7 @@ public abstract class DazzleProvider
     public void onEnabled(Context context) {
         Log.d(TAG, "onEnabled()");
         
+        myContext = context;
         checkClass(context, "onEnabled()");
     }
 
@@ -91,7 +97,18 @@ public abstract class DazzleProvider
     @Override
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         Log.d(TAG, "onUpdate()");
-        
+
+        // We need to listen for GPS updates to be notified of status changes.
+        // Doing this in onEnabled() doesn't seem to work.
+        if (!locationListening) {
+            LocationManager locationManager =
+                (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                                                   1000000, 0f, this);
+            locationListening = true;
+        }
+
+        myContext = context;
         checkClass(context, "onUpdate()");
         final int num = ids.length;
         for (int i = 0; i < num; ++i) {
@@ -132,6 +149,10 @@ public abstract class DazzleProvider
         Log.d(TAG, "onDisabled()");
         
         providerClazz = null;
+        
+        LocationManager locationManager =
+            (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.removeUpdates(this);
     }
 
 
@@ -149,6 +170,7 @@ public abstract class DazzleProvider
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "onReceive()");
 
+        myContext = context;
         super.onReceive(context, intent);
         
         // Since we get WiFi notifications etc., all our classes including
@@ -183,10 +205,60 @@ public abstract class DazzleProvider
         case BLUETOOTH:
             BluetoothSettings.toggle(context);
             break;
+        case GPS:
+            Intent gpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            gpsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(gpsIntent); 
+            break;
         case BRIGHTNESS:
-            // Should never get here.
+            Intent screenIntent = new Intent(context, BrightnessControl.class);
+            screenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(screenIntent);
             break;
         }
+    }
+
+
+    /**
+     * Handle GPS status changes to update the widget.
+     * 
+     * @param   provider        Provider which has changed.
+     */
+    @Override
+    public void onProviderEnabled(String provider) {
+        updateWidgets(myContext);
+    }
+
+    
+    /**
+     * Handle GPS status changes to update the widget.
+     * 
+     * @param   provider        Provider which has changed.
+     */
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        updateWidgets(myContext);
+    }
+    
+    
+    /**
+     * Ignore location changes.
+     * 
+     * @param   location        Location to ignore.
+     */
+    @Override
+    public void onLocationChanged(Location location) {
+    }
+    
+    
+    /**
+     * Handle GPS status changes to update the widget.
+     * 
+     * @param   provider        Provider which has changed.
+     */
+    @Override
+    public void onProviderDisabled(String provider) {
+        updateWidgets(myContext);
     }
 
 
@@ -200,11 +272,17 @@ public abstract class DazzleProvider
      * @param   context     The context in which this update is running.
      */
     static void updateWidgets(Context context) {
-        Log.d(TAG, "updateWidgets() for " + providerClazz.getName());
+        Log.d(TAG, "updateWidgets()");
 
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        ComponentName comp = new ComponentName(context, providerClazz);
         RemoteViews views = buildViews(context);
+        ComponentName comp = new ComponentName(context, Dazzle11Provider.class);
+        manager.updateAppWidget(comp, views);
+        comp = new ComponentName(context, Dazzle21Provider.class);
+        manager.updateAppWidget(comp, views);
+        comp = new ComponentName(context, Dazzle31Provider.class);
+        manager.updateAppWidget(comp, views);
+        comp = new ComponentName(context, Dazzle41Provider.class);
         manager.updateAppWidget(comp, views);
     }
 
@@ -234,6 +312,8 @@ public abstract class DazzleProvider
          WiFiSettings.setWidget(context, views, R.id.wifi_ind);
 
          BluetoothSettings.setWidget(context, views, R.id.bluetooth_ind);
+
+         GpsSettings.setWidget(context, views, R.id.gps_ind);
 
          BrightnessSettings.setWidget(context, views, R.id.brightness_ind);
 
@@ -275,34 +355,39 @@ public abstract class DazzleProvider
 
     // The controls we support.
     enum Control {
-        WIFI(R.id.dazzle_wifi, null, "enableWifi"),
-        BLUETOOTH(R.id.dazzle_bluetooth, null, "enableBluetooth"),
-        BRIGHTNESS(R.id.dazzle_brightness, BrightnessControl.class, "enableBrightness");
+        WIFI(R.id.dazzle_wifi, "enableWifi"),
+        BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
+        GPS(R.id.dazzle_gps, "enableGps"),
+        BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness");
         
-        Control(int id, Class<? extends Activity> clazz, String pref) {
+        Control(int id, String pref) {
             this.id = id;
-            this.clazz = clazz;
             this.pref = pref;
         }
 
         PendingIntent createIntent(Context context) {
-            if (clazz != null) {
-                Intent intent = new Intent(context, clazz);
-                return PendingIntent.getActivity(context, 0, intent, 0);
-            } else {
-                Intent i = new Intent(context, providerClazz);
-                i.addCategory(Intent.CATEGORY_ALTERNATIVE);
-                i.setData(Uri.parse("custom:" + ordinal()));
+            Intent i = new Intent(context, providerClazz);
+            i.addCategory(Intent.CATEGORY_ALTERNATIVE);
+            i.setData(Uri.parse("custom:" + ordinal()));
 
-                return PendingIntent.getBroadcast(context, 0, i, 0);
-            }
+            return PendingIntent.getBroadcast(context, 0, i, 0);
         }
 
         static Control[] CONTROLS = values();
         int id;
-        Class<? extends Activity> clazz;
         String pref;
     }
+
     
+    // ******************************************************************** //
+    // Private Data.
+    // ******************************************************************** //
+    
+    // Our context.
+    private Context myContext = null;
+    
+    // Flag if we have installed the location listener.
+    private boolean locationListening = false;
+
 }
 

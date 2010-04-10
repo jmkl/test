@@ -17,16 +17,15 @@
 package org.hermit.dazzle;
 
 
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.util.Log;
+import android.location.LocationManager;
 import android.widget.RemoteViews;
 
 
 /**
- * This static class provides utilities to manage the Bluetooth state.
+ * This static class provides utilities to manage the GPS state.
  */
-public class BluetoothSettings
+public class GpsSettings
 {
 
     // ******************************************************************** //
@@ -36,7 +35,7 @@ public class BluetoothSettings
     /**
      * Constructor -- hidden, as this class is non-instantiable.
      */
-    private BluetoothSettings() {
+    private GpsSettings() {
     }
     
 
@@ -44,41 +43,12 @@ public class BluetoothSettings
     // WiFi Handling.
     // ******************************************************************** //
 
-    /**
-     * Called after onRestoreInstanceState(Bundle), onRestart(), or onPause(),
-     * for your activity to start interacting with the user.  This is a good
-     * place to begin animations, open exclusive-access devices (such as the
-     * camera), etc.
-     * 
-     * Derived classes must call through to the super class's implementation
-     * of this method.  If they do not, an exception will be thrown.
-     */
-    static void toggle(Context context) {
-        Log.i(TAG, "toggle Bluetooth");
-        
-        // Just toggle Bluetooth power, as long as we're not already in
-        // an intermediate state.
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        int state = adapter.getState();
-        if (state == BluetoothAdapter.STATE_OFF)
-            adapter.enable();
-        else if (state == BluetoothAdapter.STATE_ON)
-            adapter.disable();
-    }
-
-
     static void setWidget(Context context, RemoteViews views, int widget) {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        int state = adapter.getState();
+        LocationManager locationManager =
+            (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        boolean enable = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         
-        int image = R.drawable.grey;
-        if (state == BluetoothAdapter.STATE_OFF)
-            image = R.drawable.grey;
-        else if (state == BluetoothAdapter.STATE_ON)
-            image = R.drawable.blue;
-        else
-            image = R.drawable.orange;
-
+        int image = enable ? R.drawable.green : R.drawable.grey;
         views.setImageViewResource(widget, image);
     }
 

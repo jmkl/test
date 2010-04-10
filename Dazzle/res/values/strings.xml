@@ -15,6 +15,8 @@
     <string name="prefs_wifi_summary">Show WiFi control</string>
     <string name="prefs_enable_bluetooth">Bluetooth</string>
     <string name="prefs_bluetooth_summary">Show Bluetooth control</string>
+    <string name="prefs_enable_gps">GPS</string>
+    <string name="prefs_gps_summary">Show GPS control (takes you to the settings page)</string>
     <string name="prefs_enable_brightness">Brightness</string>
     <string name="prefs_brightness_summary">Show screen brightness control</string>
     <string name="prefs_save">Save</string>
