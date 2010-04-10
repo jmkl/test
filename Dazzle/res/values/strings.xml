@@ -4,12 +4,20 @@
 
     <string name="app_name">Dazzle</string>
     
+    <!-- Widget names. -->
+    <string name="widget_11_name">Dazzle (1x1)</string>
+    <string name="widget_21_name">Dazzle (2x1)</string>
+    <string name="widget_31_name">Dazzle (3x1)</string>
+    <string name="widget_41_name">Dazzle (4x1)</string>
         
-    <!-- Button labels. -->
+    <!-- Brightness button labels. -->
     <string name="button_low">Min</string>
     <string name="button_med">User</string>
     <string name="button_high">Max</string>
     <string name="button_auto">Auto</string>
+            
+    <!-- Errors. -->
+    <string name="error_only_one">Sorry, there can be only one Dazzle at a time.</string>
     
 </resources>
 

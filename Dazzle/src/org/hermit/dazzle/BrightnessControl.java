@@ -33,7 +33,7 @@ import android.widget.ToggleButton;
  * Class implementing the pop-up brightness control panel.  This is an
  * Activity, that can be fired off when needed.
  */
-public class DazzleControl
+public class BrightnessControl
     extends Activity
 {
 
@@ -68,7 +68,7 @@ public class DazzleControl
         
         // Create the UI.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.control_activity);
+        setContentView(R.layout.brightness_activity);
         
         // Set handlers on all the widgets.
         lowBut = (ToggleButton) findViewById(R.id.button_low);
@@ -268,7 +268,7 @@ public class DazzleControl
 
     // Debugging tag.
     @SuppressWarnings("unused")
-    private static final String TAG = "DazzleControl";
+    private static final String TAG = "BrightnessControl";
 
 
     // ******************************************************************** //

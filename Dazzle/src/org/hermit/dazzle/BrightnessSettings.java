@@ -19,9 +19,11 @@ package org.hermit.dazzle;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Color;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.WindowManager;
+import android.widget.RemoteViews;
 
 
 /**
@@ -72,25 +74,37 @@ class BrightnessSettings
     }
 
 
-    static int getModeIcon(Context context) {
+    static void setWidget(Context context, RemoteViews views, int widget) {
         ContentResolver resolver = context.getContentResolver();
         
+        String lab = "?";
+        int col = Color.WHITE;
+
         int mode = Settings.System.getInt(resolver,
                                           SCREEN_BRIGHTNESS_MODE,
                                           SCREEN_BRIGHTNESS_MODE_MANUAL);
-        if (mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC)
-            return R.drawable.auto;
-        
-        int bright = Settings.System.getInt(resolver,
-                                            Settings.System.SCREEN_BRIGHTNESS,
-                                            SETTING_MAX);
-        float frac = settingToFraction(bright);
-        if (frac < 0.005f)
-            return R.drawable.min;
-        else if (frac > 0.995f)
-            return R.drawable.high;
-        else
-            return R.drawable.user;
+        if (mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC) {
+            lab = context.getString(R.string.button_auto);
+            col = 0xff00ff00;
+        } else {
+            int bright = Settings.System.getInt(resolver,
+                                        Settings.System.SCREEN_BRIGHTNESS,
+                                        SETTING_MAX);
+            float frac = settingToFraction(bright);
+            if (frac < 0.005f) {
+                lab = context.getString(R.string.button_low);
+                col = 0xffff8000;
+            } else if (frac > 0.995f) {
+                lab = context.getString(R.string.button_high);
+                col = 0xffff00ff;
+            } else {
+                lab = String.valueOf(Math.round(frac * 100f)) + "%";
+                col = 0xff00ffff;
+            }
+        }
+
+        views.setTextViewText(R.id.brightness_ind, lab);
+        views.setTextColor(R.id.brightness_ind, col);
     }
 
 
