@@ -24,8 +24,11 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -214,10 +217,19 @@ public abstract class DazzleProvider
      * @return              The new RemoteViews.
      */
     private static RemoteViews buildViews(Context context) {
-         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.dazzle_widget);
+         RemoteViews views = new RemoteViews(context.getPackageName(),
+                                             R.layout.dazzle_widget);
+         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-         for (Control c : Control.CONTROLS)
-             views.setOnClickPendingIntent(c.id, c.createIntent(context));
+         for (Control c : Control.CONTROLS) {
+             boolean enable = prefs.getBoolean(c.pref, true);
+             if (!enable) {
+                 views.setViewVisibility(c.id, View.GONE);
+             } else {
+                 views.setViewVisibility(c.id, View.VISIBLE);
+                 views.setOnClickPendingIntent(c.id, c.createIntent(context));
+             }
+         }
 
          WiFiSettings.setWidget(context, views, R.id.wifi_ind);
 
@@ -262,14 +274,15 @@ public abstract class DazzleProvider
     private static Class<? extends DazzleProvider> providerClazz = null;
 
     // The controls we support.
-    private enum Control {
-        WIFI(R.id.dazzle_wifi, null),
-        BLUETOOTH(R.id.dazzle_bluetooth, null),
-        BRIGHTNESS(R.id.dazzle_brightness, BrightnessControl.class);
+    enum Control {
+        WIFI(R.id.dazzle_wifi, null, "enableWifi"),
+        BLUETOOTH(R.id.dazzle_bluetooth, null, "enableBluetooth"),
+        BRIGHTNESS(R.id.dazzle_brightness, BrightnessControl.class, "enableBrightness");
         
-        Control(int id, Class<? extends Activity> clazz) {
+        Control(int id, Class<? extends Activity> clazz, String pref) {
             this.id = id;
             this.clazz = clazz;
+            this.pref = pref;
         }
 
         PendingIntent createIntent(Context context) {
@@ -288,6 +301,7 @@ public abstract class DazzleProvider
         static Control[] CONTROLS = values();
         int id;
         Class<? extends Activity> clazz;
+        String pref;
     }
     
 }

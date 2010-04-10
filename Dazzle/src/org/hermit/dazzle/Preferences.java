@@ -1,0 +1,126 @@
+
+/**
+ * Dazzle: a screen brightness control widget for Android.
+ * <br>Copyright 2010 Ian Cameron Smith
+ *
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
+ * 
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+
+package org.hermit.dazzle;
+
+
+import android.app.Activity;
+import android.appwidget.AppWidgetManager;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+
+
+/**
+ * The preferences activity for Dazzle.  Since this is the first thing the
+ * user sees when she adds the widget, it needs a "Save" button to make it
+ * clear how to continue.  So, we can't use PreferenceActivity; we need to
+ * build our own.
+ */
+public class Preferences
+	extends Activity
+{
+
+    // ******************************************************************** //
+    // Activity Lifecycle.
+    // ******************************************************************** //
+
+    /**
+     * Called when the activity is starting.  This is where most
+     * initialisation should go: calling setContentView(int) to inflate
+     * the activity's UI, etc.
+     * 
+     * @param   icicle          Activity's saved state, if any.
+     */
+    @Override
+    protected void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+
+        // Set the view layout.
+        setContentView(R.layout.preferences);
+        
+        // Add a handler to the save button.
+        Button saveBut = (Button) findViewById(R.id.save_button);
+        saveBut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                savePrefs();
+            }
+        });
+        
+        // Get the app widget ID from the intent.
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            widgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, 
+                                     AppWidgetManager.INVALID_APPWIDGET_ID);
+        }
+        
+        // Set a "canceled" result as the default.  If the user hits Save,
+        // we'll change this in savePrefs().
+        setResult(RESULT_CANCELED);
+    }
+
+    
+    /**
+     * Called when the activity has detected the user's press of the back key.
+     * The default implementation simply finishes the current activity;
+     * we override this to update the widget. 
+     */
+    private void savePrefs() {
+        // Read the widget settings, and save them to the prefs.
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor edit = prefs.edit();
+        for (DazzleProvider.Control c : DazzleProvider.Control.CONTROLS) {
+            CheckBox checkbox = (CheckBox) findViewById(c.id);
+            boolean enable = checkbox.isChecked();
+            edit.putBoolean(c.pref, enable);
+        }
+        edit.commit();
+        
+        // Update the widget.
+        DazzleProvider.updateWidgets(this);
+        
+        // Now send the result intent.  It needs the widget ID.
+        Intent result = new Intent();
+        result.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+        setResult(RESULT_OK, result);
+        finish();
+    }
+    
+    
+    // ******************************************************************** //
+    // Class Data.
+    // ******************************************************************** //
+
+    // Debugging tag.
+    @SuppressWarnings("unused")
+    private static final String TAG = "BrightnessControl";
+
+
+    // ******************************************************************** //
+    // Private Data.
+    // ******************************************************************** //
+
+    // The ID of the app widget.
+    private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+    
+}
+

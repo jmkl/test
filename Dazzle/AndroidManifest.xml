@@ -7,13 +7,6 @@
       
     <application android:icon="@drawable/icon" android:label="@string/app_name">
 
-        <activity android:name="BrightnessControl"
-                android:label="@string/app_name"
-                android:theme="@android:style/Theme.Dialog">
-            <intent-filter>
-            </intent-filter>
-        </activity>
-
         <receiver android:name="Dazzle11Provider" android:label="@string/widget_11_name">
             <meta-data android:name="android.appwidget.provider"
                     android:resource="@xml/dazzle_11_meta" />
@@ -69,6 +62,19 @@
                 <action android:name="android.intent.action.CLOSE_SYSTEM_DIALOGS" />
             </intent-filter>
         </receiver>
+
+        <activity android:name="BrightnessControl"
+                android:label="@string/app_name"
+                android:theme="@android:style/Theme.Dialog">
+            <intent-filter>
+            </intent-filter>
+        </activity>
+
+		<activity android:name=".Preferences">
+			<intent-filter>
+				<action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+			</intent-filter>
+		</activity>
 
     </application>
     

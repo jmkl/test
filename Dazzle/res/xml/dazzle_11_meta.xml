@@ -4,7 +4,8 @@
     	android:minWidth="72dp"
     	android:minHeight="72dp"
     	android:updatePeriodMillis="3600000"
-    	android:initialLayout="@layout/dazzle_widget" >
+    	android:initialLayout="@layout/dazzle_widget"
+    	android:configure="org.hermit.dazzle.Preferences" >
 
 </appwidget-provider>
 

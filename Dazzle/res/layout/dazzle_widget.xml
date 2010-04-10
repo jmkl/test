@@ -3,11 +3,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:id="@+id/dazzle_button"
 		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
 		android:orientation="horizontal"
-		android:background="@drawable/appwidget_bg"
-		android:layout_marginTop="8dp"
-		android:layout_marginBottom="8dp" >
+		android:background="@drawable/appwidget_bg" android:layout_height="72dp">
 
 	<LinearLayout android:id="@+id/dazzle_wifi"
 			android:orientation="vertical"
@@ -19,7 +16,7 @@
 		<ImageView android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:src="@drawable/wifi"
-				android:layout_gravity="center" android:paddingBottom="2dp"/>
+				android:layout_gravity="center"/>
 
 		<ImageView android:id="@+id/wifi_ind"
 				android:layout_width="wrap_content"
@@ -38,7 +35,7 @@
 		<ImageView android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:src="@drawable/bluetooth"
-				android:layout_gravity="center" android:paddingBottom="2dp"/>
+				android:layout_gravity="center"/>
 
 		<ImageView android:id="@+id/bluetooth_ind"
 				android:layout_width="wrap_content"
@@ -57,7 +54,7 @@
 		<ImageView android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:src="@drawable/brightness"
-				android:layout_gravity="center" android:paddingBottom="2dp"/>
+				android:layout_gravity="center"/>
 
 		<TextView android:id="@+id/brightness_ind"
 				android:layout_width="wrap_content"
