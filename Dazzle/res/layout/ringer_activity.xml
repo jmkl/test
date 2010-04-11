@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_height="wrap_content"
+	android:layout_width="wrap_content" android:padding="30dp">
+
+	<LinearLayout android:id="@+id/button_row"
+		android:layout_width="wrap_content" android:layout_height="wrap_content"
+		android:orientation="horizontal">
+
+		<ToggleButton android:id="@+id/button_on"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.25"
+				android:textOff="@string/ringer_on"
+				android:textOn="@string/ringer_on" />
+		<ToggleButton android:id="@+id/button_vibe"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.25"
+				android:textOff="@string/ringer_vibe"
+				android:textOn="@string/ringer_vibe" />
+		<ToggleButton android:id="@+id/button_silent"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.25"
+				android:textOff="@string/ringer_silent"
+				android:textOn="@string/ringer_silent" />
+
+	</LinearLayout>
+
+	<SeekBar android:id="@+id/ringer_slider"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:padding="6dp" />
+
+</LinearLayout>
+

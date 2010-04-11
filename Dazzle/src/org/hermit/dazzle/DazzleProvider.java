@@ -54,6 +54,7 @@ public abstract class DazzleProvider
         BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
         GPS(R.id.dazzle_gps, "enableGps"),
         AIRPLANE(R.id.dazzle_airplane, "enableAirplane"),
+        RINGER(R.id.dazzle_ringer, "enableRinger"),
         BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness"),
         BRIGHTAUTO(R.id.dazzle_brightauto, "enableBrightauto");
         
@@ -244,6 +245,11 @@ public abstract class DazzleProvider
         case AIRPLANE:
             AirplaneSettings.toggle(context);
             break;
+        case RINGER:
+            Intent ringerIntent = new Intent(context, RingerControl.class);
+            ringerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(ringerIntent);
+            break;
         case BRIGHTNESS:
         case BRIGHTAUTO:
             Intent screenIntent = new Intent(context, BrightnessControl.class);
@@ -355,6 +361,9 @@ public abstract class DazzleProvider
             break;
         case AIRPLANE:
             AirplaneSettings.setWidget(context, views, R.id.airplane_ind);
+            break;
+        case RINGER:
+            RingerSettings.setWidget(context, views, R.id.ringer_ind);
             break;
         case BRIGHTNESS:
             BrightnessSettings.setWidget(context, views, R.id.brightness_ind);

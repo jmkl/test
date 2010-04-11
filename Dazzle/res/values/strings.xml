@@ -23,12 +23,19 @@ different controls.</string>
     <string name="prefs_gps_summary">Show GPS control (no indicator; takes you to the settings page)</string>
     <string name="prefs_enable_airplane">Airplane</string>
     <string name="prefs_airplane_summary">Show airplane mode control</string>
+    <string name="prefs_enable_ringer">Ringer</string>
+    <string name="prefs_ringer_summary">Show ring / silent / vibrate control</string>
     <string name="prefs_enable_brightness">Brightness</string>
     <string name="prefs_brightness_summary">Show screen brightness control</string>
     <string name="prefs_enable_brightauto">Brightness with auto</string>
     <string name="prefs_brightauto_summary">Screen brightness control which can toggle auto mode; certain devices only</string>
     <string name="prefs_brightauto_summary_noauto">Screen brightness with auto -- needs Android 2.0 or later</string>
     <string name="prefs_save">Save</string>
+
+    <!-- Ringer button labels. -->
+    <string name="ringer_on">Normal</string>
+    <string name="ringer_vibe">Vibrate</string>
+    <string name="ringer_silent">Silent</string>
 
     <!-- Brightness button labels. -->
     <string name="button_low">Min</string>
