@@ -26,11 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.Uri;
-import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -43,7 +39,6 @@ import android.widget.RemoteViews;
  */
 public abstract class DazzleProvider
     extends AppWidgetProvider
-    implements LocationListener
 {
     
     // ******************************************************************** //
@@ -59,7 +54,8 @@ public abstract class DazzleProvider
         BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
         GPS(R.id.dazzle_gps, "enableGps"),
         AIRPLANE(R.id.dazzle_airplane, "enableAirplane"),
-        BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness");
+        BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness"),
+        BRIGHTAUTO(R.id.dazzle_brightauto, "enableBrightauto");
         
         Control(int id, String pref) {
             this.id = id;
@@ -104,8 +100,6 @@ public abstract class DazzleProvider
     public void onEnabled(Context context) {
         Log.d(TAG, "onEnabled()");
         
-        myContext = context;
-        
         // When the first widget is created, register our system broadcast
         // receiver.  We don't want to be listening for these if nobody has
         // our widget active.
@@ -143,23 +137,11 @@ public abstract class DazzleProvider
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         Log.d(TAG, "onUpdate()");
         
-        myContext = context;
-
         // Update the specified widgets.
         final int num = ids.length;
         for (int i = 0; i < num; ++i) {
             final int id = ids[i];
             updateWidget(context, id);
-        }
-
-        // We need to listen for GPS updates to be notified of status changes.
-        // Doing this in onEnabled() doesn't seem to work.
-        if (!locationListening) {
-            LocationManager locationManager =
-                (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                                                   1000000, 0f, this);
-            locationListening = true;
         }
 
         Log.d(TAG, "onUpdate() DONE");
@@ -200,10 +182,6 @@ public abstract class DazzleProvider
     @Override
     public void onDisabled(Context context) {
         Log.d(TAG, "onDisabled()");
-        
-        LocationManager locationManager =
-            (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        locationManager.removeUpdates(this);
         
         // When the last widget is deleted, stop listening for system
         // broadcasts.
@@ -264,54 +242,13 @@ public abstract class DazzleProvider
             AirplaneSettings.toggle(context);
             break;
         case BRIGHTNESS:
+        case BRIGHTAUTO:
             Intent screenIntent = new Intent(context, BrightnessControl.class);
             screenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            screenIntent.putExtra("auto", control == Control.BRIGHTAUTO);
             context.startActivity(screenIntent);
             break;
         }
-    }
-
-
-    /**
-     * Handle GPS status changes to update the widget.
-     * 
-     * @param   provider        Provider which has changed.
-     */
-    @Override
-    public void onProviderEnabled(String provider) {
-        updateAllWidgets(myContext);
-    }
-
-    
-    /**
-     * Handle GPS status changes to update the widget.
-     * 
-     * @param   provider        Provider which has changed.
-     */
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        updateAllWidgets(myContext);
-    }
-    
-    
-    /**
-     * Ignore location changes.
-     * 
-     * @param   location        Location to ignore.
-     */
-    @Override
-    public void onLocationChanged(Location location) {
-    }
-    
-    
-    /**
-     * Handle GPS status changes to update the widget.
-     * 
-     * @param   provider        Provider which has changed.
-     */
-    @Override
-    public void onProviderDisabled(String provider) {
-        updateAllWidgets(myContext);
     }
 
 
@@ -390,20 +327,36 @@ public abstract class DazzleProvider
              } else {
                  views.setViewVisibility(c.id, View.VISIBLE);
                  views.setOnClickPendingIntent(c.id, c.createIntent(context, clazz));
+                 setControl(context, views, c);
              }
          }
 
-         WiFiSettings.setWidget(context, views, R.id.wifi_ind);
-
-         BluetoothSettings.setWidget(context, views, R.id.bluetooth_ind);
-
-         GpsSettings.setWidget(context, views, R.id.gps_ind);
-
-         AirplaneSettings.setWidget(context, views, R.id.airplane_ind);
-
-         BrightnessSettings.setWidget(context, views, R.id.brightness_ind);
-
          return views;
+    }
+    
+    
+    private static void setControl(Context context, RemoteViews views, Control control) {
+        switch (control) {
+        case WIFI:
+            WiFiSettings.setWidget(context, views, R.id.wifi_ind);
+            break;
+        case BLUETOOTH:
+            BluetoothSettings.setWidget(context, views, R.id.bluetooth_ind);
+            break;
+        case GPS:
+            // Sadly, we can't do this.
+            // GpsSettings.setWidget(context, views, R.id.gps_ind);
+            break;
+        case AIRPLANE:
+            AirplaneSettings.setWidget(context, views, R.id.airplane_ind);
+            break;
+        case BRIGHTNESS:
+            BrightnessSettings.setWidget(context, views, R.id.brightness_ind);
+            break;
+        case BRIGHTAUTO:
+            BrightnessSettings.setWidget(context, views, R.id.brightauto_ind);
+            break;
+        }
     }
     
     
@@ -425,11 +378,5 @@ public abstract class DazzleProvider
     // Private Data.
     // ******************************************************************** //
     
-    // Our context.
-    private Context myContext = null;
-    
-    // Flag if we have installed the location listener.
-    private boolean locationListening = false;
-
 }
 

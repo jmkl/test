@@ -55,7 +55,7 @@ class BrightnessSettings
     
 
     // ******************************************************************** //
-    // Screen BrightnessSettings Handling.
+    // Screen Brightness Settings Handling.
     // ******************************************************************** //
 
     static boolean isAuto(Context context) {
@@ -103,8 +103,8 @@ class BrightnessSettings
             }
         }
 
-        views.setTextViewText(R.id.brightness_ind, lab);
-        views.setTextColor(R.id.brightness_ind, col);
+        views.setTextViewText(widget, lab);
+        views.setTextColor(widget, col);
     }
 
 

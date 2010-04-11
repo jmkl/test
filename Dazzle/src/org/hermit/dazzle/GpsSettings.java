@@ -18,7 +18,6 @@ package org.hermit.dazzle;
 
 
 import android.content.Context;
-import android.location.LocationManager;
 import android.widget.RemoteViews;
 
 
@@ -40,16 +39,11 @@ public class GpsSettings
     
 
     // ******************************************************************** //
-    // WiFi Handling.
+    // Status Handling.
     // ******************************************************************** //
 
     static void setWidget(Context context, RemoteViews views, int widget) {
-        LocationManager locationManager =
-            (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        boolean enable = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        
-        int image = enable ? R.drawable.green : R.drawable.grey;
-        views.setImageViewResource(widget, image);
+        // Sadly, there's nothing we can do here.
     }
 
 

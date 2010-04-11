@@ -8,7 +8,7 @@
 
 	<LinearLayout android:id="@+id/dazzle_wifi"
 			android:orientation="vertical"
-			android:layout_gravity="center"
+			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -27,7 +27,7 @@
 
 	<LinearLayout android:id="@+id/dazzle_bluetooth"
 			android:orientation="vertical"
-			android:layout_gravity="center"
+			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -46,7 +46,7 @@
 
 	<LinearLayout android:id="@+id/dazzle_gps"
 			android:orientation="vertical"
-			android:layout_gravity="center"
+			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -56,16 +56,11 @@
 				android:src="@drawable/gps"
 				android:layout_gravity="center"/>
 
-		<ImageView android:id="@+id/gps_ind"
-				android:layout_width="wrap_content"
-				android:src="@drawable/red"
-				android:layout_gravity="center" android:layout_height="20dp"/>
-
 	</LinearLayout>
 
 	<LinearLayout android:id="@+id/dazzle_airplane"
 			android:orientation="vertical"
-			android:layout_gravity="center"
+			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -84,7 +79,7 @@
 
 	<LinearLayout android:id="@+id/dazzle_brightness"
 			android:orientation="vertical"
-			android:layout_gravity="center"
+			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -96,7 +91,31 @@
 
 		<TextView android:id="@+id/brightness_ind"
 				android:layout_width="wrap_content"
-				android:layout_gravity="center" android:text="Dazzle" android:textStyle="bold" android:layout_height="20dp"/>
+				android:layout_gravity="center"
+				android:text="Dazzle"
+				android:textStyle="bold"
+				android:layout_height="20dp"/>
+
+	</LinearLayout>
+
+	<LinearLayout android:id="@+id/dazzle_brightauto"
+			android:orientation="vertical"
+			android:layout_gravity="top|center_horizontal"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" >
+
+		<ImageView android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:src="@drawable/brightness"
+				android:layout_gravity="center"/>
+
+		<TextView android:id="@+id/brightauto_ind"
+				android:layout_width="wrap_content"
+				android:layout_gravity="center"
+				android:text="Dazzle"
+				android:textStyle="bold"
+				android:layout_height="20dp"/>
 
 	</LinearLayout>
 

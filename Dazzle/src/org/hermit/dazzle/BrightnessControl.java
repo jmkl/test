@@ -18,6 +18,7 @@ package org.hermit.dazzle;
 
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -63,6 +64,11 @@ public class BrightnessControl
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         
+        // Get parameters from the intent.  See if we're showing the auto
+        // option.
+        Intent intent = getIntent();
+        showAuto = intent.getBooleanExtra("auto", false);
+        
         // Get our preferences.
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         
@@ -81,7 +87,12 @@ public class BrightnessControl
         highBut.setOnClickListener(buttonChecked);
         
         autoBut = (ToggleButton) findViewById(R.id.button_auto);
-        autoBut.setOnClickListener(buttonChecked);
+        if (!showAuto)
+            autoBut.setVisibility(View.GONE);
+        else {
+            autoBut.setVisibility(View.VISIBLE);
+            autoBut.setOnClickListener(buttonChecked);
+        }
         
         levelSlider = (SeekBar) findViewById(R.id.slider);
         levelSlider.setMax(1000);
@@ -215,7 +226,8 @@ public class BrightnessControl
         lowBut.setChecked(!isAuto && low);
         medBut.setChecked(!isAuto && med);
         highBut.setChecked(!isAuto && max);
-        autoBut.setChecked(isAuto);
+        if (showAuto)
+            autoBut.setChecked(isAuto);
         levelSlider.setProgress(Math.round(userLevel * 1000));
     }
 
@@ -275,6 +287,10 @@ public class BrightnessControl
     // Private Data.
     // ******************************************************************** //
 
+    // Flag whether we support auto mode.  If set, show an auto option;
+    // else show manual settings only.
+    private boolean showAuto;
+    
     // Our preferences.
     private SharedPreferences sharedPrefs = null;
 
