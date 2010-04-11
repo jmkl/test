@@ -55,7 +55,7 @@ public class BluetoothSettings
      */
     static void toggle(Context context) {
         Log.i(TAG, "toggle Bluetooth");
-        
+
         // Just toggle Bluetooth power, as long as we're not already in
         // an intermediate state.
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();

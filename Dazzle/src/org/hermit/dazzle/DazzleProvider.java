@@ -231,7 +231,10 @@ public abstract class DazzleProvider
             WiFiSettings.toggle(context);
             break;
         case BLUETOOTH:
-            BluetoothSettings.toggle(context);
+            // Can only do Bluetooth from Eclair on.
+            if (android.os.Build.VERSION.SDK_INT >=
+                                        android.os.Build.VERSION_CODES.ECLAIR)
+                BluetoothSettings.toggle(context);
             break;
         case GPS:
             Intent gpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -341,7 +344,10 @@ public abstract class DazzleProvider
             WiFiSettings.setWidget(context, views, R.id.wifi_ind);
             break;
         case BLUETOOTH:
-            BluetoothSettings.setWidget(context, views, R.id.bluetooth_ind);
+            // Can only do Bluetooth from Eclair on.
+            if (android.os.Build.VERSION.SDK_INT >=
+                                        android.os.Build.VERSION_CODES.ECLAIR)
+                BluetoothSettings.setWidget(context, views, R.id.bluetooth_ind);
             break;
         case GPS:
             // Sadly, we can't do this.

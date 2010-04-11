@@ -56,7 +56,7 @@
 					android:layout_height="wrap_content"
 					android:text="@string/prefs_enable_bluetooth"
 					android:textSize="20sp" />
-			<TextView
+			<TextView android:id="@+id/bluetooth_help"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:text="@string/prefs_bluetooth_summary" />
@@ -152,7 +152,7 @@
 					android:layout_height="wrap_content"
 					android:text="@string/prefs_enable_brightauto"
 					android:textSize="20sp" />
-			<TextView
+			<TextView android:id="@+id/brightauto_help"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:text="@string/prefs_brightauto_summary" />

@@ -15,6 +15,7 @@
     <string name="prefs_wifi_summary">Show WiFi control</string>
     <string name="prefs_enable_bluetooth">Bluetooth</string>
     <string name="prefs_bluetooth_summary">Show Bluetooth control</string>
+    <string name="prefs_bluetooth_summary_nobt">Show Bluetooth control -- needs Android 2.0 or later</string>
     <string name="prefs_enable_gps">GPS</string>
     <string name="prefs_gps_summary">Show GPS control (takes you to the settings page)</string>
     <string name="prefs_enable_airplane">Airplane</string>
@@ -23,6 +24,7 @@
     <string name="prefs_brightness_summary">Show screen brightness control</string>
     <string name="prefs_enable_brightauto">Brightness with auto</string>
     <string name="prefs_brightauto_summary">Screen brightness control which can toggle auto mode; certain devices only</string>
+    <string name="prefs_brightauto_summary_noauto">Screen brightness with auto -- needs Android 2.0 or later</string>
     <string name="prefs_save">Save</string>
 
     <!-- Brightness button labels. -->

@@ -26,6 +26,7 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.TextView;
 
 
 /**
@@ -56,6 +57,20 @@ public class Preferences
         // Set the view layout.
         setContentView(R.layout.preferences);
         
+        // Can only do Bluetooth and auto-brightness from Eclair on.
+        if (android.os.Build.VERSION.SDK_INT <
+                                    android.os.Build.VERSION_CODES.ECLAIR){
+            CheckBox btCheck = (CheckBox) findViewById(R.id.dazzle_bluetooth);
+            btCheck.setEnabled(false);
+            TextView btHelp = (TextView) findViewById(R.id.bluetooth_help);
+            btHelp.setText(R.string.prefs_bluetooth_summary_nobt);
+            
+            CheckBox baCheck = (CheckBox) findViewById(R.id.dazzle_brightauto);
+            baCheck.setEnabled(false);
+            TextView baHelp = (TextView) findViewById(R.id.brightauto_help);
+            baHelp.setText(R.string.prefs_brightauto_summary_noauto);
+        }
+
         // Add a handler to the save button.
         Button saveBut = (Button) findViewById(R.id.save_button);
         saveBut.setOnClickListener(new View.OnClickListener() {
