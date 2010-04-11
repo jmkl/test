@@ -11,13 +11,16 @@
     <string name="widget_41_name">Dazzle (4x1)</string>
         
     <!-- Preferences. -->
+    <string name="prefs_help">Choose which controls you would like to have
+in this widget.  Note that you can have multiple copies of the widget with
+different controls.</string>
     <string name="prefs_enable_wifi">WiFi</string>
     <string name="prefs_wifi_summary">Show WiFi control</string>
     <string name="prefs_enable_bluetooth">Bluetooth</string>
     <string name="prefs_bluetooth_summary">Show Bluetooth control</string>
     <string name="prefs_bluetooth_summary_nobt">Show Bluetooth control -- needs Android 2.0 or later</string>
     <string name="prefs_enable_gps">GPS</string>
-    <string name="prefs_gps_summary">Show GPS control (takes you to the settings page)</string>
+    <string name="prefs_gps_summary">Show GPS control (no indicator; takes you to the settings page)</string>
     <string name="prefs_enable_airplane">Airplane</string>
     <string name="prefs_airplane_summary">Show airplane mode control</string>
     <string name="prefs_enable_brightness">Brightness</string>
