@@ -148,7 +148,7 @@ class BrightnessSettings
 
     // Debugging tag.
     @SuppressWarnings("unused")
-    private static final String TAG = "DazzleProvider";
+    private static final String TAG = DazzleProvider.TAG;
 
     // Minimum brightness fraction.
     private static final float LEVEL_MIN = 0.06f;

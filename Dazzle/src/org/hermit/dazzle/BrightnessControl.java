@@ -255,7 +255,7 @@ public class BrightnessControl
         
         // Signal the widget manager to update all the widgets.
         if (commit)
-            DazzleProvider.updateWidgets(this);
+            DazzleProvider.updateAllWidgets(this);
         
         isAuto = auto;
         currentBrightness = level;
@@ -268,7 +268,7 @@ public class BrightnessControl
 
     // Debugging tag.
     @SuppressWarnings("unused")
-    private static final String TAG = "BrightnessControl";
+    private static final String TAG = DazzleProvider.TAG;
 
 
     // ******************************************************************** //

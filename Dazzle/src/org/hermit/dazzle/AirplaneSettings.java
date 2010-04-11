@@ -17,16 +17,18 @@
 package org.hermit.dazzle;
 
 
-import android.bluetooth.BluetoothAdapter;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 
 /**
- * This static class provides utilities to manage the Bluetooth state.
+ * This static class provides utilities to manage airplane mode.
  */
-public class BluetoothSettings
+public class AirplaneSettings
 {
 
     // ******************************************************************** //
@@ -36,7 +38,7 @@ public class BluetoothSettings
     /**
      * Constructor -- hidden, as this class is non-instantiable.
      */
-    private BluetoothSettings() {
+    private AirplaneSettings() {
     }
     
 
@@ -54,31 +56,26 @@ public class BluetoothSettings
      * of this method.  If they do not, an exception will be thrown.
      */
     static void toggle(Context context) {
-        Log.i(TAG, "toggle Bluetooth");
-        
-        // Just toggle Bluetooth power, as long as we're not already in
-        // an intermediate state.
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        int state = adapter.getState();
-        if (state == BluetoothAdapter.STATE_OFF)
-            adapter.enable();
-        else if (state == BluetoothAdapter.STATE_ON)
-            adapter.disable();
+        Log.i(TAG, "toggle airplane");
+
+        // We need to toggle the mode and also broadcast the fact.
+        ContentResolver cr = context.getContentResolver();
+        boolean on = Settings.System.getInt(cr, Settings.System.AIRPLANE_MODE_ON, 0) != 0;
+        Settings.System.putInt(cr,
+                               Settings.System.AIRPLANE_MODE_ON, 
+                               on ? 0 : 1);
+
+        // Post the intent.
+        Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        intent.putExtra("state", !on);
+        context.sendBroadcast(intent);
     }
 
 
     static void setWidget(Context context, RemoteViews views, int widget) {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        int state = adapter.getState();
-        
-        int image = R.drawable.grey;
-        if (state == BluetoothAdapter.STATE_OFF)
-            image = R.drawable.grey;
-        else if (state == BluetoothAdapter.STATE_ON)
-            image = R.drawable.blue;
-        else
-            image = R.drawable.orange;
-
+        ContentResolver cr = context.getContentResolver();
+        boolean on = Settings.System.getInt(cr, Settings.System.AIRPLANE_MODE_ON, 0) != 0;
+        int image = on ? R.drawable.red : R.drawable.grey;
         views.setImageViewResource(widget, image);
     }
 

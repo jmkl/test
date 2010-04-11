@@ -12,12 +12,6 @@
                     android:resource="@xml/dazzle_11_meta" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
-                <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED" />
-                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
-                
-                <!-- Pick up misc. changes. -->
-                <action android:name="android.intent.action.CLOSE_SYSTEM_DIALOGS" />
             </intent-filter>
         </receiver>
 
@@ -26,12 +20,6 @@
                     android:resource="@xml/dazzle_21_meta" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
-                <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED" />
-                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
-                
-                <!-- Pick up misc. changes. -->
-                <action android:name="android.intent.action.CLOSE_SYSTEM_DIALOGS" />
             </intent-filter>
         </receiver>
 
@@ -40,12 +28,6 @@
                     android:resource="@xml/dazzle_31_meta" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
-                <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED" />
-                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
-                
-                <!-- Pick up misc. changes. -->
-                <action android:name="android.intent.action.CLOSE_SYSTEM_DIALOGS" />
             </intent-filter>
         </receiver>
 
@@ -54,9 +36,15 @@
                     android:resource="@xml/dazzle_41_meta" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="SystemBroadcastReceiver" android:enabled="false">
+            <intent-filter>
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
                 <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED" />
                 <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
+                <action android:name="android.intent.action.AIRPLANE_MODE" />
                 
                 <!-- Pick up misc. changes. -->
                 <action android:name="android.intent.action.CLOSE_SYSTEM_DIALOGS" />

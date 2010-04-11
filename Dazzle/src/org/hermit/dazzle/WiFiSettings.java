@@ -89,7 +89,7 @@ public class WiFiSettings
 
     // Debugging tag.
     @SuppressWarnings("unused")
-    private static final String TAG = "BrightnessControl";
+    private static final String TAG = DazzleProvider.TAG;
 
 }
 

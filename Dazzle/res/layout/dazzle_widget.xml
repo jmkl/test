@@ -63,6 +63,25 @@
 
 	</LinearLayout>
 
+	<LinearLayout android:id="@+id/dazzle_airplane"
+			android:orientation="vertical"
+			android:layout_gravity="center"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" >
+
+		<ImageView android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:src="@drawable/airplane"
+				android:layout_gravity="center"/>
+
+		<ImageView android:id="@+id/airplane_ind"
+				android:layout_width="wrap_content"
+				android:src="@drawable/red"
+				android:layout_gravity="center" android:layout_height="20dp"/>
+
+	</LinearLayout>
+
 	<LinearLayout android:id="@+id/dazzle_brightness"
 			android:orientation="vertical"
 			android:layout_gravity="center"

@@ -96,7 +96,7 @@ public class Preferences
         edit.commit();
         
         // Update the widget.
-        DazzleProvider.updateWidgets(this);
+        DazzleProvider.updateAllWidgets(this);
         
         // Now send the result intent.  It needs the widget ID.
         Intent result = new Intent();
@@ -112,7 +112,7 @@ public class Preferences
 
     // Debugging tag.
     @SuppressWarnings("unused")
-    private static final String TAG = "BrightnessControl";
+    private static final String TAG = DazzleProvider.TAG;
 
 
     // ******************************************************************** //

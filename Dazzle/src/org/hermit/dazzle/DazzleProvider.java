@@ -20,10 +20,12 @@ package org.hermit.dazzle;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -34,7 +36,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 
 /**
@@ -44,7 +45,41 @@ public abstract class DazzleProvider
     extends AppWidgetProvider
     implements LocationListener
 {
+    
+    // ******************************************************************** //
+    // Public Constants.
+    // ******************************************************************** //
 
+    // Debugging tag.
+    static final String TAG = "Dazzle";
+
+    // The controls we support.
+    enum Control {
+        WIFI(R.id.dazzle_wifi, "enableWifi"),
+        BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
+        GPS(R.id.dazzle_gps, "enableGps"),
+        AIRPLANE(R.id.dazzle_airplane, "enableAirplane"),
+        BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness");
+        
+        Control(int id, String pref) {
+            this.id = id;
+            this.pref = pref;
+        }
+
+        PendingIntent createIntent(Context context, Class<?> clazz) {
+            Intent i = new Intent(context, clazz);
+            i.addCategory(Intent.CATEGORY_ALTERNATIVE);
+            i.setData(Uri.parse("custom:" + ordinal()));
+
+            return PendingIntent.getBroadcast(context, 0, i, 0);
+        }
+
+        static Control[] CONTROLS = values();
+        int id;
+        String pref;
+    }
+
+    
     // ******************************************************************** //
     // Widget Lifecycle.
     // ******************************************************************** //
@@ -70,10 +105,20 @@ public abstract class DazzleProvider
         Log.d(TAG, "onEnabled()");
         
         myContext = context;
-        checkClass(context, "onEnabled()");
+        
+        // When the first widget is created, register our system broadcast
+        // receiver.  We don't want to be listening for these if nobody has
+        // our widget active.
+        // This setting is sticky across reboots, but that doesn't matter,
+        // because this will be called after boot if there is a widget
+        // instance for this provider.
+        PackageManager pm = context.getPackageManager();
+        pm.setComponentEnabledSetting(SystemBroadcastReceiver.COMP_NAME,
+                                      PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                                      PackageManager.DONT_KILL_APP);
     }
 
-     
+
     /**
      * This is called to update the App Widget at intervals defined by the
      * updatePeriodMillis attribute in the AppWidgetProviderInfo.
@@ -97,6 +142,15 @@ public abstract class DazzleProvider
     @Override
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         Log.d(TAG, "onUpdate()");
+        
+        myContext = context;
+
+        // Update the specified widgets.
+        final int num = ids.length;
+        for (int i = 0; i < num; ++i) {
+            final int id = ids[i];
+            updateWidget(context, id);
+        }
 
         // We need to listen for GPS updates to be notified of status changes.
         // Doing this in onEnabled() doesn't seem to work.
@@ -108,17 +162,10 @@ public abstract class DazzleProvider
             locationListening = true;
         }
 
-        myContext = context;
-        checkClass(context, "onUpdate()");
-        final int num = ids.length;
-        for (int i = 0; i < num; ++i) {
-            int id = ids[i];
-            RemoteViews views = buildViews(context);
-            manager.updateAppWidget(id, views);
-        }
+        Log.d(TAG, "onUpdate() DONE");
     }
-        
-    
+
+
     /**
      * Called when one or more AppWidget instances have been deleted.
      * Override this method to implement your own AppWidget functionality.
@@ -131,8 +178,6 @@ public abstract class DazzleProvider
     @Override
     public void onDeleted(Context context, int[] ids) {
         Log.d(TAG, "onDeleted()");
-        
-        providerClazz = null;
     }
 
 
@@ -148,11 +193,16 @@ public abstract class DazzleProvider
     public void onDisabled(Context context) {
         Log.d(TAG, "onDisabled()");
         
-        providerClazz = null;
-        
         LocationManager locationManager =
             (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationManager.removeUpdates(this);
+        
+        // When the last widget is deleted, stop listening for system
+        // broadcasts.
+        PackageManager pm = context.getPackageManager();
+        pm.setComponentEnabledSetting(SystemBroadcastReceiver.COMP_NAME,
+                                      PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                                      PackageManager.DONT_KILL_APP);
     }
 
 
@@ -170,15 +220,7 @@ public abstract class DazzleProvider
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "onReceive()");
 
-        myContext = context;
         super.onReceive(context, intent);
-        
-        // Since we get WiFi notifications etc., all our classes including
-        // those not in use will come here.  So, reject all but the one
-        // which is displayed.
-        Class<? extends DazzleProvider> clazz = getClass();
-        if (!clazz.equals(providerClazz))
-            return;
         
         if (intent.hasCategory(Intent.CATEGORY_ALTERNATIVE)) {
             Uri data = intent.getData();
@@ -190,8 +232,8 @@ public abstract class DazzleProvider
             }
         }
         
-        // State changes fall through
-        updateWidgets(context);
+        // State changes fall through.
+        updateAllWidgets(context);
     }
 
 
@@ -208,7 +250,10 @@ public abstract class DazzleProvider
         case GPS:
             Intent gpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             gpsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(gpsIntent); 
+            context.startActivity(gpsIntent);
+            break;
+        case AIRPLANE:
+            AirplaneSettings.toggle(context);
             break;
         case BRIGHTNESS:
             Intent screenIntent = new Intent(context, BrightnessControl.class);
@@ -226,7 +271,7 @@ public abstract class DazzleProvider
      */
     @Override
     public void onProviderEnabled(String provider) {
-        updateWidgets(myContext);
+        updateAllWidgets(myContext);
     }
 
     
@@ -237,7 +282,7 @@ public abstract class DazzleProvider
      */
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        updateWidgets(myContext);
+        updateAllWidgets(myContext);
     }
     
     
@@ -258,32 +303,61 @@ public abstract class DazzleProvider
      */
     @Override
     public void onProviderDisabled(String provider) {
-        updateWidgets(myContext);
+        updateAllWidgets(myContext);
     }
 
 
     // ******************************************************************** //
     // Update Management.
     // ******************************************************************** //
-    
+
     /**
-     * Immediately update the widget state.
+     * Immediately update the specified widget's state.
      * 
      * @param   context     The context in which this update is running.
      */
-    static void updateWidgets(Context context) {
-        Log.d(TAG, "updateWidgets()");
+    static void updateWidget(Context context, int id) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        AppWidgetProviderInfo info = manager.getAppWidgetInfo(id);
+        updateWidget(context, manager, info.provider, id);
+    }
+
+
+    /**
+     * Immediately update the states of all our widgets.
+     * 
+     * @param   context     The context in which this update is running.
+     */
+    static void updateAllWidgets(Context context) {
+        Log.d(TAG, "updateAllWidgets()");
 
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        RemoteViews views = buildViews(context);
-        ComponentName comp = new ComponentName(context, Dazzle11Provider.class);
-        manager.updateAppWidget(comp, views);
-        comp = new ComponentName(context, Dazzle21Provider.class);
-        manager.updateAppWidget(comp, views);
-        comp = new ComponentName(context, Dazzle31Provider.class);
-        manager.updateAppWidget(comp, views);
-        comp = new ComponentName(context, Dazzle41Provider.class);
-        manager.updateAppWidget(comp, views);
+        for (ComponentName provider : DAZZLE_PROVIDERS) {
+            int[] ids = manager.getAppWidgetIds(provider);
+            for (int id : ids)
+                updateWidget(context, manager, provider, id);
+        }
+        
+        Log.d(TAG, "updateAllWidgets() DONE");
+    }
+    
+    
+    private static void updateWidget(Context context, AppWidgetManager manager,
+                                     ComponentName provider, int id)
+    {
+        String provName = provider.getClassName();
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(provName);
+        } catch (ClassNotFoundException e) {
+            Log.e(TAG, "updateWidget(" + id + "): CLASS " +
+                       provider + " NOT FOUND!!!");
+            return;
+        }
+
+        Log.d(TAG, "updateWidget(" + id + ") = " + clazz.getName());
+        RemoteViews views = buildViews(context, clazz);
+        manager.updateAppWidget(id, views);
     }
 
 
@@ -294,7 +368,7 @@ public abstract class DazzleProvider
      * @param   context     The context in which this update is running.
      * @return              The new RemoteViews.
      */
-    private static RemoteViews buildViews(Context context) {
+    private static RemoteViews buildViews(Context context, Class<?> clazz) {
          RemoteViews views = new RemoteViews(context.getPackageName(),
                                              R.layout.dazzle_widget);
          SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -305,7 +379,7 @@ public abstract class DazzleProvider
                  views.setViewVisibility(c.id, View.GONE);
              } else {
                  views.setViewVisibility(c.id, View.VISIBLE);
-                 views.setOnClickPendingIntent(c.id, c.createIntent(context));
+                 views.setOnClickPendingIntent(c.id, c.createIntent(context, clazz));
              }
          }
 
@@ -315,69 +389,27 @@ public abstract class DazzleProvider
 
          GpsSettings.setWidget(context, views, R.id.gps_ind);
 
+         AirplaneSettings.setWidget(context, views, R.id.airplane_ind);
+
          BrightnessSettings.setWidget(context, views, R.id.brightness_ind);
 
          return views;
     }
     
-
-    // ******************************************************************** //
-    // Utils.
-    // ******************************************************************** //
-
-    private void checkClass(Context context, String where) {
-        Class<? extends DazzleProvider> clazz = getClass();
-
-        if (providerClazz == null) {
-            providerClazz = clazz;
-            Log.d(TAG, "Set class " + clazz.getName());
-        } else if (!providerClazz.equals(clazz)) {
-            Toast toast = Toast.makeText(context,
-                                         R.string.error_only_one,
-                                         Toast.LENGTH_SHORT);
-            toast.show();
-        }
-    }
-
-
+    
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
-
-    // Debugging tag.
-    @SuppressWarnings("unused")
-    private static final String TAG = "DazzleProvider";
     
-    // The actual class of this provider.  It sucks, but we need this,
-    // and it means we can only have one subclass active at a time
-    // (because the individual controls can't know what widget they belong to).
-    private static Class<? extends DazzleProvider> providerClazz = null;
-
-    // The controls we support.
-    enum Control {
-        WIFI(R.id.dazzle_wifi, "enableWifi"),
-        BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
-        GPS(R.id.dazzle_gps, "enableGps"),
-        BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness");
-        
-        Control(int id, String pref) {
-            this.id = id;
-            this.pref = pref;
-        }
-
-        PendingIntent createIntent(Context context) {
-            Intent i = new Intent(context, providerClazz);
-            i.addCategory(Intent.CATEGORY_ALTERNATIVE);
-            i.setData(Uri.parse("custom:" + ordinal()));
-
-            return PendingIntent.getBroadcast(context, 0, i, 0);
-        }
-
-        static Control[] CONTROLS = values();
-        int id;
-        String pref;
-    }
-
+    // Names of all the providers which this class services; i.e. our
+    // subclasses.
+    private static ComponentName[] DAZZLE_PROVIDERS = {
+        new ComponentName("org.hermit.dazzle", "org.hermit.dazzle.Dazzle11Provider"),
+        new ComponentName("org.hermit.dazzle", "org.hermit.dazzle.Dazzle21Provider"),
+        new ComponentName("org.hermit.dazzle", "org.hermit.dazzle.Dazzle31Provider"),
+        new ComponentName("org.hermit.dazzle", "org.hermit.dazzle.Dazzle41Provider"),
+    };
+    
     
     // ******************************************************************** //
     // Private Data.

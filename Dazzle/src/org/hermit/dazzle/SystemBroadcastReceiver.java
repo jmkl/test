@@ -16,43 +16,53 @@
 
 package org.hermit.dazzle;
 
-
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
-import android.location.LocationManager;
-import android.widget.RemoteViews;
+import android.content.Intent;
+import android.util.Log;
 
 
 /**
- * This static class provides utilities to manage the GPS state.
+ * A BroadcastReceiver that listens for relevant system updates.  This
+ * receiver starts off disabled, and we only enable it when there is a widget
+ * instance created, in order to only receive notifications when we need them.
  */
-public class GpsSettings
+public class SystemBroadcastReceiver
+    extends BroadcastReceiver
 {
 
     // ******************************************************************** //
-    // Constructor.
+    // Public Constants.
     // ******************************************************************** //
 
     /**
-     * Constructor -- hidden, as this class is non-instantiable.
+     * Our component name.
      */
-    private GpsSettings() {
+    static ComponentName COMP_NAME =
+            new ComponentName("org.hermit.dazzle",
+                              "org.hermit.dazzle.SystemBroadcastReceiver");
+
+    
+    // ******************************************************************** //
+    // Broadcast Handling.
+    // ******************************************************************** //
+
+    /**
+     * Receives and processes a broadcast intent.
+     *
+     * @param   context     Our context.
+     * @param   intent      The intent.
+     */
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Log.d(TAG, "SystemB/C intent=" + intent);
+
+        // For any broadcast we're registered for, just update all the widgets.
+        DazzleProvider.updateAllWidgets(context);
     }
     
-
-    // ******************************************************************** //
-    // WiFi Handling.
-    // ******************************************************************** //
-
-    static void setWidget(Context context, RemoteViews views, int widget) {
-        LocationManager locationManager =
-            (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        boolean enable = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        
-        int image = enable ? R.drawable.green : R.drawable.grey;
-        views.setImageViewResource(widget, image);
-    }
-
-
+    
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
