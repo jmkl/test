@@ -178,6 +178,14 @@ public abstract class DazzleProvider
     @Override
     public void onDeleted(Context context, int[] ids) {
         Log.d(TAG, "onDeleted()");
+        
+        // Delete all the prefs for each widget instance.
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor edit = prefs.edit();
+        for (int id : ids)
+            for (DazzleProvider.Control c : DazzleProvider.Control.CONTROLS)
+                edit.remove(c.pref + "-" + id);
+        edit.commit();
     }
 
 
@@ -356,7 +364,7 @@ public abstract class DazzleProvider
         }
 
         Log.d(TAG, "updateWidget(" + id + ") = " + clazz.getName());
-        RemoteViews views = buildViews(context, clazz);
+        RemoteViews views = buildViews(context, clazz, id);
         manager.updateAppWidget(id, views);
     }
 
@@ -366,15 +374,17 @@ public abstract class DazzleProvider
      * widget.
      * 
      * @param   context     The context in which this update is running.
+     * @param   clazz       The provider class for this widget instance.
+     * @param   id          The widget ID for which we're building a view.
      * @return              The new RemoteViews.
      */
-    private static RemoteViews buildViews(Context context, Class<?> clazz) {
+    private static RemoteViews buildViews(Context context, Class<?> clazz, int id) {
          RemoteViews views = new RemoteViews(context.getPackageName(),
                                              R.layout.dazzle_widget);
          SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
          for (Control c : Control.CONTROLS) {
-             boolean enable = prefs.getBoolean(c.pref, true);
+             boolean enable = prefs.getBoolean(c.pref + "-" + id, true);
              if (!enable) {
                  views.setViewVisibility(c.id, View.GONE);
              } else {

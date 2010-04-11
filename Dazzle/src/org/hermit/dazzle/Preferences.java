@@ -91,7 +91,7 @@ public class Preferences
         for (DazzleProvider.Control c : DazzleProvider.Control.CONTROLS) {
             CheckBox checkbox = (CheckBox) findViewById(c.id);
             boolean enable = checkbox.isChecked();
-            edit.putBoolean(c.pref, enable);
+            edit.putBoolean(c.pref + "-" + widgetId, enable);
         }
         edit.commit();
         
