@@ -13,7 +13,7 @@
 <LinearLayout
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
-		android:orientation="vertical">
+		android:orientation="vertical" android:padding="2dp">
 
 	<LinearLayout
 			android:layout_width="fill_parent"
@@ -38,6 +38,11 @@
 					android:text="@string/prefs_wifi_summary" />
 		</LinearLayout>
 	</LinearLayout>
+	
+	<ImageView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:src="@drawable/divider" />
 
 	<LinearLayout
 			android:layout_width="fill_parent"
@@ -62,6 +67,11 @@
 					android:text="@string/prefs_bluetooth_summary" />
 		</LinearLayout>
 	</LinearLayout>
+	
+	<ImageView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:src="@drawable/divider" />
 
 	<LinearLayout
 			android:layout_width="fill_parent"
@@ -86,6 +96,11 @@
 					android:text="@string/prefs_gps_summary" />
 		</LinearLayout>
 	</LinearLayout>
+	
+	<ImageView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:src="@drawable/divider" />
 
 	<LinearLayout
 			android:layout_width="fill_parent"
@@ -111,6 +126,11 @@
 		</LinearLayout>
 	</LinearLayout>
 	
+	<ImageView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:src="@drawable/divider" />
+	
 	<LinearLayout
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
@@ -134,6 +154,11 @@
 					android:text="@string/prefs_brightness_summary" />
 		</LinearLayout>
 	</LinearLayout>
+	
+	<ImageView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:src="@drawable/divider" />
 			
 	<LinearLayout
 			android:layout_width="fill_parent"
