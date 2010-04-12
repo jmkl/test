@@ -7,7 +7,7 @@
 		android:orientation="horizontal"
 		android:background="@drawable/appwidget_bg" >
 
-	<LinearLayout android:id="@+id/dazzle_ringer"
+	<LinearLayout android:id="@id/dazzle_ringer"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
@@ -28,7 +28,7 @@
 
 	</LinearLayout>
 
-	<LinearLayout android:id="@+id/dazzle_wifi"
+	<LinearLayout android:id="@id/dazzle_wifi"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
@@ -47,7 +47,7 @@
 
 	</LinearLayout>
 
-	<LinearLayout android:id="@+id/dazzle_bluetooth"
+	<LinearLayout android:id="@id/dazzle_bluetooth"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
@@ -66,7 +66,7 @@
 
 	</LinearLayout>
 
-	<LinearLayout android:id="@+id/dazzle_gps"
+	<LinearLayout android:id="@id/dazzle_gps"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
@@ -80,7 +80,7 @@
 
 	</LinearLayout>
 
-	<LinearLayout android:id="@+id/dazzle_airplane"
+	<LinearLayout android:id="@id/dazzle_airplane"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
@@ -99,7 +99,7 @@
 
 	</LinearLayout>
 
-	<LinearLayout android:id="@+id/dazzle_brightness"
+	<LinearLayout android:id="@id/dazzle_brightness"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
@@ -120,7 +120,7 @@
 
 	</LinearLayout>
 
-	<LinearLayout android:id="@+id/dazzle_brightauto"
+	<LinearLayout android:id="@id/dazzle_brightauto"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
 			android:layout_width="wrap_content"
