@@ -67,6 +67,9 @@ public class RingerControl
         setContentView(R.layout.ringer_activity);
         
         // Set handlers on all the widgets.
+        maxBut = (ToggleButton) findViewById(R.id.button_max);
+        maxBut.setOnClickListener(buttonChecked);
+        
         onBut = (ToggleButton) findViewById(R.id.button_on);
         onBut.setOnClickListener(buttonChecked);
         
@@ -109,6 +112,10 @@ public class RingerControl
             userVolume = 1f;
         Log.i(TAG, "Prefs: ringerLevel " + userVolume);
         
+        // Get the current settings.
+        ringerMode = RingerSettings.getMode(this);
+        currentVolume = RingerSettings.getVolume(this);
+        
         // Set the widgets up.
         setControls();
     }
@@ -137,6 +144,9 @@ public class RingerControl
             // Set the appropriate mode.  We do this any time the user
             // taps the button, even if it was already checked.
             switch (but.getId()) {
+            case R.id.button_max:
+                setMode(AudioManager.RINGER_MODE_NORMAL, 1.0f);
+                break;
             case R.id.button_on:
                 setMode(AudioManager.RINGER_MODE_NORMAL, userVolume);
                 break;
@@ -191,7 +201,9 @@ public class RingerControl
      * Set the controls to reflect the current state.
      */
     private void setControls() {
-        onBut.setChecked(ringerMode == AudioManager.RINGER_MODE_NORMAL);
+        boolean max = currentVolume > 0.995f;
+        maxBut.setChecked(ringerMode == AudioManager.RINGER_MODE_NORMAL && max);
+        onBut.setChecked(ringerMode == AudioManager.RINGER_MODE_NORMAL && !max);
         vibeBut.setChecked(ringerMode == AudioManager.RINGER_MODE_VIBRATE);
         silentBut.setChecked(ringerMode == AudioManager.RINGER_MODE_SILENT);
         levelSlider.setProgress(Math.round(userVolume * 1000));
@@ -235,6 +247,7 @@ public class RingerControl
             DazzleProvider.updateAllWidgets(this);
         
         ringerMode = mode;
+        currentVolume = mode == AudioManager.RINGER_MODE_NORMAL ? level : 0;
     }
 
 
@@ -255,6 +268,7 @@ public class RingerControl
     private SharedPreferences sharedPrefs = null;
 
     // The UI widgets.
+    private ToggleButton maxBut = null;
     private ToggleButton onBut = null;
     private ToggleButton vibeBut = null;
     private ToggleButton silentBut = null;
@@ -266,5 +280,8 @@ public class RingerControl
     // User-configured "medium" volume level, 0-1.
     private float userVolume = 0.5f;
     
+    // The current volume level, 0-1.
+    private float currentVolume = 0.5f;
+   
 }
 

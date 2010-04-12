@@ -18,6 +18,7 @@ package org.hermit.dazzle;
 
 
 import android.content.Context;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.widget.RemoteViews;
 
@@ -99,17 +100,33 @@ class RingerSettings
     static void setWidget(Context context, RemoteViews views, int widget) {
         AudioManager am =
             (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        
+        String lab = "?";
+        int col = Color.WHITE;
+
         int mode = am.getRingerMode();
+        if (mode == AudioManager.RINGER_MODE_SILENT) {
+            lab = context.getString(R.string.ringer_silent);
+            col = 0xffff0000;
+        } else if (mode == AudioManager.RINGER_MODE_VIBRATE) {
+            lab = context.getString(R.string.ringer_vibe);
+            col = 0xffff8000;
+        } else {
+            int max = am.getStreamMaxVolume(AudioManager.STREAM_RING);
+            int vol = am.getStreamVolume(AudioManager.STREAM_RING);
+            float frac = (float) vol / (float) max;
 
-        int image = R.drawable.grey;
-        if (mode == AudioManager.RINGER_MODE_NORMAL)
-            image = R.drawable.green;
-        else if (mode == AudioManager.RINGER_MODE_VIBRATE)
-            image = R.drawable.orange;
-        else
-            image = R.drawable.red;
+            if (frac > 0.995f) {
+                lab = context.getString(R.string.ringer_max);
+                col = 0xffff00ff;
+            } else {
+                lab = String.valueOf(Math.round(frac * 100f)) + "%";
+                col = 0xff00ffff;
+            }
+        }
 
-        views.setImageViewResource(widget, image);
+        views.setTextViewText(widget, lab);
+        views.setTextColor(widget, col);
     }
 
     

@@ -20,7 +20,8 @@ different controls.</string>
     <string name="prefs_bluetooth_summary">Show Bluetooth control</string>
     <string name="prefs_bluetooth_summary_nobt">Show Bluetooth control -- needs Android 2.0 or later</string>
     <string name="prefs_enable_gps">GPS</string>
-    <string name="prefs_gps_summary">Show GPS control (no indicator; takes you to the settings page)</string>
+    <string name="prefs_gps_summary">Show GPS control (no indicator; takes you
+to the settings page.  Sorry, but only system apps can directly control the GPS)</string>
     <string name="prefs_enable_airplane">Airplane</string>
     <string name="prefs_airplane_summary">Show airplane mode control</string>
     <string name="prefs_enable_ringer">Ringer</string>
@@ -33,16 +34,17 @@ different controls.</string>
     <string name="prefs_save">Save</string>
 
     <!-- Ringer button labels. -->
-    <string name="ringer_on">Normal</string>
-    <string name="ringer_vibe">Vibrate</string>
-    <string name="ringer_silent">Silent</string>
+    <string name="ringer_max">Max</string>
+    <string name="ringer_on">User</string>
+    <string name="ringer_vibe">Vibe</string>
+    <string name="ringer_silent">Off</string>
 
     <!-- Brightness button labels. -->
     <string name="button_low">Min</string>
     <string name="button_med">User</string>
     <string name="button_high">Max</string>
     <string name="button_auto">Auto</string>
-            
+
     <!-- Errors. -->
     <string name="error_only_one">Sorry, there can be only one Dazzle at a time.</string>
     

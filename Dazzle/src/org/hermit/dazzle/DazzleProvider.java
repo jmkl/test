@@ -50,11 +50,11 @@ public abstract class DazzleProvider
 
     // The controls we support.
     enum Control {
+        RINGER(R.id.dazzle_ringer, "enableRinger"),
         WIFI(R.id.dazzle_wifi, "enableWifi"),
         BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
         GPS(R.id.dazzle_gps, "enableGps"),
         AIRPLANE(R.id.dazzle_airplane, "enableAirplane"),
-        RINGER(R.id.dazzle_ringer, "enableRinger"),
         BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness"),
         BRIGHTAUTO(R.id.dazzle_brightauto, "enableBrightauto");
         
@@ -228,6 +228,11 @@ public abstract class DazzleProvider
         Log.d(TAG, "Handle control " + control.toString());
 
         switch (control) {
+        case RINGER:
+            Intent ringerIntent = new Intent(context, RingerControl.class);
+            ringerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(ringerIntent);
+            break;
         case WIFI:
             WiFiSettings.toggle(context);
             break;
@@ -244,11 +249,6 @@ public abstract class DazzleProvider
             break;
         case AIRPLANE:
             AirplaneSettings.toggle(context);
-            break;
-        case RINGER:
-            Intent ringerIntent = new Intent(context, RingerControl.class);
-            ringerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(ringerIntent);
             break;
         case BRIGHTNESS:
         case BRIGHTAUTO:
@@ -346,6 +346,9 @@ public abstract class DazzleProvider
     
     private static void setControl(Context context, RemoteViews views, Control control) {
         switch (control) {
+        case RINGER:
+            RingerSettings.setWidget(context, views, R.id.ringer_ind);
+            break;
         case WIFI:
             WiFiSettings.setWidget(context, views, R.id.wifi_ind);
             break;
@@ -361,9 +364,6 @@ public abstract class DazzleProvider
             break;
         case AIRPLANE:
             AirplaneSettings.setWidget(context, views, R.id.airplane_ind);
-            break;
-        case RINGER:
-            RingerSettings.setWidget(context, views, R.id.ringer_ind);
             break;
         case BRIGHTNESS:
             BrightnessSettings.setWidget(context, views, R.id.brightness_ind);
