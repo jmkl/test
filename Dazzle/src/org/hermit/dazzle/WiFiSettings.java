@@ -67,6 +67,13 @@ public class WiFiSettings
     }
 
 
+    /**
+     * Set the indicator widget to represent our current state.
+     * 
+     * @param   context     The context we're running in.
+     * @param   views       The widget view to modify.
+     * @param   widget      The ID of the indicator widget.
+     */
     static void setWidget(Context context, RemoteViews views, int widget) {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         int state = wifiManager.getWifiState();

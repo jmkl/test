@@ -1,0 +1,45 @@
+#!/bin/csh -f
+
+set icons = ( airplane.png  brightness.png sync.png         \
+              bluetooth.png gps.png ringer.png wifi.png )
+
+foreach icon ( $icons )
+    set name = $icon:r
+    set masked = ${name}-m.png
+    set final = ${name}-f.png
+    set hdpi = ../res/drawable-hdpi/$icon
+    set mdpi = ../res/drawable-mdpi/$icon
+    set ldpi = ../res/drawable-ldpi/$icon
+    echo $name
+
+    convert gradient.png  \
+            ${icon} -compose CopyOpacity -composite \
+            ${masked}
+    convert ${masked} -fx A +matte -blur 1x1 -shade 120x65 -normalize \
+            ${masked} -compose Overlay -composite \
+            ${masked} -matte -compose Dst_In -composite \
+            ${final}
+            
+    cp $final $hdpi
+    convert $final -resize 66.6667% $mdpi
+    convert $final -resize 50% $ldpi
+    
+    rm ${masked} ${final}
+end
+
+
+set leds = ( blue.png green.png orange.png red.png grey.png icon.png )
+
+foreach led ($leds)
+    set name = $led:r
+    set hdpi = ../res/drawable-hdpi/$led
+    set mdpi = ../res/drawable-mdpi/$led
+    set ldpi = ../res/drawable-ldpi/$led
+    echo $name
+    
+    cp $led $hdpi
+    convert $led -resize 66.6667% $mdpi
+    convert $led -resize 50% $ldpi
+end
+
+

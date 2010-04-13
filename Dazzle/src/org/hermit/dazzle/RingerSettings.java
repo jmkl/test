@@ -97,7 +97,14 @@ class RingerSettings
     }
 
 
-    static void setWidget(Context context, RemoteViews views, int widget) {
+    /**
+     * Set the indicator widget to represent our current state.
+     * 
+     * @param   context     The context we're running in.
+     * @param   views       The widget view to modify.
+     * @param   widget      The ID of the indicator widget.
+     */
+    static void setTextWidget(Context context, RemoteViews views, int widget) {
         AudioManager am =
             (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         
@@ -127,6 +134,31 @@ class RingerSettings
 
         views.setTextViewText(widget, lab);
         views.setTextColor(widget, col);
+    }
+
+
+    /**
+     * Set the indicator widget to represent our current state.
+     * 
+     * @param   context     The context we're running in.
+     * @param   views       The widget view to modify.
+     * @param   widget      The ID of the indicator widget.
+     */
+    static void setWidget(Context context, RemoteViews views, int widget) {
+        AudioManager am =
+            (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        
+        int image = R.drawable.grey;
+
+        int mode = am.getRingerMode();
+        if (mode == AudioManager.RINGER_MODE_SILENT)
+            image = R.drawable.red;
+        else if (mode == AudioManager.RINGER_MODE_VIBRATE)
+            image = R.drawable.orange;
+        else if (mode == AudioManager.RINGER_MODE_NORMAL)
+            image = R.drawable.green;
+
+        views.setImageViewResource(widget, image);
     }
 
     

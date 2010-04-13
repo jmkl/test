@@ -138,7 +138,8 @@ public abstract class DazzleProvider
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         Log.d(TAG, "onUpdate()");
         
-        // Update the specified widgets.
+        // Update the specified widgets.  Be aware that some of these IDs
+        // could be stale.
         final int num = ids.length;
         for (int i = 0; i < num; ++i) {
             final int id = ids[i];
@@ -162,7 +163,8 @@ public abstract class DazzleProvider
     public void onDeleted(Context context, int[] ids) {
         Log.d(TAG, "onDeleted()");
         
-        // Delete all the prefs for each widget instance.
+        // Delete all the prefs for each widget instance.  Be aware that
+        // some of these IDs could be stale.
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor edit = prefs.edit();
         for (int id : ids)
@@ -269,11 +271,14 @@ public abstract class DazzleProvider
      * Immediately update the specified widget's state.
      * 
      * @param   context     The context in which this update is running.
+     * @param   id          The ID of the widget to update.  Note that this
+     *                      could be a stale ID.
      */
     static void updateWidget(Context context, int id) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         AppWidgetProviderInfo info = manager.getAppWidgetInfo(id);
-        updateWidget(context, manager, info.provider, id);
+        if (info != null)
+            updateWidget(context, manager, info.provider, id);
     }
 
 
@@ -296,6 +301,14 @@ public abstract class DazzleProvider
     }
     
     
+    /**
+     * Immediately update the specified widget's state.
+     * 
+     * @param   context     The context in which this update is running.
+     * @param   manager     The widget manager.
+     * @param   provider    Name of the provider that this widget belongs to.
+     * @param   id          The ID of the widget to update.
+     */
     private static void updateWidget(Context context, AppWidgetManager manager,
                                      ComponentName provider, int id)
     {

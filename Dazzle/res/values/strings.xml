@@ -14,6 +14,8 @@
     <string name="prefs_help">Choose which controls you would like to have
 in this widget.  Note that you can have multiple copies of the widget with
 different controls.</string>
+    <string name="prefs_enable_ringer">Ringer mode</string>
+    <string name="prefs_ringer_summary">Show ring / silent / vibrate control</string>
     <string name="prefs_enable_wifi">WiFi</string>
     <string name="prefs_wifi_summary">Show WiFi control</string>
     <string name="prefs_enable_bluetooth">Bluetooth</string>
@@ -22,10 +24,8 @@ different controls.</string>
     <string name="prefs_enable_gps">GPS</string>
     <string name="prefs_gps_summary">Show GPS control (no indicator; takes you
 to the settings page.  Sorry, but only system apps can directly control the GPS)</string>
-    <string name="prefs_enable_airplane">Airplane</string>
+    <string name="prefs_enable_airplane">Airplane mode</string>
     <string name="prefs_airplane_summary">Show airplane mode control</string>
-    <string name="prefs_enable_ringer">Ringer</string>
-    <string name="prefs_ringer_summary">Show ring / silent / vibrate control</string>
     <string name="prefs_enable_brightness">Brightness</string>
     <string name="prefs_brightness_summary">Show screen brightness control</string>
     <string name="prefs_enable_brightauto">Brightness with auto</string>

@@ -46,6 +46,9 @@
                 <action android:name="android.intent.action.AIRPLANE_MODE" />
                 <action android:name="android.media.RINGER_MODE_CHANGED" />
                 
+                <!-- This one is currently only sent while on Bluetooth. -->
+                <!-- <action android:name="android.media.VOLUME_CHANGED_ACTION" /> -->
+                
                 <!-- Pick up misc. changes. -->
                 <action android:name="android.intent.action.CLOSE_SYSTEM_DIALOGS" />
             </intent-filter>
