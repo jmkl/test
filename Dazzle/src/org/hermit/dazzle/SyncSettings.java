@@ -17,16 +17,17 @@
 package org.hermit.dazzle;
 
 
-import android.bluetooth.BluetoothAdapter;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 
 /**
- * This static class provides utilities to manage the Bluetooth state.
+ * This static class provides utilities to manage the sync state.
  */
-public class BluetoothSettings
+public class SyncSettings
 {
 
     // ******************************************************************** //
@@ -36,7 +37,7 @@ public class BluetoothSettings
     /**
      * Constructor -- hidden, as this class is non-instantiable.
      */
-    private BluetoothSettings() {
+    private SyncSettings() {
     }
     
 
@@ -50,16 +51,11 @@ public class BluetoothSettings
      * @param   context     The context we're running in.
      */
     static void toggle(Context context) {
-        Log.i(TAG, "toggle Bluetooth");
-
-        // Just toggle Bluetooth power, as long as we're not already in
-        // an intermediate state.
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        int state = adapter.getState();
-        if (state == BluetoothAdapter.STATE_OFF)
-            adapter.enable();
-        else if (state == BluetoothAdapter.STATE_ON)
-            adapter.disable();
+        Log.i(TAG, "toggle Sync");
+        
+        // Just toggle sync.
+        boolean sync = ContentResolver.getMasterSyncAutomatically();
+        ContentResolver.setMasterSyncAutomatically(!sync);
     }
 
 
@@ -71,21 +67,36 @@ public class BluetoothSettings
      * @param   widget      The ID of the indicator widget.
      */
     static void setWidget(Context context, RemoteViews views, int widget) {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        int state = adapter.getState();
+        boolean backgroundData = getBackgroundDataState(context);
+        boolean sync = ContentResolver.getMasterSyncAutomatically();
         
+        // We can display changes in the background data setting, even
+        // though we can't change it.
         int image = R.drawable.grey;
-        if (state == BluetoothAdapter.STATE_OFF)
-            image = R.drawable.grey;
-        else if (state == BluetoothAdapter.STATE_ON)
-            image = R.drawable.blue;
-        else
+        if (backgroundData && sync)
+            image = R.drawable.green;
+        else if (backgroundData || sync)
             image = R.drawable.orange;
+        else
+            image = R.drawable.red;
 
         views.setImageViewResource(widget, image);
     }
 
+    
+    /**
+     * Gets the state of background data.
+     *
+     * @param context
+     * @return true if enabled
+     */
+    private static boolean getBackgroundDataState(Context context) {
+        ConnectivityManager connManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connManager.getBackgroundDataSetting();
+    }
 
+    
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //

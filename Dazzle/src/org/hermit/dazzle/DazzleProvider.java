@@ -55,6 +55,7 @@ public abstract class DazzleProvider
         BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
         GPS(R.id.dazzle_gps, "enableGps"),
         AIRPLANE(R.id.dazzle_airplane, "enableAirplane"),
+        SYNC(R.id.dazzle_sync, "enableSync"),
         BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness"),
         BRIGHTAUTO(R.id.dazzle_brightauto, "enableBrightauto");
         
@@ -252,6 +253,12 @@ public abstract class DazzleProvider
         case AIRPLANE:
             AirplaneSettings.toggle(context);
             break;
+        case SYNC:
+            // Can only do SYnc from Eclair on.
+            if (android.os.Build.VERSION.SDK_INT >=
+                                        android.os.Build.VERSION_CODES.ECLAIR)
+                SyncSettings.toggle(context);
+            break;
         case BRIGHTNESS:
         case BRIGHTAUTO:
             Intent screenIntent = new Intent(context, BrightnessControl.class);
@@ -343,7 +350,7 @@ public abstract class DazzleProvider
          SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
          for (Control c : Control.CONTROLS) {
-             boolean enable = prefs.getBoolean(c.pref + "-" + id, true);
+             boolean enable = prefs.getBoolean(c.pref + "-" + id, false);
              if (!enable) {
                  views.setViewVisibility(c.id, View.GONE);
              } else {
@@ -377,6 +384,12 @@ public abstract class DazzleProvider
             break;
         case AIRPLANE:
             AirplaneSettings.setWidget(context, views, R.id.airplane_ind);
+            break;
+        case SYNC:
+            // Can only do Sync from Eclair on.
+            if (android.os.Build.VERSION.SDK_INT >=
+                                        android.os.Build.VERSION_CODES.ECLAIR)
+                SyncSettings.setWidget(context, views, R.id.sync_ind);
             break;
         case BRIGHTNESS:
             BrightnessSettings.setWidget(context, views, R.id.brightness_ind);

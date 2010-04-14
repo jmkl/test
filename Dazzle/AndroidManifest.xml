@@ -45,6 +45,9 @@
                 <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
                 <action android:name="android.intent.action.AIRPLANE_MODE" />
                 <action android:name="android.media.RINGER_MODE_CHANGED" />
+                <action android:name="android.intent.action.SYNC_STATE_CHANGED" />
+                <action android:name="com.android.sync.SYNC_CONN_STATUS_CHANGED" />
+                <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED" />
                 
                 <!-- This one is currently only sent while on Bluetooth. -->
                 <!-- <action android:name="android.media.VOLUME_CHANGED_ACTION" /> -->
@@ -82,8 +85,10 @@
 	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 	<uses-permission android:name="android.permission.BLUETOOTH" />
 	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+	<uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
 	
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
-<uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
 </manifest>
 

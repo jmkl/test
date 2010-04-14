@@ -65,6 +65,11 @@ public class Preferences
             TextView btHelp = (TextView) findViewById(R.id.bluetooth_help);
             btHelp.setText(R.string.prefs_bluetooth_summary_nobt);
             
+            CheckBox syCheck = (CheckBox) findViewById(R.id.dazzle_sync);
+            syCheck.setEnabled(false);
+            TextView syHelp = (TextView) findViewById(R.id.sync_help);
+            syHelp.setText(R.string.prefs_sync_summary_nosync);
+            
             CheckBox baCheck = (CheckBox) findViewById(R.id.dazzle_brightauto);
             baCheck.setEnabled(false);
             TextView baHelp = (TextView) findViewById(R.id.brightauto_help);

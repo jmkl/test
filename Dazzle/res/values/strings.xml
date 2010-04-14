@@ -26,6 +26,9 @@ different controls.</string>
 to the settings page.  Sorry, but only system apps can directly control the GPS)</string>
     <string name="prefs_enable_airplane">Airplane mode</string>
     <string name="prefs_airplane_summary">Show airplane mode control</string>
+    <string name="prefs_enable_sync">Sync</string>
+    <string name="prefs_sync_summary">Show sync on/off control</string>
+    <string name="prefs_sync_summary_nosync">Sync on/off control -- needs Android 2.0 or later</string>
     <string name="prefs_enable_brightness">Brightness</string>
     <string name="prefs_brightness_summary">Show screen brightness control</string>
     <string name="prefs_enable_brightauto">Brightness with auto</string>

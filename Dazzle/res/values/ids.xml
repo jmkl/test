@@ -12,6 +12,7 @@
 	<item name="dazzle_bluetooth" type="id" />
 	<item name="dazzle_gps" type="id" />
 	<item name="dazzle_airplane" type="id" />
+	<item name="dazzle_sync" type="id" />
 	<item name="dazzle_brightness" type="id" />
 	<item name="dazzle_brightauto" type="id" />
 	

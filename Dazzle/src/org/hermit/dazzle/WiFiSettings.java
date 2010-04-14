@@ -45,13 +45,9 @@ public class WiFiSettings
     // ******************************************************************** //
 
     /**
-     * Called after onRestoreInstanceState(Bundle), onRestart(), or onPause(),
-     * for your activity to start interacting with the user.  This is a good
-     * place to begin animations, open exclusive-access devices (such as the
-     * camera), etc.
+     * Toggle the current state.
      * 
-     * Derived classes must call through to the super class's implementation
-     * of this method.  If they do not, an exception will be thrown.
+     * @param   context     The context we're running in.
      */
     static void toggle(Context context) {
         Log.i(TAG, "toggle WiFi");
