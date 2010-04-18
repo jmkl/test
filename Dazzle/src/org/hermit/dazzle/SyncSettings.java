@@ -67,10 +67,20 @@ public class SyncSettings
      * @param   widget      The ID of the indicator widget.
      */
     static void setWidget(Context context, RemoteViews views, int widget) {
-        // boolean backgroundData = getBackgroundDataState(context);
+        boolean backgroundData = getBackgroundDataState(context);
         boolean sync = ContentResolver.getMasterSyncAutomatically();
         
-        int image = sync ? R.drawable.green : R.drawable.grey;
+        // We can display changes in the background data setting, even
+        // though we can't change it.
+        int image = R.drawable.red;
+        if (backgroundData && sync)
+            image = R.drawable.green;
+        else if (sync)
+            image = R.drawable.green;
+        else if (backgroundData)
+            image = R.drawable.grey;
+        else
+            image = R.drawable.grey;
 
         views.setImageViewResource(widget, image);
     }
