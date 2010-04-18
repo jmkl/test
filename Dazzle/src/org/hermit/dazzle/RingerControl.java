@@ -17,6 +17,8 @@
 package org.hermit.dazzle;
 
 
+import org.hermit.android.core.Errors;
+
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
@@ -141,61 +143,73 @@ public class RingerControl
     private View.OnClickListener buttonChecked = new View.OnClickListener() {
         @Override
         public void onClick(View but) {
-            // Set the appropriate mode.  We do this any time the user
-            // taps the button, even if it was already checked.
-            switch (but.getId()) {
-            case R.id.button_max:
-                setMode(AudioManager.RINGER_MODE_NORMAL, 1.0f);
-                break;
-            case R.id.button_on:
-                setMode(AudioManager.RINGER_MODE_NORMAL, userVolume);
-                break;
-            case R.id.button_vibe:
-                setMode(AudioManager.RINGER_MODE_VIBRATE, userVolume);
-                break;
-            case R.id.button_silent:
-                setMode(AudioManager.RINGER_MODE_SILENT, userVolume);
-                break;
+            try {
+                // Set the appropriate mode.  We do this any time the user
+                // taps the button, even if it was already checked.
+                switch (but.getId()) {
+                case R.id.button_max:
+                    setMode(AudioManager.RINGER_MODE_NORMAL, 1.0f);
+                    break;
+                case R.id.button_on:
+                    setMode(AudioManager.RINGER_MODE_NORMAL, userVolume);
+                    break;
+                case R.id.button_vibe:
+                    setMode(AudioManager.RINGER_MODE_VIBRATE, userVolume);
+                    break;
+                case R.id.button_silent:
+                    setMode(AudioManager.RINGER_MODE_SILENT, userVolume);
+                    break;
+                }
+
+                // Re-set all the controls.
+                setControls();
+
+                finish();
+            } catch (Exception e) {
+                Errors.reportException(RingerControl.this, e);
             }
-            
-            // Re-set all the controls.
-            setControls();
-            
-            finish();
         }
     };
-    
-    
+
+
     private SeekBar.OnSeekBarChangeListener levelChanged =
-                            new SeekBar.OnSeekBarChangeListener() {
+        new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
         }
-        
+
         @Override
         public void onProgressChanged(SeekBar bar, int n, boolean user) {
-            if (user) {
-                userVolume = (float) n / 1000.0f;
-                setMode(AudioManager.RINGER_MODE_NORMAL, userVolume, false);
+            try {
+                if (user) {
+                    userVolume = (float) n / 1000.0f;
+                    setMode(AudioManager.RINGER_MODE_NORMAL, userVolume, false);
+                }
+
+                // Re-set all the controls.
+                setControls();
+            } catch (Exception e) {
+                Errors.reportException(RingerControl.this, e);
             }
-            
-            // Re-set all the controls.
-            setControls();
         }
-    
+
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
-            setMode(AudioManager.RINGER_MODE_NORMAL, userVolume);
-            
-            // Save the user's "medium" level.
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.putFloat("ringerLevel", userVolume);
-            editor.commit();
-            
-            finish();
+            try {
+                setMode(AudioManager.RINGER_MODE_NORMAL, userVolume);
+
+                // Save the user's "medium" level.
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putFloat("ringerLevel", userVolume);
+                editor.commit();
+
+                finish();
+            } catch (Exception e) {
+                Errors.reportException(RingerControl.this, e);
+            }
         }
     };
-    
+
     
     /**
      * Set the controls to reflect the current state.

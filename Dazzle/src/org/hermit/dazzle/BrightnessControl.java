@@ -17,6 +17,8 @@
 package org.hermit.dazzle;
 
 
+import org.hermit.android.core.Errors;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -159,62 +161,74 @@ public class BrightnessControl
     private View.OnClickListener buttonChecked = new View.OnClickListener() {
         @Override
         public void onClick(View but) {
-            // Set the appropriate mode.  We do this any time the user
-            // taps the button, even if it was already checked.
-            switch (but.getId()) {
-            case R.id.button_low:
-                setMode(false, BrightnessSettings.BRIGHTNESS_OFF);
-                break;
-            case R.id.button_med:
-                setMode(false, userLevel);
-                break;
-            case R.id.button_high:
-                setMode(false, BrightnessSettings.BRIGHTNESS_MAX);
-                break;
-            case R.id.button_auto:
-                setMode(true, userLevel);
-                break;
+            try {
+                // Set the appropriate mode.  We do this any time the user
+                // taps the button, even if it was already checked.
+                switch (but.getId()) {
+                case R.id.button_low:
+                    setMode(false, BrightnessSettings.BRIGHTNESS_OFF);
+                    break;
+                case R.id.button_med:
+                    setMode(false, userLevel);
+                    break;
+                case R.id.button_high:
+                    setMode(false, BrightnessSettings.BRIGHTNESS_MAX);
+                    break;
+                case R.id.button_auto:
+                    setMode(true, userLevel);
+                    break;
+                }
+
+                // Re-set all the controls.
+                setControls();
+
+                finish();
+            } catch (Exception e) {
+                Errors.reportException(BrightnessControl.this, e);
             }
-            
-            // Re-set all the controls.
-            setControls();
-            
-            finish();
         }
     };
     
-    
+
     private SeekBar.OnSeekBarChangeListener levelChanged =
-                            new SeekBar.OnSeekBarChangeListener() {
+        new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
         }
-        
+
         @Override
         public void onProgressChanged(SeekBar bar, int n, boolean user) {
-            if (user) {
-                userLevel = (float) n / 1000.0f;
-                setMode(false, userLevel, false);
+            try {
+                if (user) {
+                    userLevel = (float) n / 1000.0f;
+                    setMode(false, userLevel, false);
+                }
+
+                // Re-set all the controls.
+                setControls();
+            } catch (Exception e) {
+                Errors.reportException(BrightnessControl.this, e);
             }
-            
-            // Re-set all the controls.
-            setControls();
         }
-    
+
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
-            setMode(false, userLevel);
-            
-            // Save the user's "medium" level.
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.putFloat("userLevel", userLevel);
-            editor.commit();
-            
-            finish();
+            try {
+                setMode(false, userLevel);
+
+                // Save the user's "medium" level.
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putFloat("userLevel", userLevel);
+                editor.commit();
+
+                finish();
+            } catch (Exception e) {
+                Errors.reportException(BrightnessControl.this, e);
+            }
         }
     };
-    
-    
+
+
     /**
      * Set the controls to reflect the current state.
      */

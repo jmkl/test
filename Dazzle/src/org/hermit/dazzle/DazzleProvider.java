@@ -17,6 +17,8 @@
 package org.hermit.dazzle;
 
 
+import org.hermit.android.core.Errors;
+
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -144,7 +146,11 @@ public abstract class DazzleProvider
         final int num = ids.length;
         for (int i = 0; i < num; ++i) {
             final int id = ids[i];
-            updateWidget(context, id);
+            try {
+                updateWidget(context, id);
+            } catch (Exception e) {
+                Errors.reportException(context, e);
+            }
         }
 
         Log.d(TAG, "onUpdate() DONE");
@@ -211,17 +217,21 @@ public abstract class DazzleProvider
         Log.d(TAG, "onReceive()");
 
         super.onReceive(context, intent);
-        
-        if (intent.hasCategory(Intent.CATEGORY_ALTERNATIVE)) {
-            Uri data = intent.getData();
-            Log.d(TAG, "Handle receive " + data);
-            int id = Integer.parseInt(data.getSchemeSpecificPart());
-            if (id >= 0 && id < Control.CONTROLS.length) {
-                Control control = Control.CONTROLS[id];
-                handleClick(context, control);
+
+        try {
+            if (intent.hasCategory(Intent.CATEGORY_ALTERNATIVE)) {
+                Uri data = intent.getData();
+                Log.d(TAG, "Handle receive " + data);
+                int id = Integer.parseInt(data.getSchemeSpecificPart());
+                if (id >= 0 && id < Control.CONTROLS.length) {
+                    Control control = Control.CONTROLS[id];
+                    handleClick(context, control);
+                }
             }
+        } catch (Exception e) {
+            Errors.reportException(context, e);
         }
-        
+
         // State changes fall through.
         updateAllWidgets(context);
     }
@@ -282,10 +292,14 @@ public abstract class DazzleProvider
      *                      could be a stale ID.
      */
     static void updateWidget(Context context, int id) {
-        AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        AppWidgetProviderInfo info = manager.getAppWidgetInfo(id);
-        if (info != null)
-            updateWidget(context, manager, info.provider, id);
+        try {
+            AppWidgetManager manager = AppWidgetManager.getInstance(context);
+            AppWidgetProviderInfo info = manager.getAppWidgetInfo(id);
+            if (info != null)
+                updateWidget(context, manager, info.provider, id);
+        } catch (Exception e) {
+            Errors.reportException(context, e);
+        }
     }
 
 
@@ -295,16 +309,20 @@ public abstract class DazzleProvider
      * @param   context     The context in which this update is running.
      */
     static void updateAllWidgets(Context context) {
-        Log.d(TAG, "updateAllWidgets()");
+        try {
+            Log.d(TAG, "updateAllWidgets()");
 
-        AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        for (ComponentName provider : DAZZLE_PROVIDERS) {
-            int[] ids = manager.getAppWidgetIds(provider);
-            for (int id : ids)
-                updateWidget(context, manager, provider, id);
+            AppWidgetManager manager = AppWidgetManager.getInstance(context);
+            for (ComponentName provider : DAZZLE_PROVIDERS) {
+                int[] ids = manager.getAppWidgetIds(provider);
+                for (int id : ids)
+                    updateWidget(context, manager, provider, id);
+            }
+
+            Log.d(TAG, "updateAllWidgets() DONE");
+        } catch (Exception e) {
+            Errors.reportException(context, e);
         }
-        
-        Log.d(TAG, "updateAllWidgets() DONE");
     }
     
     
