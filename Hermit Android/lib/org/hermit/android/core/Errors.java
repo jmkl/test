@@ -24,7 +24,9 @@ import java.util.HashMap;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.widget.Toast;
 
 
 /**
@@ -44,7 +46,7 @@ public class Errors
      * 
      * @param   context     The application context.
      */
-    private Errors(Activity context) {
+    private Errors(Context context) {
         appContext = context;
     }
     
@@ -60,7 +62,7 @@ public class Errors
      * @param   context     The Activity for which we want an error reporter.
      * @return              The single instance of this class.
      */
-    public static Errors getInstance(Activity context) {
+    public static Errors getInstance(Context context) {
         Errors instance = activityInstances.get(context);
         if (instance == null) {
             instance = new Errors(context);
@@ -82,17 +84,41 @@ public class Errors
      * <p>This method may be called from any thread.  The reporting will be
      * deferred to the UI thread.
      * 
+     * @param   context     The Activity for which we want an error reporter.
+     * @param   e           The exception.
+     */
+    public static void reportException(Context context, final Exception e) {
+        getInstance(context).reportException(e);
+    }
+
+
+    /**
+     * Report an unexpected exception to the user by popping up a dialog
+     * with some debug info.  Don't report the same exception more than twice,
+     * and if we get floods of exceptions, just bomb out.
+     * 
+     * <p>This method may be called from any thread.  The reporting will be
+     * deferred to the UI thread.
+     * 
      * @param   e           The exception.
      */
     public void reportException(final Exception e) {
-        appContext.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                internalReportException(e);
-            }
-        });
+        if (appContext instanceof Activity) {
+            ((Activity) appContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    reportActivityException(e);
+                }
+            });
+        } else {
+            reportToastException(e);
+        }
     }
 
+
+    // ******************************************************************** //
+    // Dialog Notifications.
+    // ******************************************************************** //
 
     /**
      * Report an unexpected exception to the user by popping up a dialog
@@ -103,11 +129,98 @@ public class Errors
      * 
      * @param   e           The exception.
      */
-    private void internalReportException(Exception e) {
+    private void reportActivityException(Exception e) {
         // If we're already shutting down, ignore it.
         if (shuttingDown)
             return;
         
+        String exTitle = "Unexpected Exception";
+        String exString = getErrorString(e);
+        
+        // Bump the counter for this exception.
+        int count = countError(exString);
+        
+        // Over 5 exceptions total, that's too many.
+        if (exceptionTotal > 5) {
+            exTitle = "Too Many Errors";
+            exString += "\n\nToo many errors: closing down";
+            shuttingDown = true;
+        }
+
+        // Now, if we've had fewer than three, or if we've had too many,
+        // report it.
+        if (shuttingDown || count < 3)
+            showDialog(exTitle, exString);
+    }
+    
+    
+    private void showDialog(String title, String text) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
+        builder.setMessage(text)
+                            .setCancelable(false)
+                            .setTitle(title)
+                            .setPositiveButton("OK", dialogListener);
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+
+    private DialogInterface.OnClickListener dialogListener =
+                                    new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            if (shuttingDown)
+                ((Activity) appContext).finish();
+        }
+    };
+    
+
+    // ******************************************************************** //
+    // Toast Notifications.
+    // ******************************************************************** //
+
+    /**
+     * Report an unexpected exception to the user by popping up a dialog
+     * with some debug info.  Don't report the same exception more than twice,
+     * and if we get floods of exceptions, just bomb out.
+     * 
+     * <p>This method must be called from the UI thread.
+     * 
+     * @param   e           The exception.
+     */
+    private void reportToastException(Exception e) {
+        // If we're already shutting down, ignore it.
+        if (shuttingDown)
+            return;
+        
+        String exString = getErrorString(e);
+        
+        // Bump the counter for this exception.
+        countError(exString);
+        
+        // Over 10 exceptions total, that's too many.  Don't report any
+        // more.  (We can't actually shut down.)
+        if (exceptionTotal > 10) {
+            exString += "\n\nToo many errors: stopping reports";
+            shuttingDown = true;
+        }
+
+        // Now report it.
+        showToast(exString);
+    }
+
+
+    private void showToast(String text) {
+        Toast toast = Toast.makeText(appContext, text, Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+
+    // ******************************************************************** //
+    // Exception Utilities.
+    // ******************************************************************** //
+
+    private String getErrorString(Exception e) {
         StringBuilder text = new StringBuilder();
 
         text.append("Exception: ");
@@ -125,63 +238,40 @@ public class Errors
             if (file != null && line > 0)
                 text.append("; " + file + " line " + line);
         }
-
-        // Bump the counter for this exception.
-        String exTitle = "Unexpected Exception";
-        String exString = text.toString();
-        Integer count = exceptionCounts.get(exString);
+        
+        return text.toString();
+    }
+    
+    
+    private int countError(String text) {
+        // Count the specific type of exception.
+        Integer count = exceptionCounts.get(text);
         if (count == null)
             count = 1;
         else
             count = count + 1;
-        exceptionCounts.put(exString, count);
-
-        // See if we've had too many exceptions altogether.  Deduct one
-        // exception for each 20 seconds that have passed.  Over 5,
-        // that's too many.
+        exceptionCounts.put(text, count);
+        
+        // Count the total number of exceptions for this app.  Deduct one
+        // exception for each 20 seconds that have passed.
         long now = System.currentTimeMillis();
         exceptionTotal -= (now - lastException) / (20 * 1000);
         lastException = now;
         if (exceptionTotal < 0)
             exceptionTotal = 0;
         ++exceptionTotal;
-        if (exceptionTotal > 5) {
-            exTitle = "Too Many Errors";
-            exString += "\n\nToo many errors: closing down";
-            shuttingDown = true;
-        }
-
-        // Now, if we've had fewer than three, or if we've had too many,
-        // report it.
-        if (shuttingDown || count < 3) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
-            builder.setMessage(exString)
-                                .setCancelable(false)
-                                .setTitle(exTitle)
-                                .setPositiveButton("OK", dialogListener);
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
+        
+        return count;
     }
     
-    
-    private DialogInterface.OnClickListener dialogListener =
-                                    new DialogInterface.OnClickListener() {
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            if (shuttingDown)
-                appContext.finish();
-        }
-    };
-
 
 	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
 
-    // The Errors instance for each activity.
-    private static HashMap<Activity, Errors> activityInstances =
-                                            new HashMap<Activity, Errors>();
+    // The Errors instance for each context.
+    private static HashMap<Context, Errors> activityInstances =
+                                            new HashMap<Context, Errors>();
     
     // Counts of how often we've seen each exception type.
     private static HashMap<String, Integer> exceptionCounts =
@@ -200,7 +290,7 @@ public class Errors
     // ******************************************************************** //
 
     // Application handle.
-    private Activity appContext = null;
+    private Context appContext = null;
 
 }
 
