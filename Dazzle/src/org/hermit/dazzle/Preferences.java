@@ -59,7 +59,7 @@ public class Preferences
         
         // Can only do Bluetooth and auto-brightness from Eclair on.
         if (android.os.Build.VERSION.SDK_INT <
-                                    android.os.Build.VERSION_CODES.ECLAIR){
+                                    android.os.Build.VERSION_CODES.ECLAIR) {
             CheckBox btCheck = (CheckBox) findViewById(R.id.dazzle_bluetooth);
             btCheck.setEnabled(false);
             TextView btHelp = (TextView) findViewById(R.id.bluetooth_help);
@@ -74,7 +74,22 @@ public class Preferences
             baCheck.setEnabled(false);
             TextView baHelp = (TextView) findViewById(R.id.brightauto_help);
             baHelp.setText(R.string.prefs_brightauto_summary_noauto);
+            
+            CheckBox boCheck = (CheckBox) findViewById(R.id.dazzle_otbrightauto);
+            boCheck.setEnabled(false);
+            TextView boHelp = (TextView) findViewById(R.id.otbrightauto_help);
+            boHelp.setText(R.string.prefs_otbrightauto_summary_noauto);
         }
+
+        // Pre-set the brightness popup to enabled, so there's at least
+        // something there.
+        CheckBox brightCheck;
+        if (android.os.Build.VERSION.SDK_INT <
+                                    android.os.Build.VERSION_CODES.ECLAIR)
+            brightCheck = (CheckBox) findViewById(R.id.dazzle_brightness);
+        else
+            brightCheck = (CheckBox) findViewById(R.id.dazzle_brightauto);
+        brightCheck.setChecked(true);
 
         // Add a handler to the save button.
         Button saveBut = (Button) findViewById(R.id.save_button);

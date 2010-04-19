@@ -53,13 +53,16 @@ public abstract class DazzleProvider
     // The controls we support.
     enum Control {
         RINGER(R.id.dazzle_ringer, "enableRinger"),
+        OTRINGER(R.id.dazzle_otringer, "enableOtRinger"),
         WIFI(R.id.dazzle_wifi, "enableWifi"),
         BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
         GPS(R.id.dazzle_gps, "enableGps"),
         AIRPLANE(R.id.dazzle_airplane, "enableAirplane"),
         SYNC(R.id.dazzle_sync, "enableSync"),
         BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness"),
-        BRIGHTAUTO(R.id.dazzle_brightauto, "enableBrightauto");
+        OTBRIGHTNESS(R.id.dazzle_otbrightness, "enableOtBrightness"),
+        BRIGHTAUTO(R.id.dazzle_brightauto, "enableBrightauto"),
+        OTBRIGHTAUTO(R.id.dazzle_otbrightauto, "enableOtBrightauto");
         
         Control(int id, String pref) {
             this.id = id;
@@ -246,6 +249,9 @@ public abstract class DazzleProvider
             ringerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(ringerIntent);
             break;
+        case OTRINGER:
+            RingerSettings.toggle(context);
+            break;
         case WIFI:
             WiFiSettings.toggle(context);
             break;
@@ -271,9 +277,14 @@ public abstract class DazzleProvider
             break;
         case BRIGHTNESS:
         case BRIGHTAUTO:
+        case OTBRIGHTNESS:
+        case OTBRIGHTAUTO:
             Intent screenIntent = new Intent(context, BrightnessControl.class);
             screenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            screenIntent.putExtra("auto", control == Control.BRIGHTAUTO);
+            screenIntent.putExtra("auto", control == Control.BRIGHTAUTO ||
+                                          control == Control.OTBRIGHTAUTO);
+            screenIntent.putExtra("onetouch", control == Control.OTBRIGHTNESS ||
+                                              control == Control.OTBRIGHTAUTO);
             context.startActivity(screenIntent);
             break;
         }
@@ -387,6 +398,9 @@ public abstract class DazzleProvider
         case RINGER:
             RingerSettings.setWidget(context, views, R.id.ringer_ind);
             break;
+        case OTRINGER:
+            RingerSettings.setWidget(context, views, R.id.otringer_ind);
+            break;
         case WIFI:
             WiFiSettings.setWidget(context, views, R.id.wifi_ind);
             break;
@@ -412,8 +426,14 @@ public abstract class DazzleProvider
         case BRIGHTNESS:
             BrightnessSettings.setWidget(context, views, R.id.brightness_ind);
             break;
+        case OTBRIGHTNESS:
+            BrightnessSettings.setWidget(context, views, R.id.otbrightness_ind);
+            break;
         case BRIGHTAUTO:
             BrightnessSettings.setWidget(context, views, R.id.brightauto_ind);
+            break;
+        case OTBRIGHTAUTO:
+            BrightnessSettings.setWidget(context, views, R.id.otbrightauto_ind);
             break;
         }
     }

@@ -58,6 +58,61 @@ class BrightnessSettings
     // Screen Brightness Settings Handling.
     // ******************************************************************** //
 
+    /**
+     * Toggle the current state.
+     * 
+     * <p>NOTE: this by itself won't change the current visible brightness,
+     * it just saves the settings.  To make the brightness visible, you need:
+     * 
+     * <pre>
+     *     WindowManager.LayoutParams lp = getWindow().getAttributes();
+     *     BrightnessSettings.fractionToParams(level, lp);
+     *     getWindow().setAttributes(lp);
+     * </pre>
+     * 
+     * @param   context     The context we're running in.
+     * @param   auto        If true, include auto as a possible state.
+     * @param   medium      The brightness level to use for "medium".
+     */
+    static void toggle(Context context, boolean auto, float medium) {
+        Log.i(TAG, "toggle Brightness " + (auto ? "with" : "no") + " auto");
+        
+        // Step to the next state.  (Not really a toggle.)
+        ContentResolver resolver = context.getContentResolver();
+        int mode = Settings.System.getInt(resolver,
+                                          SCREEN_BRIGHTNESS_MODE,
+                                          SCREEN_BRIGHTNESS_MODE_MANUAL);
+        int bright = Settings.System.getInt(resolver,
+                                            Settings.System.SCREEN_BRIGHTNESS,
+                                            SETTING_MAX);
+        float frac = settingToFraction(bright);
+        if (mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC) {
+            // Go to manual, min brightness.
+            mode = SCREEN_BRIGHTNESS_MODE_MANUAL;
+            frac = BRIGHTNESS_OFF;
+        } else {
+            if (frac < 0.005f) {
+                frac = medium;
+            } else if (frac < 0.995f) {
+                frac = BRIGHTNESS_MAX;
+            } else {
+                if (auto)
+                    mode = SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+                else
+                    frac = BRIGHTNESS_OFF;
+            }
+        }
+        
+        int lev = fractionToSetting(frac);
+        Log.v(TAG, "save settings " + (auto ? "A " : "M ") + lev);
+        Settings.System.putInt(resolver,
+                               SCREEN_BRIGHTNESS_MODE, mode);
+        Settings.System.putInt(resolver, 
+                               Settings.System.SCREEN_BRIGHTNESS,
+                               lev);
+    }
+
+
     static boolean isAuto(Context context) {
         int mode = Settings.System.getInt(context.getContentResolver(),
                                           SCREEN_BRIGHTNESS_MODE,

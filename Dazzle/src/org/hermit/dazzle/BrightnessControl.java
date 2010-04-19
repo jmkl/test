@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
@@ -66,39 +67,52 @@ public class BrightnessControl
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         
-        // Get parameters from the intent.  See if we're showing the auto
-        // option.
+        // Get parameters from the intent.  See if we're in one-touch mode,
+        // and if we're showing the auto option.
         Intent intent = getIntent();
+        isOnetouch = intent.getBooleanExtra("onetouch", false);
         showAuto = intent.getBooleanExtra("auto", false);
         
         // Get our preferences.
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         
-        // Create the UI.
+        // If we're not in one-touch mode, create the UI.  Otherwise,
+        // make an empty UI.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.brightness_activity);
-        
-        // Set handlers on all the widgets.
-        lowBut = (ToggleButton) findViewById(R.id.button_low);
-        lowBut.setOnClickListener(buttonChecked);
-        
-        medBut = (ToggleButton) findViewById(R.id.button_med);
-        medBut.setOnClickListener(buttonChecked);
-        
-        highBut = (ToggleButton) findViewById(R.id.button_high);
-        highBut.setOnClickListener(buttonChecked);
-        
-        autoBut = (ToggleButton) findViewById(R.id.button_auto);
-        if (!showAuto)
-            autoBut.setVisibility(View.GONE);
-        else {
-            autoBut.setVisibility(View.VISIBLE);
-            autoBut.setOnClickListener(buttonChecked);
+        if (!isOnetouch) {
+            setContentView(R.layout.brightness_activity);
+
+            // Set handlers on all the widgets.
+            lowBut = (ToggleButton) findViewById(R.id.button_low);
+            lowBut.setOnClickListener(buttonChecked);
+
+            medBut = (ToggleButton) findViewById(R.id.button_med);
+            medBut.setOnClickListener(buttonChecked);
+
+            highBut = (ToggleButton) findViewById(R.id.button_high);
+            highBut.setOnClickListener(buttonChecked);
+
+            autoBut = (ToggleButton) findViewById(R.id.button_auto);
+            if (!showAuto)
+                autoBut.setVisibility(View.GONE);
+            else {
+                autoBut.setVisibility(View.VISIBLE);
+                autoBut.setOnClickListener(buttonChecked);
+            }
+
+            levelSlider = (SeekBar) findViewById(R.id.slider);
+            levelSlider.setMax(1000);
+            levelSlider.setOnSeekBarChangeListener(levelChanged);
+
+            // If we're in onetouch mode, make the window invisible.  This sucks,
+            // but it seems without having the window onscreen, we can't actually
+            // set the brightness.
+        } else {
+            Window win = getWindow();
+            WindowManager.LayoutParams lp = win.getAttributes();
+            lp.alpha = 0.0f;
+            win.setAttributes(lp);
         }
-        
-        levelSlider = (SeekBar) findViewById(R.id.slider);
-        levelSlider.setMax(1000);
-        levelSlider.setOnSeekBarChangeListener(levelChanged);
     }
 
 
@@ -132,9 +146,35 @@ public class BrightnessControl
         // Get the current level.
         isAuto = BrightnessSettings.isAuto(this);
         currentBrightness = BrightnessSettings.getBrightness(this);
-        
-        // Set the widgets up.
-        setControls();
+
+        // If this is a one-touch activation, just step the mode and we're
+        // done.
+        if (isOnetouch) {
+            // If we're not at min or max, save the current brightness as the
+            // user's "medium" level, since one-touch mode doesn't let the
+            // user set it directly.
+            if (!isAuto && currentBrightness >= 0.005f && currentBrightness <= 0.995f) {
+                userLevel = currentBrightness;
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putFloat("userLevel", userLevel);
+                editor.commit();
+            }
+
+            // We need to set the mode when the window has come up.  So
+            // post a delayed event to do it.  runOnUiThread doesn't
+            // do it.
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    stepMode();
+                    finish();
+                }
+            }, 1);
+        } else {
+            // Set the widgets up.
+            setControls();
+        }
     }
 
     
@@ -288,6 +328,28 @@ public class BrightnessControl
     }
 
 
+    /**
+     * Step the screen mode to the next mode.
+     */
+    private void stepMode() {
+        Log.v(TAG, "step screen");
+        
+        BrightnessSettings.toggle(this, showAuto, userLevel);
+        
+        isAuto = BrightnessSettings.isAuto(this);
+        currentBrightness = BrightnessSettings.getBrightness(this);
+        
+        if (!isAuto) {
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            BrightnessSettings.fractionToParams(currentBrightness, lp);
+            getWindow().setAttributes(lp);
+        }
+        
+        // Signal the widget manager to update all the widgets.
+        DazzleProvider.updateAllWidgets(this);
+    }
+
+
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
@@ -300,6 +362,11 @@ public class BrightnessControl
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
+
+    // Flag whether we need to do this as a one-touch control.  If true,
+    // just toggle the mode and dump the UI.  We need to do this in an
+    // activity in order to have a Window to set the brightness on.
+    private boolean isOnetouch;
 
     // Flag whether we support auto mode.  If set, show an auto option;
     // else show manual settings only.

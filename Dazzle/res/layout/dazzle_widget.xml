@@ -26,6 +26,25 @@
 
 	</LinearLayout>
 
+	<LinearLayout android:id="@id/dazzle_otringer"
+			android:orientation="vertical"
+			android:layout_gravity="top|center_horizontal"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" >
+
+		<ImageView android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:src="@drawable/ringer"
+				android:layout_gravity="center"/>
+
+		<ImageView android:id="@+id/otringer_ind"
+				android:layout_width="wrap_content"
+				android:src="@drawable/red"
+				android:layout_gravity="center" android:layout_height="16dp"/>
+
+	</LinearLayout>
+
 	<LinearLayout android:id="@id/dazzle_wifi"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
@@ -137,6 +156,27 @@
 
 	</LinearLayout>
 
+	<LinearLayout android:id="@id/dazzle_otbrightness"
+			android:orientation="vertical"
+			android:layout_gravity="top|center_horizontal"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" >
+
+		<ImageView android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:src="@drawable/brightness"
+				android:layout_gravity="center"/>
+
+		<TextView android:id="@+id/otbrightness_ind"
+				android:layout_width="wrap_content"
+				android:layout_gravity="center"
+				android:text="Dazzle"
+				android:textStyle="bold"
+				android:layout_height="16dp"/>
+
+	</LinearLayout>
+
 	<LinearLayout android:id="@id/dazzle_brightauto"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
@@ -150,6 +190,27 @@
 				android:layout_gravity="center"/>
 
 		<TextView android:id="@+id/brightauto_ind"
+				android:layout_width="wrap_content"
+				android:layout_gravity="center"
+				android:text="Dazzle"
+				android:textStyle="bold"
+				android:layout_height="16dp"/>
+
+	</LinearLayout>
+
+	<LinearLayout android:id="@id/dazzle_otbrightauto"
+			android:orientation="vertical"
+			android:layout_gravity="top|center_horizontal"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" >
+
+		<ImageView android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:src="@drawable/brightness"
+				android:layout_gravity="center"/>
+
+		<TextView android:id="@+id/otbrightauto_ind"
 				android:layout_width="wrap_content"
 				android:layout_gravity="center"
 				android:text="Dazzle"

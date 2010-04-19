@@ -48,6 +48,35 @@
 					android:text="@string/prefs_ringer_summary" />
 		</LinearLayout>
 	</LinearLayout>
+		
+	<ImageView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:src="@drawable/divider" />
+
+	<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal" >
+		<CheckBox android:id="@id/dazzle_otringer"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="top" />
+		<LinearLayout
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:orientation="vertical" >
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/prefs_enable_otringer"
+					android:textSize="20sp" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/prefs_otringer_summary" />
+		</LinearLayout>
+	</LinearLayout>
 	
 	<ImageView
 			android:layout_width="fill_parent"
@@ -227,6 +256,35 @@
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:src="@drawable/divider" />
+	
+	<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal" >
+		<CheckBox android:id="@id/dazzle_otbrightness"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="top" />
+		<LinearLayout
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:orientation="vertical" >
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/prefs_enable_otbrightness"
+					android:textSize="20sp" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/prefs_otbrightness_summary" />
+		</LinearLayout>
+	</LinearLayout>
+	
+	<ImageView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:src="@drawable/divider" />
 			
 	<LinearLayout
 			android:layout_width="fill_parent"
@@ -249,6 +307,35 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:text="@string/prefs_brightauto_summary" />
+		</LinearLayout>
+	</LinearLayout>
+	
+	<ImageView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:src="@drawable/divider" />
+			
+	<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal" >
+		<CheckBox android:id="@id/dazzle_otbrightauto"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="top" />
+		<LinearLayout
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:orientation="vertical" >
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/prefs_enable_otbrightauto"
+					android:textSize="20sp" />
+			<TextView android:id="@+id/otbrightauto_help"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/prefs_otbrightauto_summary" />
 		</LinearLayout>
 	</LinearLayout>
 		

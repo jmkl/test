@@ -20,6 +20,7 @@ package org.hermit.dazzle;
 import android.content.Context;
 import android.graphics.Color;
 import android.media.AudioManager;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 
@@ -44,6 +45,28 @@ class RingerSettings
     // ******************************************************************** //
     // Screen Brightness Settings Handling.
     // ******************************************************************** //
+
+    /**
+     * Toggle the current state.
+     * 
+     * @param   context     The context we're running in.
+     */
+    static void toggle(Context context) {
+        Log.i(TAG, "toggle Ringer");
+        
+        // Step to the next state.  (Not really a toggle.)
+        AudioManager am =
+            (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        int mode = am.getRingerMode();
+        if (mode == AudioManager.RINGER_MODE_SILENT)
+            mode = AudioManager.RINGER_MODE_VIBRATE;
+        else if (mode == AudioManager.RINGER_MODE_VIBRATE)
+            mode = AudioManager.RINGER_MODE_NORMAL;
+        else
+            mode = AudioManager.RINGER_MODE_SILENT;
+        am.setRingerMode(mode);
+    }
+
 
     /**
      * Get the current ringer mode.
