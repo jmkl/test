@@ -45,6 +45,20 @@
 
 	</LinearLayout>
 
+	<LinearLayout android:id="@id/dazzle_radio"
+			android:orientation="vertical"
+			android:layout_gravity="top|center_horizontal"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" >
+
+		<ImageView android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:src="@drawable/radio"
+				android:layout_gravity="center"/>
+
+	</LinearLayout>
+
 	<LinearLayout android:id="@id/dazzle_wifi"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"

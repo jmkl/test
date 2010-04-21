@@ -54,6 +54,7 @@ public abstract class DazzleProvider
     enum Control {
         RINGER(R.id.dazzle_ringer, "enableRinger"),
         OTRINGER(R.id.dazzle_otringer, "enableOtRinger"),
+        RADIO(R.id.dazzle_radio, "enableRadio"),
         WIFI(R.id.dazzle_wifi, "enableWifi"),
         BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
         GPS(R.id.dazzle_gps, "enableGps"),
@@ -252,6 +253,12 @@ public abstract class DazzleProvider
         case OTRINGER:
             RingerSettings.toggle(context);
             break;
+        case RADIO:
+            Intent radioIntent = new Intent(Intent.ACTION_MAIN);
+            radioIntent.setClassName("com.android.phone", "com.android.phone.Settings");
+            radioIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(radioIntent);
+            break;
         case WIFI:
             WiFiSettings.toggle(context);
             break;
@@ -400,6 +407,10 @@ public abstract class DazzleProvider
             break;
         case OTRINGER:
             RingerSettings.setWidget(context, views, R.id.otringer_ind);
+            break;
+        case RADIO:
+            // Sadly, we can't do this.
+            // RadioSettings.setWidget(context, views, R.id.radio_ind);
             break;
         case WIFI:
             WiFiSettings.setWidget(context, views, R.id.wifi_ind);

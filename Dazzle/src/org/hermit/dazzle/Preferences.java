@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -58,8 +59,7 @@ public class Preferences
         setContentView(R.layout.preferences);
         
         // Can only do Bluetooth and auto-brightness from Eclair on.
-        if (android.os.Build.VERSION.SDK_INT <
-                                    android.os.Build.VERSION_CODES.ECLAIR) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ECLAIR) {
             CheckBox btCheck = (CheckBox) findViewById(R.id.dazzle_bluetooth);
             btCheck.setEnabled(false);
             TextView btHelp = (TextView) findViewById(R.id.bluetooth_help);
@@ -80,16 +80,6 @@ public class Preferences
             TextView boHelp = (TextView) findViewById(R.id.otbrightauto_help);
             boHelp.setText(R.string.prefs_otbrightauto_summary_noauto);
         }
-
-        // Pre-set the brightness popup to enabled, so there's at least
-        // something there.
-        CheckBox brightCheck;
-        if (android.os.Build.VERSION.SDK_INT <
-                                    android.os.Build.VERSION_CODES.ECLAIR)
-            brightCheck = (CheckBox) findViewById(R.id.dazzle_brightness);
-        else
-            brightCheck = (CheckBox) findViewById(R.id.dazzle_brightauto);
-        brightCheck.setChecked(true);
 
         // Add a handler to the save button.
         Button saveBut = (Button) findViewById(R.id.save_button);
@@ -121,15 +111,31 @@ public class Preferences
      */
     private void savePrefs() {
         // Read the widget settings, and save them to the prefs.
+        int count = 0;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor edit = prefs.edit();
+        
+        // Set all the controls.
         for (DazzleProvider.Control c : DazzleProvider.Control.CONTROLS) {
             CheckBox checkbox = (CheckBox) findViewById(c.id);
             boolean enable = checkbox.isChecked();
             edit.putBoolean(c.pref + "-" + widgetId, enable);
+            if (enable)
+                ++count;
         }
-        edit.commit();
+
+        // If we had no controls selected, put in a brightness control.
+        if (count == 0) {
+            DazzleProvider.Control c;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ECLAIR)
+                c = DazzleProvider.Control.BRIGHTNESS;
+            else
+                c = DazzleProvider.Control.BRIGHTAUTO;
+            edit.putBoolean(c.pref + "-" + widgetId, true);
+        }
         
+        edit.commit();
+
         // Update the widget.
         DazzleProvider.updateAllWidgets(this);
         

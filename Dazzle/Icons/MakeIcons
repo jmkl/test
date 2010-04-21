@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 set icons = ( airplane.png  brightness.png sync.png         \
-              bluetooth.png gps.png ringer.png wifi.png )
+              bluetooth.png gps.png ringer.png radio.png wifi.png )
 
 foreach icon ( $icons )
     set name = $icon:r
