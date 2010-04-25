@@ -230,7 +230,11 @@ public abstract class SurfaceRunner
         Log.i(TAG, "onStart");
         
         // Tell the subclass to start.
-        appStart();
+        try {
+            appStart();
+        } catch (Exception e) {
+            errorReporter.reportException(e);
+        }
     }
 
 
@@ -283,7 +287,11 @@ public abstract class SurfaceRunner
         onPause();
         
         // Tell the subclass.
-        appStop();
+        try {
+            appStop();
+        } catch (Exception e) {
+            errorReporter.reportException(e);
+        }
     }
 
 
@@ -456,7 +464,11 @@ public abstract class SurfaceRunner
             break;
             }
             
-            appSize(canvasWidth, canvasHeight, canvasConfig);
+            try {
+                appSize(canvasWidth, canvasHeight, canvasConfig);
+            } catch (Exception e) {
+                errorReporter.reportException(e);
+            }
         }
         
         // Do the stats setup.
