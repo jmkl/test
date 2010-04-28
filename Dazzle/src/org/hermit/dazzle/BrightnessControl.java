@@ -18,6 +18,7 @@ package org.hermit.dazzle;
 
 
 import org.hermit.android.core.Errors;
+import org.hermit.dazzle.BrightnessSettings.Mode;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -144,7 +145,7 @@ public class BrightnessControl
         Log.i(TAG, "Prefs: userLevel " + userLevel);
 
         // Get the current level.
-        isAuto = BrightnessSettings.isAuto(this);
+        currentMode = BrightnessSettings.getMode(this);
         currentBrightness = BrightnessSettings.getBrightness(this);
 
         // If this is a one-touch activation, just step the mode and we're
@@ -153,8 +154,12 @@ public class BrightnessControl
             // If we're not at min or max, save the current brightness as the
             // user's "medium" level, since one-touch mode doesn't let the
             // user set it directly.
-            if (!isAuto && currentBrightness >= 0.005f && currentBrightness <= 0.995f) {
+            if (currentMode == Mode.USER) {
                 userLevel = currentBrightness;
+                if (userLevel < 0f)
+                    userLevel = 0f;
+                else if (userLevel > 1f)
+                    userLevel = 1f;
                 SharedPreferences.Editor editor = sharedPrefs.edit();
                 editor.putFloat("userLevel", userLevel);
                 editor.commit();
@@ -190,7 +195,7 @@ public class BrightnessControl
         super.onPause();
 
         // Save the settings.
-        BrightnessSettings.setMode(this, isAuto, currentBrightness);
+        BrightnessSettings.setMode(this, currentMode, currentBrightness);
     }
 
 
@@ -206,16 +211,16 @@ public class BrightnessControl
                 // taps the button, even if it was already checked.
                 switch (but.getId()) {
                 case R.id.button_low:
-                    setMode(false, BrightnessSettings.BRIGHTNESS_OFF);
+                    setMode(Mode.MIN, BrightnessSettings.BRIGHTNESS_OFF);
                     break;
                 case R.id.button_med:
-                    setMode(false, userLevel);
+                    setMode(Mode.USER, userLevel);
                     break;
                 case R.id.button_high:
-                    setMode(false, BrightnessSettings.BRIGHTNESS_MAX);
+                    setMode(Mode.MAX, BrightnessSettings.BRIGHTNESS_MAX);
                     break;
                 case R.id.button_auto:
-                    setMode(true, userLevel);
+                    setMode(Mode.AUTO, userLevel);
                     break;
                 }
 
@@ -241,7 +246,7 @@ public class BrightnessControl
             try {
                 if (user) {
                     userLevel = (float) n / 1000.0f;
-                    setMode(false, userLevel, false);
+                    setMode(Mode.USER, userLevel, false);
                 }
 
                 // Re-set all the controls.
@@ -254,7 +259,7 @@ public class BrightnessControl
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             try {
-                setMode(false, userLevel);
+                setMode(Mode.USER, userLevel);
 
                 // Save the user's "medium" level.
                 SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -273,15 +278,11 @@ public class BrightnessControl
      * Set the controls to reflect the current state.
      */
     private void setControls() {
-        boolean low = currentBrightness < 0.005f;
-        boolean max = currentBrightness > 0.995f;
-        boolean med = !low && !max;
-        
-        lowBut.setChecked(!isAuto && low);
-        medBut.setChecked(!isAuto && med);
-        highBut.setChecked(!isAuto && max);
+        lowBut.setChecked(currentMode == Mode.MIN);
+        medBut.setChecked(currentMode == Mode.USER);
+        highBut.setChecked(currentMode == Mode.MAX);
         if (showAuto)
-            autoBut.setChecked(isAuto);
+            autoBut.setChecked(currentMode == Mode.AUTO);
         levelSlider.setProgress(Math.round(userLevel * 1000));
     }
 
@@ -289,31 +290,31 @@ public class BrightnessControl
     /**
      * Set the screen mode and brightness.
      * 
-     * @param   mode        True for auto-brightness; false for manual.
+     * @param   mode        The mode to set.
      * @param   level       If not auto, desired level, 0-1.
      */
-    private void setMode(boolean auto, float level) {
-        setMode(auto, level, true);
+    private void setMode(Mode mode, float level) {
+        setMode(mode, level, true);
     }
 
 
     /**
      * Set the screen mode and brightness.
      * 
-     * @param   mode        True for auto-brightness; false for manual.
+     * @param   mode        The mode to set.
      * @param   level       If not auto, desired level, 0-1.
      * @param   commit      If true, save the changes.  Otherwise, just
      *                      adjust the screen -- this is useful when we
      *                      need a fast response, but you must commit at
      *                      some point.
      */
-    private void setMode(boolean auto, float level, boolean commit) {
-        Log.v(TAG, "set screen " + (auto ? "A " : "M ") + level);
+    private void setMode(Mode mode, float level, boolean commit) {
+        Log.v(TAG, "set screen " + mode + "/" + level);
         
         if (commit)
-            BrightnessSettings.setMode(this, auto, level);
+            BrightnessSettings.setMode(this, mode, level);
         
-        if (!auto) {
+        if (mode != Mode.AUTO) {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
             BrightnessSettings.fractionToParams(level, lp);
             getWindow().setAttributes(lp);
@@ -323,7 +324,7 @@ public class BrightnessControl
         if (commit)
             DazzleProvider.updateAllWidgets(this);
         
-        isAuto = auto;
+        currentMode = mode;
         currentBrightness = level;
     }
 
@@ -336,15 +337,15 @@ public class BrightnessControl
         
         BrightnessSettings.toggle(this, showAuto, userLevel);
         
-        isAuto = BrightnessSettings.isAuto(this);
+        currentMode = BrightnessSettings.getMode(this);
         currentBrightness = BrightnessSettings.getBrightness(this);
-        
-        if (!isAuto) {
+
+        if (currentMode != Mode.AUTO) {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
             BrightnessSettings.fractionToParams(currentBrightness, lp);
             getWindow().setAttributes(lp);
         }
-        
+
         // Signal the widget manager to update all the widgets.
         DazzleProvider.updateAllWidgets(this);
     }
@@ -381,12 +382,12 @@ public class BrightnessControl
     private ToggleButton highBut = null;
     private ToggleButton autoBut = null;
     private SeekBar levelSlider = null;
-
-    // Current auto flag.
-    private boolean isAuto = false;
     
     // User-configured "medium" brightness level, 0-1.
     private float userLevel = BrightnessSettings.BRIGHTNESS_MED;
+
+    // Current brightness mode.
+    private Mode currentMode = Mode.USER;
   
     // Current brightness level, 0-1.
     private float currentBrightness = BrightnessSettings.BRIGHTNESS_MED;

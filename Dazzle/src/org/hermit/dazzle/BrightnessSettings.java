@@ -37,6 +37,14 @@ class BrightnessSettings
     // Public Constants.
     // ******************************************************************** //
 
+    // Enumeration of brightness modes.
+    enum Mode {
+        MIN,
+        USER,
+        MAX,
+        AUTO;
+    }
+    
     // BrightnessSettings values: fully off, dim, medium, fully on.
     static final float BRIGHTNESS_OFF = 0.00f;
     static final float BRIGHTNESS_MED = 0.50f;
@@ -59,6 +67,85 @@ class BrightnessSettings
     // ******************************************************************** //
 
     /**
+     * Get the current brightness mode.
+     * 
+     * @param   context     Current context.
+     * @return              The brightness mode.
+     */
+    static Mode getMode(Context context) {
+        int mode = Settings.System.getInt(context.getContentResolver(),
+                                          SCREEN_BRIGHTNESS_MODE,
+                                          SCREEN_BRIGHTNESS_MODE_MANUAL);
+        if (mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC)
+            return Mode.AUTO;
+        int lev = Settings.System.getInt(context.getContentResolver(),
+                                         Settings.System.SCREEN_BRIGHTNESS,
+                                         SETTING_MAX);
+        float base = (float) lev / (float) SETTING_MAX;
+        if (base < LEVEL_MIN_THRESH)
+            return Mode.MIN;
+        else if (base > LEVEL_MAX_THRESH)
+            return Mode.MAX;
+        return Mode.USER;
+    }
+
+
+    /**
+     * Get the current brightness level.
+     * 
+     * @param   context     Current context.
+     * @return              The brightness level.  The range
+     *                      0 - 1 maps to the allowable user settings; so
+     *                      if negative or > 1, the setting is outside this
+     *                      range.
+     */
+    static float getBrightness(Context context) {
+        int lev = Settings.System.getInt(context.getContentResolver(),
+                                         Settings.System.SCREEN_BRIGHTNESS,
+                                         SETTING_MAX);
+        return settingToFraction(lev);
+    }
+
+
+    /**
+     * Set the current brightness mode and level.
+     * 
+     * @param   context     Current context.
+     * @param   mode        The desired mode.
+     * @param   brightness  The desired brightness level.  This is only
+     *                      relevant in Mode.USER, or if AUTO fails,
+     *                      and the range is 0 - 1.
+     */
+    static void setMode(Context context, Mode mode, float brightness) {
+        ContentResolver resolver = context.getContentResolver();
+        
+        int mval = mode == Mode.AUTO ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC :
+                                       SCREEN_BRIGHTNESS_MODE_MANUAL;
+        int lev = SETTING_MAX;
+        switch (mode) {
+        case MIN:
+            lev = SETTING_MIN;
+            break;
+        case USER:
+        case AUTO:
+            lev = fractionToSetting(brightness);
+            break;
+        case MAX:
+            lev = SETTING_MAX;
+            break;
+        }
+        
+        Log.v(TAG, "save settings " + mode + "/" + lev);
+
+        Settings.System.putInt(resolver,
+                               SCREEN_BRIGHTNESS_MODE, mval);
+        Settings.System.putInt(resolver, 
+                               Settings.System.SCREEN_BRIGHTNESS,
+                               lev);
+    }
+
+
+    /**
      * Toggle the current state.
      * 
      * <p>NOTE: this by itself won't change the current visible brightness,
@@ -78,84 +165,59 @@ class BrightnessSettings
         Log.i(TAG, "toggle Brightness " + (auto ? "with" : "no") + " auto");
         
         // Step to the next state.  (Not really a toggle.)
-        ContentResolver resolver = context.getContentResolver();
-        int mode = Settings.System.getInt(resolver,
-                                          SCREEN_BRIGHTNESS_MODE,
-                                          SCREEN_BRIGHTNESS_MODE_MANUAL);
-        int bright = Settings.System.getInt(resolver,
-                                            Settings.System.SCREEN_BRIGHTNESS,
-                                            SETTING_MAX);
-        float frac = settingToFraction(bright);
-        if (mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC) {
-            // Go to manual, min brightness.
-            mode = SCREEN_BRIGHTNESS_MODE_MANUAL;
-            frac = BRIGHTNESS_OFF;
-        } else {
-            if (frac < 0.005f) {
-                frac = medium;
-            } else if (frac < 0.995f) {
-                frac = BRIGHTNESS_MAX;
-            } else {
-                if (auto)
-                    mode = SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
-                else
-                    frac = BRIGHTNESS_OFF;
-            }
+        Mode mode = getMode(context);
+        switch (mode) {
+        case MIN:
+            mode = Mode.USER;
+            break;
+        case USER:
+            mode = Mode.MAX;
+            break;
+        case MAX:
+            mode = auto ? Mode.AUTO : Mode.MIN;
+            break;
+        case AUTO:
+            mode = Mode.MIN;
+            break;
         }
-        
-        int lev = fractionToSetting(frac);
-        Log.v(TAG, "save settings " + (auto ? "A " : "M ") + lev);
-        Settings.System.putInt(resolver,
-                               SCREEN_BRIGHTNESS_MODE, mode);
-        Settings.System.putInt(resolver, 
-                               Settings.System.SCREEN_BRIGHTNESS,
-                               lev);
+        setMode(context, mode, medium);
     }
 
 
-    static boolean isAuto(Context context) {
-        int mode = Settings.System.getInt(context.getContentResolver(),
-                                          SCREEN_BRIGHTNESS_MODE,
-                                          SCREEN_BRIGHTNESS_MODE_MANUAL);
-        return mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
-    }
+    // ******************************************************************** //
+    // GUI Handling.
+    // ******************************************************************** //
 
-
-    static float getBrightness(Context context) {
-        int lev = Settings.System.getInt(context.getContentResolver(),
-                                         Settings.System.SCREEN_BRIGHTNESS,
-                                         SETTING_MAX);
-        return settingToFraction(lev);
-    }
-
-
+    /**
+     * Set the indicator widget to represent our current state.
+     * 
+     * @param   context     The context we're running in.
+     * @param   views       The widget view to modify.
+     * @param   widget      The ID of the indicator widget.
+     */
     static void setWidget(Context context, RemoteViews views, int widget) {
-        ContentResolver resolver = context.getContentResolver();
-        
         String lab = "?";
         int col = Color.WHITE;
 
-        int mode = Settings.System.getInt(resolver,
-                                          SCREEN_BRIGHTNESS_MODE,
-                                          SCREEN_BRIGHTNESS_MODE_MANUAL);
-        if (mode == SCREEN_BRIGHTNESS_MODE_AUTOMATIC) {
+        Mode mode = getMode(context);
+        switch (mode) {
+        case MIN:
+            lab = context.getString(R.string.button_low);
+            col = 0xffff8000;
+            break;
+        case USER:
+            float frac = getBrightness(context);
+            lab = String.valueOf(Math.round(frac * 100f)) + "%";
+            col = 0xff00ffff;
+            break;
+        case MAX:
+            lab = context.getString(R.string.button_high);
+            col = 0xffff00ff;
+            break;
+        case AUTO:
             lab = context.getString(R.string.button_auto);
             col = 0xff00ff00;
-        } else {
-            int bright = Settings.System.getInt(resolver,
-                                        Settings.System.SCREEN_BRIGHTNESS,
-                                        SETTING_MAX);
-            float frac = settingToFraction(bright);
-            if (frac < 0.005f) {
-                lab = context.getString(R.string.button_low);
-                col = 0xffff8000;
-            } else if (frac > 0.995f) {
-                lab = context.getString(R.string.button_high);
-                col = 0xffff00ff;
-            } else {
-                lab = String.valueOf(Math.round(frac * 100f)) + "%";
-                col = 0xff00ffff;
-            }
+            break;
         }
 
         views.setTextViewText(widget, lab);
@@ -163,36 +225,40 @@ class BrightnessSettings
     }
 
 
-    static void setMode(Context context, boolean auto, float brightness) {
-        ContentResolver resolver = context.getContentResolver();
-        
-        int mode = auto ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC : SCREEN_BRIGHTNESS_MODE_MANUAL;
-        int lev = fractionToSetting(brightness);
-        
-        Log.v(TAG, "save settings " + (auto ? "A " : "M ") + lev);
+    // ******************************************************************** //
+    // Conversion Utilities.
+    // ******************************************************************** //
 
-        Settings.System.putInt(resolver,
-                               SCREEN_BRIGHTNESS_MODE, mode);
-        Settings.System.putInt(resolver, 
-                               Settings.System.SCREEN_BRIGHTNESS,
-                               lev);
-    }
-
-    
+    /**
+     * Convert a brightness setting as stored in the system to a fraction
+     * representing a user brightness level.
+     * 
+     * @param   setting     Integer system brightness setting.
+     * @return              Equivalent user brightness level.  The range
+     *                      0 - 1 maps to the allowable user settings; so
+     *                      if negative or > 1, the setting is outside this
+     *                      range.
+     */
     static final float settingToFraction(int setting) {
         float base = (float) setting / (float) SETTING_MAX;
-        return (base - LEVEL_MIN) / LEVEL_RANGE;
+        return (base - LEVEL_USER_MIN) / LEVEL_USER_RANGE;
     }
     
 
+    /**
+     * Convert a user brightness level to a system setting.
+     * 
+     * @param   frac        User brightness level, in range 0 - 1.
+     * @return              Equivalent integer system brightness setting.
+     */
     static final int fractionToSetting(float frac) {
-        float actual = frac * LEVEL_RANGE + LEVEL_MIN;
+        float actual = frac * LEVEL_USER_RANGE + LEVEL_USER_MIN;
         return Math.round(actual * SETTING_MAX);
     }
     
 
     static final void fractionToParams(float frac, WindowManager.LayoutParams lp) {
-        float actual = frac * LEVEL_RANGE + LEVEL_MIN;
+        float actual = frac * LEVEL_USER_RANGE + LEVEL_USER_MIN;
         lp.screenBrightness = actual;
     }
     
@@ -205,12 +271,21 @@ class BrightnessSettings
     @SuppressWarnings("unused")
     private static final String TAG = DazzleProvider.TAG;
 
-    // Minimum brightness fraction.
+    // Minimum brightness fraction.  We don't go lower than this to
+    // prevent the user being stuck with a black screen.
     private static final float LEVEL_MIN = 0.06f;
-    private static final float LEVEL_RANGE = 1f - LEVEL_MIN;
+    private static final float LEVEL_MIN_THRESH = 0.07f;
+    private static final float LEVEL_MAX_THRESH = 0.99f;
+    
+    // Minimum and maximum user-settable brightness fractions.  Outside
+    // this range we're either MIN or MAX.
+    private static final float LEVEL_USER_MIN = 0.08f;
+    private static final float LEVEL_USER_MAX = 0.98f;
+    private static final float LEVEL_USER_RANGE = LEVEL_USER_MAX - LEVEL_USER_MIN;
   
     // BrightnessSettings values: fully off, dim, fully on.
     private static final int SETTING_MAX = 255;
+    private static final int SETTING_MIN = Math.round(SETTING_MAX * LEVEL_MIN);
 
     // Constants for the screen brightness settings.
     private static final String SCREEN_BRIGHTNESS_MODE = "screen_brightness_mode";
