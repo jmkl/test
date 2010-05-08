@@ -26,6 +26,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.widget.Toast;
 
 
@@ -103,15 +104,18 @@ public class Errors
      * @param   e           The exception.
      */
     public void reportException(final Exception e) {
+        final String exString = getErrorString(e);
+        Log.e("Hermit", exString, e);
+
         if (appContext instanceof Activity) {
             ((Activity) appContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    reportActivityException(e);
+                    reportActivityException(e, exString);
                 }
             });
         } else {
-            reportToastException(e);
+            reportToastException(e, exString);
         }
     }
 
@@ -128,14 +132,14 @@ public class Errors
      * <p>This method must be called from the UI thread.
      * 
      * @param   e           The exception.
+     * @param   exString    A string describing the exception.
      */
-    private void reportActivityException(Exception e) {
+    private void reportActivityException(Exception e, String exString) {
         // If we're already shutting down, ignore it.
         if (shuttingDown)
             return;
         
         String exTitle = "Unexpected Exception";
-        String exString = getErrorString(e);
         
         // Bump the counter for this exception.
         int count = countError(exString);
@@ -187,13 +191,12 @@ public class Errors
      * <p>This method must be called from the UI thread.
      * 
      * @param   e           The exception.
+     * @param   exString    A string describing the exception.
      */
-    private void reportToastException(Exception e) {
+    private void reportToastException(Exception e, String exString) {
         // If we're already shutting down, ignore it.
         if (shuttingDown)
             return;
-        
-        String exString = getErrorString(e);
         
         // Bump the counter for this exception.
         countError(exString);
