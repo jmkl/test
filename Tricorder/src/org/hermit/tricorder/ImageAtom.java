@@ -169,12 +169,19 @@ class ImageAtom
 		
 		// Load the bitmap.  If if fails, tell the cache we have a
 		// corrupted file.
-		Bitmap img = BitmapFactory.decodeFile(path.getPath());
-		if (img == null) {
-			// Maybe we shouldn't be so hasty...
-//			Log.i(TAG, "ImageAtom: invalidate " + path.getPath());
-//			fileCache.invalidate(url);
-			return;
+        Bitmap img = null;
+		try {
+		    img = BitmapFactory.decodeFile(path.getPath());
+	        if (img == null) {
+	            // Can't load it?  Corrupted?  Invalidate the cache.
+	            // But maybe we shouldn't be so hasty...
+//	          Log.i(TAG, "ImageAtom: invalidate " + path.getPath());
+//	          fileCache.invalidate(url);
+	            return;
+	        }
+		} catch (OutOfMemoryError e) {
+		    // Can't load it right now.
+		    return;
 		}
 		
 		// Scale the bitmap to size and cache the scaled version.
