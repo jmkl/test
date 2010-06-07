@@ -21,6 +21,7 @@ package org.hermit.tricorder;
 
 import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
+import org.hermit.tricorder.TricorderView.ViewDefinition;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -139,6 +140,17 @@ abstract class DataView
 	void appStop() {
 	}
 
+
+    /**
+     * Unbind any statically-bound resources which could leak memory.
+     * This is typically used when the app is being destroyed, possibly
+     * as a result of a device orientation change.  If we have static data
+     * which links to the activity, the activity will be leaked (i.e.
+     * prevented from being garbage collected).  Hence unbind it here.
+     */
+	protected void unbindResources() {
+    }
+    
 
     // ******************************************************************** //
     // Data Handling.

@@ -308,6 +308,8 @@ public class Tricorder
         Log.i(TAG, "onDestroy()");
         
     	super.onDestroy();
+        
+        mainView.unbindResources();
     }
     
     

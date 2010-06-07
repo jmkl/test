@@ -13,7 +13,6 @@
 			</intent-filter>
 		</activity>
 
-
 		<activity android:name=".Preferences" android:label="@string/prefs_title" android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
@@ -27,22 +26,21 @@
 		</activity>
 
 	</application>
-	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION">
-	</uses-permission>
-	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION">
-	</uses-permission>
-	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE">
-	</uses-permission>
-	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE">
-	</uses-permission>
-	<uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
-	<uses-permission android:name="android.permission.WRITE_SETTINGS"></uses-permission>
-	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
-	<uses-sdk android:minSdkVersion="4"></uses-sdk>
-	<uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
+	
+	<uses-sdk android:minSdkVersion="4" android:targetSdkVersion="7" />
 	<supports-screens android:largeScreens="true"
 		android:normalScreens="true" android:anyDensity="true"
-		android:smallScreens="true" android:resizeable="true"></supports-screens>
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
-	<uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>
+		android:smallScreens="true" android:resizeable="true" />
+	
+	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+	
 </manifest>

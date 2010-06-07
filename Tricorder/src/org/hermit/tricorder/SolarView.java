@@ -397,6 +397,19 @@ class SolarView
 	}
 
 
+    /**
+     * Unbind any statically-bound resources which could leak memory.
+     * This is typically used when the app is being destroyed, possibly
+     * as a result of a device orientation change.  If we have static data
+     * which links to the activity, the activity will be leaked (i.e.
+     * prevented from being garbage collected).  Hence unbind it here.
+     */
+	protected void unbindResources() {
+		FILES_SOHO.deleteObserver(this);
+		SRC_DSD.deleteObserver(this);
+    }
+    
+
 	// ******************************************************************** //
 	// Web Data Handling.
 	// ******************************************************************** //
