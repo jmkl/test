@@ -21,7 +21,6 @@ package org.hermit.tricorder;
 import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.sound.Effect;
 
-import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.hardware.Sensor;
@@ -29,6 +28,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.view.MotionEvent;
+import android.view.Surface;
 
 
 /**
@@ -210,14 +210,27 @@ class TridataView
 
     
 	/**
-	 * Set the device orientation, so that we
+	 * Set the device rotation, so that we
      * can adjust the sensor axes to match the screen axes.
      * 
-     * @param   orientation     Device orientation, as one of the
-     *                          Configuration.ORIENTATION_XXX flags.
+     * @param   rotation    Device rotation, as one of the
+     *                      Surface.ROTATION_XXX flags.
 	 */
-	public void setOrientation(int orientation) {
-	    deviceOrientation = orientation;
+	public void setRotation(int rotation) {
+	    switch (rotation) {
+	    case Surface.ROTATION_0:
+		    deviceTransformation = TRANSFORM_0;
+		    break;
+	    case Surface.ROTATION_90:
+		    deviceTransformation = TRANSFORM_90;
+		    break;
+	    case Surface.ROTATION_180:
+		    deviceTransformation = TRANSFORM_180;
+		    break;
+	    case Surface.ROTATION_270:
+		    deviceTransformation = TRANSFORM_270;
+		    break;
+	    }
 	}
 	
 	
@@ -416,29 +429,13 @@ class TridataView
                     relativeValues[1] = values[1];
                     relativeValues[2] = values[2];
                 }
-
-                // Adjust the axes according to the device's orientation.
-                if (deviceOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    processedValues[0] = -(values[1] - relativeValues[1]);
-                    processedValues[1] = values[0] - relativeValues[0];
-                    processedValues[2] = values[2] - relativeValues[2];
-                } else {
-                    processedValues[0] = values[0] - relativeValues[0];
-                    processedValues[1] = values[1] - relativeValues[1];
-                    processedValues[2] = values[2] - relativeValues[2];
-                }
-            } else {
-                // Adjust the axes according to the device's orientation.
-                if (deviceOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    processedValues[0] = -values[1];
-                    processedValues[1] = values[0];
-                    processedValues[2] = values[2];
-                } else {
-                    processedValues[0] = values[0];
-                    processedValues[1] = values[1];
-                    processedValues[2] = values[2];
-                }
+                values[0] -= relativeValues[0];
+                values[1] -= relativeValues[1];
+                values[2] -= relativeValues[2];
             }
+            
+            // Transform for the device orientation.
+            multiply(values, deviceTransformation, processedValues);
 
             final float x = processedValues[0];
             final float y = processedValues[1];
@@ -466,7 +463,20 @@ class TridataView
         }
     }
 
+    
+    /*
+     * Result[x] = vals[0]*tran[x][0] * vals[1]*tran[x][1] * vals[2]*tran[x][2].
+     */
+    private static final void multiply(float[] vals, int[][] tran, float[] result) {
+    	for (int x = 0; x < 3; ++x) {
+    		float r = 0;
+    		for (int y = 0; y < 3; ++y)
+    			r += vals[y] * tran[x][y];
+    		result[x] = r;
+    	}
+    }
 
+    
 	// ******************************************************************** //
 	// Input.
 	// ******************************************************************** //
@@ -545,7 +555,29 @@ class TridataView
 	// Colours for an XYZ plot.
 	private static final int[] XYZ_PLOT_COLS =
 						new int[] { 0xffff0000, 0xff00ff00, 0xff0000ff };
-
+	
+	// Co-ordinate transformations.
+	private static final int[][] TRANSFORM_0 = {
+		{  1,  0,  0 },
+		{  0,  1,  0 },
+		{  0,  0,  1 },
+	};
+	private static final int[][] TRANSFORM_90 = {
+		{  0, -1,  0 },
+		{  1,  0,  0 },
+		{  0,  0,  1 },
+	};
+	private static final int[][] TRANSFORM_180 = {
+		{ -1,  0,  0 },
+		{  0, -1,  0 },
+		{  0,  0,  1 },
+	};
+	private static final int[][] TRANSFORM_270 = {
+		{  0,  1,  0 },
+		{ -1,  0,  0 },
+		{  0,  0,  1 },
+	};
+	
 	
 	// ******************************************************************** //
 	// Private Data.
@@ -565,9 +597,8 @@ class TridataView
 	public final float dataUnit;
 	public float dataRange;
     
-    // Current device orientation, as one of the
-    // Configuration.ORIENTATION_XXX flags.
-    private int deviceOrientation = 0;
+    // Current device rotation, as one of the Surface.ROTATION_XXX flags.
+    private int[][] deviceTransformation = TRANSFORM_0;
     
     // Flags for enabling the view -- when this view is displayed -- and
     // scanning, when the user presses the scan button.

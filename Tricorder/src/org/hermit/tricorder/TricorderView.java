@@ -24,8 +24,6 @@ import org.hermit.android.sound.Effect;
 import org.hermit.android.sound.Player;
 
 import android.content.Context;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -33,7 +31,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
+import android.view.WindowManager;
 
 
 /**
@@ -205,10 +205,10 @@ class TricorderView
 
         // Tell the Grav and Mag views our orientation, so that they
         // can adjust the sensor axes to match the screen axes.
-        Resources res = appContext.getResources();
-        Configuration conf = res.getConfiguration();
-        gravView.setOrientation(conf.orientation);
-        magView.setOrientation(conf.orientation);
+    	WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
+    	Display disp = wm.getDefaultDisplay();
+        gravView.setRotation(disp.getOrientation());
+        magView.setRotation(disp.getOrientation());
     }
     
 
