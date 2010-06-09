@@ -1,12 +1,31 @@
 
+/**
+ * Touch Test: a multi-touch test app for Android.
+ * <br>Copyright 2010 Ian Cameron Smith
+ *
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
+ * 
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+
 package org.hermit.touchtest;
 
 
 import java.util.HashMap;
 
+import org.hermit.android.core.SurfaceRunner;
+import org.hermit.utils.CharFormatter;
+
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -14,19 +33,32 @@ import android.graphics.Typeface;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.Surface;
-import android.view.SurfaceView;
 import android.view.WindowManager;
 
 
+/**
+ * The main touch test view.  This class relies on the parent SurfaceRunner
+ * class to do the bulk of the animation control.
+ */
 class GridView
-    extends SurfaceView
+    extends SurfaceRunner
 {
 
-    public GridView(Context context) {
-        super(context);
+    // ******************************************************************** //
+    // Constructor.
+    // ******************************************************************** //
 
+	/**
+	 * Create a GridView instance.
+	 * 
+	 * @param	app			The application context we're running in.
+	 */
+    public GridView(Context context) {
+        super(context, SURFACE_DYNAMIC | LOOPED_TICKER);
+
+        setDelay(1000);
+        
         appResources = context.getResources();
-        appConfig = appResources.getConfiguration();
     	windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     	appDisplay = windowManager.getDefaultDisplay();
 
@@ -37,22 +69,54 @@ class GridView
         paint = new Paint();
         paint.setTextSize(20f);
         paint.setTypeface(Typeface.MONOSPACE);
-
-        setBackgroundColor(0xFF404040);
+        
+        eventBuf = new char[11];
     }
 
+    
+    // ******************************************************************** //
+    // Client Methods.
+    // ******************************************************************** //
 
-    @Override
-    protected void onSizeChanged(int w, int h, int ow, int oh) {
-        sw = w;
-        sh = h;
+    /**
+     * The application is starting.  Perform any initial set-up prior to
+     * starting the application.  We may not have a screen size yet,
+     * so this is not a good place to allocate resources which depend on
+     * that.
+     */
+    protected void appStart() {
+    }
+    
+
+    /**
+     * Set the screen size.  This is guaranteed to be called before
+     * animStart(), but perhaps not before appStart().
+     * 
+     * @param   width       The new width of the surface.
+     * @param   height      The new height of the surface.
+     * @param   config      The pixel format of the surface.
+     */
+    protected void appSize(int width, int height, Bitmap.Config config) {
+        appConfig = appResources.getConfiguration();
+        sw = width;
+        sh = height;
+
+        sizeStr = appDisplay.getWidth() + "x" + appDisplay.getHeight();
+        confStr = translateToken(appConfig.orientation, CONFIG_ORIENTS);
+        rotateStr = translateToken(appDisplay.getOrientation(), DISP_ORIENTS);
 
         // Create the edge markers.
         edgeMarker = new Path();
-        int x, y;
+        float x, y;
         
         // Top
-        x = sw / 2;
+        x = sw / 4 + 0.5f;
+        y = 0;
+        edgeMarker.moveTo(x, y);
+        edgeMarker.lineTo(x + ARROW_SIZE, y + ARROW_SIZE);
+        edgeMarker.lineTo(x - ARROW_SIZE, y + ARROW_SIZE);
+        edgeMarker.close();
+        x = sw - x;
         y = 0;
         edgeMarker.moveTo(x, y);
         edgeMarker.lineTo(x + ARROW_SIZE, y + ARROW_SIZE);
@@ -61,14 +125,26 @@ class GridView
         
         // Right
         x = sw;
-        y = sh / 2;
+        y = sh / 4 + 0.5f;
+        edgeMarker.moveTo(x, y);
+        edgeMarker.lineTo(x - ARROW_SIZE, y - ARROW_SIZE);
+        edgeMarker.lineTo(x - ARROW_SIZE, y + ARROW_SIZE);
+        edgeMarker.close();
+        x = sw;
+        y = sh - y;
         edgeMarker.moveTo(x, y);
         edgeMarker.lineTo(x - ARROW_SIZE, y - ARROW_SIZE);
         edgeMarker.lineTo(x - ARROW_SIZE, y + ARROW_SIZE);
         edgeMarker.close();
         
         // Bottom
-        x = sw / 2;
+        x = sw / 4 + 0.5f;
+        y = sh;
+        edgeMarker.moveTo(x, y);
+        edgeMarker.lineTo(x + ARROW_SIZE, y - ARROW_SIZE);
+        edgeMarker.lineTo(x - ARROW_SIZE, y - ARROW_SIZE);
+        edgeMarker.close();
+        x = sw - x;
         y = sh;
         edgeMarker.moveTo(x, y);
         edgeMarker.lineTo(x + ARROW_SIZE, y - ARROW_SIZE);
@@ -76,8 +152,14 @@ class GridView
         edgeMarker.close();
         
         // Left
-        x = 0;
-        y = sh / 2;
+        x = 0f;
+        y = sh / 4f + 0.5f;
+        edgeMarker.moveTo(x, y);
+        edgeMarker.lineTo(x + ARROW_SIZE, y - ARROW_SIZE);
+        edgeMarker.lineTo(x + ARROW_SIZE, y + ARROW_SIZE);
+        edgeMarker.close();
+        x = 0f;
+        y = sh - y;
         edgeMarker.moveTo(x, y);
         edgeMarker.lineTo(x + ARROW_SIZE, y - ARROW_SIZE);
         edgeMarker.lineTo(x + ARROW_SIZE, y + ARROW_SIZE);
@@ -85,8 +167,43 @@ class GridView
         
         edgeMarker.close();
     }
+    
 
+    /**
+     * We are starting the animation loop.  The screen size is known.
+     * 
+     * <p>doUpdate() and doDraw() may be called from this point on.
+     */
+    protected void animStart() {
+    }
+    
 
+    /**
+     * We are stopping the animation loop, for example to pause the app.
+     * 
+     * <p>doUpdate() and doDraw() will not be called from this point on.
+     */
+    protected void animStop() {
+    }
+    
+
+    /**
+     * The application is closing down.  Clean up any resources.
+     */
+    protected void appStop() {
+    }
+    
+    
+    // ******************************************************************** //
+    // Input Handling.
+    // ******************************************************************** //
+    
+    /**
+	 * Handle touchscreen input.
+	 * 
+     * @param	event		The MotionEvent object that defines the action.
+     * @return				True if the event was handled, false otherwise.
+	 */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
@@ -119,14 +236,49 @@ class GridView
             rec.size = event.getSize(i);
         }
 
-        invalidate();
-
+        postUpdate();
+        
         return true;
     }
 
     
-    @Override
-    public void onDraw(Canvas canvas) {
+    // ******************************************************************** //
+    // Animation.
+    // ******************************************************************** //
+
+    /**
+     * Update the state of the application for the current frame.
+     * 
+     * <p>Applications must override this, and can use it to update
+     * for example the physics of a game.  This may be a no-op in some cases.
+     * 
+     * <p>doDraw() will always be called after this method is called;
+     * however, the converse is not true, as we sometimes need to draw
+     * just to update the screen.  Hence this method is useful for
+     * updates which are dependent on time rather than frames.
+     * 
+     * @param   now         Current time in ms.
+     */
+    protected void doUpdate(long now) {
+    	
+    }
+
+    
+    /**
+     * Draw the current frame of the application.
+     * 
+     * <p>Applications must override this, and are expected to draw the
+     * entire screen into the provided canvas.
+     * 
+     * <p>This method will always be called after a call to doUpdate(),
+     * and also when the screen needs to be re-drawn.
+     * 
+     * @param   canvas      The Canvas to draw into.
+     * @param   now         Current time in ms.  Will be the same as that
+     *                      passed to doUpdate(), if there was a preceeding
+     *                      call to doUpdate().
+     */
+    protected void doDraw(Canvas canvas, long now) {
         canvas.drawColor(0xff000000);
         
         // Draw the touch grid.
@@ -138,9 +290,15 @@ class GridView
         for (int y = 0; y < sh; y += GRID_SPACING)
             canvas.drawLine(0, y, sw, y, paint);
         
+        // Put an outline around the screen.
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(0f);
+        paint.setColor(0xffffff00);
+        canvas.drawRect(0, 0, sw - 1, sh - 1, paint);
+        
         // Draw the edge markers.
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(0xffffff00);
+        paint.setColor(0xffe08000);
         canvas.drawPath(edgeMarker, paint);
 
         // Draw the user's fingers.
@@ -157,31 +315,31 @@ class GridView
             paint.setStrokeWidth(1f);
             canvas.drawLine(rec.x, 0, rec.x, sh, paint);
             canvas.drawLine(0, rec.y, sw, rec.y, paint);
-            paint.setStrokeWidth(0f);
-            canvas.drawText("" + i, rec.x + 8, rec.y, paint);
         }
         
         // Draw the display configuration.
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(0f);
         paint.setColor(0xffffa0a0);
-        int y = 60;
-		String size = appDisplay.getWidth() + "x" + appDisplay.getHeight();
-        canvas.drawText(size, 30, y, paint);
+        int y = 70;
+        canvas.drawText(sizeStr, 50, y, paint);
         y += 22;
-		String rot = translateToken(appDisplay.getOrientation(), DISP_ORIENTS);
-        canvas.drawText(rot, 30, y, paint);
+        canvas.drawText(confStr, 50, y, paint);
+        y += 22;
+        canvas.drawText(rotateStr, 50, y, paint);
         y += 22;
         
         // Draw the most recent action codes.
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(0f);
         paint.setColor(0xffffa0a0);
-        y = 60;
+        y = 70;
         for (int i = 0; i < STORED_ACTIONS; ++i) {
             int code = lastActions[(lastActionsIndex + i) % STORED_ACTIONS];
-            String action = String.format("%4d 0x%04x", code, code);
-            canvas.drawText(action, sw - 140, y, paint);
+            CharFormatter.formatInt(eventBuf, 0, code, 4, false);
+            CharFormatter.formatString(eventBuf, 4, " 0x", 3);
+            CharFormatter.formatHex(eventBuf, 7, code, 4);
+            canvas.drawText(eventBuf, 0, 11, sw - 180, y, paint);
             y += 22;
         }
     }
@@ -200,15 +358,16 @@ class GridView
 	// ******************************************************************** //
 
     // Debugging tag.
-	private static final String TAG = "SensorTest";
+	@SuppressWarnings("unused")
+	private static final String TAG = "TouchTest";
 
 	private static final HashMap<Integer, String> CONFIG_ORIENTS =
 										new HashMap<Integer, String>();
 	static {
-		CONFIG_ORIENTS.put(Configuration.ORIENTATION_LANDSCAPE, "LAND");
-		CONFIG_ORIENTS.put(Configuration.ORIENTATION_PORTRAIT, "PORT");
-		CONFIG_ORIENTS.put(Configuration.ORIENTATION_SQUARE, "SQUARE");
-		CONFIG_ORIENTS.put(Configuration.ORIENTATION_UNDEFINED, "UNDEF");
+		CONFIG_ORIENTS.put(Configuration.ORIENTATION_LANDSCAPE, "Landscape");
+		CONFIG_ORIENTS.put(Configuration.ORIENTATION_PORTRAIT, "Portrait");
+		CONFIG_ORIENTS.put(Configuration.ORIENTATION_SQUARE, "Square");
+		CONFIG_ORIENTS.put(Configuration.ORIENTATION_UNDEFINED, "Undefined");
 	}
 
 	private static final HashMap<Integer, String> DISP_ORIENTS =
@@ -222,7 +381,7 @@ class GridView
 
     private static final int GRID_SPACING = 50;
     
-    private static final int ARROW_SIZE = 80;
+    private static final int ARROW_SIZE = 40;
     
     private static final int STORED_ACTIONS = 10;
    
@@ -244,15 +403,22 @@ class GridView
 	// Private Data.
 	// ******************************************************************** //
 
+    // Our app resources, and current configuration.
 	private Resources appResources;
 	private Configuration appConfig;
 	
+	// Our window manager and display.
 	private WindowManager windowManager;
 	private Display appDisplay;
 
     // Screen width and height.
     private int sw = 0, sh = 0;
 
+    // Current configuration info.
+    private String sizeStr;
+    private String confStr;
+    private String rotateStr;
+    
     // Path for drawing the edge markers.
 	private Path edgeMarker;
 
@@ -265,6 +431,9 @@ class GridView
     
     // Paint used for drawing.
     private Paint paint;
+    
+    // Character buffer for text output.
+    private char[] eventBuf = null;
 
 }
 
