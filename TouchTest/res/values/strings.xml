@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    
+<string name="app_name">Touch Test</string>
+<string name="app_desc">Test app for input touch events.</string>
+
+</resources>
+
