@@ -22,13 +22,15 @@ package org.hermit.android.core;
 
 import org.hermit.utils.CharFormatter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -71,6 +73,12 @@ public abstract class SurfaceRunner
      * will re-start for these.
      */
     public static final int SURFACE_DYNAMIC = 0x0001;
+
+    /**
+     * Surface runner option: use a Looper to drive animations.
+     * This allows asynchronous updates to be posted by the app.
+     */
+    public static final int LOOPED_TICKER = 0x0002;
     
     
     // ******************************************************************** //
@@ -82,7 +90,7 @@ public abstract class SurfaceRunner
      * 
      * @param   app         The application context we're running in.
      */
-    public SurfaceRunner(Activity app) {
+    public SurfaceRunner(Context app) {
         super(app);
         init(app, 0);
     }
@@ -95,7 +103,7 @@ public abstract class SurfaceRunner
      * @param   options     Options for this SurfaceRunner.  A bitwise OR of
      *                      SURFACE_XXX constants.
      */
-    public SurfaceRunner(Activity app, int options) {
+    public SurfaceRunner(Context app, int options) {
         super(app);
         init(app, options);
     }
@@ -109,7 +117,7 @@ public abstract class SurfaceRunner
      */
     public SurfaceRunner(Context app, AttributeSet attrs) {
         super(app, attrs);
-        init((Activity) app, 0);
+        init(app, 0);
     }
     
 
@@ -120,7 +128,7 @@ public abstract class SurfaceRunner
      * @param   options     Options for this SurfaceRunner.  A bitwise OR of
      *                      SURFACE_XXX constants.
      */
-    private void init(Activity app, int options) {
+    private void init(Context app, int options) {
         appContext = app;
         errorReporter = Errors.getInstance(app);
         surfaceOptions = options;
@@ -159,6 +167,12 @@ public abstract class SurfaceRunner
      * @param   delay       The time in ms to sleep each time round the main
      *                      animation loop.  If zero, we will not sleep,
      *                      but will run continuously.
+     *                      
+     *                      <p>If you want to do all your animation under
+     *                      direct app control using {@link #postUpdate()},
+     *                      just set a large delay.  You may want to consider
+     *                      using 1000 -- i.e. one second -- to make sure
+     *                      you get a refresh at a decent interval.
      */
     public void setDelay(long delay) {
         Log.i(TAG, "setDelay " + delay);
@@ -404,7 +418,8 @@ public abstract class SurfaceRunner
             if (animTicker != null && animTicker.isAlive())
                 animTicker.kill();
             Log.i(TAG, "set running: start ticker");
-            animTicker = new Ticker();
+            animTicker = !optionSet(LOOPED_TICKER) ?
+            				new ThreadTicker() : new LoopTicker();
         }
     }
 
@@ -480,6 +495,20 @@ public abstract class SurfaceRunner
     // Run Control.
     // ******************************************************************** //
 
+    /**
+     * Asynchronously schedule an update; i.e. a frame of animation.
+     * This can only be called if the SurfaceRunner was created with
+     * the option LOOPED_TICKER.
+     */
+    public void postUpdate() {
+    	if (!(animTicker instanceof LoopTicker))
+    		throw new IllegalArgumentException("Can't post updates" +
+    										   " without LOOPED_TICKER set");
+    	LoopTicker ticker = (LoopTicker) animTicker;
+    	ticker.post();
+    }
+    
+    
     private void tick() {
         try {
             // Do the application's physics.
@@ -848,22 +877,51 @@ public abstract class SurfaceRunner
     // ******************************************************************** //
 
 	/**
-	 * Thread class we use to control the animation.  The contract of this
-	 * class is:
-	 *   * When created, we start at once
-	 *   * While running, tick() in the outer class is called periodically
-	 *   * When killAndWait() is called, we stop and return
+	 * Base interface for the ticker we use to control the animation.
 	 */
-	private class Ticker
+	private interface Ticker
+	{
+	    /**
+	     * Stop this thread.  There will be no new calls to tick() after this.
+	     */
+	    public void kill();
+
+	    /**
+	     * Stop this thread and wait for it to die.  When we return, it is
+	     * guaranteed that tick() will never be called again.
+	     * 
+	     * Caution: if this is called from within tick(), deadlock is
+	     * guaranteed.
+	     */
+	    public void killAndWait();
+
+	    /**
+	     * Run method for this thread -- simply call tick() a lot until
+	     * enable is false.
+	     */
+	    public void run();
+
+	    /**
+	     * Determine whether this ticker is still going.
+	     */
+	    public boolean isAlive();
+	}
+	
+	
+	/**
+	 * Thread-based ticker class.  This may be faster than LoopTicker.
+	 */
+	private class ThreadTicker
 	    extends Thread
+	    implements Ticker
 	{
 
 	    /**
 	     * Constructor -- start at once.
 	     */
-	    private Ticker() {
+	    private ThreadTicker() {
 	        super("Surface Runner");
-	        Log.v(TAG, "Ticker: start");
+	        Log.v(TAG, "ThreadTicker: start");
 	        enable = true;
 	        start();
 	    }
@@ -871,8 +929,8 @@ public abstract class SurfaceRunner
 	    /**
 	     * Stop this thread.  There will be no new calls to tick() after this.
 	     */
-	    private void kill() {
-	        Log.v(TAG, "Ticker: kill");
+	    public void kill() {
+	        Log.v(TAG, "ThreadTicker: kill");
 	        enable = false;
 	    }
 
@@ -883,8 +941,8 @@ public abstract class SurfaceRunner
 	     * Caution: if this is called from within tick(), deadlock is
 	     * guaranteed.
 	     */
-	    private void killAndWait() {
-	        Log.v(TAG, "Ticker: killAndWait");
+	    public void killAndWait() {
+	        Log.v(TAG, "ThreadTicker: killAndWait");
 	        enable = false;
 
 	        // Wait for the thread to finish.  Ignore interrupts.
@@ -896,7 +954,7 @@ public abstract class SurfaceRunner
 	                    retry = false;
 	                } catch (InterruptedException e) { }
 	            }
-	            Log.v(TAG, "Ticker: killed");
+	            Log.v(TAG, "ThreadTicker: killed");
 	        } else {
 	            Log.v(TAG, "Ticker: was dead");
 	        }
@@ -920,6 +978,129 @@ public abstract class SurfaceRunner
 	    // Flag used to terminate this thread -- when false, we die.
 	    private boolean enable = false;
 	}
+	
+	
+	/**
+	 * Looper-based ticker class.  This has the advantage that asynchronous
+	 * updates can be scheduled by passing it a message.
+	 */
+	private class LoopTicker
+		extends Thread
+	    implements Ticker
+	{
+	    /**
+	     * Constructor -- start at once.
+	     */
+	    private LoopTicker() {
+	        super("Surface Runner");
+	        Log.v(TAG, "Ticker: start");
+	        start();
+	    }
+
+	    /**
+	     * Post a tick.  An update will be done near-immediately on the
+	     * appropriate thread.
+	     */
+	    public void post() {
+	    	synchronized (this) {
+	        	if (msgHandler == null)
+	        		return;
+	        	
+	    		// Remove any delayed ticks.
+	    		msgHandler.removeMessages(MSG_TICK);
+
+	    		// Do a tick right now.
+	    		msgHandler.sendEmptyMessage(MSG_TICK);
+	    	}
+	    }
+
+	    /**
+	     * Stop this thread.  There will be no new calls to tick() after this.
+	     */
+	    public void kill() {
+	        Log.v(TAG, "LoopTicker: kill");
+	        
+	        synchronized (this) {
+	        	if (msgHandler == null)
+	        		return;
+	        	
+	        	// Remove any delayed ticks.
+	        	msgHandler.removeMessages(MSG_TICK);
+
+	        	// Do an abort right now.
+	        	msgHandler.sendEmptyMessage(MSG_ABORT);
+	        }
+	    }
+
+	    /**
+	     * Stop this thread and wait for it to die.  When we return, it is
+	     * guaranteed that tick() will never be called again.
+	     * 
+	     * Caution: if this is called from within tick(), deadlock is
+	     * guaranteed.
+	     */
+	    public void killAndWait() {
+	        Log.v(TAG, "LoopTicker: killAndWait");
+	        
+	        synchronized (this) {
+	        	if (msgHandler == null)
+	        		return;
+	        	
+	        	// Remove any delayed ticks.
+	        	msgHandler.removeMessages(MSG_TICK);
+
+	        	// Do an abort right now.
+	        	msgHandler.sendEmptyMessage(MSG_ABORT);
+	        }
+
+	        // Wait for the thread to finish.  Ignore interrupts.
+	        if (isAlive()) {
+	            boolean retry = true;
+	            while (retry) {
+	                try {
+	                    join();
+	                    retry = false;
+	                } catch (InterruptedException e) { }
+	            }
+	            Log.v(TAG, "LoopTicker: killed");
+	        } else {
+	            Log.v(TAG, "LoopTicker: was dead");
+	        }
+	    }
+
+		public void run() {
+			Looper.prepare();
+
+			msgHandler = new Handler() {
+				public void handleMessage(Message msg) {
+					switch (msg.what) {
+					case MSG_TICK:
+						tick();
+						if (!msgHandler.hasMessages(MSG_TICK))
+							msgHandler.sendEmptyMessageDelayed(MSG_TICK,
+															   animationDelay);
+						break;
+					case MSG_ABORT:
+						Looper.myLooper().quit();
+						break;
+					}
+				}
+			};
+			
+			// Schedule the first tick.
+			msgHandler.sendEmptyMessageDelayed(MSG_TICK, animationDelay);
+
+			// Go into the processing loop.
+			Looper.loop();
+		}
+		
+		// Message codes.
+		private static final int MSG_TICK = 6;
+		private static final int MSG_ABORT = 9;
+		
+		// Our message handler.
+		private Handler msgHandler = null;
+	}
 
 
     // ******************************************************************** //
@@ -927,7 +1108,6 @@ public abstract class SurfaceRunner
     // ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "SurfaceRunner";
 
     // Enable flags.  In order to run, we need onSurfaceCreated() and
@@ -955,7 +1135,7 @@ public abstract class SurfaceRunner
 	// ******************************************************************** //
 
     // Application handle.
-    private Activity appContext;
+    private Context appContext;
 
     // Error reporter.
     private Errors errorReporter;
