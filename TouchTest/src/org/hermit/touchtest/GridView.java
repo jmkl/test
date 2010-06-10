@@ -20,7 +20,6 @@ package org.hermit.touchtest;
 import java.util.HashMap;
 
 import org.hermit.android.core.SurfaceRunner;
-import org.hermit.utils.CharFormatter;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -62,15 +61,13 @@ class GridView
     	windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     	appDisplay = windowManager.getDefaultDisplay();
 
-        trackedPointers = new Pointer[MAX_POINTERS];
-        for (int i = 0; i < MAX_POINTERS; ++i)
+        trackedPointers = new Pointer[MAX_POINTER_ID];
+        for (int i = 0; i < MAX_POINTER_ID; ++i)
             trackedPointers[i] = new Pointer();
 
         paint = new Paint();
         paint.setTextSize(20f);
         paint.setTypeface(Typeface.MONOSPACE);
-        
-        eventBuf = new char[11];
     }
 
     
@@ -206,34 +203,63 @@ class GridView
 	 */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int action = event.getAction();
-        lastActions[lastActionsIndex++] = action;
-        lastActionsIndex %= STORED_ACTIONS;
+    	final int action = event.getAction();
+        final int npointers = event.getPointerCount();
 
-        int npointers = event.getPointerCount();
-
-        // Get the action and pointer ID.
-        int pact = action & ~MotionEvent.ACTION_POINTER_ID_MASK;
-        int pid = (action & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
-
-        // Update the up/down state of this pointer.
-        if (pact == MotionEvent.ACTION_DOWN || pact == MotionEvent.ACTION_POINTER_DOWN) {
-            trackedPointers[pid].down = true;
-        } else if (pact == MotionEvent.ACTION_UP || pact == MotionEvent.ACTION_POINTER_UP) {
-            trackedPointers[pid].down = false;
-        } else if (pact == MotionEvent.ACTION_MOVE) {
-            trackedPointers[pid].down = true;
+        // Get the action and pointer ID.  NOTE: ACTION_POINTER_ID_MASK
+        // gets you the pointer index, NOT the ID.
+        final int pact = action & MotionEvent.ACTION_MASK;
+        int pid = 0;
+        if (pact == MotionEvent.ACTION_POINTER_DOWN ||
+        								pact == MotionEvent.ACTION_POINTER_UP) {
+        	final int pind = (action & MotionEvent.ACTION_POINTER_ID_MASK) >>
+        									MotionEvent.ACTION_POINTER_ID_SHIFT;
+        	pid = event.getPointerId(pind);
+        } else if (pact == MotionEvent.ACTION_DOWN) {
+        	pid = event.getPointerId(0);
         }
 
-        // Save the pointer states for all the pointers.
-        for (int i = 0; i < npointers; ++i) {
-            int p = event.getPointerId(i);
-            Pointer rec = trackedPointers[p];
-            
-            rec.seen = true;
-            rec.x = event.getX(i);
-            rec.y = event.getY(i);
-            rec.size = event.getSize(i);
+        // Update the up/down state of this pointer.
+        switch (pact) {
+        case MotionEvent.ACTION_DOWN:
+        case MotionEvent.ACTION_POINTER_DOWN:
+        	{
+        		Pointer rec = trackedPointers[pid];
+        		rec.seen = true;
+        		rec.down = true;
+        		rec.x = event.getX();
+        		rec.y = event.getY();
+        		rec.size = event.getSize();
+        		
+        		rec.trailStart = 0;
+        		rec.trailLen = 0;
+        	}
+        	break;
+        case MotionEvent.ACTION_UP:
+            for (int i = 0; i < MAX_POINTER_ID; ++i)
+            	trackedPointers[i].down = false;
+        	break;
+        case MotionEvent.ACTION_POINTER_UP:
+        	trackedPointers[pid].down = false;
+        	break;
+        case MotionEvent.ACTION_MOVE:
+            for (int i = 0; i < npointers; ++i) {
+                int p = event.getPointerId(i);
+                Pointer rec = trackedPointers[p];
+                
+                rec.x = event.getX(i);
+                rec.y = event.getY(i);
+                rec.size = event.getSize(i);
+                
+                int nh = event.getHistorySize();
+                for (int h = 0; h < nh; ++h) {
+                	float hx = event.getHistoricalX(i, h);
+                	float hy = event.getHistoricalY(i, h);
+                	addPoint(rec, hx, hy);
+                }
+        		addPoint(rec, rec.x, rec.y);
+            }
+        	break;
         }
 
         postUpdate();
@@ -241,6 +267,18 @@ class GridView
         return true;
     }
 
+    
+    private void addPoint(Pointer rec, float x, float y) {
+    	int i = (rec.trailStart + rec.trailLen) % POINTER_TRAIL;
+		rec.trailX[i] = x;
+		rec.trailY[i] = y;
+		
+		if (rec.trailLen < POINTER_TRAIL)
+			++rec.trailLen;
+		else
+			rec.trailStart = (rec.trailStart + 1) % POINTER_TRAIL;
+    }
+    
     
     // ******************************************************************** //
     // Animation.
@@ -302,7 +340,7 @@ class GridView
         canvas.drawPath(edgeMarker, paint);
 
         // Draw the user's fingers.
-        for (int i = 0; i < MAX_POINTERS; ++i) {
+        for (int i = 0; i < MAX_POINTER_ID; ++i) {
             Pointer rec = trackedPointers[i];
             if (!rec.seen)
                 continue;
@@ -315,6 +353,24 @@ class GridView
             paint.setStrokeWidth(1f);
             canvas.drawLine(rec.x, 0, rec.x, sh, paint);
             canvas.drawLine(0, rec.y, sw, rec.y, paint);
+            
+            // Draw the trail.
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setColor(rec.down ? col : 0x80ffffff);
+            int prev = -1;
+            int curr = rec.trailStart;
+            paint.setStrokeWidth(4f);
+            if (rec.trailLen > 0)
+            	canvas.drawPoint(rec.trailX[curr], rec.trailY[curr], paint);
+            for (int t = 1; t < rec.trailLen; ++t) {
+            	prev = curr;
+            	curr = (curr + 1) % POINTER_TRAIL;
+                paint.setStrokeWidth(0f);
+                canvas.drawLine(rec.trailX[prev], rec.trailY[prev],
+                				rec.trailX[curr], rec.trailY[curr], paint);
+                paint.setStrokeWidth(4f);
+                canvas.drawPoint(rec.trailX[curr], rec.trailY[curr], paint);
+            }
         }
         
         // Draw the display configuration.
@@ -328,20 +384,6 @@ class GridView
         y += 22;
         canvas.drawText(rotateStr, 50, y, paint);
         y += 22;
-        
-        // Draw the most recent action codes.
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(0f);
-        paint.setColor(0xffffa0a0);
-        y = 70;
-        for (int i = 0; i < STORED_ACTIONS; ++i) {
-            int code = lastActions[(lastActionsIndex + i) % STORED_ACTIONS];
-            CharFormatter.formatInt(eventBuf, 0, code, 4, false);
-            CharFormatter.formatString(eventBuf, 4, " 0x", 3);
-            CharFormatter.formatHex(eventBuf, 7, code, 4);
-            canvas.drawText(eventBuf, 0, 11, sw - 180, y, paint);
-            y += 22;
-        }
     }
 
     
@@ -381,17 +423,21 @@ class GridView
 
     private static final int GRID_SPACING = 50;
     
-    private static final int ARROW_SIZE = 40;
+    private static final int ARROW_SIZE = 30;
     
-    private static final int STORED_ACTIONS = 10;
+    private static final int POINTER_TRAIL = 100;
    
-    private static final int MAX_POINTERS = 6;
+    private static final int MAX_POINTER_ID = 8;
     private class Pointer {
         boolean seen = false;
         boolean down = false;
         float x = 0;
         float y = 0;
         float size = 0;
+        float[] trailX = new float[POINTER_TRAIL];
+        float[] trailY = new float[POINTER_TRAIL];
+        int trailStart = 0;
+        int trailLen = 0;
     }
     
     private static final int[] POINTER_COLOURS = {
@@ -421,19 +467,12 @@ class GridView
     
     // Path for drawing the edge markers.
 	private Path edgeMarker;
-
-    // Most recently reported touch event action.
-    private int[] lastActions = new int[STORED_ACTIONS];
-    private int lastActionsIndex = 0;
     
-    // Tracked pointer states.
+    // Tracked pointer states.  Indexed by pointer ID.
     private Pointer[] trackedPointers = null;
     
     // Paint used for drawing.
     private Paint paint;
-    
-    // Character buffer for text output.
-    private char[] eventBuf = null;
 
 }
 
