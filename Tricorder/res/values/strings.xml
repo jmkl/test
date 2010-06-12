@@ -33,12 +33,13 @@ for more details.\n</string>
     
     <!-- "New features" dialog. -->
     <string name="newf_title">New in this version</string>
-    <string name="newf_text">NEW SCANNING MODE: Press the SCAN button to start
+    <string name="newf_text">Press the SCAN button to start
 scanning in the GRAV and MAG views.\n\
 \n\
-To restore the old mode, or control the sound, see the settings.\n\
+If you want continuous scanning, or to control the sound, see
+Menu -> Settings.\n\
 \n\
-For more information, see the help.</string>
+For more information, see Menu -> Help.</string>
     
     <!-- Preferences strings. -->
     <string name="prefs_title">Settings</string>
