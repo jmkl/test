@@ -10,5 +10,13 @@
 	<Button android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:id="@+id/button_bleep"
 		android:text="Bleep"></Button>
+	
+	<Button android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:id="@+id/button_auto"
+		android:text="Auto brightness"></Button>
+		
+	<Button android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:id="@+id/button_manual"
+		android:text="Manual brightness"></Button>
 		
 </LinearLayout>

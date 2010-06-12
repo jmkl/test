@@ -76,11 +76,57 @@ public class TableProvider
      */
     @Override
     public boolean onCreate() {
-        mOpenHelper = new DatabaseHelper(getContext(), dbSchema);
+        mOpenHelper = getHelper();
         return true;
     }
 
+
+    // ******************************************************************** //
+    // Accessors.
+    // ******************************************************************** //
+
+    /**
+     * Get the database schema.
+     * 
+     * @return                  The schema for this database.
+     */
+    protected DbSchema getSchema() {
+        return dbSchema;
+    }
+
+
+    /**
+     * Get the schema for a specified table.
+     * 
+     * @param   name            The name of the table we want.
+     * @return                  The schema for the given table.
+     * @throws  IllegalArgumentException  No such table.
+     */
+    protected TableSchema getTableSchema(String name)
+        throws IllegalArgumentException
+    {
+        return dbSchema.getTable(name);
+    }
+
+
+    // ******************************************************************** //
+    // Database Helper.
+    // ******************************************************************** //
+ 
+    /**
+     * Get the database helper which this content provider will use.
+     * 
+     * <p>Subclasses may override this to provide a smarter database
+     * helper; for example, to implement a smarter database upgrade
+     * process.  See {@link DatabaseHelper}.
+     * 
+     * @return              A database helper for this content provider.
+     */
+    protected DatabaseHelper getHelper() {
+        return new DatabaseHelper(getContext(), getSchema());
+    }
     
+
     // ******************************************************************** //
     // Data Access.
     // ******************************************************************** //
@@ -155,11 +201,78 @@ public class TableProvider
                                                " in query()");
         TableSchema t = dbSchema.getDbTables()[tindex];
 
+        Cursor c;
+        if (isItem)
+            c = queryItem(t, projection, uri.getPathSegments().get(1));
+        else
+            c = queryItems(t, projection, where, whereArgs, sortOrder);
+        
+        // Tell the cursor what uri to watch, so it knows when its
+        // source data changes.
+        c.setNotificationUri(getContext().getContentResolver(), uri);
+        return c;
+    }
+
+    
+    /**
+     * Query for a specified item within a table.
+     * 
+     * @param   t           The schema for the table to query.
+     * @param   projection  The list of columns to put into the cursor.
+     *                      If null all columns are included.
+     * @param   id          The ID of the item we want.
+     * @return              A Cursor or null. 
+     */
+    protected Cursor queryItem(TableSchema t, String[] projection, long id) {
+        return queryItem(t, projection, "" + id);
+    }
+    
+    
+    /**
+     * Query for a specified item within a table.
+     * 
+     * @param   t           The schema for the table to query.
+     * @param   projection  The list of columns to put into the cursor.
+     *                      If null all columns are included.
+     * @param   id          The ID of the item we want, as a String.
+     * @return              A Cursor or null. 
+     */
+    protected Cursor queryItem(TableSchema t, String[] projection, String id) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(t.getTableName());
         qb.setProjectionMap(t.getProjectionMap());
-        if (isItem)
-            qb.appendWhere(BaseColumns._ID + "=" + uri.getPathSegments().get(1));
+        qb.appendWhere(BaseColumns._ID + "=" + id);
+
+        // Get the database and run the query.
+        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
+        return qb.query(db, projection, null, null, null, null, null);
+    }
+    
+
+    /**
+     * Query for items within a table.
+     * 
+     * @param   t           The schema for the table to query.
+     * @param   projection  The list of columns to put into the cursor.
+     *                      If null all columns are included.
+     * @param   where       A selection criteria to apply when filtering
+     *                      rows.  If null then all rows are included.
+     * @param   whereArgs   You may include ?s in selection, which will
+     *                      be replaced by the values from selectionArgs,
+     *                      in order that they appear in the selection.
+     *                      The values will be bound as Strings.
+     * @param   sortOrder   How the rows in the cursor should be sorted.
+     *                      If null then the provider is free to define the
+     *                      sort order.
+     * @return              A Cursor or null. 
+     */
+    protected Cursor queryItems(TableSchema t, String[] projection,
+                                String where, String[] whereArgs,
+                                String sortOrder)
+    {
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(t.getTableName());
+        qb.setProjectionMap(t.getProjectionMap());
 
         // If no sort order is specified, use the default for the table.
         if (TextUtils.isEmpty(sortOrder))
@@ -167,20 +280,28 @@ public class TableProvider
 
         // Get the database and run the query.
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        Cursor c = qb.query(db, projection,
-                            where, whereArgs,
-                            null, null, sortOrder);
-
-        // Tell the cursor what uri to watch, so it knows when its
-        // source data changes.
-        c.setNotificationUri(getContext().getContentResolver(), uri);
-        return c;
+        return qb.query(db, projection, where, whereArgs, null, null, sortOrder);
     }
-
+    
 
     // ******************************************************************** //
     // Data Insertion.
     // ******************************************************************** //
+    
+    /**
+     * This method is called prior to processing an insert; it is called
+     * after {@link TableSchema#onInsert(ContentValues)}.  Subclasses
+     * can use this to carry out additional processing.
+     * 
+     * @param   uri         The content:// URI of the insertion request.
+     * @param   table       The schema of the table we're inserting into.
+     * @param   initValues  A set of column_name/value pairs to add to
+     *                      the database.
+     */
+    protected void onInsert(Uri uri, TableSchema table, ContentValues initValues) {
+        
+    }
+    
     
     /**
      * Implement this to insert a new row.  As a courtesy, call
@@ -218,6 +339,9 @@ public class TableProvider
         
         // Now, do type-specific setup, and fill in any missing values.
         t.onInsert(values);
+
+        // Allow subclasses to do additional processing.
+        onInsert(uri, t, values);
 
         // Insert the new row.
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
@@ -354,9 +478,9 @@ public class TableProvider
     @SuppressWarnings("unused")
     static final String TAG = "TableProvider";
     
-    
+
     // ******************************************************************** //
-    // Database Helper.
+    // Private Data.
     // ******************************************************************** //
 
     // Schema for this provider.

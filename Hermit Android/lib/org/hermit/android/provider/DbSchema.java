@@ -21,8 +21,8 @@ package org.hermit.android.provider;
 
 
 /**
- * Class encapsulating the schema for a content provider.  Subclasses
- * must extend this, and provide the necessary information in the
+ * Class encapsulating the schema for a content provider.  Applications
+ * must subclass this, and provide the necessary information in the
  * call to this base class's constructor.
  */
 public abstract class DbSchema {
@@ -48,40 +48,72 @@ public abstract class DbSchema {
         dbTables = tables;
         
         for (TableSchema t : getDbTables())
-            t.init(this, getDbAuth());
+            t.init(this);
     }
     
 
     // ******************************************************************** //
-    // Accessors.
+    // Public Accessors.
     // ******************************************************************** //
-
+    
     /**
-     * @return the dbName
+     * Get the database name.
+     * 
+     * @return              The name of the database.
      */
     public String getDbName() {
         return dbName;
     }
 
+    
     /**
-     * @return the dbVersion
+     * Get the database version number.
+     * 
+     * @return              The database version number.
      */
     public int getDbVersion() {
         return dbVersion;
     }
+    
+
+    // ******************************************************************** //
+    // Local Accessors.
+    // ******************************************************************** //
+    
+    /**
+     * Get the content provider authority string.
+     * 
+     * @return              The authority string.
+     */
+    String getDbAuth() {
+        return dbAuth;
+    }
+
 
     /**
-     * @return the dbTables
+     * Get the database table schemas.
+     * 
+     * @return              The table schemas.
      */
     TableSchema[] getDbTables() {
         return dbTables;
     }
 
+
     /**
-     * @return the dbAuth
+     * Get the schema for a specified table.
+     * 
+     * @param   name            The name of the table we want.
+     * @return                  The schema for the given table.
+     * @throws  IllegalArgumentException  No such table.
      */
-    String getDbAuth() {
-        return dbAuth;
+    protected TableSchema getTable(String name)
+        throws IllegalArgumentException
+    {
+        for (TableSchema t : dbTables)
+            if (t.getTableName().equals(name))
+                return t;
+        throw new IllegalArgumentException("No such table: " + name);
     }
 
 

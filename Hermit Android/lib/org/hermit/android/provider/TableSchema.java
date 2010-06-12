@@ -29,8 +29,8 @@ import android.provider.BaseColumns;
 
 /**
  * Class encapsulating the schema for a table within a content provider.
- * Subclasses must extend this, and provide the necessary information in the
- * call to this base class's constructor.
+ * Applications must subclass this, and provide the necessary information
+ * in the call to this base class's constructor.
  */
 public abstract class TableSchema
     implements BaseColumns
@@ -46,6 +46,7 @@ public abstract class TableSchema
      * @param   name        Name for the table; e.g. "points".
      * @param   type        Base MIME type identifying the content of this
      *                      table; e.g. "vnd.hermit.org.passage.point".
+     * @param   uri         Content URI for this table.
      * @param   sort        Default sort order for this table; e.g.
      *                      "time ASC".
      * @param   fields      List of field definitions.  Each one is two
@@ -55,15 +56,16 @@ public abstract class TableSchema
      *                      automatically.
      */
     protected TableSchema(String name, String type,
-                          String sort, String[][] fields)
+                          Uri uri, String sort, String[][] fields)
     {
         tableName = name;
         itemType = type;
+        contentUri = uri;
         sortOrder = sort;
-        tableFields = fields;
+        fieldDefs = fields;
     }
 
-    
+
     // ******************************************************************** //
     // Setup.
     // ******************************************************************** //
@@ -72,19 +74,50 @@ public abstract class TableSchema
      * Init function called when this table has been added to a database.
      * 
      * @param   db          Parent database.
-     * @param   auth        Authority string for the content provider.
      */
-    void init(DbSchema db, String auth) {
-        tableAuth = auth;
-        contentUri = Uri.parse("content://" + tableAuth + "/" + tableName);
-        
+    void init(DbSchema db) {
+        // Create the projection map, and all-fields projection.
         projectionMap = new HashMap<String, String>();
+
+        // Add the implicit ID field.
         projectionMap.put(BaseColumns._ID, BaseColumns._ID);
-        for (String[] field : getTableFields())
+
+        for (String[] field : fieldDefs) {
             projectionMap.put(field[0], field[0]);
+        }
     }
 
 
+    // ******************************************************************** //
+    // Utilities.
+    // ******************************************************************** //
+
+    /**
+     * This method creates a projection from a set of field definitions.
+     * It can be used by subclasses to set up a default projection.  The
+     * returned projection includes all fields, including the implicit
+     * "_id" field, which should <b>not</b> be in the supplied field list.
+     * 
+     * @param   fields      List of field definitions.  Each one is two
+     *                      strings, being the field name and type.  E.g.
+     *                      { { "name", "TEXT" }, { "time", "INTEGER" }}.
+     *                      The standard ID field "_id" will be prepended
+     *                      automatically.
+     * @return              An all-fields projection for the given fields
+     *                      list.
+     */
+    protected static String[] makeProjection(String[][] fields) {
+        String[] projection = new String[fields.length + 1];
+        int np = 0;
+        
+        projection[np++] = BaseColumns._ID;
+        for (String[] field : fields)
+            projection[np++] = field[0];
+        
+        return projection;
+    }
+    
+    
     // ******************************************************************** //
     // Public Accessors.
     // ******************************************************************** //
@@ -98,7 +131,7 @@ public abstract class TableSchema
         return tableName;
     }
 
-    
+
     /**
      * Get the table's content URI.
      * 
@@ -107,8 +140,8 @@ public abstract class TableSchema
     public Uri getContentUri() {
         return contentUri;
     }
-    
-    
+
+
     /**
      * Get the MIME type for the table as a whole.
      * 
@@ -117,55 +150,55 @@ public abstract class TableSchema
     public String getTableType() {
         return "vnd.android.cursor.dir/" + itemType;
     }
-    
-    
+
+
     /**
      * Get the MIME type for the items in the table.
      * 
      * @return          The "vnd.android.cursor.item/" MIME type for the items.
      */
-   public String getItemType() {
+    public String getItemType() {
         return "vnd.android.cursor.item/" + itemType;
     }
 
 
-   // ******************************************************************** //
-   // Event Handlers.
-   // ******************************************************************** //
-   
-   /**
-    * This method is called when a new row is added into this table.
-    * Subclasses can override this to fill in any missing values.
-    * 
-    * @param    values      The fields being added.
-    */
-   public void onInsert(ContentValues values) {
-       
-   }
+    // ******************************************************************** //
+    // Event Handlers.
+    // ******************************************************************** //
+
+    /**
+     * This method is called when a new row is added into this table.
+     * Subclasses can override this to fill in any missing values.
+     * 
+     * @param    values      The fields being added.
+     */
+    public void onInsert(ContentValues values) {
+
+    }
 
 
-   // ******************************************************************** //
-   // Local Accessors.
-   // ******************************************************************** //
+    // ******************************************************************** //
+    // Local Accessors.
+    // ******************************************************************** //
 
-   /**
-    * @return the tableFields
-    */
-   String[][] getTableFields() {
-       return tableFields;
-   }
+    /**
+     * @return the tableFields
+     */
+    String[][] getTableFields() {
+        return fieldDefs;
+    }
 
 
-   /**
-    * Get the table's default sort order.
-    * 
-    * @return           Default sort order.
-    */
+    /**
+     * Get the table's default sort order.
+     * 
+     * @return           Default sort order.
+     */
     String getSortOrder() {
         return sortOrder;
     }
-    
-    
+
+
     /**
      * Get the table's null hack field.
      * 
@@ -175,7 +208,7 @@ public abstract class TableSchema
     String getNullHack() {
         return getTableFields()[0][0];
     }
-    
+
 
     /**
      * Get the table's projection map.
@@ -185,8 +218,8 @@ public abstract class TableSchema
     HashMap<String, String> getProjectionMap() {
         return projectionMap;
     }
-    
-    
+
+
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
@@ -195,18 +228,15 @@ public abstract class TableSchema
     private final String tableName;
     private final String itemType;
     private final String sortOrder;
-    
-    // Definitions of the fields.
-    private final String[][] tableFields;
-    
-    // Content provider's authority string.
-    private String tableAuth;
-    
+
     // Content URI for this table.
-    private Uri contentUri;
-    
+    private final Uri contentUri;
+
+    // Definitions of the fields.
+    private final String[][] fieldDefs;
+
     // Projection map for this table.
     private HashMap<String, String> projectionMap;
-    
+
 }
 
