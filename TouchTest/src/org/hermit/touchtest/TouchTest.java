@@ -24,6 +24,10 @@ import android.view.Window;
 import android.view.WindowManager;
 
 
+/**
+ * Main TouchTest activity.  This is basically a wrapper around the
+ * GridView class.
+ */
 public class TouchTest
 	extends Activity
 {	
@@ -51,8 +55,8 @@ public class TouchTest
      *                          Note: Otherwise it is null.
      */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(Bundle icicle) {
+		super.onCreate(icicle);
         
         // We don't want a title bar or status bar.
         Window win = getWindow();

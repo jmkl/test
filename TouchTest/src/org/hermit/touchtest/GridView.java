@@ -50,7 +50,7 @@ class GridView
 	/**
 	 * Create a GridView instance.
 	 * 
-	 * @param	app			The application context we're running in.
+	 * @param	context  The application context we're running in.
 	 */
     public GridView(Context context) {
         super(context, SURFACE_DYNAMIC | LOOPED_TICKER);
@@ -81,6 +81,7 @@ class GridView
      * so this is not a good place to allocate resources which depend on
      * that.
      */
+    @Override
     protected void appStart() {
     }
     
@@ -93,6 +94,7 @@ class GridView
      * @param   height      The new height of the surface.
      * @param   config      The pixel format of the surface.
      */
+    @Override
     protected void appSize(int width, int height, Bitmap.Config config) {
         appConfig = appResources.getConfiguration();
         sw = width;
@@ -171,6 +173,7 @@ class GridView
      * 
      * <p>doUpdate() and doDraw() may be called from this point on.
      */
+    @Override
     protected void animStart() {
     }
     
@@ -180,6 +183,7 @@ class GridView
      * 
      * <p>doUpdate() and doDraw() will not be called from this point on.
      */
+    @Override
     protected void animStop() {
     }
     
@@ -187,6 +191,7 @@ class GridView
     /**
      * The application is closing down.  Clean up any resources.
      */
+    @Override
     protected void appStop() {
     }
     
@@ -297,6 +302,7 @@ class GridView
      * 
      * @param   now         Current time in ms.
      */
+    @Override
     protected void doUpdate(long now) {
     	
     }
@@ -316,6 +322,7 @@ class GridView
      *                      passed to doUpdate(), if there was a preceeding
      *                      call to doUpdate().
      */
+    @Override
     protected void doDraw(Canvas canvas, long now) {
         canvas.drawColor(0xff000000);
         
