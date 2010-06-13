@@ -20,6 +20,7 @@ package org.hermit.touchtest;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -64,8 +65,16 @@ public class TouchTest
                      WindowManager.LayoutParams.FLAG_FULLSCREEN);
         win.requestFeature(Window.FEATURE_NO_TITLE);
 		
-        // Create the application GUI.
-		gridView = new GridView(this);
+        // Create the application GUI.  The version depends on whether
+        // our host supports multi-touch.
+        Class<MotionEvent> clazz = MotionEvent.class;
+        try {
+            clazz.getMethod("getPointerCount");
+            gridView = new MtGridView(this);
+        } catch (NoSuchMethodException e) {
+            gridView = new StGridView(this);
+        }
+
 		setContentView(gridView);
 	}
 	

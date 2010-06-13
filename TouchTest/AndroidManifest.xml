@@ -15,7 +15,7 @@
 		
 	</application>
 
-    <uses-sdk android:minSdkVersion="5" />
+    <uses-sdk android:minSdkVersion="4"/>
 	<uses-configuration android:reqTouchScreen="finger" />
 	
 </manifest>
