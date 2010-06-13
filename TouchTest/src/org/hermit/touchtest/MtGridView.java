@@ -22,8 +22,7 @@ import android.view.MotionEvent;
 
 
 /**
- * The main touch test view.  This class relies on the parent SurfaceRunner
- * class to do the bulk of the animation control.
+ * Multi-touch implementation of the touch test view.
  */
 class MtGridView
     extends GridView

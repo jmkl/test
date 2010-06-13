@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+       
+    <!-- ################################################################# -->
+    <!-- Help.                                                             -->
+    <!-- ################################################################# -->
+
+    <!-- Help section titles. -->
+    <string-array name="help_titles">
+		<item></item>
+		<item>Display</item>
+		<item>Menu</item>
+		<item>More Information</item>
+		<item>@array/help_info_titles</item>
+    </string-array>
+
+    <!-- Help section texts. -->
+    <string-array name="help_texts">
+    
+<item><b>Touch Test</b> is a simple Android app to test screen parameters
+and multi-touch.  It shows display parameters, multiple touch points,
+and trails.  This app is intended to be of use to people bringing up new
+devices, but may be of interest to others.\n\
+\n\
+Touch Test is an open-source app; you can get the source code through the
+project page.  See the \"More Information\" section.</item>
+			  
+<item>The app displays a number of features designed to help with screen
+and touch setup:\n\
+\n\
+• The text near the top-left shows the display size in pixels,
+the current reported device orientation from the configuration info,
+and the reported display orientation.\n\
+\n\
+• There is a 1-pixel border around the edge of the screen, and a set of
+triangles whose points are at the exact edge of the screen.  These can be
+used to check that the display driver is mapping the frame buffer to the
+LCD correctly, and that the LCD is positioned correctly under the display
+bezel.  (Useful for people bringing up new devices.)\n\
+\n\
+• A 50-pixel grid is drawn in blue.\n\
+\n\
+• The active pointers are drawn in different colours, both as circles marking
+the position, and crosshairs so it can be seen while the finger is there.\n\
+\n\
+• Pointers are drawn in grey when no longer active, so you can see where
+they landed.\n\
+\n\
+• Trails are drawn showing the last 200 or so points reported by each
+pointer.  These can be used to check the linearity of the touch panel.\n\
+\n\
+Note that the app can only show pointers (i.e. fingers) that are reported
+by the OS and hardware.  If you only see one or two active fingers, don\'t
+blame the app – that\'s what your device supports.  In particular, Android
+versions before 2.0 only support single-touch.\n\
+\n\
+On some devices, when you touch with two fingers and rotate them, you will
+see that the app reports your fingers in the wrong places.  Again, this
+is a hardware limitation.  Some touchpanels can detect two fingers, but
+only in terms of corners of a square.  In other words, the panel can
+detect that there are fingers at X co-ordinates 100 and 400, and at Y
+co-ordinates 200 and 600; but they can\'t tell you whether the first
+finger is at 100,200 or 400,200.  In this case, Android takes its best
+guess at which corners of the square the fingers are actually at.  This is
+not actually a problem, as pinch-to-zoom will still work fine.</item>
+
+<item>The device\'s \"menu\" button pops up a menu containing a number
+of options:\n\
+• <b>Help</b> displays this help.\n\
+• <b>About</b> displays an about box, with links to the license and
+the project home page, where you can get the source code.\n\
+• <b>Exit</b> stops the application.</item>
+
+<item>If you would like more information and help with Touch Test, or if you
+want to to report a bug, there are some on-line
+resources which may be of interest, as described in the following
+sections.</item>
+
+<item>@array/help_info_texts</item>
+
+    </string-array>
+        
+          
+    <!-- Section titles for the more info help. -->
+    <string-array name="help_info_titles">
+
+<item>Discussion Groups</item>
+
+<item>Reporting Bugs</item>
+
+<item>Join In</item>
+
+    </string-array>
+
+    <!-- Section contents for the more info help. -->
+    <string-array name="help_info_texts">
+
+<item>There is a discussion board where you
+can suggest ideas for Touch Test, share experiences and thoughts with
+other users, and generally waffle.  Please note that this group
+is shared with the other Moonblink projects, so mention
+Touch Test when you post:\n\
+\n\
+• http://groups.google.com/group/moonblink</item>
+
+<item>If you want to report a bug, you can use the Moonblink Issue tracker.
+Before you post, <b>please</b> look through the existing issues -- including
+closed issues -- before raising a new one.  Your problem may already have been
+solved.\n\
+\n\
+If you do need to raise a new issue:\n\
+• The issue tracker is used by a number of projects.  Please click on the
+\"Product-\" label to set the product you are reporting against.  You can
+also set the other fields as appropriate.\n\
+• Please tell me what device, and what version of Android, you are using.\n\
+• If the bug is a crash, then please attach a log if you possibly can.
+If you don\'t know how, don\'t sweat it.\n\
+\n\
+So, the issue tracker is here:\n\
+\n\
+• http://code.google.com/p/moonblink/issues/list</item>
+
+<item>Touch Test is an open project, so if you want to get the source code,
+or if want to join in and make contributions, you can.  See the project page
+for information:\n\
+\n\
+• http://code.google.com/p/moonblink/wiki/TouchTest</item>
+
+    </string-array>
+    
+</resources>
+

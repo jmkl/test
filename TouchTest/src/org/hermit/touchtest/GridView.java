@@ -397,7 +397,7 @@ abstract class GridView
     private static final int POINTER_TRAIL = 100;
     
     private static final int[] POINTER_COLOURS = {
-    	0xffffa000, 0xff00ffff, 0xff80ff00, 0xff80ff80,
+    	0xff00ffff, 0xff80ff00, 0xff80ff80, 0xffffa000,
     };
 
     

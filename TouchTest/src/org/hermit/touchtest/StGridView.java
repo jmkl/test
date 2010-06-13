@@ -22,8 +22,7 @@ import android.view.MotionEvent;
 
 
 /**
- * The main touch test view.  This class relies on the parent SurfaceRunner
- * class to do the bulk of the animation control.
+ * Single-touch implementation of the touch test view.
  */
 class StGridView
     extends GridView
@@ -57,7 +56,8 @@ class StGridView
     public boolean onTouchEvent(MotionEvent event) {
         final int action = event.getAction();
 
-        // Get the action, and the pointer.
+        // Get the action, and the pointer.  The pointer ID is always
+        // zero.
         final int pact = action & MotionEvent.ACTION_MASK;
         Pointer rec = getPointer(0);
 
