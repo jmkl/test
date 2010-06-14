@@ -372,6 +372,7 @@ abstract class GridView
 	@SuppressWarnings("unused")
 	private static final String TAG = "TouchTest";
 
+	// Mapping from Configuration orientations to strings.
 	private static final HashMap<Integer, String> CONFIG_ORIENTS =
 										new HashMap<Integer, String>();
 	static {
@@ -381,6 +382,7 @@ abstract class GridView
 		CONFIG_ORIENTS.put(Configuration.ORIENTATION_UNDEFINED, "Undefined");
 	}
 
+	// Mapping from Display rotations to strings.
 	private static final HashMap<Integer, String> DISP_ORIENTS =
 										new HashMap<Integer, String>();
 	static {
@@ -390,12 +392,16 @@ abstract class GridView
 		DISP_ORIENTS.put(Surface.ROTATION_270, "270 - Right");
 	}
 
+	// Spacing of the screen grid in pixels.
     private static final int GRID_SPACING = 50;
     
+    // Size of the edge markers in pixels.
     private static final int ARROW_SIZE = 30;
     
-    private static final int POINTER_TRAIL = 100;
+    // Number of pointer positions to record for trails.
+    private static final int POINTER_TRAIL = 250;
     
+    // Colours used to draw the pointers.
     private static final int[] POINTER_COLOURS = {
     	0xff00ffff, 0xff80ff00, 0xff80ff80, 0xffffa000,
     };
