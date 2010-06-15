@@ -501,11 +501,13 @@ public abstract class SurfaceRunner
      * the option LOOPED_TICKER.
      */
     public void postUpdate() {
-    	if (!(animTicker instanceof LoopTicker))
-    		throw new IllegalArgumentException("Can't post updates" +
-    										   " without LOOPED_TICKER set");
-    	LoopTicker ticker = (LoopTicker) animTicker;
-    	ticker.post();
+        synchronized (surfaceHolder) {
+        	if (!(animTicker instanceof LoopTicker))
+        		throw new IllegalArgumentException("Can't post updates" +
+        		" without LOOPED_TICKER set");
+        	LoopTicker ticker = (LoopTicker) animTicker;
+        	ticker.post();
+        }
     }
     
     
