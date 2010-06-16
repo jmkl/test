@@ -37,6 +37,11 @@ import android.text.TextUtils;
 /**
  * This class is a base for content providers which provide access to
  * table-organized data in an SQL database.
+ * 
+ * <p>Typically, this is used by creating a subclass which is empty
+ * other than providing an appropriate schema to this class's constructor.
+ * The bulk of the work in creating a content provider is in creating
+ * the schema, a subclass of {@link DbSchema}.
  */
 public class TableProvider
     extends ContentProvider
@@ -475,7 +480,6 @@ public class TableProvider
     // ******************************************************************** //
 
     // Debugging tag.
-    @SuppressWarnings("unused")
     static final String TAG = "TableProvider";
     
 

@@ -24,6 +24,15 @@ package org.hermit.android.provider;
  * Class encapsulating the schema for a content provider.  Applications
  * must subclass this, and provide the necessary information in the
  * call to this base class's constructor.
+ * 
+ * <p>An application's subclass will typically provide the following:
+ * 
+ * <ul>
+ * <li>Inner classes which are subclasses of {@link TableSchema},
+ *     defining the schemas of the individual tables.
+ * <li>A constructor which calls this class's constructor, passing the
+ *     required information.
+ * </ul>
  */
 public abstract class DbSchema {
 

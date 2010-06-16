@@ -31,6 +31,21 @@ import android.provider.BaseColumns;
  * Class encapsulating the schema for a table within a content provider.
  * Applications must subclass this, and provide the necessary information
  * in the call to this base class's constructor.
+ * 
+ * <p>An application's subclass will typically provide the following:
+ * 
+ * <ul>
+ * <li>A <code>public static final Uri CONTENT_URI</code> field, defining
+ *     the content URI for the table.
+ * <li>A <code>public static final String SORT_ORDER</code> field, defining
+ *     the default sort clause for the table.
+ * <li>For each column in the table, a <code>public static final String</code>
+ *     field defining the column's database name.
+ * <li>A <code>public static final String[] PROJECTION</code> field, defining
+ *     the default projection for the table.
+ * <li>A constructor which calls this class's constructor, passing the
+ *     required information.
+ * </ul>
  */
 public abstract class TableSchema
     implements BaseColumns

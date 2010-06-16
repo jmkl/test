@@ -31,7 +31,9 @@ import android.util.Log;
  * This class helps open, create, and upgrade the database file.
  * 
  * <p>Applications may use this class as is, or override it, for example to
- * provide a database upgrade handler.
+ * provide a database upgrade handler.  If you don't wish to override it,
+ * nothing need be done.  If you wish to subclass it, then create your
+ * subclass and override {@link TableProvider#getHelper()} to return it.
  */
 public class DatabaseHelper
     extends SQLiteOpenHelper
