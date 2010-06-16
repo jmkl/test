@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+	<!-- General -->
+    
+	<string name="app_name">Broadcast Dumper</string>
+	<string name="app_desc">An app to dump system broadcasts.</string>
+
+
+	<!-- Menu Items -->
+    
+	<string name="menu_clear">Clear</string>
+	<string name="menu_exit">Exit</string>
+
+</resources>
+
