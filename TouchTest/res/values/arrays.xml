@@ -10,6 +10,7 @@
     <string-array name="help_titles">
 		<item></item>
 		<item>Display</item>
+		<item>Devices</item>
 		<item>Menu</item>
 		<item>More Information</item>
 		<item>@array/help_info_titles</item>
@@ -50,10 +51,26 @@ they landed.\n\
 • Trails are drawn showing the last 200 or so points reported by each
 pointer.  These can be used to check the linearity of the touch panel.\n\
 \n\
-Note that the app can only show pointers (i.e. fingers) that are reported
+If the display doesn\'t show what you expect -- for example, if it doesn\'t
+show multiple touch points -- please read the next section.</item>
+
+<item><b>Touch Test</b> is designed to show you exactly the information
+which is being reported by the hardware and operating system (Android).
+So, if what the app displays is not to your liking, it is because of your
+device or the version of Android you are using.\n\
+\n\
+In particular, the app can only show pointers (i.e. fingers) that are reported
 by the OS and hardware.  If you only see one or two active fingers, don\'t
-blame the app – that\'s what your device supports.  In particular, Android
-versions before 2.0 only support single-touch.\n\
+blame the app – that\'s what your device supports.  Specifically:\n\
+\n\
+• Android versions before 2.0 only support single-touch.\n\
+\n\
+• Even if you have 2.0 or later, some touch panels are only single-touch.\n\
+\n\
+• Some multi-touch panels only support two touch points at most.\n\
+\n\
+Before you start complaining loudly and bitterly about how your phone only
+has double-touch, remember that full multi-touch costs a lot more.\n\
 \n\
 On some devices, when you touch with two fingers and rotate them, you will
 see that the app reports your fingers in the wrong places.  Again, this
