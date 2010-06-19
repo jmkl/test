@@ -34,7 +34,6 @@ import android.util.Log;
  * <p>To use this class, your application must have permission RECORD_AUDIO.
  */
 public class AudioReader
-    implements Runnable
 {
 
     // ******************************************************************** //
@@ -46,10 +45,31 @@ public class AudioReader
      */
     public static abstract class Listener {
         /**
+         * Audio read error code: no error.
+         */
+        public static final int ERR_OK = 0;
+        
+        /**
+         * Audio read error code: the audio reader failed to initialise.
+         */
+        public static final int ERR_INIT_FAILED = 1;
+        
+        /**
+         * Audio read error code: an audio read failed.
+         */
+        public static final int ERR_READ_FAILED = 2;
+        
+        /**
          * An audio read has completed.
          * @param   buffer      Buffer containing the data.
          */
         public abstract void onReadComplete(short[] buffer);
+        
+        /**
+         * An error has occurred.  The reader has been terminated.
+         * @param   error       ERR_XXX code describing the error.
+         */
+        public abstract void onReadError(int error);
     }
     
     
@@ -88,11 +108,10 @@ public class AudioReader
 
             // Set up the audio input.
             audioInput = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                    rate,
-                    AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                    AudioFormat.ENCODING_PCM_16BIT,
-                    audioBuf);
-
+                                         rate,
+                                         AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                                         AudioFormat.ENCODING_PCM_16BIT,
+                                         audioBuf);
             inputBlockSize = block;
             sleepTime = (long) (1000f / ((float) rate / (float) block));
             inputBuffer = new short[2][inputBlockSize];
@@ -100,7 +119,9 @@ public class AudioReader
             inputBufferIndex = 0;
             inputListener = listener;
             running = true;
-            readerThread = new Thread(this, "Audio Reader");
+            readerThread = new Thread(new Runnable() {
+                public void run() { readerRun(); }
+            }, "Audio Reader");
             readerThread.start();
         }
     }
@@ -140,22 +161,29 @@ public class AudioReader
     
     /**
      * Main loop of the audio reader.  This runs in our own thread.
-     * 
-     * <p><b>Note:</b> this method is public because the Thread API
-     * requires it.  Outside classes must not call this.
      */
-    @Override
-    public void run() {
+    private void readerRun() {
         short[] buffer;
         int index, readSize;
+        
+        int timeout = 200;
+        try {
+            while (timeout > 0 && audioInput.getState() != AudioRecord.STATE_INITIALIZED) {
+                Thread.sleep(50);
+                timeout -= 50;
+            }
+        } catch (InterruptedException e) { }
+
+        if (audioInput.getState() != AudioRecord.STATE_INITIALIZED) {
+            Log.e(TAG, "Audio reader failed to initialize");
+            readError(Listener.ERR_INIT_FAILED);
+            running = false;
+            return;
+        }
 
         try {
-            Log.i(TAG, "Reader: Get state");
-            int astate = audioInput.getState();
-            Log.i(TAG, "Reader: Start Recording in " + astate);
+            Log.i(TAG, "Reader: Start Recording");
             audioInput.startRecording();
-            Log.i(TAG, "Reader: Start Recording (" + astate +
-                                " -> " + audioInput.getState() + ")");
             while (running) {
                 long stime = System.currentTimeMillis();
 
@@ -178,6 +206,7 @@ public class AudioReader
                     
                     if (nread < 0) {
                         Log.e(TAG, "Audio read failed: error " + nread);
+                        readError(Listener.ERR_READ_FAILED);
                         running = false;
                         break;
                     }
@@ -224,6 +253,17 @@ public class AudioReader
      */
     private void readDone(short[] buffer) {
         inputListener.onReadComplete(buffer);
+    }
+    
+    
+    /**
+     * Notify the client that an error has occurred.  The reader has been
+     * terminated.
+     * 
+     * @param   error       ERR_XXX code describing the error.
+     */
+    private void readError(int code) {
+        inputListener.onReadError(code);
     }
     
 

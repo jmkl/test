@@ -159,15 +159,20 @@ public class AudioAnalyser
     @Override
     public void measureStart() {
         audioProcessed = audioSequence = 0;
+        readError = AudioReader.Listener.ERR_OK;
         
         audioReader.startReader(sampleRate, inputBlockSize * sampleDecimate, new AudioReader.Listener() {
             @Override
             public final void onReadComplete(short[] buffer) {
                 receiveAudio(buffer);
             }
+            @Override
+            public void onReadError(int error) {
+                handleError(error);
+            }
         });
     }
-    
+
 
     /**
      * We are stopping / pausing the run; stop measurements.
@@ -254,6 +259,18 @@ public class AudioAnalyser
         }
     }
     
+    
+    /**
+     * An error has occurred.  The reader has been terminated.
+     * 
+     * @param   error       ERR_XXX code describing the error.
+     */
+    private void handleError(int error) {
+        synchronized (this) {
+            readError = error;
+        }
+    }
+
 
     // ******************************************************************** //
     // Main Loop.
@@ -283,6 +300,9 @@ public class AudioAnalyser
         // If we got data, process it without the lock.
         if (buffer != null)
             processAudio(buffer);
+        
+        if (readError != AudioReader.Listener.ERR_OK)
+            processError(readError);
     }
 
 
@@ -349,7 +369,23 @@ public class AudioAnalyser
             powerGauge.update(currentPower);
     }
     
+
+    /**
+     * Handle an audio input error.
+     * 
+     * @param   error       ERR_XXX code describing the error.
+     */
+    private final void processError(int error) {
+        // Pass the error to all the gauges we have.
+        if (waveformGauge != null)
+            waveformGauge.error(error);
+        if (spectrumGauge != null)
+            spectrumGauge.error(error);
+        if (powerGauge != null)
+            powerGauge.error(error);
+    }
     
+
     // ******************************************************************** //
     // Save and Restore.
     // ******************************************************************** //
@@ -424,6 +460,9 @@ public class AudioAnalyser
     // Buffered audio data, and sequence number of the latest block.
     private short[] audioData;
     private long audioSequence = 0;
+    
+    // If we got a read error, the error code.
+    private int readError = AudioReader.Listener.ERR_OK;
     
     // Sequence number of the last block we processed.
     private long audioProcessed = 0;

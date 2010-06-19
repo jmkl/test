@@ -569,9 +569,26 @@ public class Gauge
     
 
 	// ******************************************************************** //
-	// View Drawing.
+	// Error Handling.
 	// ******************************************************************** //
-	
+
+    /**
+     * An error has occurred.  Notify the user somehow.
+     * 
+     * <p>Subclasses can override this to do something neat.
+     * 
+     * @param   error       ERR_XXX code describing the error.
+     */
+    public void error(int error) {
+        
+    }
+
+    
+    // ******************************************************************** //
+    // View Drawing.
+    // ******************************************************************** //
+    
+
 	/**
 	 * Get this element's Paint.
 	 * 
