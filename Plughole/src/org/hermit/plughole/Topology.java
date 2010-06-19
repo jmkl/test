@@ -117,7 +117,7 @@ class Topology {
 	 * @param	app				The application context we're running in.
 	 * @param	table			The game table.
 	 */
-	Topology(Plughole app, Table table) {
+	Topology(Plughole app, TableView table) {
 		appContext = app;
 
 		// Make some working variables.
@@ -504,7 +504,6 @@ class Topology {
     // ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "plughole";
 
 	// A miniscule increment to an object's motion.  We use this to correct

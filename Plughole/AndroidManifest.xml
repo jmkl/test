@@ -10,7 +10,7 @@
 
 		<activity android:label="@string/app_name"
 			android:icon="@drawable/app_plughole"
-			android:name="Plughole" android:launchMode="singleTask">
+			android:name="Plughole" android:screenOrientation="portrait" android:launchMode="singleTop" android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"></action>
 				<category

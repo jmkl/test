@@ -186,7 +186,6 @@ class LevelManager {
     // ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "plughole";
 	
 	// Pathname of the directory where user levels are kept.

@@ -15,21 +15,18 @@
 
 package org.hermit.plughole;
 
-import org.hermit.android.AppUtils;
-import org.hermit.android.InfoBox;
+import org.hermit.android.core.MainActivity;
 import org.hermit.plughole.LevelReader.LevelException;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.hardware.SensorListener;
-import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -49,8 +46,7 @@ import android.widget.TextView;
  * This is the main activity for the Plughole game.
  */
 public class Plughole
-	extends Activity
-	implements SensorListener
+	extends MainActivity
 {
 
     // ******************************************************************** //
@@ -118,7 +114,16 @@ public class Plughole
     
         super.onCreate(icicle);
         appResources = getResources();
-        
+
+        // Get our power manager for wake locks.
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+
+        // Create the message and info boxes.
+        createMessageBox(R.string.button_close);
+        setAboutInfo(R.string.about_text);
+        setHomeInfo(R.string.button_homepage, R.string.url_homepage);
+        setLicenseInfo(R.string.button_license, R.string.url_license);
+
         // We don't want a title bar or status bar.
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 		     WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -129,20 +134,6 @@ public class Plughole
 
         // Use the layout defined in XML.
         setContentView(createGui());
-
-        // Create the dialog we use for help and about.
-        AppUtils autils = new AppUtils(this);
-        messageDialog = new InfoBox(this, R.string.button_close);
-		messageDialog.setLinkButtons(new int[] {
-				R.string.button_homepage,
-				R.string.button_license
-			},
-			new int[] {
-    			R.string.url_homepage,
-    			R.string.url_license
-		});
-        String version = autils.getVersionString();
-		messageDialog.setTitle(version);
 
         // Give the TableView a handle to the TextView used for messages.
         tableView.setTextView(overlayText);
@@ -156,11 +147,25 @@ public class Plughole
         } else
             Log.w(TAG, "New start");
 
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
     }
     
-    
+
+    /**
+     * Called after {@link #onCreate} or {@link #onStop} when the current
+     * activity is now being displayed to the user.  It will
+     * be followed by {@link #onRestart}.
+     */
+    @Override
+    protected void onStart() {
+        Log.i(TAG, "onStart()");
+        
+        super.onStart();
+        
+        tableView.onStart();
+    }
+
+
     /**
      * Called after onRestoreInstanceState(Bundle), onRestart(), or onPause(),
      * for your activity to start interacting with the user.  This is a good
@@ -176,14 +181,7 @@ public class Plughole
         
         super.onResume();
         
-        // Resume the game, or at least enable the game to resume.
-        // The state we actually go to depends on saved state.
         tableView.onResume();
-
-        // Register for sensor updates.
-        sensorManager.registerListener(this, 
-                					   SensorManager.SENSOR_ACCELEROMETER,
-                					   SensorManager.SENSOR_DELAY_GAME);
     }
 
 
@@ -227,12 +225,23 @@ public class Plughole
         Log.i(TAG, "onPause()");
         
         super.onPause();
-
-        // Stop sensor updates.
-        sensorManager.unregisterListener(this);
         
         // Pause the game.
         tableView.onPause();
+    }
+    
+
+    /**
+     * Called when you are no longer visible to the user.  You will next
+     * receive either {@link #onStart}, {@link #onDestroy}, or nothing,
+     * depending on later user activity.
+     */
+    @Override
+    protected void onStop() {
+        Log.i(TAG, "onStop()");
+        super.onStop();
+
+        tableView.onStop();
     }
     
 
@@ -349,47 +358,28 @@ public class Plughole
         	// know when it returns.
         	Intent pIntent = new Intent();
         	pIntent.setClass(this, Preferences.class);
-        	startActivityForResult(pIntent, SUBACTIVITY_PREFERENCES);
+            startActivityForResult(pIntent, new MainActivity.ActivityListener() {
+                @Override
+                public void onActivityFinished(int resultCode, Intent data) {
+                    updatePreferences();
+                }
+            });
         	break;
-        case R.id.menu_help:
-        	messageDialog.show(R.string.help_text);
-        	break;
-        case R.id.menu_about:
-        	messageDialog.show(R.string.about_text);
-        	break;
+    	case R.id.menu_help:
+            // Launch the help activity as a subactivity.
+//            Intent hIntent = new Intent();
+//            hIntent.setClass(this, Help.class);
+//            startActivity(hIntent);
+    	    break;
+    	case R.id.menu_about:
+    	    showAbout();
+     		break;
         case R.id.menu_exit:
         	finish();
         	break;
         }
 
         return false;
-    }
-
-    
-    /**
-     * Called when an activity you launched exits, giving you the
-     * requestCode you started it with, the resultCode it returned,
-     * and any additional data from it.  The resultCode will be
-     * RESULT_CANCELED if the activity explicitly returned that, didn't
-     * return any result, or crashed during its operation.
-     * 
-     * You will receive this call immediately before onResume() when your
-     * activity is re-starting.
-     * 
-     * @param	requestCode		The integer request code.
-     * @param	resultCode		The integer result code returned by the child
-     * 							activity through its setResult().
-     * @param	data			An Intent with possible extra data.
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        
-        // If this is a result we requested, handle it.
-        if (requestCode == SUBACTIVITY_PREFERENCES) {
-            // Our preferences have been updated; re-read them.
-            updatePreferences();
-        }
     }
 
 
@@ -419,7 +409,7 @@ public class Plughole
     	Log.i(TAG, "Prefs: vibeEnable " + vibeEnable);
 
         // Look for a recline angle.
-    	reclineMode = 0;
+    	int reclineMode = 0;
     	try {
     		String rmode = prefs.getString("reclineMode", null);
     		reclineMode = Integer.valueOf(rmode);
@@ -427,6 +417,7 @@ public class Plughole
     		Log.i(TAG, "Pref: bad reclineMode");
     	}
     	Log.i(TAG, "Prefs: recline " + reclineMode);
+    	tableView.setReclineAngle(reclineMode);
 
     	boolean showPerf = false;
     	try {
@@ -450,43 +441,6 @@ public class Plughole
     		reportError(e);
     	}
     }
-
-    
-    // ******************************************************************** //
-    // Sensor Handling.
-    // ******************************************************************** //
-
-    /**
-     * Called when sensor values have changed.  The length and contents
-     * of the values array vary depending on which sensor is being monitored.
-     *
-	 * @param	sensor			The ID of the sensor being monitored.
-	 * @param	values			The new values for the sensor.
-     */
-	public void onSensorChanged(int sensor, float[] values) {
-		if (sensor != SensorManager.SENSOR_ACCELEROMETER || values.length < 3)
-			return;
-		
-		// Create a vector from Y and Z representing the "up/down" tilt,
-		// then rotate that vector according to the user's recline prefs.
-		Vector yVec = new Vector(values[1], values[2]);
-		yVec = yVec.rotate(reclineMode);
-
-		// Pass the X and Y accelerations to the table.
-        tableView.setTilt(values[0], (float) yVec.x);
-	}
-
-	
-	/**
-	 * Called when the accuracy of a sensor has changed.
-	 * 
-	 * @param	sensor			The ID of the sensor being monitored.
-	 * @param	accuracy		The new accuracy of this sensor.
-	 */
-	@Override
-	public void onAccuracyChanged(int sensor, int accuracy) {
-		// Don't need this.
-	}
 
 
 	// ******************************************************************** //
@@ -621,17 +575,15 @@ public class Plughole
     // ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "plughole";
-
-	// Request codes used to identify requests to sub-activities.
-	// Display and edit preferences.
-    private static final int SUBACTIVITY_PREFERENCES = 1;
     
     
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
+    
+    // Our power manager.
+    private PowerManager powerManager = null;
 
 	// Application resources for this app.
 	private Resources appResources;
@@ -644,25 +596,15 @@ public class Plughole
     
     // Level manager.
     private LevelManager levelManager;
-
-    /** The sensor manager, which we use to interface to all sensors. */
-    private SensorManager sensorManager;
     
     // The vibrator.
     private Vibrator vibrator;
-
-	// Dialog used to display about etc.
-	private InfoBox messageDialog;
 
 	// Current sound mode.
 	private SoundMode soundMode;
 	
 	// True to enable the vibrator.
 	private boolean vibeEnable;
-	
-	// Current recline mode.  This re-calibrates our idea of horizontal, so
-	// the player can hold the device tilted back at the set angle in degrees.
-	private int reclineMode = 0;
 	
 }
 
