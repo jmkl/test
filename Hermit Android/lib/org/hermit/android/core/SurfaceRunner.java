@@ -426,18 +426,27 @@ public abstract class SurfaceRunner
 
     /**
      * Stop the animation running.  Our surface may have been destroyed, so
-     * stop all accesses to it.
+     * stop all accesses to it.  If the caller is not the ticker thread,
+     * this method will only return when the ticker thread has died.
      */
     private void stopRun() {
         // Kill the thread if it's running, and wait for it to die.
         // This is important when the surface is destroyed, as we can't
-        // touch the surface after we return.
+        // touch the surface after we return.  But if I am the ticker
+    	// thread, don't wait for myself to die.
         Ticker ticker = null;
         synchronized (surfaceHolder) {
             ticker = animTicker;
         }
-        if (ticker != null && ticker.isAlive())
-            ticker.killAndWait();
+        if (ticker != null && ticker.isAlive()) {
+        	if (onSurfaceThread())
+        		ticker.kill();
+        	else
+        		ticker.killAndWait();
+        }
+        synchronized (surfaceHolder) {
+            animTicker = null;
+        }
         
         // Tell the subclass we've stopped.
         try {
@@ -690,6 +699,17 @@ public abstract class SurfaceRunner
         return Bitmap.createBitmap(w, h, canvasConfig);
     }
     
+    
+    /**
+     * Determine whether the caller is on the surface's animation thread.
+     * 
+     * @param  resid       The ID of the resource we want.
+     * @return             The resource value.
+     */
+    public boolean onSurfaceThread() {
+        return Thread.currentThread() == animTicker;
+    }
+    
 
     // ******************************************************************** //
     // Debug Control.
@@ -933,6 +953,7 @@ public abstract class SurfaceRunner
 	     */
 	    public void kill() {
 	        Log.v(TAG, "ThreadTicker: kill");
+	        
 	        enable = false;
 	    }
 
@@ -945,6 +966,11 @@ public abstract class SurfaceRunner
 	     */
 	    public void killAndWait() {
 	        Log.v(TAG, "ThreadTicker: killAndWait");
+	        
+	        if (Thread.currentThread() == this)
+	        	throw new IllegalStateException("ThreadTicker.killAndWait()" +
+	        								    " called from ticker thread");
+
 	        enable = false;
 
 	        // Wait for the thread to finish.  Ignore interrupts.
@@ -1021,7 +1047,7 @@ public abstract class SurfaceRunner
 	     */
 	    public void kill() {
 	        Log.v(TAG, "LoopTicker: kill");
-	        
+
 	        synchronized (this) {
 	        	if (msgHandler == null)
 	        		return;
@@ -1043,6 +1069,10 @@ public abstract class SurfaceRunner
 	     */
 	    public void killAndWait() {
 	        Log.v(TAG, "LoopTicker: killAndWait");
+	        
+	        if (Thread.currentThread() == this)
+	        	throw new IllegalStateException("LoopTicker.killAndWait()" +
+	        								    " called from ticker thread");
 	        
 	        synchronized (this) {
 	        	if (msgHandler == null)
@@ -1160,7 +1190,7 @@ public abstract class SurfaceRunner
     private int canvasHeight = 0;
     private Bitmap.Config canvasConfig = null;
 
-    // The ticker thread which runs the animation.
+    // The ticker thread which runs the animation.  null if not active.
     private Ticker animTicker = null;
 
     // Display performance data on-screen.
