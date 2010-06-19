@@ -139,7 +139,7 @@ final class Line {
 	 * distance.  Left is defined by the directions of the start and end
 	 * points.
 	 * 
-	 * @param	sf			Scale factor.
+	 * @param	dist		The offset distance.
 	 * @return				A new line which is a scaled version of this one.
 	 */
 	public Line moveLeft(double dist) {

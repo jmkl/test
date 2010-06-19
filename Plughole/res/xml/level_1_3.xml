@@ -16,9 +16,6 @@
 		<Rect sx="1.5" sy="6" ex="19" ey="9" />
 		<Display id="level" size="1.6" sx="1.5" sy="6" ex="19" ey="9" />
 
-		<!--  Stick performance info in. -->
-		<Display id="perf" size="1.2" sx="2" sy="13" ex="6" ey="17" />
-
 		<!--  Hole at the end of the top bar. -->
 		<Hole type="LAVA" x="21.5" y="3" />
 

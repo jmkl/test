@@ -124,6 +124,8 @@ class TableView
      * Installs a pointer to the text view used for messages.
      * 
      * TODO: just move the handler up.
+     * 
+     * @param   textView        The TextView for messages.
      */
     public void setTextView(TextView textView) {
         textOverlay = textView;
@@ -140,6 +142,7 @@ class TableView
      * so this is not a good place to allocate resources which depend on
      * that.
      */
+    @Override
     protected void appStart() {
 		startTable();
     }
@@ -153,6 +156,7 @@ class TableView
      * @param   height      The new height of the surface.
      * @param   config      The pixel format of the surface.
      */
+    @Override
     protected void appSize(int width, int height, Bitmap.Config config) {
     	canvasWidth = width;
     	canvasHeight = height;
@@ -175,6 +179,7 @@ class TableView
      * 
      * <p>doUpdate() and doDraw() may be called from this point on.
      */
+    @Override
     protected void animStart() {
         // Register for sensor updates.
         Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -189,6 +194,7 @@ class TableView
      * 
      * <p>doUpdate() and doDraw() will not be called from this point on.
      */
+    @Override
     protected void animStop() {
 		stopTable();
 
@@ -200,6 +206,7 @@ class TableView
     /**
      * The application is closing down.  Clean up any resources.
      */
+    @Override
     protected void appStop() {
     }
     
@@ -226,7 +233,7 @@ class TableView
 	 * @param	show			Show stats iff true.
 	 */
 	void setShowPerf(boolean show) {
-		showPerf = show;
+        setDebugPerf(show);
 	}
 
 
@@ -392,21 +399,6 @@ class TableView
 														" be a <Display>");
 			levelDisplay = (Display) levobj;
 			levelDisplay.setText(level.getDisplayName());
-		}
-		
-		// Get the performance info position.
-		Object perfobj = level.getById("perf");
-		if (perfobj == null) {
-			perfPosX = 14;
-			perfPosY = 20;
-		} else {
-			if (!(perfobj instanceof Display))
-				throw new LevelReader.LevelException("Object \"perf\" must" +
-														" be a <Display>");
-			Display perfDisplay = (Display) perfobj;
-			Point pos = perfDisplay.getCentre();
-			perfPosX = (float) pos.x - 24;
-			perfPosY = (float) pos.y;
 		}
 	}
 	
@@ -650,6 +642,7 @@ class TableView
      * 
      * @param   now         Current time in ms.
 	 */
+    @Override
     protected void doUpdate(long now) {
 		double elapsed = (now - lastFrameTime) / 1000.0;
 		lastFrameTime = now;
@@ -854,7 +847,8 @@ class TableView
      *                      passed to doUpdate(), if there was a preceeding
      *                      call to doUpdate().
 	 */
-	protected void doDraw(Canvas canvas, long now) {
+	@Override
+    protected void doDraw(Canvas canvas, long now) {
 		if (currentLevelData == null)
 			return;
 			
@@ -869,30 +863,6 @@ class TableView
 		int xLeft = (int) ballX - ballCX;
 		int yTop = (int) ballY - ballCY;
 		canvas.drawBitmap(ballImage, xLeft, yTop, null);
-	
-		// Show performance data, if required.
-		if (showPerf) {
-			// Count frames per second.
-			++fpsSinceLast;
-			
-			// If it's time to make a new displayed total, tot up the figures
-			// and reset the running counts.
-			if (now - perfLastTime > 1000) {
-				fpsLastCount = fpsSinceLast;
-				fpsSinceLast = 0;
-				physLastAvg = physCount == 0 ? 0 : physTime / physCount;
-				physTime = 0;
-				physCount = 0;
-				perfLastTime = now;
-			}
-			
-			// Draw the FPS and average physics time on screen.
-			drawPaint.setColor(0xffff0000);
-			canvas.drawText("" + fpsLastCount + " fps",
-							perfPosX, perfPosY - 6, drawPaint);
-			canvas.drawText("" + physLastAvg + " µs",
-							perfPosX, perfPosY + 6, drawPaint);
-		}
 	}
 
 
@@ -903,7 +873,8 @@ class TableView
 	/**
 	 * Save the state of the game in the provided Bundle.
 	 * 
-	 * @return					The Bundle with this view's state saved to it.
+     * @param   icicle      The Bundle to save our state in.
+	 * @return				The Bundle with this view's state saved to it.
 	 */
 	public Bundle saveState(Bundle icicle) {
 		synchronized (this) {
@@ -1060,28 +1031,6 @@ class TableView
 	private long clockTotalTime = 0;
 	private long clockLastStart = 0;
 	private long clockLastTime = 0;
-
-	// Display performance data on-screen.
-	private boolean showPerf = false;
-	
-	// Position on screen where the performance info is drawn.
-	private float perfPosX = 0;
-	private float perfPosY = 0;
-
-	// Data for counting frames per second.  Value displayed at last
-	// update, time in system ms of last update, frames since last update.
-	private int fpsLastCount = 0;
-	private int fpsSinceLast = 0;
-	
-	// Data for monitoring physics performance.  We count the total number
-	// of ms spent doing physics since last update, and number of physics
-	// passes since last update; and keep the last displayed average time.
-	private long physTime = 0;
-	private int physCount = 0;
-	private long physLastAvg = 0;
-	
-	// Time of last performance display update.  Used for both FPS and physics.
-	private long perfLastTime = 0;
 
 	// Working variables used during bounce calculation.  Allocating them
 	// once is significantly faster.

@@ -135,7 +135,7 @@ class Topology {
 	 * 
 	 * @param	width		New width of the playing area.
 	 * @param	height		New height of the playing area.
-	 * @throws LevelException Problem reloading the level.
+	 * @throws LevelReader.LevelException Problem reloading the level.
 	 */
 	public void setTableSize(int width, int height)
 		throws LevelReader.LevelException
@@ -158,7 +158,7 @@ class Topology {
 	 * Set the current level layout according to the given level data.
 	 * 
 	 * @param	level			The level to load.
-	 * @throws LevelException Problem loading the level.
+	 * @throws LevelReader.LevelException Problem loading the level.
 	 */
 	public void setLevel(LevelData level)
 		throws LevelReader.LevelException

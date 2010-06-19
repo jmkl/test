@@ -28,7 +28,7 @@ final class Vector {
 	// Constructors.
 	// ******************************************************************** //
 	
-	/*
+	/**
 	 * Create a Vector with the given X and Y magnitudes.
 	 * 
 	 * @param	x			X magnitude.
@@ -40,7 +40,7 @@ final class Vector {
 	}
 
 	
-	/*
+	/**
 	 * Create a Vector which is the difference between two points; i.e.
 	 * whose X and Y magnitudes are the deltas between the points.  We do
 	 * not store the absolute position.
@@ -95,6 +95,7 @@ final class Vector {
 	 * 
 	 * @param	a			Angle to rotate by, positive clockwise,
 	 * 						in degrees.
+     * @return              A new Vector, equal to this one rotated by a.
 	 */
 	public Vector rotate(double a) {
 		a = Math.toRadians(a);

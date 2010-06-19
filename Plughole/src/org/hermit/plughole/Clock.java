@@ -36,7 +36,6 @@ class Clock
 	 * 
 	 * @param	app				Application context.  This provides
 	 * 							access to resources and image loading.
-	 * @param	imgIds			Resource IDs of the graphics in the animation.
 	 * @param	box				The bounding box for the graphic.
 	 * @param	xform			Transform to apply to the raw data.
 	 * @param	vertical		If false, the clock counts down from the

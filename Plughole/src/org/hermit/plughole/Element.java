@@ -64,6 +64,8 @@ abstract class Element
 
 	/**
 	 * Get the application context.
+	 * 
+	 * @return             Our application context.
 	 */
 	protected final Plughole getApp() {
 		return appContext;

@@ -162,6 +162,8 @@ final class Matrix {
 
 	/**
 	 * Get the total accumulated scale.
+	 * 
+	 * @return             The total scaling factor.
 	 */
 	public double getScale() {
 		return scale;
@@ -170,6 +172,8 @@ final class Matrix {
 
 	/**
 	 * Get the total accumulated rotation.
+     * 
+     * @return             The total rotation.
 	 */
 	public ORotate getRotation() {
 		return rotation;
@@ -223,7 +227,7 @@ final class Matrix {
 	/**
 	 * Transform the given RectF by this matrix.
 	 * 
-	 * @param	point		The point.
+	 * @param	rect		The rectangle to transform.
 	 * @return				A new point which is the input point transformed
 	 * 						by this matrix.
 	 */

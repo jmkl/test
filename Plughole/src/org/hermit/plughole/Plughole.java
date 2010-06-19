@@ -181,6 +181,10 @@ public class Plughole
         
         super.onResume();
         
+        // Take the wake lock if we want it.
+        if (wakeLock != null && !wakeLock.isHeld())
+            wakeLock.acquire();
+
         tableView.onResume();
     }
 
@@ -228,6 +232,10 @@ public class Plughole
         
         // Pause the game.
         tableView.onPause();
+
+        // Let go the wake lock if we have it.
+        if (wakeLock != null && wakeLock.isHeld())
+            wakeLock.release();
     }
     
 
@@ -391,27 +399,48 @@ public class Plughole
     					PreferenceManager.getDefaultSharedPreferences(this);
     	
         // See if sounds are enabled and how.
-    	soundMode = SoundMode.QUIET;
+    	soundMode = SoundMode.FULL;
     	try {
-    		String smode = prefs.getString("soundMode", null);
+    		String smode = prefs.getString("soundMode", soundMode.toString());
     		soundMode = SoundMode.valueOf(smode);
     	} catch (Exception e) {
     		Log.i(TAG, "Pref: bad soundMode");
     	}
     	Log.i(TAG, "Prefs: sound " + soundMode);
 
+        // See if the vibrator is enabled.
     	vibeEnable = true;
     	try {
-    		vibeEnable = prefs.getBoolean("vibeEnable", true);
+    		vibeEnable = prefs.getBoolean("vibeEnable", vibeEnable);
     	} catch (Exception e) {
     		Log.i(TAG, "Pref: bad vibeEnable");
     	}
     	Log.i(TAG, "Prefs: vibeEnable " + vibeEnable);
 
+    	// See whether the user wants the screen kept awake.
+        boolean keepAwake = false;
+        try {
+            keepAwake = prefs.getBoolean("keepAwake", keepAwake);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad keepAwake");
+        }
+        if (keepAwake) {
+            Log.i(TAG, "Prefs: keepAwake true: take the wake lock");
+            if (wakeLock == null)
+                wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+            if (!wakeLock.isHeld())
+                wakeLock.acquire();
+        } else {
+            Log.i(TAG, "Prefs: keepAwake false: release the wake lock");
+            if (wakeLock != null && wakeLock.isHeld())
+                wakeLock.release();
+            wakeLock = null;
+        }
+
         // Look for a recline angle.
     	int reclineMode = 0;
     	try {
-    		String rmode = prefs.getString("reclineMode", null);
+    		String rmode = prefs.getString("reclineMode", "" + reclineMode);
     		reclineMode = Integer.valueOf(rmode);
     	} catch (Exception e) {
     		Log.i(TAG, "Pref: bad reclineMode");
@@ -419,18 +448,18 @@ public class Plughole
     	Log.i(TAG, "Prefs: recline " + reclineMode);
     	tableView.setReclineAngle(reclineMode);
 
-    	boolean showPerf = false;
+    	boolean showPerf = true;
     	try {
-    		showPerf = prefs.getBoolean("showPerf", false);
+    		showPerf = prefs.getBoolean("showPerf", showPerf);
     	} catch (Exception e) {
     		Log.i(TAG, "Pref: bad showPerf");
     	}
     	Log.i(TAG, "Prefs: showPerf " + showPerf);
     	tableView.setShowPerf(showPerf);
 
-    	boolean userLevels = false;
+    	boolean userLevels = true;
     	try {
-    		userLevels = prefs.getBoolean("userLevels", false);
+    		userLevels = prefs.getBoolean("userLevels", userLevels);
     	} catch (Exception e) {
     		Log.i(TAG, "Pref: bad userLevels");
     	}
@@ -584,6 +613,11 @@ public class Plughole
     
     // Our power manager.
     private PowerManager powerManager = null;
+    
+    // Wake lock used to keep the screen alive.  Null if we aren't going
+    // to take a lock; non-null indicates that the lock should be taken
+    // while we're actually running.
+    private PowerManager.WakeLock wakeLock = null;
 
 	// Application resources for this app.
 	private Resources appResources;

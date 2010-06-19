@@ -25,9 +25,6 @@
 		<!--  Bottom bar complex guarding the exit. -->
 		<Rect sx="5" sy="28" ex="22.5" ey="29" />
 		<Hole type="EXIT" x="21.5" y="33" />
-		
-		<!--  Stick performance info in at the bottom. -->
-		<Display id="perf" size="1.2" sx="1" sy="31" ex="5" ey="34.5" />
 
 	</Level>
 
