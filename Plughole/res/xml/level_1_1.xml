@@ -26,11 +26,12 @@
 		<Rect sx="5" sy="28" ex="22.5" ey="29" />
 		
 		<!--  A force field in the way of the exit. -->
+		<Graphic img="@drawable/electric" sx="9" sy="31.5" ex="12" ey="34.5" />
 		<ForceField id="field" sx="9" sy="31.5" ex="12" ey="34.5" />
 		
 		<!--  A zone that activates and de-activates the force field. -->
-		<Graphic img="@drawable/danger" sx="10" sy="24" ex="12" ey="26" />
-		<Zone sx="10" sy="24" ex="12" ey="26" action="ONOFF" target="field" />
+		<Graphic img="@drawable/pad" sx="11" sy="24" ex="13" ey="26" />
+		<Zone sx="11" sy="24" ex="13" ey="26" action="ONOFF" target="field" />
 
 		<!--  The exit. -->
 		<Hole type="EXIT" x="21.5" y="33" />
