@@ -457,7 +457,7 @@ class LevelReader {
 					ldata.addZone(hole, id);
 					Poly trap = hole.getCentreTrap();
 					if (trap != null)
-						ldata.addWall(trap, id);
+						ldata.addTrigger(trap, id);
                 } else if (tag.equals("ForceField")) {
                     ForceField field = readForceField(p, xform, oattr);
                     ldata.addAnim(field, id);

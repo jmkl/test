@@ -801,7 +801,6 @@ class TableView
 	    if (!inward)
 	        return false;
 	    
-	    Log.v(TAG, "Do action " + act);
 		if (!onSurfaceThread())
 			throw new IllegalStateException("doAction() called off surface thread");
 		

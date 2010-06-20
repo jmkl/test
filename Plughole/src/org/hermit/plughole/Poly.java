@@ -44,7 +44,7 @@ class Poly
 	 * 							assumed to be in clockwise order.
 	 */
 	public Poly(Plughole app, ArrayList<Point> points) {
-		this(app, points, false, null);
+		this(app, points, null);
 	}
 	
 	
@@ -57,28 +57,11 @@ class Poly
 	 * @param	action			Action to trigger if the ball hits this polygon.
 	 */
 	public Poly(Plughole app, ArrayList<Point> points, Action action) {
-		this(app, points, false, action);
+        super(app, action);
+        
+        init(points, false);
 	}
 	
-	
-	/**
-	 * Create a polygon from the given points array.
-	 * 
-	 * @param	app				Application context.
-	 * @param	points			Array of points representing the polygon,
-	 * 							assumed to be in clockwise order.
-	 * @param	inverted		If true, the polygon is inverted -- the
-	 * 							outside becomes the inside and vice versa.
-	 * @param	action			Action to trigger if the ball hits this polygon.
-	 */
-	public Poly(Plughole app, ArrayList<Point> points,
-				boolean inverted, Action action)
-	{
-		super(app, action);
-		
-		init(points, inverted);
-	}
-
 	   
     /**
      * Create a polygon from the given rectangle.
@@ -147,7 +130,7 @@ class Poly
 		}
 
 		// And make the points into a new polygon.
-		init(points, inverted);
+		init(points, false);
 	}
 
 	
@@ -161,22 +144,16 @@ class Poly
 	 * 							outside becomes the inside and vice versa.
 	 */
 	private void init(ArrayList<Point> points, boolean inverted) {
-		this.inverted = inverted;
-		
 		// Convert the points list into a lines list.  This is how
 		// we represent the poly internally.
 		final int npoints = points.size();
 		this.lines = new Line[npoints];
-		if (inverted) {
-			// TODO: ?
-		} else {
-			Action act = getAction();
-			for (int i = 0; i < npoints; ++i) {
-				int j = i + 1;
-				if (j >= npoints)
-					j = 0;
-				lines[i] = new Line(points.get(i), points.get(j), act);
-			}
+		Action act = getAction();
+		for (int i = 0; i < npoints; ++i) {
+		    int j = i + 1;
+		    if (j >= npoints)
+		        j = 0;
+		    lines[i] = new Line(points.get(i), points.get(j), act);
 		}
 	}
 	
@@ -304,9 +281,6 @@ class Poly
 	 */
 	private void makepath() {
 		gfxPath = new Path();
-		if (inverted)
-			gfxPath.setFillType(Path.FillType.INVERSE_EVEN_ODD);
-		
 		boolean first = true;
 		for (Line l : lines) {
 			if (first) {
@@ -382,14 +356,8 @@ class Poly
 	// The points defining the polygon boundary.  These are assumed to
 	// go clockwise around the border, so moving from points[0] to
 	// points[1], the left side is outside the polygon, right side inside.
-	// If inverted is true, however, they go anticlockwise.  In either case,
-	// the right side of each line faces the inside -- the solid part.
 	// Of course the last point joins to the first.
 	private Line[] lines;
-	
-	// True iff this polygon is inverted -- ie. it defines a hole in
-	// the plane, not a solid.
-	private boolean inverted;
 
 	// A graphics Path representing this polygon.  This is used for
 	// drawing it.  Null if not set up yet.
