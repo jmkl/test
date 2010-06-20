@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 
 
 /**
@@ -77,7 +79,39 @@ class Poly
 		init(points, inverted);
 	}
 
-	
+	   
+    /**
+     * Create a polygon from the given rectangle.
+     * 
+     * @param   app             Application context.
+     * @param   rect            Rectangle representing the polygon.
+     */
+    public Poly(Plughole app, RectF rect) {
+        this(app, rect, null);
+    }
+    
+    
+    /**
+     * Create a polygon from the given rectangle.
+     * 
+     * @param   app             Application context.
+     * @param   rect            Rectangle representing the polygon.
+     * @param   action          Action to trigger if the ball hits this polygon.
+     */
+    public Poly(Plughole app, RectF rect, Action action) {
+        super(app, action);
+
+        // Construct a points list in clockwise order.
+        ArrayList<Point> points = new ArrayList<Point>(4);
+        points.add(new Point(rect.left, rect.top));
+        points.add(new Point(rect.right, rect.top));
+        points.add(new Point(rect.right, rect.bottom));
+        points.add(new Point(rect.left, rect.bottom));
+        
+        init(points, false);
+    }
+    
+
 	/**
 	 * Create a new Poly representing a circle as a set of line segments.
 	 * 
@@ -246,9 +280,24 @@ class Poly
 
 
 	// ******************************************************************** //
-	// Drawing.
+	// State Control.
 	// ******************************************************************** //
+
+	/**
+	 * Enable or disable this polygon as a barrier which reflects the ball.
+	 * 
+	 * @param  enable      True iff the ball should bounce off.
+	 */
+	void setReflectEnable(boolean enable) {
+        for (Line l : lines)
+            l.reflectEnabled = enable;
+	}
 	
+
+    // ******************************************************************** //
+    // Drawing.
+    // ******************************************************************** //
+    
 	/**
 	 * Create a graphics Path representing this polygon.  This is used
 	 * for drawing it.

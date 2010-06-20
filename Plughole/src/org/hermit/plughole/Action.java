@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -30,9 +31,37 @@ final class Action
 	 * The types of hole that exist.
 	 */
 	public static enum Type {
+	    /**
+	     * An action that changes the ball's speed.
+	     */
+        SPEED(),
+        /**
+         * An action that accelerates the ball in a given direction.
+         */
 		ACCEL(),
+        /**
+         * An action that teleports the ball somewhere.
+         */
 		TELEPORT(),
+        /**
+         * An action that turns some element off.
+         */
+        OFF(),
+        /**
+         * An action that turns some element on.
+         */
+        ON(),
+        /**
+         * An action that toggles some element's on/off state.
+         */
+        ONOFF(),
+        /**
+         * The player wins.
+         */
 		WIN(),
+        /**
+         * The player loses.
+         */
 		LOSE();
 		
 		Type() {
@@ -71,6 +100,18 @@ final class Action
 	// Configuration.
 	// ******************************************************************** //
 
+    /**
+     * Set the current speed change in this action.
+     * 
+     * @param   mag         Magnitude of acceleration, 0-1.
+     */
+    void setSpeed(double mag) {
+        accelX = 0;
+        accelY = 0;
+        accelMag = mag;
+    }
+    
+
 	/**
 	 * Set the current acceleration in this action.
 	 * 
@@ -90,7 +131,7 @@ final class Action
 	 * 
 	 * @param	target		Target element for this action.
 	 */
-	void setTarget(Point target) {
+	void setTarget(Object target) {
 		this.target = target;
 	}
 	
@@ -157,14 +198,29 @@ final class Action
 	 * 
 	 * @return				The target element for this action.
 	 */
-	public Point getTarget() {
+	public Object getTarget() {
 		return target;
 	}
 
 	
 	// ******************************************************************** //
-	// Private Data.
+	// Utilities.
 	// ******************************************************************** //
+
+	/**
+	 * Convert this instance to a String.
+	 * 
+	 * @return             String representation of this instance.
+	 */
+	@Override
+    public String toString() {
+	    return type.toString();
+	}
+	
+    
+    // ******************************************************************** //
+    // Private Data.
+    // ******************************************************************** //
 
 	// The type of this Action.
 	private final Type type;
@@ -178,7 +234,7 @@ final class Action
 	private double accelMag = 0;
 
 	// If this is a TELEPORT action, the target point.
-	private Point target = null;
+	private Object target = null;
 
 }
 

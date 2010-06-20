@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -107,7 +108,8 @@ class TableView
         drawPaint.setAntiAlias(true);
         
         // Create working variables.
-    	bounceResults = new Topology.Intersect();
+    	bounceResults = new Topology.Reflect();
+    	triggerResults = new Topology.Intersect();
     	
     	// Start at the first level.
     	currentLevelIndex = 0;
@@ -706,7 +708,7 @@ class TableView
 			// affect acceleration.
 			Action action;
 			if ((action = tableTopo.zone(ballX, ballY)) != null) {
-				if (doAction(action, elapsed * doFraction))
+				if (doAction(action, true, elapsed * doFraction))
 					return;
 			}
 			
@@ -766,12 +768,18 @@ class TableView
 				// Does this trigger an action?  If so, does that action stop
 				// play?
 				if (bounceResults.action != null)
-					if (doAction(bounceResults.action, 0))
+					if (doAction(bounceResults.action, true, 0))
 						return;
 			}
-			
+
 			fraction -= doFraction;
 		} while (fraction > 0);
+        
+        // Does this move trigger an action?  If so, does that action stop
+        // play?
+        if (tableTopo.intersect(startX, startY, ballX, ballY, triggerResults))
+            if (doAction(triggerResults.action, triggerResults.inward, 0))
+                return;
 
 		// See if we fell off the table.
 		if (ballX < 0 || ballX >= canvasWidth ||
@@ -784,27 +792,44 @@ class TableView
 	 * Carry out the given action, and determine whether it stops play.
 	 * 
 	 * @param	act			The Action to perform.
+     * @param   inward      True iff this is the "on"-direction trigger
+     *                      for this action.
 	 * @param	time		The time in seconds we're acting over.
 	 * @return				true iff play is stopped; false to continue.
 	 */
-	private boolean doAction(Action act, double time) {
+	private boolean doAction(Action act, boolean inward, double time) {
+	    if (!inward)
+	        return false;
+	    
+	    Log.v(TAG, "Do action " + act);
 		if (!onSurfaceThread())
 			throw new IllegalStateException("doAction() called off surface thread");
 		
 		final int msgid = act.getMessageId();
 		switch (act.getType()) {
+        case SPEED:
+            ballVelX = ballVelX * act.getAccelMag();
+            ballVelY = ballVelY * act.getAccelMag();
+            return false;
 		case ACCEL:
 			double speed = Math.sqrt(ballVelX * ballVelX + ballVelY * ballVelY);
 			ballVelX = ballVelX * 0.85 + speed * act.getAccelX() * 0.15;
 			ballVelY = ballVelY * 0.85 + speed * act.getAccelY() * 0.15;
 			return false;
 		case TELEPORT:
-			Point dest = act.getTarget();
-			if (dest != null) {
-				ballX = dest.x;
-				ballY = dest.y;
+			Object dest = act.getTarget();
+			if (dest != null && dest instanceof Point) {
+				ballX = ((Point) dest).x;
+				ballY = ((Point) dest).y;
 			}
 			return false;
+        case OFF:
+        case ON:
+        case ONOFF:
+            Object obj = act.getTarget();
+            if (obj != null && obj instanceof ForceField)
+                ((ForceField) obj).activate(act.getType());
+            return false;
 		case WIN:
 			setState(State.WIN, msgid);
 			return true;
@@ -1034,7 +1059,11 @@ class TableView
 
 	// Working variables used during bounce calculation.  Allocating them
 	// once is significantly faster.
-	private Topology.Intersect bounceResults;
+	private Topology.Reflect bounceResults;
+
+    // Working variables used during intersection calculation.  Allocating them
+    // once is significantly faster.
+    private Topology.Intersect triggerResults;
 
 }
 

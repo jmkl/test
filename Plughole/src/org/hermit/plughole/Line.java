@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -58,6 +59,7 @@ final class Line {
 	 * @param	action		The action to take when hit.
 	 */
 	public Line(double sx, double sy, double ex, double ey, Action action) {
+	    this.reflectEnabled = true;
 		this.sx = sx;
 		this.sy = sy;
 		this.ex = ex;
@@ -105,6 +107,18 @@ final class Line {
 		return new Point(ex, ey);
 	}
 	
+
+    /**
+     * Get the angle in which this line goes.
+     * 
+     * @return              The angle of this line, in degrees.  Zero means
+     *                      to +x; angles go anti-clockwise to <360.
+     */
+    public double getAngle() {
+        final double a = Math.toDegrees(Math.atan2(dy, dx));
+        return a >= 0 ? a : 360.0 + a;
+    }
+    
 
 	/**
 	 * Get the action triggered by hitting this line.
@@ -200,6 +214,9 @@ final class Line {
 	// Public Data.
 	// ******************************************************************** //
 
+	// Whether this line is enabled for reflection.
+	public boolean reflectEnabled;
+	
 	// The start and end points (in that order).
 	public final double sx;
 	public final double sy;

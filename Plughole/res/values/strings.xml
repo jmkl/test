@@ -1,39 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
+
 	<string name="app_name">Plughole</string>
 	<string name="app_desc">An accelerometer ball rolling game.</string>
 	
-        
-    <string name="help_text"><b>Plughole</b>\n\
-\n\
-Select between the available data views using the buttons on the left.\n\
-\n\
-<b>GRAV</b> shows the local gravitational field, showing the individual
-components on an X/Y plot and a vertical gauge for the Z axis.  Additionally
-an altitude gauge shows the angle above or below the tricorder\'s horizontal
-plane.  Below this the absolute magnitude of the gravitational field
-is graphed, and the raw numeric data is displayed.\n\
-\n\
-<b>MAG</b> shows the local magnetic field, in the same format.\n\
-\n\
-<b>ENV</b> shows some environmental sensor readouts: light level, object
-proximity, and temperature.\n\
-\n\
-<b>GEO</b> shows geographic information.
-Availability of this information depends on the appropriate services
-being enabled.\n\
-\n\
-<b>EMS</b> scans the electromagnetic spectrum for
-radio signals (as supported by hardware).  Detected signals are shown
-as strength bars.\n\
-\n\
-Note that the availability and accuracy of the
-information presented depends
-on the underlying hardware.  In particular the magnetic field data is known
-to be unreliable on some currently available devices.
-</string>
-
        
     <string name="about_text"><b>Plughole</b> by Ian Cameron Smith
 (headstay).\n\

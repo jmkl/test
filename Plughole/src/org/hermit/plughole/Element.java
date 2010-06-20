@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -73,7 +74,7 @@ abstract class Element
 	
 
 	/**
-	 * Get the application context.
+	 * Get the action triggered by this element.
 	 * 
 	 * @return				Action to trigger if the ball interacts with
 	 * 						this element.
@@ -82,6 +83,17 @@ abstract class Element
 		return elemAction;
 	}
 	
+
+    /**
+     * Set the action triggered by this element.
+     * 
+     * @param   action      Action to trigger if the ball interacts with
+     *                      this element.
+     */
+    protected final void setAction(Action action) {
+        elemAction = action;
+    }
+    
 
 	// ******************************************************************** //
 	// Utility Methods.
@@ -132,7 +144,7 @@ abstract class Element
 	private Plughole appContext;
 
 	// The action to take if the ball interacts with this element.
-	private final Action elemAction;
+	private Action elemAction;
 
 }
 

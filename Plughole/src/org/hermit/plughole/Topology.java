@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -35,14 +36,14 @@ class Topology {
     // ******************************************************************** //
 	
 	/**
-	 * This class contains the result of an intersect calculation.
+	 * This class contains the result of an reflection calculation.
 	 * This is a mutable class -- for efficiency, we compute multiple
 	 * passes of calculation in the same object.
 	 */
-	public static final class Intersect {
+	public static final class Reflect {
 
 		/**
-		 * The Line we hit.
+		 * Any action triggered by the Line we bounced off.
 		 */
 		public Action action = null;
 
@@ -92,7 +93,7 @@ class Topology {
 		 * 
 		 * @param	i			Intersect data to copy.
 		 */
-		public void copy(Intersect i) {
+		public void copy(Reflect i) {
 			action = i.action;
 			fraction = i.fraction;
 			angle = i.angle;
@@ -106,7 +107,28 @@ class Topology {
 
 	}
 
-	
+	   
+    /**
+     * This class contains the result of an intersection calculation.
+     * This is a mutable class -- for efficiency, we compute multiple
+     * passes of calculation in the same object.
+     */
+    public static final class Intersect {
+
+        /**
+         * Any action triggered by the Line we bounced off.
+         */
+        public Action action = null;
+
+        /**
+         * True if the motion crossed the base line inwards, i.e. from the
+         * left; else false.
+         */
+        public boolean inward = false;
+
+    }
+
+
 	// ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
@@ -121,7 +143,7 @@ class Topology {
 		appContext = app;
 
 		// Make some working variables.
-		currReflect = new Intersect();
+		currReflect = new Reflect();
 	}
 
 	
@@ -180,8 +202,6 @@ class Topology {
 		zones = currentLevel.getZones();
 
 		// Now create the lines that the ball actually bounces off.
-		// For every visible polygon, grow it to get the real polygon that
-		// we bounce the centre of the ball off.
 		lines = new ArrayList<Line>();
 		Iterator<Poly> walls = currentLevel.getWalls();
 		while (walls.hasNext()) {
@@ -189,6 +209,15 @@ class Topology {
 			for (Line l : p.getLines())
 				lines.add(l);
 		}
+
+        // Now create the lines which just trigger stuff.
+        triggers = new ArrayList<Line>();
+        Iterator<Poly> trigs = currentLevel.getTriggers();
+        while (trigs.hasNext()) {
+            Poly p = trigs.next();
+            for (Line l : p.getLines())
+                triggers.add(l);
+        }
 	}
 	
 
@@ -286,7 +315,8 @@ class Topology {
 
 	/**
 	 * Determine the intersection -- if any -- between the given line segment
-	 * representing a motion, and each of the line segments in this topology.
+	 * representing a motion, and each of the wall line segments in this
+	 * topology.
 	 * 
 	 * @param	sx			Start X of the motion.
 	 * @param	sy			Start Y of the motion.
@@ -294,10 +324,10 @@ class Topology {
 	 * @param	ey			End Y of the motion.
 	 * @param	reflectOut	User-supplied object where we place the
 	 * 						calculated reflection data.
-	 * @return				True iff there is a clear intersection.
+	 * @return				True iff we bounced off a solid wall.
 	 */
 	final boolean reflect(double sx, double sy, double ex, double ey,
-						  Intersect reflectOut)
+						  Reflect reflectOut)
 	{
 		// We always search for the closest bounce to the ball's initial
 		// position.  The returned distance from reflect is the key.
@@ -311,9 +341,10 @@ class Topology {
 		
 		// Search every line looking for reflections.
 		for (Line wall : lines) {
-			// First, if the ranges of the wall and motion line don't
-			// overlap, forget it.
-			if (wall.maxX < minX || wall.maxY < minY ||
+			// First, if the wall is disabled, or the ranges of the wall
+			// and motion line don't overlap, forget it.
+			if (!wall.reflectEnabled ||
+			    wall.maxX < minX || wall.maxY < minY ||
 				wall.minX > maxX || wall.minY > maxY)
 				continue;
 			
@@ -327,133 +358,245 @@ class Topology {
 		return best >= 0;
 	}
 	
-	
-	/**
-	 * Determine the intersection -- if any -- between two line segments,
-	 * one representing a static base (e.g. a wall), and one representing
-	 * a motion.  If there is an intersection, calculate the reflection.
-	 * 
-	 * We return a Point representing where the reflected motion ends, and
-	 * a Vector -- which will be a unit vector -- representing the direction
-	 * of motion after reflection.  We return this data in user-supplied
-	 * structures for efficiency.
-	 * 
-	 * @param	base		Base line (i.e. the wall).
-	 * @param	sx			Start X of the incident line representing motion.
-	 * @param	sy			Start Y of the incident line representing motion.
-	 * @param	ex			End X of the incident line representing motion.
-	 * @param	ey			End Y of the incident line representing motion.
-	 * @param	reflectOut	User-supplied object where we place the
-	 * 						calculated reflection data.
-	 * @return				True iff there is a clear intersection.  Otherwise
-	 * 						false, which could mean that the segments are
-	 * 						parallel, coincident, or disjoint.
-	 */
-	static final boolean reflect(Line base,
-							     double sx, double sy, double ex, double ey,
-							     Intersect reflectOut)
-	{
-		/*
-		 * See: http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/
-		 * Notes:
-		 *  + The denominators for the equations for ua and ub are the same. 
-		 *  + If the denominator for the equations for ua and ub is 0 then the
-		 *    two lines are parallel. 
-		 *  + If the denominator and numerator for the equations for ua and ub
-		 *    are 0 then the two lines are coincident. 
-		 */
-		final double mDx = ex - sx;
-		final double bDx = base.dx;
-		final double mbX = sx - base.sx;
-		final double mDy = ey - sy;
-		final double bDy = base.dy;
-		final double mbY = sy - base.sy;
 
-		final double denom =  bDy * mDx - bDx * mDy;
-		if (denom == 0)
-			return false;
-		final double numB = bDx * mbY - bDy * mbX;
-		final double numM = mDx * mbY - mDy * mbX;
+    /**
+     * Determine the intersection -- if any -- between two line segments,
+     * one representing a static base (e.g. a wall), and one representing
+     * a motion.  If there is an intersection, calculate the reflection.
+     * 
+     * We return a Point representing where the reflected motion ends, and
+     * a Vector -- which will be a unit vector -- representing the direction
+     * of motion after reflection.  We return this data in user-supplied
+     * structures for efficiency.
+     * 
+     * @param   base        Base line (i.e. the wall).
+     * @param   sx          Start X of the incident line representing motion.
+     * @param   sy          Start Y of the incident line representing motion.
+     * @param   ex          End X of the incident line representing motion.
+     * @param   ey          End Y of the incident line representing motion.
+     * @param   reflectOut  User-supplied object where we place the
+     *                      calculated reflection data.
+     * @return              True iff there is a clear intersection.  Otherwise
+     *                      false, which could mean that the segments are
+     *                      parallel, coincident, or disjoint.
+     */
+    static final boolean reflect(Line base,
+                                 double sx, double sy, double ex, double ey,
+                                 Reflect reflectOut)
+    {
+        /*
+         * See: http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/
+         * Notes:
+         *  + The denominators for the equations for ua and ub are the same. 
+         *  + If the denominator for the equations for ua and ub is 0 then the
+         *    two lines are parallel. 
+         *  + If the denominator and numerator for the equations for ua and ub
+         *    are 0 then the two lines are coincident. 
+         */
+        final double mDx = ex - sx;
+        final double bDx = base.dx;
+        final double mbX = sx - base.sx;
+        final double mDy = ey - sy;
+        final double bDy = base.dy;
+        final double mbY = sy - base.sy;
 
-		final double fracB = numM / denom;
-		final double fracM = numB / denom;
+        final double denom =  bDy * mDx - bDx * mDy;
+        if (denom == 0)
+            return false;
+        final double numB = bDx * mbY - bDy * mbX;
+        final double numM = mDx * mbY - mDy * mbX;
 
-		/*
-		 * Test if ua and ub lie between 0 and 1.  Whichever one lies
-		 * within that range then the corresponding line segment contains
-		 * the intersection point.  If both lie within the range of 0 to
-		 * 1 then the intersection point is within both line segments.
-		 * Otherwise the segments are disjoint.
-		 */
-		if (fracB < 0 || fracB > 1 || fracM < 0 || fracM > 1)
-			return false;
-		
-		// Calculate the intersect position.  The base.u[xy] * MICRO_INCR
-		// displaces it very slightly away from the wall, to try to avoid
-		// fall-throughs.
-		final double interX = base.sx + fracB * bDx + base.uy * MICRO_INCR;
-		final double interY = base.sy + fracB * bDy - base.ux * MICRO_INCR;
+        final double fracB = numM / denom;
+        final double fracM = numB / denom;
 
-		/*
-		 * Calculate the reflection vector R as
-		 *     R = M - 2 * B * ( M [dot] B )
-		 * where
-		 *     R   reflection vector
-		 *     B   base (wall) vector scaled to a unit vector
-		 *     M   incident (motion) vector
-		 */
-		
-		// Calculate the vector representing the part of the motion
-		// beyond the intersect.
-		final double ix = mDx * (1 - fracM);
-		final double iy = mDy * (1 - fracM);
-		
-		// Calculate dot(i, n) where n is the base unit normal.
-		final double dot = ix * base.ux + iy * base.uy;
-		
-		// Calculate the reflection r = i - (2 * n * dot(i, n)),
-		// and get its magnitude.
-		double rx = 2 * base.ux * dot - ix;
-		double ry = 2 * base.uy * dot - iy;
-		double rMag = Math.sqrt(rx * rx + ry * ry);
-		
-		// If the reflection is zero-length, we have a problem, because
-		// we are stopping in the wall; our next move is unpredictable.
-		// So, instead make the reflection a small fraction of the
-		// wall's left-hand normal vector.
-		if (rMag == 0) {
-			rx = base.uy * MICRO_INCR;
-			ry = -base.ux * MICRO_INCR;
-			rMag = Math.sqrt(rx * rx + ry * ry);
-		}
-		
-		// Reflection unit vector.
-		final double rux = rMag == 0 ? 0 : rx / rMag;
-		final double ruy = rMag == 0 ? 0 : ry / rMag;
-		
-		// Calculate dot(ru, bu) where ru is the reflection unit vector and
-		// bu is the base unit vector.  Then use this to get the angle
-		// between the vectors.
-		// We only want the hardness of the intersect, so ignore the
-		// direction of the base and reduce it to the range 0 .. 90.
-		final double rdot = rux * base.ux + ruy * base.uy;
-		double angle = Math.toDegrees(Math.acos(rdot));
-		if (angle > 90)
-			angle = 180 - angle;
+        /*
+         * Test if ua and ub lie between 0 and 1.  Whichever one lies
+         * within that range then the corresponding line segment contains
+         * the intersection point.  If both lie within the range of 0 to
+         * 1 then the intersection point is within both line segments.
+         * Otherwise the segments are disjoint.
+         */
+        if (fracB < 0 || fracB > 1 || fracM < 0 || fracM > 1)
+            return false;
+        
+        // Calculate the intersect position.  The base.u[xy] * MICRO_INCR
+        // displaces it very slightly away from the wall, to try to avoid
+        // fall-throughs.
+        final double interX = base.sx + fracB * bDx + base.uy * MICRO_INCR;
+        final double interY = base.sy + fracB * bDy - base.ux * MICRO_INCR;
 
-		// Set up the results.
-		reflectOut.action = base.getAction();
-		reflectOut.fraction = fracM;
-		reflectOut.angle = angle;
-		reflectOut.interX = interX;
-		reflectOut.interY = interY;
-		reflectOut.endX = interX + rx;
-		reflectOut.endY = interY + ry;
-		reflectOut.directionX = rux;
-		reflectOut.directionY = ruy;
+        /*
+         * Calculate the reflection vector R as
+         *     R = M - 2 * B * ( M [dot] B )
+         * where
+         *     R   reflection vector
+         *     B   base (wall) vector scaled to a unit vector
+         *     M   incident (motion) vector
+         */
+        
+        // Calculate the vector representing the part of the motion
+        // beyond the intersect.
+        final double ix = mDx * (1 - fracM);
+        final double iy = mDy * (1 - fracM);
+        
+        // Calculate dot(i, n) where n is the base unit normal.
+        final double dot = ix * base.ux + iy * base.uy;
+        
+        // Calculate the reflection r = i - (2 * n * dot(i, n)),
+        // and get its magnitude.
+        double rx = 2 * base.ux * dot - ix;
+        double ry = 2 * base.uy * dot - iy;
+        double rMag = Math.sqrt(rx * rx + ry * ry);
+        
+        // If the reflection is zero-length, we have a problem, because
+        // we are stopping in the wall; our next move is unpredictable.
+        // So, instead make the reflection a small fraction of the
+        // wall's left-hand normal vector.
+        if (rMag == 0) {
+            rx = base.uy * MICRO_INCR;
+            ry = -base.ux * MICRO_INCR;
+            rMag = Math.sqrt(rx * rx + ry * ry);
+        }
+        
+        // Reflection unit vector.
+        final double rux = rMag == 0 ? 0 : rx / rMag;
+        final double ruy = rMag == 0 ? 0 : ry / rMag;
+        
+        // Calculate dot(ru, bu) where ru is the reflection unit vector and
+        // bu is the base unit vector.  Then use this to get the angle
+        // between the vectors.
+        // We only want the hardness of the intersect, so ignore the
+        // direction of the base and reduce it to the range 0 .. 90.
+        final double rdot = rux * base.ux + ruy * base.uy;
+        double angle = Math.toDegrees(Math.acos(rdot));
+        if (angle > 90)
+            angle = 180 - angle;
 
-		return true;
-	}
+        // Set up the results.
+        reflectOut.action = base.getAction();
+        reflectOut.fraction = fracM;
+        reflectOut.angle = angle;
+        reflectOut.interX = interX;
+        reflectOut.interY = interY;
+        reflectOut.endX = interX + rx;
+        reflectOut.endY = interY + ry;
+        reflectOut.directionX = rux;
+        reflectOut.directionY = ruy;
+
+        return true;
+    }
+
+
+    /**
+     * Determine the intersection -- if any -- between the given line segment
+     * representing a motion, and each of the trigger line segments in this
+     * topology.
+     * 
+     * @param   sx           Start X of the motion.
+     * @param   sy           Start Y of the motion.
+     * @param   ex           End X of the motion.
+     * @param   ey           End Y of the motion.
+     * @param   intersectOut User-supplied object where we place the
+     *                       calculated intersection data.
+     * @return               True if we crossed a trigger line, else false.
+     */
+    final boolean intersect(double sx, double sy, double ex, double ey,
+                           Intersect intersectOut)
+    {
+        // Compute the extreme ranges of the input line.
+        final double minX = sx < ex ? sx : ex;
+        final double minY = sy < ey ? sy : ey;
+        final double maxX = sx > ex ? sx : ex;
+        final double maxY = sy > ey ? sy : ey;
+        
+        // Search every trigger line looking for intersections.  We only
+        // get the first one.
+        for (Line sense : triggers) {
+            // First, if the wall is disabled, or the ranges of the wall
+            // and motion line don't overlap, forget it.
+            if (!sense.reflectEnabled ||
+                sense.maxX < minX || sense.maxY < minY ||
+                sense.minX > maxX || sense.minY > maxY)
+                continue;
+            
+            int flag = intersect(sense, sx, sy, ex, ey);
+            if (flag != 0) {
+                intersectOut.action = sense.getAction();
+                intersectOut.inward = flag > 0;
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    
+    /**
+     * Determine the intersection -- if any -- between two line segments,
+     * one representing a static base (e.g. a wall), and one representing
+     * a motion.  If there is an intersection, determine which direction the
+     * motion crossed the base in.
+     * 
+     * @param   base        Base line (i.e. the wall).
+     * @param   sx          Start X of the incident line representing motion.
+     * @param   sy          Start Y of the incident line representing motion.
+     * @param   ex          End X of the incident line representing motion.
+     * @param   ey          End Y of the incident line representing motion.
+     * @return              0 iff there is no clear intersection, which could
+     *                      mean that the segments are parallel, coincident,
+     *                      or disjoint.  Return 1 if the motion crossed
+     *                      the base inwards, i.e. from the left side of the
+     *                      base.  Return -1 if the motion crossed the base
+     *                      outwards.
+     */
+    static final int intersect(Line base,
+                               double sx, double sy, double ex, double ey)
+    {
+        /*
+         * See: http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/
+         * Notes:
+         *  + The denominators for the equations for ua and ub are the same. 
+         *  + If the denominator for the equations for ua and ub is 0 then the
+         *    two lines are parallel. 
+         *  + If the denominator and numerator for the equations for ua and ub
+         *    are 0 then the two lines are coincident. 
+         */
+        final double mDx = ex - sx;
+        final double bDx = base.dx;
+        final double mbX = sx - base.sx;
+        final double mDy = ey - sy;
+        final double bDy = base.dy;
+        final double mbY = sy - base.sy;
+
+        final double denom =  bDy * mDx - bDx * mDy;
+        if (denom == 0)
+            return 0;
+        final double numB = bDx * mbY - bDy * mbX;
+        final double numM = mDx * mbY - mDy * mbX;
+
+        final double fracB = numM / denom;
+        final double fracM = numB / denom;
+
+        /*
+         * Test if ua and ub lie between 0 and 1.  Whichever one lies
+         * within that range then the corresponding line segment contains
+         * the intersection point.  If both lie within the range of 0 to
+         * 1 then the intersection point is within both line segments.
+         * Otherwise the segments are disjoint.
+         */
+        if (fracB < 0 || fracB > 1 || fracM < 0 || fracM > 1)
+            return 0;
+        
+        // Calculate the delta between the base angle and the motion
+        // angle.
+        final double ba = base.getAngle();
+        double ma = Math.toDegrees(Math.atan2(mDy, mDx));
+        while (ma < ba)
+            ma += 360.0;
+        final double deltaA = ma - ba;
+
+        return deltaA < 180.0 ? 1 : -1;
+    }
 
 
 	// ******************************************************************** //
@@ -468,13 +611,13 @@ class Topology {
 	public void drawFixed(Canvas canvas) {
 		// Draw the background colour.
 		canvas.drawColor(TABLE_COLOUR);
-		
-        // Draw all the fixed and animated items in the topology.
+
+        // Draw all the fixed items in the topology.  The animated items
+		// shouldn't be drawn -- they will take care of themselves, and
+		// may sometimes want to be blank.
 		for (Element elem : fixedItems)
 			elem.draw(canvas, 0, 0);
-		for (Element elem : animItems)
-			elem.draw(canvas, 0, 0);
-	     
+
     	// Draw the lines for debug.
 //    	android.graphics.Paint lpaint = new android.graphics.Paint();
 //    	lpaint.setAntiAlias(true);
@@ -542,12 +685,16 @@ class Topology {
 	// the wallItems.
 	private ArrayList<Line> lines = null;
 
+    // The lines that we use to just trigger actions when the centre
+    // of the ball crosses them.
+    private ArrayList<Line> triggers = null;
+
 	// The ball image.
 	private Bitmap ballImage = null;
 
 	// Working variables used during bounce calculation.  Allocating them
 	// once is significantly faster.
-	private Intersect currReflect = null;
+	private Reflect currReflect = null;
 
 }
 

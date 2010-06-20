@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -444,16 +445,27 @@ class LevelReader {
 					ldata.addBackground(poly, id);
 					ldata.addBarrier(poly, null);
 				} else if (tag.equals("Rect")) {
-					Poly poly = readRect(p, xform, oattr);
+					Poly poly = readRect(p, xform, oattr, ldata);
 					ldata.addBackground(poly, id);
-					ldata.addBarrier(poly, null);
+					ldata.addBarrier(poly, id);
+                } else if (tag.equals("Zone")) {
+                    Poly poly = readRect(p, xform, oattr, ldata);
+                    ldata.addTrigger(poly, id);
 				} else if (tag.equals("Hole")) {
 					Hole hole = readHole(p, xform, oattr, ldata);
 					ldata.addAnim(hole, id);
-					ldata.addZone(hole, null);
+					ldata.addZone(hole, id);
 					Poly trap = hole.getCentreTrap();
 					if (trap != null)
-						ldata.addWall(trap, null);
+						ldata.addWall(trap, id);
+                } else if (tag.equals("ForceField")) {
+                    ForceField field = readForceField(p, xform, oattr);
+                    ldata.addAnim(field, id);
+                    Poly wall = field.getBarrier();
+                    if (wall != null) {
+                        wall = ldata.addBarrier(wall, id);
+                        field.setRealBarrier(wall);
+                    }
 				} else if (tag.equals("Display")) {
 					Display dec = readDisplay(p, xform, oattr);
 					ldata.addBackground(dec, id);
@@ -538,18 +550,40 @@ class LevelReader {
 	 * @param	xform			The transformation that needs to be applied
 	 * 							to the level to make it fit the screen.
 	 * @param	attrs			The tag's attributes.
+     * @param   ldata           The level we're building.
 	 * @return					The transformed polygon.
 	 * @throws XmlPullParserException
 	 * @throws IOException
 	 * @throws LevelException
 	 */
-	private Poly readRect(XmlPullParser p, Matrix xform, Bundle attrs)
+	private Poly readRect(XmlPullParser p, Matrix xform, Bundle attrs, LevelData ldata)
 		throws XmlPullParserException, IOException, LevelException
 	{
 		float sx = attrs.getFloat("sx", 0);
 		float sy = attrs.getFloat("sy", 0);
 		float ex = attrs.getFloat("ex", 0);
 		float ey = attrs.getFloat("ey", 0);
+
+		// See if we have an action.
+		Action action = null;
+		String actName = attrs.getString("action");
+		if (actName != null) {
+		    Action.Type type;
+	        try {
+	            type = Action.Type.valueOf(actName);
+	        } catch (IllegalArgumentException e) {
+	            throw new LevelException(p, "invalid action type " + actName);
+	        }
+	        action = new Action(type);
+
+		    String targId = attrs.getString("target");
+		    if (targId != null) {
+		        Object target = ldata.getById(targId);
+		        if (target == null)
+		            throw new LevelException(p, "no defined object with id \"" + targId + "\"");
+		        action.setTarget(target);
+		    }
+		}
 
 		// Skip past the tag.
 		int eventType = p.getEventType();
@@ -564,7 +598,7 @@ class LevelReader {
 		points.add(xform.transform(new Point(ex, ey)));
 		points.add(xform.transform(new Point(sx, ey)));
 
-		return new Poly(appContext, points);
+		return new Poly(appContext, points, action);
 	}
 
 	
@@ -577,6 +611,7 @@ class LevelReader {
 	 * @param	xform			The transformation that needs to be applied
 	 * 							to the level to make it fit the screen.
 	 * @param	attrs			The tag's attributes.
+     * @param   ldata           The level we're building.
 	 * @return					The transformed Hole.
 	 * @throws XmlPullParserException
 	 * @throws IOException
@@ -617,6 +652,40 @@ class LevelReader {
 		
 		return new Hole(appContext, type, x, y, target, xform);
 	}
+
+    
+    /**
+     * Read a force field from the given parser and make it into a new
+     * ForceField.  Transform it by the given Matrix.
+     * 
+     * Leave the parser after the end of the tag.
+     * 
+     * @param   p               The parser to read from.
+     * @param   xform           The transformation that needs to be applied
+     *                          to the level to make it fit the screen.
+     * @param   attrs           The tag's attributes.
+     * @return                  The transformed polygon.
+     * @throws XmlPullParserException
+     * @throws IOException
+     * @throws LevelException
+     */
+    private ForceField readForceField(XmlPullParser p, Matrix xform, Bundle attrs)
+        throws XmlPullParserException, IOException, LevelException
+    {
+        float sx = attrs.getFloat("sx", 0);
+        float sy = attrs.getFloat("sy", 0);
+        float ex = attrs.getFloat("ex", 0);
+        float ey = attrs.getFloat("ey", 0);
+        RectF box = new RectF(sx, sy, ex, ey);
+
+        // Skip past the tag.
+        int eventType = p.getEventType();
+        while (eventType != XmlPullParser.END_DOCUMENT &&
+                                    eventType != XmlPullParser.END_TAG)
+            eventType = p.next();
+
+        return new ForceField(appContext, box, xform);
+    }
 
 
 	/**
@@ -844,6 +913,7 @@ class LevelReader {
 		typeMap.put("difficulty", 'I');
 		typeMap.put("time", 'I');
 		typeMap.put("type", 'S');
+        typeMap.put("action", 'S');
 		typeMap.put("text", 'S');
 		typeMap.put("norotate", 'B');
 		typeMap.put("vertical", 'B');

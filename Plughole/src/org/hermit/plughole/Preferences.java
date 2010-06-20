@@ -1,7 +1,7 @@
 
 /**
- * Audalyzer: an audio analyzer for Android.
- * <br>Copyright 2009-2010 Ian Cameron Smith
+ * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2

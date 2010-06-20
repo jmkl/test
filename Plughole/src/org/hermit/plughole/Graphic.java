@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -36,7 +37,6 @@ class Graphic
 
 	/**
 	 * Bitmap for a blank hole.
-	 * TODO: Not an animation.
 	 */
 	public static final int[] BLANK_HOLE = {
 		R.drawable.blank_hole,
@@ -78,7 +78,7 @@ class Graphic
 	
 
 	/**
-	 * Bitmaps making up the lava hole animation.
+	 * Bitmaps making up the exit hole animation.
 	 */
 	public static final int[] EXIT_ANIM = {
 		R.drawable.green_hole_01,
@@ -89,8 +89,21 @@ class Graphic
 	};
 	
 
+    /**
+     * Bitmaps making up the force field animation.
+     */
+    public static final int[] FORCE_ANIM = {
+        R.drawable.force_field_01,
+        R.drawable.force_field_02,
+        R.drawable.force_field_03,
+        R.drawable.force_field_04,
+        R.drawable.force_field_05,
+        R.drawable.force_field_06,
+    };
+    
+
 	/**
-	 * Bitmaps making up the lava hole animation.
+	 * Bitmaps making up the green arrow animation.
 	 */
 	public static final int[] GREEN_ARROW = {
 		R.drawable.green_arrow_01,
@@ -210,6 +223,7 @@ class Graphic
 		}
 		
 		animOffset = rndInt(imageIds.length);
+		visible = true;
 	}
 	
 	
@@ -222,6 +236,17 @@ class Graphic
 	 */
 	RectF getBounds() {
 		return bounds;
+	}
+	
+	
+	/**
+	 * Set whether this graphic is visible.
+	 * 
+	 * @param  vis             True to make this graphic visible, false
+	 *                         to hide.
+	 */
+	void setVisible(boolean vis) {
+	    visible = vis;
 	}
 	
 
@@ -240,6 +265,9 @@ class Graphic
 	 */
 	@Override
 	protected void draw(Canvas canvas, long time, long clock) {
+	    if (!visible)
+	        return;
+	    
 		final long off = time - clock;
 		final int frame = (int) ((off / 100 + animOffset) % bitmaps.length);
 		canvas.drawBitmap(bitmaps[frame], bounds.left, bounds.top, null);
@@ -276,6 +304,9 @@ class Graphic
 	
 	// Animation initial offset.
 	private int animOffset;
+	
+	// Flag whether to actually display.
+	private boolean visible = true;
 
 }
 

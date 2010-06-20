@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -69,7 +70,8 @@ final class Hole
 	 * @param	type			The type of this hole.
 	 * @param	x				The X position.
 	 * @param	y				The Y position.
-	 * @param	ref				Referenced item, if any.
+	 * @param	ref				Referenced item, if any: for a teleporter,
+	 *                          the destination point.
 	 * @param	xform			Transform to apply to the raw data.
 	 */
 	public Hole(Plughole app, Type type, double x, double y, Point ref, Matrix xform)
@@ -136,16 +138,15 @@ final class Hole
 	// ******************************************************************** //
 
 	/**
-	 * Given a position, check that position against
-	 * this hole to see if it is inside.
-	 * If so, return the action to take.
+	 * Given a position, check that position against this hole to see if
+	 * it is inside.  If so, return the action to take.
 	 * 
 	 * @param	x			X of the position.
 	 * @param	y			Y of the position.
 	 * @return				Iff we entered this zone, the required action.
 	 * 						Otherwise null.
 	 */
-	final Action entered(double x, double y) {
+	public final Action entered(double x, double y) {
 		final double dist = centre.distance(x, y);
 		if (dist < slopeRadius) {
 			double accel = 0;

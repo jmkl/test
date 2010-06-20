@@ -22,8 +22,17 @@
 		<Target x="12" y="2.5" id="tele" />
 		<Hole type="PORT" x="3" y="21" target="tele" />
 
-		<!--  Bottom bar complex guarding the exit. -->
+		<!--  Bottom bar above the exit. -->
 		<Rect sx="5" sy="28" ex="22.5" ey="29" />
+		
+		<!--  A force field in the way of the exit. -->
+		<ForceField id="field" sx="9" sy="31.5" ex="12" ey="34.5" />
+		
+		<!--  A zone that activates and de-activates the force field. -->
+		<Graphic img="@drawable/danger" sx="10" sy="24" ex="12" ey="26" />
+		<Zone sx="10" sy="24" ex="12" ey="26" action="ONOFF" target="field" />
+
+		<!--  The exit. -->
 		<Hole type="EXIT" x="21.5" y="33" />
 
 	</Level>

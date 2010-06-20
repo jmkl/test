@@ -1,15 +1,16 @@
 
 /**
  * Plughole: a rolling-ball accelerometer game.
+ * <br>Copyright 2008-2010 Ian Cameron Smith
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License version 2
- *   as published by the Free Software Foundation (see COPYING).
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
  * 
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 
@@ -131,6 +132,7 @@ class LevelData {
 		this.animItems = new ArrayList<Element>();
 		this.zoneItems = new ArrayList<Hole>();
 		this.wallItems = new ArrayList<Poly>();
+        this.triggerItems = new ArrayList<Poly>();
 		this.idMap = new HashMap<String, Object>();
 	}
 
@@ -167,7 +169,7 @@ class LevelData {
 	 */
 	public void addBackground(Element item, String id) {
 		fixedItems.add(item);
-		if (id != null)
+		if (id != null && !idMap.containsKey(id))
 			idMap.put(id, item);
 	}
 	
@@ -180,7 +182,7 @@ class LevelData {
 	 */
 	public void addPoint(Point item, String id) {
 		pointItems.add(item);
-		if (id != null)
+		if (id != null && !idMap.containsKey(id))
 			idMap.put(id, item);
 	}
 	
@@ -193,7 +195,7 @@ class LevelData {
 	 */
 	public void addAnim(Element item, String id) {
 		animItems.add(item);
-		if (id != null)
+		if (id != null && !idMap.containsKey(id))
 			idMap.put(id, item);
 	}
 	
@@ -206,7 +208,7 @@ class LevelData {
 	 */
 	public void addZone(Hole item, String id) {
 		zoneItems.add(item);
-		if (id != null)
+		if (id != null && !idMap.containsKey(id))
 			idMap.put(id, item);
 	}
 	
@@ -222,7 +224,7 @@ class LevelData {
 	 */
 	public void addWall(Poly item, String id) {
 		wallItems.add(item);
-		if (id != null)
+		if (id != null && !idMap.containsKey(id))
 			idMap.put(id, item);
 	}
 	
@@ -235,13 +237,37 @@ class LevelData {
 	 * 						ball by its centre position, we need to grow
 	 * 						this item by the ball's radius.
 	 * @param	id			The ID of the element, or null.
+	 * @return              The Poly which is the grown version of item,
+	 *                      which will be the actual barrier.
 	 */
-	public void addBarrier(Poly item, String id) {
-		wallItems.add(item.createLarger(ballRadius));
-		if (id != null)
+	public Poly addBarrier(Poly item, String id) {
+	    item = item.createLarger(ballRadius);
+		wallItems.add(item);
+		
+		// Put the newly-created larger item in the ID map with a distinct ID.
+		id = id + "_b";
+		if (id != null && !idMap.containsKey(id))
 			idMap.put(id, item);
+		
+		return item;
 	}
 	
+
+    /**
+     * Add a polygon which triggers actions without forming a barrier.
+     * 
+     * @param   item        The element to add; this item is assumed to
+     *                      be the actual shape which the centre of the
+     *                      ball triggers when crossing, so it doesn't need
+     *                      to be grown.
+     * @param   id          The ID of the element, or null.
+     */
+    public void addTrigger(Poly item, String id) {
+        triggerItems.add(item);
+        if (id != null && !idMap.containsKey(id))
+            idMap.put(id, item);
+    }
+    
 
     // ******************************************************************** //
     // Accessors.
@@ -297,6 +323,17 @@ class LevelData {
 		return wallItems.iterator();
 	}
 	
+
+    /**
+     * Get the trigger elements in this level.
+     * 
+     * @return              An iterator over all the trigger elements
+     *                      in this level.
+     */
+    public Iterator<Poly> getTriggers() {
+        return triggerItems.iterator();
+    }
+    
 
 	/**
 	 * Get the background items in this level.
@@ -361,6 +398,9 @@ class LevelData {
 	
 	// The items in this level that the ball bounces off.
 	private final ArrayList<Poly> wallItems;
+    
+    // The items in this level that just trigger actions.
+    private final ArrayList<Poly> triggerItems;
 
 	// A Map of all the items in this level which have IDs set.  This is
 	// used so they can be referred to by name.
