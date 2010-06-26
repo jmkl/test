@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    
+    <!-- Entry names for the sound preferences menu. -->
+    <string-array name="prefs_sound_entries">
+        <item>静音</item>
+        <item>轻微音量</item>
+        <item>最大音量</item>
+    </string-array>
+
+    <!-- Values for the sound preferences menu. -->
+    <string-array name="prefs_sound_values">
+        <item>静音</item>
+        <item>轻微音量</item>
+        <item>最大音量</item>
+    </string-array>
+    
+</resources>
+

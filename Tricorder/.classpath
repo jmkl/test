@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="Hermit Android"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Hermit Library"/>
+	<classpathentry kind="src" path="HermitAndroid"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/HermitLibrary"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

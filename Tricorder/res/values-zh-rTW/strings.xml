@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="app_name">Tricorder </string>
+    <string name="description">將手機設定為即時感應。</string>
+
+       
+    <string name="help_text"><b>Tricorder </b>\n\
+\n\
+Tricorder 顯示進入手機內建感測器的實際資料。\n\
+\n\
+此螢幕上顯示 Tricorder 簡短的說明。對於全手動,
+按下面的 \"手動\" 。\n\
+\n\
+<b>控制</b>\n\
+\n\
+使用左邊的按鈕在現有的資料視圖 (看下面的視圖) 之間選擇。\n\
+\n\
+在重力和磁場視圖中:\n\
+． 觸摸 X/Y 軸圖表來轉換絕對和相對模式。
+當進入相對模式, 當前值被儲存檔案; 圖表開始顯示關於那些值的變化。
+因此, 例如, 在重力中, 觸摸進入相對模式, 然後你會看到相對於初始狀態的加速度。\n\
+． 在 Magnitude 圖上向上和向下滑動你的手指, 對圖片進行縮放。\n\
+． 觸摸顯示的數字資料切換到 X/Y/Z 坐標圖; 紅色的是 X, 綠色的是 Y, 藍色的是 Z。\n\
+\n\
+在 位置 視圖中, 觸摸右上角的 \"GPS Pwr\" 按鈕開啟舊檔和關閉 GPS 。\n\
+\n\
+在電磁譜視圖中, 觸摸右上角的 \"WiFi Pwr\" 按鈕開啟舊檔和關閉 GPS 。\n\
+\n\
+<b>視圖</b>\n\
+\n\
+<b>重力</b> 顯示當地的重力場, 它顯示 X/Y 坐標軸上的單獨元件以及 Z 軸的垂直計量器。另外, 高度計顯示高於或低於 tricorder 的水平面的角度。低於 tricorder, 重力場的絕對量被會繪製到圖上, 然後顯示原始的數字資料, 單位為米/秒2:\"X\", \"Y\" 和\"Z\" 是這三個範圍的加速度值; \"Az\" 是在 X-Y平面中, 重力場的方向; \"Alt\" 是高於或低於水平面的引力的仰角, 以度數為單位; \"Mag\" 是重力場的絕對大小, 以 米/秒2 為單位。 當它變為零時, 你正在自由落體。\n\
+\n\
+<b>磁場</b> 顯示當地的磁場, 以相同的形式。X-Y 坐標圖可以像指南針一樣使用
+; 將高度保持在零, 看看磁場到底是指向哪個方向。顯示的值以微-特斯拉為單位。\n\
+\n\
+<b>環境</b> 顯示一些環境感測器讀數: 亮度級, 物體接近性, 和溫度。 每個圖形的標題以數字的形式顯示當前值。光的讀數是以勒克斯為單位; 接近性以米來衡量;
+溫度是以攝氏度為單位。\n\
+\n\
+請注意, 只有在你的裝置確實有裝感測器時, 可以顯示這些感測器的值 (很遺憾, G1 手機不能)。  如果感測器丟失, 可以顯示模擬資料; 檢視這個選項的參數。當在模擬模式時,每個感測器的首部的藍色指示燈會顯示。\n\
+\n\
+<b>位置</b> 顯示你裝置有的地理資訊, 它來自各供應商。\"蜂窩\"顯示來自行動電話網路的位置;
+\"GPS\" 是 GPS 位置, 如果 GPS 已啟用。在右上角, 你會看到\"GPS 功率\" 按鈕, 用於開啟或關閉 GPS 。\n\
+\n\
+位置以經度, 緯度和極小的分鐘顯示。\"Alt\" 是以米為單位的高度, \"Acc\" 是以米為單位的, 方位的估計精度。如果位置供應商提供航向資料航向資料,那麼 \"Head\" 是你正在前進的方向, 並且 \"Spd\" 是你的速度, 以米每秒為單位。
+\n\
+\n\
+如果有最新的修複數據, 就一直會顯示。請注意, 這個資料可能是舊的。資料透過上色, 用於表明它的時間, 資料的時間也顯示在標題列, 用於每個位置提供商。\n\
+\n\
+<b>電磁譜</b> 為無線電信號掃瞄電磁光譜 (作為硬體提供的支援)。偵測的信號顯示為強度條和數字強度指示器 -- 零是沒有信號
+(或信號太弱無法使用); 31 對手機而言是最大的, 41 對 WiFi 而言似乎是最大的。在右上角, 你將看到 \"WiFi 功率\" 按鈕, 用於開啟或關閉 WiFi 。\n\
+\n\
+對於手機, 我們顯示手機 ID, 網路提供商, 並在強度欄上顯示信號強度。 對於 WiFi 網路, 我們顯示頻率, 以 GHz 為單位, 網路 ID, 以及信號強度。WiFi 資料會定期重新整理; 顯示的 WiFi 資料的時間顯示在 WiFi 標題列中。\n\
+\n\
+在參數設定中, 你可以啟用 WiFi ping。 開啟舊檔它時, 裝置將在每個 WiFi 網路掃瞄之後查驗, 裝置將; 回音 ping 顯示了偵測到的最強的信號的強度。(沒有回音意味著沒有偵測到 WiFi。)\n\
+\n\
+<b>功能表</b>\n\
+\n\
+\"功能表\" 按鈕可以進入程式設定, 說明螢幕 (這一個), 以及這個關於對話方塊。在設定中, 你可以設定基本音量為關閉,你可以將基本音量設定為關閉, 安靜, 或大聲 (請注意, 你也可以使用硬體音量鍵控制音量)。  你可以啟用 WiFi ping;
+檢視上面的 \"電磁譜\" 。感測器丟失時也可以啟用模擬資料; 檢視上面的 \"環境\" 。\n\
+\n\
+<b>綜合</b>\n\
+\n\
+請注意, 提供資訊的可用性和準確性取決於基礎硬體。眾所周知, 尤其是磁場資料, 在一些當前可用的裝置上是不可信的, 地心引力的讀數會受播放音樂影響。\n\
+\n\
+你可以在這個螢幕的底部看到連線到項目首頁的連結; 欲瞭解關於 Tricorder 的資訊可以看看。Tricorder 是開放的項目, 所以如果你願意, 你可以加入並創造貢獻。可以到項目首頁檢視相關資訊。\n\
+</string>
+
+       
+    <string name="about_text"><b>Tricorder</b>的作者是 Ian Cameron Smith
+(headstay)。受到以下的啟發:\n\
+\n\
+． Jeff Jetton 的 Tricorder, 用於掌上電腦: http://www.jeffjetton.com/tricorder/\n\
+． Adge 的 LCARS 網站: http://www.lcars.org.uk/\n\
+． And, of course, the work of Gene Roddenberry\n\
+\n\
+安卓網中文化（HiAPK.com）\n\
+\n\
+有關資訊和源程式碼檢視項目首頁。\n\
+\n\
+這個程式是免費軟體; 您可以基於自由的通用 GNU 公共授權證基礎條件下重新發佈/或修改它; 授權證的第 2 版, 或
+(依您的選擇) 任何新版本。\n\
+\n\
+這一方案的發佈是希望這將是有益的, 但沒有任何保證; 甚至沒有隱含適銷性或特定目的保證。詳情請參閱 GNU 通用公共授權證 http://www.gnu.org/licenses/gpl-2.0.html。\n</string>
+
+
+    <string name="menu_prefs">設定</string>
+    <string name="menu_help">說明</string>
+    <string name="menu_about">關於</string>
+    <string name="menu_exit">結束</string>
+    
+    <!-- Preferences strings. -->
+    <string name="prefs_title">設定</string>
+    <string name="prefs_cat_sound">音量設定</string>
+    <string name="prefs_sound">音量水平</string>
+    <string name="prefs_sound_summary">設定你需要的音量</string>
+    <string name="prefs_sound_title">音量水平</string>
+    <string name="prefs_ping">WiFi偵測</string>
+    <string name="prefs_ping_summary">用聲音感應WiFi信號</string>
+    <string name="prefs_cat_data">資料設定</string>
+    <string name="prefs_fake">模擬丟失資料</string>
+    <string name="prefs_fake_summary">使用模擬資料模擬缺失的感應器</string>
+    
+    <string name="nav_gra">重力</string>
+    <string name="nav_mag">磁場</string>
+    <string name="nav_env">環境</string>
+    <string name="nav_geo">位置</string>
+    <string name="nav_com">電磁譜</string>
+    <string name="nav_sol">太陽</string>
+    
+    <string name="title_gra">加速度</string>
+    <string name="title_mag">磁通量</string>
+    <string name="title_env">周圍環境</string>
+    <string name="title_geo">地理位置</string>
+    <string name="title_com">電磁譜</string>
+    <string name="title_sol">太陽活動性</string>
+    <string name="title_vect_abs">絕對矢量</string>
+    <string name="title_vect_rel">相對矢量</string>
+    <string name="title_mag_abs">絕對震動數值</string>
+    <string name="title_mag_rel">相對震動數值</string>
+    <string name="title_num_abs">絕對位置數值</string>
+    <string name="title_num_rel">相對位置數值</string>
+    <string name="title_xyz_abs">絕對的X,Y,Z坐標</string>
+    <string name="title_xyz_rel">相對的X,Y,Z坐標</string>
+    <string name="title_network">基本位置</string>
+    <string name="title_gps">GPS</string>
+
+    <string name="lab_x">X</string>
+    <string name="lab_y">Y</string>
+    <string name="lab_z">Z</string>
+    <string name="lab_azi">Az</string>
+    <string name="lab_alt">Alt</string>
+    <string name="lab_mag">Mag</string>
+    <string name="lab_light">亮度</string>
+    <string name="lab_prox">無線</string>
+    <string name="lab_temp">溫度</string>
+    <string name="lab_acc">Acc</string>
+    <string name="lab_head">Head</string>
+    <string name="lab_speed">Spd</string>
+    <string name="lab_cell">基本位置</string>
+    <string name="lab_wifi">WiFi</string>
+    <string name="lab_gps_power">GPS 功率</string>
+    <string name="lab_wifi_power">WiFi 功率</string>
+    <string name="lab_solar_wind">風 P,V,T</string>
+    <string name="lab_solar_part">粒子</string>
+    <string name="lab_solar_spots">太陽黑子, 射頻</string>
+    <string name="lab_alt_mode">所有模式</string>
+    <string name="lab_blank">         </string>
+
+    <string name="msgNoData">沒有資料</string>
+    <string name="msgNoSignal">沒有信號</string>
+    <string name="msgNoPower">關機</string>
+    <string name="msgPoweringOff">正在關機</string>
+    <string name="msgPoweringOn">開機</string>
+    <string name="msgDisabled">禁用</string>
+    <string name="msgEnabled">啟用</string>
+    <string name="msgOffline">離線狀態</string>
+    <string name="msgDormant">睡眠狀態</string>
+    <string name="msgInvalid">無效</string>
+    <string name="msgScanning">掃瞄中</string>
+    <string name="msgAuthenticating">驗證中</string>
+    <string name="msgLoading">載入中...</string>
+    
+    <!--  The "Associated" and similar messages take 2 arguments:
+          1 (string), the name of the network we're attached to;
+          2 (int), the received signal strength.  -->
+	<string name="msgAssociating">連線中</string>
+    <string name="msgAssociated">連線</string>
+    <string name="msgConnected">線上</string>
+
+    <string name="about_title">關於</string>
+    
+    <!-- Button strings. -->
+    <string name="button_ok">確定</string>
+    <string name="button_close">確定</string>
+    <string name="button_license">授權</string>
+    <string name="button_homepage">計劃</string>
+    <string name="button_manual">指南</string>
+    
+    <!-- URLs. -->
+    <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
+    <string name="url_homepage">http://code.google.com/p/tricorder/</string>
+    <string name="url_manual">http://code.google.com/p/tricorder/wiki/UserManual</string>
+    
+</resources>
+

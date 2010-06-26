@@ -21,7 +21,6 @@ package org.hermit.tricorder;
 
 import org.hermit.android.core.SurfaceRunner;
 import org.hermit.android.instruments.Gauge;
-import org.hermit.tricorder.TricorderView.ViewDefinition;
 
 import android.app.Activity;
 import android.os.Bundle;

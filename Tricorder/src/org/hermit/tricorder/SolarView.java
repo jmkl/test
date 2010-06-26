@@ -404,7 +404,8 @@ class SolarView
      * which links to the activity, the activity will be leaked (i.e.
      * prevented from being garbage collected).  Hence unbind it here.
      */
-	protected void unbindResources() {
+	@Override
+    protected void unbindResources() {
 		FILES_SOHO.deleteObserver(this);
 		SRC_DSD.deleteObserver(this);
     }
