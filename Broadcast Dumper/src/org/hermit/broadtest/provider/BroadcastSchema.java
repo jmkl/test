@@ -42,6 +42,9 @@ public class BroadcastSchema
     // Provider authority name.
 	private static final String AUTHORITY = "com.bn.provider.Broadcast";
 
+	/**
+	 * Schema for the broadcast table.
+	 */
 	public static final class BroadcastTable
 		extends TableSchema
 	{
