@@ -22,7 +22,7 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.hermit.netscramble" android:versionCode="24" android:versionName="4.1">
+    package="org.hermit.netscramble" android:versionCode="25" android:versionName="4.2">
     
     <application android:icon="@drawable/netscramble" android:label="@string/title" android:description="@string/description" android:debuggable="false">
         <activity android:name="NetScramble" android:label="@string/title" android:launchMode="singleTop">
