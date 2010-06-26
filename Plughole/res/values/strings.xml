@@ -72,9 +72,6 @@ for more details.\n</string>
     
     <!-- Button strings. -->
     <string name="button_ok">OK</string>
-    <string name="button_close">Close</string>
-    <string name="button_license">Show license</string>
-    <string name="button_homepage">Home page</string>
         
     <!-- Titles. -->
     <string name="title_level_error">Level Definition Error</string> 
