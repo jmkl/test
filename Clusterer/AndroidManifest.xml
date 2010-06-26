@@ -4,7 +4,7 @@
 	package="org.hermit.clusterer" android:versionCode="2"
 	android:versionName="1.1">
 
-	<uses-sdk android:minSdkVersion="3" />
+	<uses-sdk android:minSdkVersion="4"/>
 	
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
 		<activity android:name=".ClusterActivity" android:label="@string/app_name"
