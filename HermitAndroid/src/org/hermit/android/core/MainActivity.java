@@ -22,6 +22,7 @@ package org.hermit.android.core;
 
 import java.util.HashMap;
 
+import org.hermit.android.R;
 import org.hermit.android.notice.InfoBox;
 
 import android.app.Activity;
@@ -196,9 +197,24 @@ public class MainActivity
      * {@link #setHomeInfo(int, int)}, {@link #setAboutInfo(int)} and
      * {@link #setLicenseInfo(int, int)}; then pop up a dialog by calling
      * {@link #showAbout()}.
+     */
+    public void createMessageBox() {
+        messageDialog = new InfoBox(this);
+        String version = appUtils.getVersionString();
+        messageDialog.setTitle(version);
+    }
+
+
+    /**
+     * Create a dialog for help / about boxes etc.  If you want to display
+     * one of those, set up the info in it by calling
+     * {@link #setHomeInfo(int, int)}, {@link #setAboutInfo(int)} and
+     * {@link #setLicenseInfo(int, int)}; then pop up a dialog by calling
+     * {@link #showAbout()}.
      * 
      * @param   close        Resource ID of the close button.
      */
+    @Deprecated
     public void createMessageBox(int close) {
         messageDialog = new InfoBox(this, close);
         String version = appUtils.getVersionString();
@@ -221,9 +237,22 @@ public class MainActivity
      * Set up the homepage info for dialogs.  See
      * {@link #createMessageBox(int)}.
      * 
+     * @param   link         Resource ID of the URL the button links to.
+     */
+    public void setHomeInfo(int link) {
+        homeButton = R.string.button_homepage;
+        homeLink = link;
+    }
+
+
+    /**
+     * Set up the homepage info for dialogs.  See
+     * {@link #createMessageBox(int)}.
+     * 
      * @param   button       Resource ID of the button text.
      * @param   link         Resource ID of the URL the button links to.
      */
+    @Deprecated
     public void setHomeInfo(int button, int link) {
         homeButton = button;
         homeLink = link;
@@ -234,9 +263,22 @@ public class MainActivity
      * Set up the license info for dialogs.  See
      * {@link #createMessageBox(int)}.
      * 
+     * @param   link         Resource ID of the URL the button links to.
+     */
+    public void setLicenseInfo(int link) {
+        licButton = R.string.button_license;
+        licLink = link;
+    }
+    
+
+    /**
+     * Set up the license info for dialogs.  See
+     * {@link #createMessageBox(int)}.
+     * 
      * @param   button       Resource ID of the button text.
      * @param   link         Resource ID of the URL the button links to.
      */
+    @Deprecated
     public void setLicenseInfo(int button, int link) {
         licButton = button;
         licLink = link;

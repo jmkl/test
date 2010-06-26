@@ -19,6 +19,9 @@
 
 package org.hermit.android.notice;
 
+
+import org.hermit.android.R;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -56,6 +59,16 @@ public class InfoBox
 	// ******************************************************************** //
 	// Constructor.
 	// ******************************************************************** //
+
+    /**
+     * Create an info box with a "close" button.
+     * 
+     * @param parent        Parent application context.
+     */
+    public InfoBox(Activity parent) {
+        this(parent, R.string.button_close);
+    }
+
 
 	/**
 	 * Create an info box.

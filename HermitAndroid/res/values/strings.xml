@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
-    <string name="app_name">Android Test</string>
+    
+    <string name="button_close">Close</string>
+    <string name="button_license">Show license</string>
+    <string name="button_homepage">Home page</string>
+    
 </resources>
+
