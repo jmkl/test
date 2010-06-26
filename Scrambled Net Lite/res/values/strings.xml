@@ -49,14 +49,6 @@ for more details.\n</string>
     <string name="help_title">Scrambled Net User\'s Manual</string>
         
 
-    <!-- Upgrade strings. -->
-    <string name="upgrade_prompt">The Full version of Scrambled Net provides
-personal best tracking, an autosolver, and some other nice features.  Would
-you like to look at the upgrade in the Android Market?</string>
-    <string name="upgrade_now">Show me!</string>
-    <string name="upgrade_later">Maybe later</string>
-        
-
     <!-- Text displayed in pause mode. -->
     <string name="pause_text">\n\n<b>Game Paused</b>\n\n\n\n<b>Tap
 the screen to continue.</b></string>
@@ -111,9 +103,7 @@ or "Continue" to experiment with this layout.</string>
     <string name="url_homepage">http://code.google.com/p/moonblink/wiki/ScrambledNet</string>
     
     <!--  
-    <string name="url_upgrade">market://details?id=org.hermit.netscramblefull</string>
-    <string name="url_upgrade">market://search?q=pname:org.hermit.netscramblefull</string>
-     -->
     <string name="url_upgrade">http://market.android.com/search?q=pname:org.hermit.netscramblefull</string>
+     -->
 
 </resources>

@@ -36,7 +36,6 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -724,14 +723,6 @@ public class NetScramble
     	case R.id.menu_pause:
     		setState(State.PAUSED, true);
     		break;
-        case R.id.menu_scores:
-            // Launch the high scores activity as a subactivity.
-            new AlertDialog.Builder(this)
-                    .setMessage(R.string.upgrade_prompt)
-                    .setPositiveButton(R.string.upgrade_now, upgradeListener)
-                    .setNegativeButton(R.string.upgrade_later, null)
-                    .show();
-            break;
     	case R.id.menu_help:
             // Launch the help activity as a subactivity.
             setState(State.PAUSED, false);
@@ -785,18 +776,6 @@ public class NetScramble
         
         selectSoundMode();
     }
-    
-
-    // Create a listener for the user requesting an upgrade.
-    private final DialogInterface.OnClickListener upgradeListener =
-                                new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface arg0, int arg1) {
-            setState(State.PAUSED, false);
-            Uri uri = Uri.parse(getString(R.string.url_upgrade));
-            Intent sIntent = new Intent(Intent.ACTION_VIEW, uri);
-            startActivity(sIntent);
-        }
-    };
     
     
     // ******************************************************************** //
