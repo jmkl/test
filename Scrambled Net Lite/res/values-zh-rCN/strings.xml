@@ -17,8 +17,8 @@ M, X 或者 6 右旋转; 然后按空格或 0 锁定。\n\n
     <string name="help_text"><b>超级网管</b>\n\n通过旋转区块连接端子到服务器。  箭头选择区块; 点击 Z, N 或者 4 t左旋转; M, X 或者 6 右旋转; 如果您的设备支持请点击屏幕。当您认为它是正确时点击空格键或 0 锁定。\n\n区块的连接是加亮显示的。使用菜单来选择不同的技能等级, 暂停游戏, 或者开始一个新游戏。\n\n<b>点击屏幕恢复。</b></string>
        
     <string name="about_text"><b>超级网管</b> 基于 Andi Peredri, Thomas Nagy,
-和 Reinhold Kainhofer 的 KNetwalk。包括 David Beaumont 的 MTRandom。
-由 Ian Cameron Smith 移植到 Android。  安卓网汉化 (HiAPK.com)\n\
+和 Reinhold Kainhofer 的 KNetwalk。包括 David Beaumont
+的 MTRandom。由 Ian Cameron Smith 移植到 Android。  安卓网汉化 (HiAPK.com)\n\
 \n\
 有关信息和源代码查看项目主页。\n\
 \n\

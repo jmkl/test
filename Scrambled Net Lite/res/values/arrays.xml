@@ -70,17 +70,23 @@ bit more challenging than it is on the Hero.</item>
 <item>The device\'s \"menu\" button pops up a menu containing a number
 of options:\n\
 \n\
-• <b>New Game</b> starts a new game, abandoning the current game if any.\n\
+• <b>New game</b> starts a new game, abandoning the current game if any.\n\
 \n\
 • <b>Pause</b> pauses the game, and covers the screen.  Tap the screen
 to un-pause.\n\
 \n\
-• <b>High Scores</b> -- the full version of Scrambled Net features personal
-best tracking, as well as an autosolver and other cool features.  Select
-High Scores to find the upgrade.\n\
+• <b>High scores</b> displays a table of your personal best scores — both
+the fewest clicks in which you\'ve solved each difficulty level, and the
+fastest time.  You can use the menu to reset your scores.  Press \"Back\"
+to get back to the game.\n\
 \n\
-• <b>Skill Level</b> prompts you to select a skill level, then starts
+• <b>Skill level</b> prompts you to select a skill level, then starts
 a new game at that skill level.\n\
+\n\
+• <b>Solve it!</b> runs an autosolver to finish the current puzzle for you.
+If you get completely stuck, you can use this to see the solution — but
+you won\'t get personal best credit!  While solving, this menu item
+changes to a \"Stop\" button, so you can stop the autosolver at any time.\n\
 \n\
 • <b>Sound</b> lets you set your preferred sound effects level.  However,
 the sound effects volume can always be adjusted in the game using the hardware

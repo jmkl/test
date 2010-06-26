@@ -10,6 +10,10 @@
     <item android:id="@+id/menu_pause" android:title="@string/menu_game_pause" 
     	  android:icon="@drawable/ic_menu_pause"/>
 
+    <!-- "High scores". -->
+    <item android:id="@+id/menu_scores" android:title="@string/menu_show_scores" 
+    	  android:icon="@drawable/ic_menu_show_list"/>
+
      <!-- "Set skill level...". -->
     <item android:id="@+id/skill_menu" android:title="@string/menu_set_skill"
     	  android:icon="@drawable/ic_menu_preferences">
@@ -26,6 +30,10 @@
         </menu>
     </item>
 
+    <!-- "Solve It". -->
+    <item android:id="@+id/menu_autosolve" android:title="@string/menu_autosolve" 
+    	  android:icon="@drawable/ic_menu_solve"/>
+
     <!-- "Sound...".  -->
     <item android:id="@+id/sound_menu" android:title="@string/menu_sound"
     	  android:icon="@drawable/ic_menu_volume">
@@ -35,6 +43,18 @@
                 <item android:id="@+id/sounds_off" android:title="@string/no_sounds" />
                 <item android:id="@+id/sounds_qt" android:title="@string/quiet_sounds" />
                 <item android:id="@+id/sounds_on" android:title="@string/play_sounds" />
+                
+            </group>
+        </menu>
+    </item>
+
+    <!-- "Animation...".  -->
+    <item android:id="@+id/anim_menu" android:title="@string/menu_anim">
+        <menu>
+            <group android:id="@+id/anim_group" android:checkableBehavior="single">
+
+                <item android:id="@+id/anim_off" android:title="@string/anim_off" />
+                <item android:id="@+id/anim_on" android:title="@string/anim_on" />
                 
             </group>
         </menu>

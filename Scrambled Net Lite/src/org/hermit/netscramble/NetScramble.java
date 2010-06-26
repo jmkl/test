@@ -151,6 +151,9 @@ public class NetScramble
         setHomeInfo(R.string.url_homepage);
         setLicenseInfo(R.string.url_license);
 
+        // Create our EULA box.
+        createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);       
+
         appResources = getResources();
         
         gameTimer = new GameTimer();
@@ -162,6 +165,10 @@ public class NetScramble
 
         // We want the audio controls to control our sound volume.
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        // Create the GUI for the game.
+        mainView = createGui();
+        setContentView(mainView);
 
         // Restore our preferences.
     	SharedPreferences prefs = getPreferences(0);
@@ -181,9 +188,9 @@ public class NetScramble
         	}
         }
         
-        // Create the GUI for the game.
-        mainView = createGui();
-        setContentView(mainView);
+        // See if animations are enabled.
+        animEnable = prefs.getBoolean("animEnable", true);
+        boardView.setAnimEnable(animEnable);
         
         // Load the sounds.
         soundPool = createSoundPool();
@@ -296,7 +303,10 @@ public class NetScramble
         Log.i(TAG, "onResume()");
         
         super.onResume();
-        
+
+        // First time round, show the EULA.
+        showFirstEula();
+
         // Display the skill level.
 		statusMid.setText(gameSkill.label);
 
@@ -680,6 +690,7 @@ public class NetScramble
         // to re-sync the options menus.
         selectCurrentSkill();
         selectSoundMode();
+        selectAnimEnable();
 
         return true;
     }
@@ -698,11 +709,39 @@ public class NetScramble
     private void selectSoundMode() {
         // Set the sound enable menu item to the current state.
     	if (mainMenu != null) {
-    		int id = soundMode.menuId;
+            int id = soundMode.menuId;
     		MenuItem soundItem = mainMenu.findItem(id);
     		if (soundItem != null)
     			soundItem.setChecked(true);
     	}
+    }
+
+
+    private void selectAnimEnable() {
+        // Set the animation enable menu item to the current state.
+        if (mainMenu != null) {
+            int id = animEnable ? R.id.anim_on : R.id.anim_off;
+            MenuItem animItem = mainMenu.findItem(id);
+            if (animItem != null)
+                animItem.setChecked(true);
+        }
+    }
+
+
+    void selectAutosolveMode(boolean solving) {
+        // Set the autosolve menu item to the current state.
+        if (mainMenu != null) {
+            MenuItem solveItem = mainMenu.findItem(R.id.menu_autosolve);
+            if (solveItem != null) {
+                if (solving) {
+                    solveItem.setIcon(R.drawable.ic_menu_stop);
+                    solveItem.setTitle(R.string.menu_stopsolve);
+                } else {
+                    solveItem.setIcon(R.drawable.ic_menu_solve);
+                    solveItem.setTitle(R.string.menu_autosolve);
+                }
+            }
+        }
     }
 
     
@@ -723,6 +762,13 @@ public class NetScramble
     	case R.id.menu_pause:
     		setState(State.PAUSED, true);
     		break;
+        case R.id.menu_scores:
+            // Launch the high scores activity as a subactivity.
+            setState(State.PAUSED, false);
+            Intent sIntent = new Intent();
+            sIntent.setClass(this, ScoreList.class);
+            startActivity(sIntent);
+            break;
     	case R.id.menu_help:
             // Launch the help activity as a subactivity.
             setState(State.PAUSED, false);
@@ -757,6 +803,16 @@ public class NetScramble
     	case R.id.sounds_on:
     		setSoundMode(SoundMode.FULL);
     		break;
+        case R.id.anim_off:
+            setAnimEnable(false);
+            break;
+        case R.id.anim_on:
+            setAnimEnable(true);
+            break;
+        case R.id.menu_autosolve:
+            solverUsed = true;
+            boardView.autosolve();
+            break;
     	default:
     		return super.onOptionsItemSelected(item);
     	}
@@ -778,6 +834,20 @@ public class NetScramble
     }
     
     
+    private void setAnimEnable(boolean enable) {
+        animEnable = enable;
+        boardView.setAnimEnable(animEnable);
+        
+        // Save the new setting to prefs.
+        SharedPreferences prefs = getPreferences(0);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("animEnable", animEnable);
+        editor.commit();
+        
+        selectAnimEnable();
+    }
+    
+
     // ******************************************************************** //
     // Game progress.
     // ******************************************************************** //
@@ -936,8 +1006,9 @@ public class NetScramble
             boardView.setSolved();
 
         	// We allow the user to keep playing after it's over, but
-        	// don't keep reporting wins.
-        	if (!isSolved)
+        	// don't keep reporting wins.  Also don't brag or record a score
+            // if the user used the solver.
+        	if (!isSolved && !solverUsed)
         		reportWin(boardView.unconnectedCells());
             isSolved = true;
             
@@ -961,6 +1032,7 @@ public class NetScramble
                 isSolved = false;
         		clickCount = 0;
         		prevClickedCell = null;
+        		solverUsed = false;
         		gameTimer.reset();
         		updateStatus();
         		makeSound(Sound.START.soundId);
@@ -1004,6 +1076,15 @@ public class NetScramble
 		    String fmt = appResources.getString(R.string.win_text);
 			msg = String.format(fmt, time / 60000,
 								time / 1000 % 60, clickCount);
+		}
+		
+		// See if we have a new high score.
+		int ntiles = boardView.getBoardWidth() * boardView.getBoardHeight();
+		String score = registerScore(gameSkill, ntiles,
+		                             clickCount, (int) (time / 1000));
+		if (score != null) {
+		    msg += "\n\n" + score;
+		    titleId = R.string.win_pbest_title;
 		}
 		
 		// Display the dialog.
@@ -1121,6 +1202,63 @@ public class NetScramble
 	
 
     // ******************************************************************** //
+    // High Scores.
+    // ******************************************************************** //
+
+    /**
+     * Check to see if we need to register a new "high score" (personal
+     * best).
+     * 
+     * @param   skill       The skill level of the completed puzzle.
+     * @param   ntiles      The actual number of tiles in the board.  This
+     *                      indicates the actual difficulty level on the
+     *                      specific device.
+     * @param   clicks      The user's click count.
+     * @param   seconds     The user's time in SECONDS.
+     * @return              Message to display to the user.  Null if nothing
+     *                      to report.
+     */
+    private String registerScore(BoardView.Skill skill, int ntiles,
+                                 int clicks, int seconds)
+    {
+        // Get the names of the prefs for the counts for this skill level.
+        String sizeName = "size" + skill.toString();
+        String clickName = "clicks" + skill.toString();
+        String timeName = "time" + skill.toString();
+        
+        // Get the best to date for this skill level.
+        SharedPreferences scorePrefs = getSharedPreferences("scores", MODE_PRIVATE);
+        int bestClicks = scorePrefs.getInt(clickName, -1);
+        int bestTime = scorePrefs.getInt(timeName, -1);
+
+        // See if we have a new best click count or time.
+        long now = System.currentTimeMillis();
+        SharedPreferences.Editor editor = scorePrefs.edit();
+        String msg = null;
+        if (clicks > 0 && (bestClicks < 0 || clicks < bestClicks)) {
+            editor.putInt(sizeName, ntiles);
+            editor.putInt(clickName, clicks);
+            editor.putLong(clickName + "Date", now);
+            msg = appResources.getString(R.string.best_clicks_text);
+        }
+        if (seconds > 0 && (bestTime < 0 || seconds < bestTime)) {
+            editor.putInt(sizeName, ntiles);
+            editor.putInt(timeName, seconds);
+            editor.putLong(timeName + "Date", now);
+            if (msg == null)
+                msg = appResources.getString(R.string.best_time_text);
+            else
+                msg = appResources.getString(R.string.best_both_text);
+        }
+    
+        if (msg != null)
+            editor.commit();
+        
+        return msg;
+    }
+
+
+    // ******************************************************************** //
     // Sound.
     // ******************************************************************** //
     
@@ -1194,6 +1332,7 @@ public class NetScramble
     	// Restore the game timer and click count.
     	gameTimer.saveState(outState);
     	outState.putInt("clickCount", clickCount);
+        outState.putBoolean("solverUsed", solverUsed);
     }
 
     
@@ -1218,6 +1357,7 @@ public class NetScramble
     	if (restored) {
     		restored = gameTimer.restoreState(map, false);
     		clickCount = map.getInt("clickCount");
+    		solverUsed = map.getBoolean("solverUsed");
     	}
 
         return restored;
@@ -1320,15 +1460,21 @@ public class NetScramble
 	// Timer used to time the game.
 	private GameTimer gameTimer;
 
-	// True to enable sounds.
+	// Current sound mode.
 	private SoundMode soundMode;
-	
+
+    // True to enable the network animation.
+    private boolean animEnable;
+
 	// Number of times the user has clicked.
 	private int clickCount = 0;
 	
 	// The previous cell that was clicked.  Used to detect multiple clicks
 	// on the same cell.
 	private Cell prevClickedCell = null;
+	
+	// Flag if the user has invoked the auto-solver for this game.
+	private boolean solverUsed = false;
 
 }
 

@@ -528,13 +528,6 @@ class Cell
 	void setConnected(boolean b) {
 		if (isConnected == b) return;
 		isConnected = b;
-		
-        // All data blips are lost when we get disconnected.
-		if (!isConnected) {
-		    blipsIncoming = 0;
-		    blipsOutgoing = 0;
-		    blipsTransfer = 0;
-		}
 
 		invalidate();
 	}
@@ -597,10 +590,28 @@ class Cell
      *                      positive.
      */
     void rotate(int a) {
+        rotate(a, ROTATE_DFLT_TIME);
+    }
+
+
+    /**
+     * Move the rotation currentAngle for this cell.  This changes the cell's
+     * idea of its connections, and with fractions of 90 degrees, is used to
+     * animate rotation of the cell's connections.  Setting this causes the
+     * cell's connections to be drawn at the given currentAngle; beyond +/-
+     * 45 degrees, the connections are changed in accordance with the
+     * direction the cell is now facing.
+     * 
+     * @param   a           The angle in degrees to rotate to; clockwise
+     *                      positive.
+     * @param   time        Time in ms over which to do the rotation.
+     */
+    void rotate(int a, long time) {
         // If we're not already rotating, set it up.
         if (rotateTarget == 0) {
             rotateStart = System.currentTimeMillis();
             rotateAngle = 0f;
+            rotateTime = time;
         }
 
         // Add the given rotation in.
@@ -655,7 +666,7 @@ class Cell
         // If we've got a rotation going on, move it on.
         if (rotateTarget != 0) {
             // Calculate the angle based on how long we've been going.
-            rotateAngle = (float) (now - rotateStart) / (float) ROTATE_TIME * 90f;
+            rotateAngle = (float) (now - rotateStart) / (float) rotateTime * 90f;
             if (rotateTarget < 0)
                 rotateAngle = -rotateAngle;
 
@@ -671,7 +682,7 @@ class Cell
                     else {
                         rotateAngle -= 90f;
                         rotateTarget -= 90f;
-                        rotateStart += ROTATE_TIME;
+                        rotateStart += rotateTime;
                     }
                 } else {
                     dir = rotatedDirs(-90);
@@ -680,7 +691,7 @@ class Cell
                     else {
                         rotateAngle += 90f;
                         rotateTarget += 90f;
-                        rotateStart += ROTATE_TIME;
+                        rotateStart += rotateTime;
                     }
                 }
                 setDirs(dir);
@@ -742,7 +753,7 @@ class Cell
         blipsIncoming = 0;
         
         // If we're the server, create new outgoing blips once in a while.
-        if (isRoot && count % 8 == 0) {
+        if (isRoot && count % 6 == 0) {
             for (int c = 0; c < Dir.cardinals.length; ++c) {
                 Dir d = Dir.cardinals[c];
                 int ord = d.ordinal();
@@ -809,7 +820,9 @@ class Cell
 
         canvas.save();
 	    canvas.clipRect(sx, sy, ex, ey);
-    
+        cellPaint.setStyle(Paint.Style.STROKE);
+        cellPaint.setColor(0xff000000);
+
 		// Draw the background tile.
 		{
 			Image bgImage = Image.BG;
@@ -819,7 +832,7 @@ class Cell
 				bgImage = Image.EMPTY;
 			else if (isLocked)
 				bgImage = Image.LOCKED;
-			canvas.drawBitmap(bgImage.bitmap, sx, sy, cellPaint);
+			canvas.drawBitmap(bgImage.bitmap, sx, sy, null);
 		}
 
 		// Draw the highlight band, if active.
@@ -854,7 +867,7 @@ class Cell
 				// Draw the cable pixmap.
 				Bitmap pixmap = isConnected ? connectedDirs.normalImg :
 					                          connectedDirs.greyImg;
-				canvas.drawBitmap(pixmap, sx, sy, cellPaint);
+				canvas.drawBitmap(pixmap, sx, sy, null);
 				canvas.restore();
 			}
 
@@ -873,7 +886,7 @@ class Cell
 						equipImage = Image.COMP1;
 				}
 				if (equipImage != null)
-					canvas.drawBitmap(equipImage.bitmap, sx, sy, cellPaint);
+					canvas.drawBitmap(equipImage.bitmap, sx, sy, null);
 			}
 		}
 		
@@ -881,8 +894,8 @@ class Cell
 		// border around it.
 		if (haveFocus) {
 			cellPaint.setStyle(Paint.Style.STROKE);
-			cellPaint.setColor(Color.RED);
-			cellPaint.setStrokeWidth(0f);
+			cellPaint.setColor(0x60ff0000);
+			cellPaint.setStrokeWidth(cellWidth / 8);
 
 			canvas.drawRect(sx, sy, ex - 1, ey - 1, cellPaint);
 		}
@@ -905,6 +918,52 @@ class Cell
      *                      any, along whatever connection leg they're on.
      */
     protected void doDrawBlips(Canvas canvas, long now, float frac) {
+        // We don't check stateValid.  Blips are always drawn.
+        
+        // But if this cell's wiring is invisible, then its blips need
+        // to be too.
+        if (isBlind)
+            return;
+        
+        final int sx = cellLeft;
+        final int sy = cellTop;
+
+        // Note that we don't do any clipping.  A blip which is passing
+        // from one cell to another needs to be drawn overlapping both
+        // cells.
+        
+        // Now draw in all blips.  We use "glow-in" / "glow-out" images
+        // for the server and terminals.
+        final boolean isTerm = numDirs() == 1 || isRoot;
+        final Image[] blips = isTerm ? BLIP_T_IMAGES :
+                              isConnected ? BLIP_IMAGES : BLIP_G_IMAGES;
+        final int nblips = blips.length;
+        int indexIn = Math.round((float) (nblips - 1) * frac) % nblips;
+        if (indexIn < 0)
+            indexIn = 0;
+        int indexOut = Math.round((float) (nblips - 1) * (1 - frac)) % nblips;
+        if (indexOut < 0)
+            indexOut = 0;
+        for (int c = 0; c < Dir.cardinals.length; ++c) {
+            Dir d = Dir.cardinals[c];
+            int ord = d.ordinal();
+            final int xoff = Dir.cardinalOffs[c][0];
+            final int yoff = Dir.cardinalOffs[c][1];
+            if ((blipsIncoming & ord) != 0) {
+                final float inp = (1.0f - frac) * cellWidth / 2f;
+                final float x = sx + xoff * inp;
+                final float y = sy + yoff * inp;
+                Image blipImage = blips[indexIn];
+                canvas.drawBitmap(blipImage.bitmap, x, y, cellPaint);
+            }
+            if ((blipsOutgoing & ord) != 0) {
+                final float outp = frac * cellWidth / 2f;
+                final float x = sx + xoff * outp;
+                final float y = sy + yoff * outp;
+                Image blipImage = blips[indexOut];
+                canvas.drawBitmap(blipImage.bitmap, x, y, cellPaint);
+            }
+        }
     }
 
 	
@@ -943,7 +1002,6 @@ class Cell
      * Restore the game state of this cell from the given Bundle, as
      * part of restoring the overall game state.
      * 
-     
      * @param	map			A Bundle containing the saved state.
      */
     void restoreState(Bundle map) {
@@ -965,27 +1023,66 @@ class Cell
     // Private Types.
     // ******************************************************************** //
 
-	/**
-	 * This enumeration defines the images, other than the cable images,
-	 * which we use.
-	 */
-	private enum Image {
-		NOTHING(R.drawable.nothing),
-		EMPTY(R.drawable.empty),
-		LOCKED(R.drawable.background_locked),
-		BG(R.drawable.background),
-		COMP1(R.drawable.computer1),
-		COMP2(R.drawable.computer2),
-		SERVER(R.drawable.server),
-		SERVER1(R.drawable.server1);
-
-		private Image(int r) { resid = r; }
-		
-		public final int resid;
+    /**
+     * This enumeration defines the images, other than the cable images,
+     * which we use.
+     */
+    private enum Image {
+        NOTHING(R.drawable.nothing),
+        EMPTY(R.drawable.empty),
+        LOCKED(R.drawable.background_locked),
+        BG(R.drawable.background),
+        COMP1(R.drawable.computer1),
+        COMP2(R.drawable.computer2),
+        SERVER(R.drawable.server),
+        SERVER1(R.drawable.server1),
+        BLIP_T01(R.drawable.blip_t01),
+        BLIP_T03(R.drawable.blip_t03),
+        BLIP_T05(R.drawable.blip_t05),
+        BLIP_T07(R.drawable.blip_t07),
+        BLIP_T08(R.drawable.blip_t08),
+        BLIP_T09(R.drawable.blip_t09),
+        BLIP_T10(R.drawable.blip_t10),
+        BLOB_14(R.drawable.blob_14),
+        BLOB_15(R.drawable.blob_15),
+        BLOB_16(R.drawable.blob_16),
+        BLOB_17(R.drawable.blob_17),
+        BLOB_18(R.drawable.blob_18),
+        BLOB_19(R.drawable.blob_19),
+        BLOB_20(R.drawable.blob_20),
+        BLOBG_14(R.drawable.blob_g_14),
+        BLOBG_15(R.drawable.blob_g_15),
+        BLOBG_16(R.drawable.blob_g_16),
+        BLOBG_17(R.drawable.blob_g_17),
+        BLOBG_18(R.drawable.blob_g_18),
+        BLOBG_19(R.drawable.blob_g_19),
+        BLOBG_20(R.drawable.blob_g_20);
+        
+        private Image(int r) { resid = r; }
+        
+        public final int resid;
         public Bitmap bitmap = null;
-	}
+    }
+    
+    // Images to show network data blips.
+    private static final Image[] BLIP_IMAGES = {
+        Image.BLOB_14, Image.BLOB_15, Image.BLOB_16, Image.BLOB_17,
+        Image.BLOB_18, Image.BLOB_19, Image.BLOB_20,
+    };
+    
+    // Images to show network data blips.
+    private static final Image[] BLIP_G_IMAGES = {
+        Image.BLOBG_14, Image.BLOBG_15, Image.BLOBG_16, Image.BLOBG_17,
+        Image.BLOBG_18, Image.BLOBG_19, Image.BLOBG_20,
+    };
 
-	
+    // Images to show network data blips arriving at a terminal.
+    private static final Image[] BLIP_T_IMAGES = {
+        Image.BLIP_T01, Image.BLIP_T03, Image.BLIP_T05, Image.BLIP_T07,
+        Image.BLIP_T08, Image.BLIP_T09, Image.BLIP_T10,
+    };
+
+
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
@@ -994,9 +1091,9 @@ class Cell
 	@SuppressWarnings("unused")
 	private static final String TAG = "netscramble";
 
-	// Time taken to rotate a cell, in ms.
-	private static final long ROTATE_TIME = 250;
-	
+    // Default time taken to rotate a cell, in ms.
+    private static final long ROTATE_DFLT_TIME = 250;
+    
 	// Time taken to display a highlight flash, in ms.
 	private static final long HIGHLIGHT_TIME = 200;
 	
@@ -1031,6 +1128,9 @@ class Cell
     private float rotateTarget = 0;
     private long rotateStart = 0;
 	private float rotateAngle = 0f;
+
+    // Duration of the current rotation, in ms.
+    private long rotateTime = 250;
 
 	// Status information for the highlight band across the cell.
 	// This is used to draw a diagonal band of highlightPos flicking across the

@@ -362,7 +362,17 @@ public class BoardView
 	// ******************************************************************** //
 	// Board Setup.
 	// ******************************************************************** //
+    
+    /**
+     * Enable or disable the network animation.
+     * 
+     * @param   enable          New network animation enablement state.
+     */
+    void setAnimEnable(boolean enable) {
+        drawBlips = enable;
+    }
 
+    
     /**
      * Set up the board for a new game.
      * 
@@ -370,6 +380,7 @@ public class BoardView
      * 							accordingly.
      */
     public void setupBoard(Skill sk) {
+        autosolveStop();
     	gameSkill = sk;
     	
         // Reset the board for this game.
@@ -385,6 +396,10 @@ public class BoardView
         Log.i(TAG, "Created net in " + tries + " tries with " +
         						cells + " cells (min " + minCells + ")");
 
+        // Now, save the "solved" state of the board.
+        solvedState = new Bundle();
+        saveBoard(solvedState);
+        
         // Jumble the board.  Also, if we're in blind mode, tell the
         // appropriate cells to go blind.
         for (int x = boardStartX; x < boardEndX; x++) {
@@ -620,14 +635,9 @@ public class BoardView
         while (!connectingCells.isEmpty()) {
             Cell cell = connectingCells.remove();
 
-            if (hasNewConnection(cell, Cell.Dir.U___, isConnected))
-                connectingCells.add(cell.next(Cell.Dir.U___));
-            if (hasNewConnection(cell, Cell.Dir._R__, isConnected))
-                connectingCells.add(cell.next(Cell.Dir._R__));
-            if (hasNewConnection(cell, Cell.Dir.__D_, isConnected))
-                connectingCells.add(cell.next(Cell.Dir.__D_));
-            if (hasNewConnection(cell, Cell.Dir.___L, isConnected))
-                connectingCells.add(cell.next(Cell.Dir.___L));
+            for (Cell.Dir d : Cell.Dir.cardinals)
+                if (hasNewConnection(cell, d, isConnected))
+                    connectingCells.add(cell.next(d));
         }
 
         // Finally, scan the connection flags.  Set every cell's connected
@@ -752,7 +762,7 @@ public class BoardView
     // ******************************************************************** //
     // Client Methods.
     // ******************************************************************** //
-  
+    
     /**
      * Update the state of the application for the current frame.
      * 
@@ -768,17 +778,48 @@ public class BoardView
      */
     @Override
     protected void doUpdate(long now) {
-        // Flag if any cell changed its connection state.
+        // See if we have programmed moves to execute.  If so, see if
+        // it's time for the next one.
+        if (programmedMoves != null && now - lastProgMove > SOLVE_STEP_TIME) {
+            if (programmedMoves.isEmpty()) {
+                // Since the last move has completed, we're now finished.
+                autosolveStop();
+            } else {
+                // Get the next move and execute it.
+                int[] move = programmedMoves.removeFirst();
+                Cell mc = cellMatrix[move[0]][move[1]];
+                int dirn = move[2];
+                
+                // If the cell isn't focused, focus it, and that's our move.
+                // If the cell is locked, unlock it, and that's our move.
+                // Otherwise do the actual move and update the connection state.
+                if (mc != focusedCell) {
+                    setFocus(mc);
+                    programmedMoves.addFirst(move);
+                } else if (mc.isLocked()) {
+                    mc.setLocked(false);
+                    programmedMoves.addFirst(move);
+                } else {
+                    // Make the cell's content visible.  Do the move.
+                    mc.setBlind(false);
+                    mc.rotate(dirn, SOLVE_ROTATE_TIME);
+                    updateConnections();
+                }
+
+                lastProgMove = now;
+            }
+        }
+
+        // Update all the cells.  Flag if any cell changed its
+        // connection state.
         Cell changedCell = null;
-        
-        // Update all the cells.
         for (int x = 0; x < gridWidth; ++x)
             for (int y = 0; y < gridHeight; ++y)
                 if (cellMatrix[x][y].doUpdate(now))
                     changedCell = cellMatrix[x][y];
 
         // Update all the data blips.
-        if (DRAW_BLIPS) {
+        if (drawBlips) {
             if (now - blipsLastAdvance >= BLIPS_TIME) {
                 for (int x = 0; x < gridWidth; ++x)
                     for (int y = 0; y < gridHeight; ++y)
@@ -841,7 +882,7 @@ public class BoardView
         // Draw the data blips in a separate pass so they can overlap
         // adjacent cells without getting overdrawn.  We draw directly
         // to the screen.
-        if (DRAW_BLIPS) {
+        if (drawBlips) {
             float frac = (float) (now - blipsLastAdvance) / (float) BLIPS_TIME;
             for (int x = 0; x < gridWidth; ++x)
                 for (int y = 0; y < gridHeight; ++y)
@@ -880,21 +921,25 @@ public class BoardView
 		    pressDown();
             return true;
 		case KeyEvent.KEYCODE_ENTER:
-			cellRotate(focusedCell, 1);
+            if (programmedMoves == null)
+                cellRotate(focusedCell, 1);
 			return true;
 		case KeyEvent.KEYCODE_Z:
 		case KeyEvent.KEYCODE_N:
 		case KeyEvent.KEYCODE_4:
-			cellRotate(focusedCell, -1);
+            if (programmedMoves == null)
+                cellRotate(focusedCell, -1);
 			return true;
 		case KeyEvent.KEYCODE_X:
 		case KeyEvent.KEYCODE_M:
 		case KeyEvent.KEYCODE_6:
-			cellRotate(focusedCell, 1);
+            if (programmedMoves == null)
+                cellRotate(focusedCell, 1);
 			return true;
 		case KeyEvent.KEYCODE_SPACE:
 		case KeyEvent.KEYCODE_0:
-			cellToggleLock(focusedCell);
+            if (programmedMoves == null)
+                cellToggleLock(focusedCell);
 			return true;
 		case KeyEvent.KEYCODE_P:
 		case KeyEvent.KEYCODE_9:
@@ -902,16 +947,20 @@ public class BoardView
 			return true;
 			
 		case KeyEvent.KEYCODE_DPAD_UP:
-			moveFocus(Cell.Dir.U___, 0, -1);
+            if (programmedMoves == null)
+                moveFocus(Cell.Dir.U___, 0, -1);
 			return true;
 		case KeyEvent.KEYCODE_DPAD_RIGHT:
-			moveFocus(Cell.Dir._R__, 1, 0);
+            if (programmedMoves == null)
+                moveFocus(Cell.Dir._R__, 1, 0);
 			return true;
 		case KeyEvent.KEYCODE_DPAD_DOWN:
-			moveFocus(Cell.Dir.__D_, 0, 1);
+            if (programmedMoves == null)
+                moveFocus(Cell.Dir.__D_, 0, 1);
 			return true;
  		case KeyEvent.KEYCODE_DPAD_LEFT:
- 			moveFocus(Cell.Dir.___L, -1, 0);
+            if (programmedMoves == null)
+                moveFocus(Cell.Dir.___L, -1, 0);
 			return true;
 		}
 		
@@ -965,7 +1014,8 @@ public class BoardView
             // Focus on the pressed cell.
             pressedCell = findCell(event.getX(), event.getY());
             if (pressedCell != null) {
-                setFocus(pressedCell);
+                if (programmedMoves == null)
+                    setFocus(pressedCell);
                 pressDown();
             }
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -1014,8 +1064,10 @@ public class BoardView
             // Cancel the long press handler.
             longPressHandler.removeCallbacks(longPress);
 
-            // If we got here, rotate the cell.
-            cellRotate(focusedCell, 1);
+            // If we got here, rotate the cell -- except user input is ignored
+            // while executing programmed moves.
+            if (programmedMoves == null)
+                cellRotate(focusedCell, 1);
         }
     }
     
@@ -1027,7 +1079,8 @@ public class BoardView
         @Override
         public void run() {
             longPressed = true;
-            cellToggleLock(focusedCell);
+            if (programmedMoves == null)
+                cellToggleLock(focusedCell);
         }
     };
     
@@ -1158,7 +1211,115 @@ public class BoardView
 		rootCell.setSolved(true);
 	}
 
+
+    // ******************************************************************** //
+    // Autosolver.
+    // ******************************************************************** //
+
+	/**
+	 * Auto-solve the puzzle, by generating a list of programmed moves
+	 * which will set each cell to the position it was in when the
+	 * network was created.
+	 * 
+	 * We generate the moves list in breadth-first order.  This is harder
+	 * to do, but looks nicer.
+	 */
+	void autosolve() {
+	    // If we're already solving, just toggle the state.
+	    if (programmedMoves != null) {
+	        autosolveStop();
+	        return;
+	    }
+	
+        Bundle solution = solvedState;
+        if (solution == null)
+            return;
+        
+        // Read the solved state, accounting for device rotations etc.
+        GameState state = new GameState(gridWidth, gridHeight, gameSkill);
+        if (!restoreBoard(solution, state))
+            return;
+        
+        // Create the programmed move list.
+        programmedMoves = new LinkedList<int[]>();
+
+        // Clear the list of cells which are connected but
+        // haven't had their onward connections checked yet.
+        connectingCells.clear();
+        
+        // Reset the array of solved flags per cell.
+        for (int x = 0; x < gridWidth; x++)
+            for (int y = 0; y < gridHeight; y++)
+                isConnected[x][y] = false;
+        
+        // Set the root cell up to be solved first.
+        connectingCells.add(state.root);
+        isConnected[state.root.x()][state.root.y()] = true;
+
+        // While there are still cells to investigate, solve them, check
+        // them for connections that we haven't flagged yet, and add those
+        // cells to the connectingCells.
+        while (!connectingCells.isEmpty()) {
+            Cell cell = connectingCells.removeFirst();
+            solveCell(cell, programmedMoves);
+
+            for (Cell.Dir d : Cell.Dir.cardinals) {
+                if (cell.hasConnection(d)) {
+                    Cell next = cell.next(d);
+                    if (next != null && !isConnected[next.x()][next.y()]) {
+                        connectingCells.addLast(next);
+                        isConnected[next.x()][next.y()] = true;
+                    }
+                }
+            }
+        }
+  
+        lastProgMove = 0;
+        parentApp.selectAutosolveMode(true);
+	}
+	
+
+    /**
+     * Stop the autosolver.
+     */
+    void autosolveStop() {
+        programmedMoves = null;
+        lastProgMove = 0;
+        parentApp.selectAutosolveMode(false);
+    }
     
+    
+	/**
+	 * Solve the given cell.  This doesn't actually do anything, except
+	 * add a move to the given moves list to put the cell into the
+	 * solved state.
+	 * 
+	 * @param  sc          The solved version of the cell.
+	 * @param  moves       List of moves that we're building.
+	 */
+    private void solveCell(Cell sc, LinkedList<int[]> moves) {
+        Cell mc = cellMatrix[sc.x()][sc.y()];
+        Cell.Dir sd = sc.dirs();
+        Cell.Dir md = mc.dirs();
+        if (sc.dirs() != md) {
+            int[] move;
+            if (mc.rotatedDirs(90) == sd) {
+                move = new int[] { mc.x(), mc.y(), 90 };
+                moves.add(move);
+            } else if (mc.rotatedDirs(-90) == sd) {
+                move = new int[] { mc.x(), mc.y(), -90 };
+                moves.add(move);
+            } else if (mc.rotatedDirs(180) == sd) {
+                int rot = rng.nextBoolean() ? 90 : -90;
+                move = new int[] { mc.x(), mc.y(), rot };
+                moves.add(move);
+                move = new int[] { mc.x(), mc.y(), rot };
+                moves.add(move);
+            }
+        }
+    }
+    
+		
     // ******************************************************************** //
     // State Save/Restore.
     // ******************************************************************** //
@@ -1173,23 +1334,40 @@ public class BoardView
      */
     protected void saveState(Bundle outState) {
     	// Save the game state of the board.
-    	outState.putInt("gridWidth", gridWidth);
-    	outState.putInt("gridHeight", gridHeight);
-    	outState.putInt("rootX", rootCell.x());
-    	outState.putInt("rootY", rootCell.y());
-    	outState.putInt("focusX", focusedCell.x());
-    	outState.putInt("focusY", focusedCell.y());
-    	
-    	// Save the states of all the cells which are in use.
+        saveBoard(outState);
+        
+        // Also save the solved state, if any.
+        if (solvedState != null)
+            outState.putBundle("solvedState", solvedState);
+    }
+
+
+    /**
+     * Save game state so that the user does not lose anything
+     * if the game process is killed while we are in the 
+     * background.
+     * 
+     * @param   outState        A Bundle in which to place any state
+     *                          information we wish to save.
+     */
+    private void saveBoard(Bundle outState) {
+        outState.putInt("gridWidth", gridWidth);
+        outState.putInt("gridHeight", gridHeight);
+        outState.putInt("rootX", rootCell.x());
+        outState.putInt("rootY", rootCell.y());
+        outState.putInt("focusX", focusedCell.x());
+        outState.putInt("focusY", focusedCell.y());
+        
+        // Save the states of all the cells which are in use.
         for (int x = 0; x < gridWidth; ++x) {
             for (int y = 0; y < gridHeight; ++y) {
-            	String key = "cell " + x + "," + y;
+                String key = "cell " + x + "," + y;
                 outState.putBundle(key, cellMatrix[x][y].saveState());
             }
         }
     }
 
-    
+   
     /**
      * Restore our game state from the given Bundle.
      * 
@@ -1201,23 +1379,49 @@ public class BoardView
      */
     boolean restoreState(Bundle map, Skill skill) {
     	// Restore the game state of the board.
-    	gameSkill = skill;
-    	resetBoard(gameSkill);
-    	
-    	// Check that the saved board size is compatible with what we
-    	// have now.  If it is identical, then do a straight restore; if
-    	// it's rotated, then restore and rotate.
-    	int sgw = map.getInt("gridWidth");
-    	int sgh = map.getInt("gridHeight");
-    	if (sgw == gridWidth && sgh == gridHeight)
-    		return restoreNormal(map);
-    	else if (sgw == gridHeight && sgh == gridWidth) {
-    		if (gridWidth > gridHeight)
-    			return restoreRotLeft(map);
-    		else
-    			return restoreRotRight(map);
-    	} else
-    		return false;
+        gameSkill = skill;
+        resetBoard(skill);
+        
+        // Restore the actual game state.
+        GameState state = new GameState(cellMatrix);
+        boolean ok = restoreBoard(map, state);
+        rootCell = state.root;
+        setFocus(state.focus);
+
+        // Also restore the solved state, if any.
+        if (ok && map.containsKey("solvedState")) {
+            solvedState = map.getBundle("solvedState");
+            ok = solvedState != null;
+        }
+        
+        return ok;
+    }
+    
+    
+    /**
+     * Restore our game state from the given Bundle.
+     * 
+     * @param   map         A Bundle containing the saved state.
+     * @param   state       Record to place the restored state in.
+     * @return              true if the state was restored OK; false
+     *                      if the saved state was incompatible with the
+     *                      current configuration.
+     */
+    private boolean restoreBoard(Bundle map, GameState state) {
+        // Check that the saved board size is compatible with what we
+        // have now.  If it is identical, then do a straight restore; if
+        // it's rotated, then restore and rotate.
+        int sgw = map.getInt("gridWidth");
+        int sgh = map.getInt("gridHeight");
+        if (sgw == gridWidth && sgh == gridHeight)
+            return restoreNormal(map, state);
+        else if (sgw == gridHeight && sgh == gridWidth) {
+            if (gridWidth > gridHeight)
+                return restoreRotLeft(map, state);
+            else
+                return restoreRotRight(map, state);
+        } else
+            return false;
     }
     
 
@@ -1225,24 +1429,25 @@ public class BoardView
      * Restore our game state from the given Bundle.
      * 
      * @param	map			A Bundle containing the saved state.
+     * @param   state       Record to place the restored state in.
      * @return				true if the state was restored OK; false
      * 						if the saved state was incompatible with the
      * 						current configuration.
      */
-    private boolean restoreNormal(Bundle map) {
+    private boolean restoreNormal(Bundle map, GameState state) {
     	// Set up the root cell and focused cell.
     	int rx = map.getInt("rootX");
     	int ry = map.getInt("rootY");
-    	rootCell = cellMatrix[rx][ry];
+    	state.root = state.matrix[rx][ry];
     	int fx = map.getInt("focusX");
     	int fy = map.getInt("focusY");
-    	setFocus(cellMatrix[fx][fy]);
+    	state.focus = state.matrix[fx][fy];
 
     	// Restore the states of all the cells which are in use.
         for (int x = 0; x < gridWidth; ++x) {
             for (int y = 0; y < gridHeight; ++y) {
             	String key = "cell " + x + "," + y;
-            	cellMatrix[x][y].restoreState(map.getBundle(key));
+            	state.matrix[x][y].restoreState(map.getBundle(key));
             }
         }
 
@@ -1255,30 +1460,31 @@ public class BoardView
      * left as we do so.
      * 
      * @param	map			A Bundle containing the saved state.
+     * @param   state       Record to place the restored state in.
      * @return				true if the state was restored OK; false
      * 						if the saved state was incompatible with the
      * 						current configuration.
      */
-    private boolean restoreRotLeft(Bundle map) {
+    private boolean restoreRotLeft(Bundle map, GameState state) {
     	// Set up the root cell.  Flip the co-ordinates.
     	int rx = map.getInt("rootX");
     	int ry = map.getInt("rootY");
-    	rootCell = cellMatrix[ry][gridHeight - rx - 1];
+    	state.root = state.matrix[ry][gridHeight - rx - 1];
     	int fx = map.getInt("focusX");
     	int fy = map.getInt("focusY");
-    	setFocus(cellMatrix[fy][gridHeight - fx - 1]);
+    	state.focus = state.matrix[fy][gridHeight - fx - 1];
 
     	// Restore the states of all the cells which are in use.
         for (int y = 0; y < gridHeight; ++y) {
         	for (int x = 0; x < gridWidth; ++x) {
-            	if (x >= cellMatrix.length || y >= cellMatrix[x].length)
+            	if (x >= state.matrix.length || y >= state.matrix[x].length)
             		return false;
             	String key = "cell " + y + "," + x;
             	Bundle cmap = map.getBundle(key);
             	if (cmap == null)
             		return false;
-            	cellMatrix[x][gridHeight - y - 1].restoreState(cmap);
-            	cellMatrix[x][gridHeight - y - 1].rotateImmediate(-90);
+            	state.matrix[x][gridHeight - y - 1].restoreState(cmap);
+            	state.matrix[x][gridHeight - y - 1].rotateImmediate(-90);
             }
         }
 
@@ -1291,30 +1497,31 @@ public class BoardView
      * right as we do so.
      * 
      * @param	map			A Bundle containing the saved state.
+     * @param   state       Record to place the restored state in.
      * @return				true if the state was restored OK; false
      * 						if the saved state was incompatible with the
      * 						current configuration.
      */
-    private boolean restoreRotRight(Bundle map) {
+    private boolean restoreRotRight(Bundle map, GameState state) {
     	// Set up the root cell.  Flip the co-ordinates.
     	int rx = map.getInt("rootX");
     	int ry = map.getInt("rootY");
-    	rootCell = cellMatrix[gridWidth - ry - 1][rx];
+    	state.root = state.matrix[gridWidth - ry - 1][rx];
     	int fx = map.getInt("focusX");
     	int fy = map.getInt("focusY");
-    	setFocus(cellMatrix[gridWidth - fy - 1][fx]);
+    	state.focus = state.matrix[gridWidth - fy - 1][fx];
 
     	// Restore the states of all the cells which are in use.
         for (int y = 0; y < gridHeight; ++y) {
         	for (int x = 0; x < gridWidth; ++x) {
-            	if (x >= cellMatrix.length || y >= cellMatrix[x].length)
+            	if (x >= state.matrix.length || y >= state.matrix[x].length)
             		return false;
             	String key = "cell " + y + "," + x;
             	Bundle cmap = map.getBundle(key);
             	if (cmap == null)
             		return false;
-            	cellMatrix[gridWidth - x - 1][y].restoreState(cmap);
-            	cellMatrix[gridWidth - x - 1][y].rotateImmediate(90);
+            	state.matrix[gridWidth - x - 1][y].restoreState(cmap);
+            	state.matrix[gridWidth - x - 1][y].rotateImmediate(90);
             }
         }
 
@@ -1355,20 +1562,83 @@ public class BoardView
     
     
     // ******************************************************************** //
+    // Private Classes.
+    // ******************************************************************** //
+
+    /**
+     * A game state.  Saves a state of the game board, either to save
+     * where we are, or to record an initial or solved position.
+     */
+    private class GameState {
+        // Create a game state based on the given cell matrix.
+        GameState(Cell[][] m) {
+            matrix = m;
+        }
+        
+        // Create a game state with a new cell matrix.
+        GameState(int w, int h, Skill skill) {
+            matrix = new Cell[w][h];
+            for (int y = 0; y < h; ++y) {
+                for (int x = 0; x < w; ++x) {
+                    Cell cell = new Cell(parentApp, BoardView.this, x, y);
+                    matrix[x][y] = cell;
+                }
+            }
+            
+            // Save the width and height of the playing board for this skill
+            // level, and the board placement within the overall cell grid.
+            int bw = screenConfig.getBoardWidth(skill, w, h);
+            int bh = screenConfig.getBoardHeight(skill, w, h);
+            int bsx = (w - bw) / 2;
+            int bex = bsx + bw;
+            int bsy = (h - bh) / 2;
+            int bey = bsy + bh;
+            
+            boolean wrap = skill.wrapped;
+            Cell u, d, l, r;
+            for (int x = 0; x < w; x++) {
+                for (int y = 0; y < h; y++) {
+                    matrix[x][y].reset(wrap ? Cell.Dir.NONE : Cell.Dir.FREE);
+                    
+                    // Re-calculate who this cell's neighbours are.
+                    u = d = l = r = null;
+                    if (wrap || y > bsy)
+                        u = matrix[x][decr(y, bsy, bey)];
+                    if (wrap || y < bey - 1)
+                        d = matrix[x][incr(y, bsy, bey)];
+                    if (wrap || x > bsx)
+                        l = matrix[decr(x, bsx, bex)][y];
+                    if (wrap || x < bex - 1)
+                        r = matrix[incr(x, bsx, bex)][y];
+                    matrix[x][y].setNeighbours(u, d, l, r);
+                }
+            }
+        }
+        
+        Cell root = null;
+        Cell focus = null;
+        Cell[][] matrix = null;
+    }
+    
+    
+    // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
 
     // Debugging tag.
 	private static final String TAG = "netscramble";
 	
-	// Iff true, draw blips representing data moving through the network.
-	private static final boolean DRAW_BLIPS = false;
-	
 	// Time in ms for a long screen or centre-button press.
 	private static final int LONG_PRESS = 650;
     
     // Time a blip takes to cross half a cell, in ms.
     private static final long BLIPS_TIME = 300;
+
+    // Rate at which we run moves in solve mode, in ms.
+    private static final long SOLVE_STEP_TIME = 800;
+
+    // Time taken to rotate a cell in solve mode, in ms.
+    private static final long SOLVE_ROTATE_TIME = 350;
 
     // Random number generator for the game.  We use a Mersenne Twister,
 	// which is a high-quality and fast implementation of java.util.Random.
@@ -1385,6 +1655,9 @@ public class BoardView
     // Screen configuration which matches the physical screen size.
     private Screen screenConfig = null;
     
+    // Iff true, draw blips representing data moving through the network.
+    private boolean drawBlips = true;
+
     // Width and height of the playing board, in cells.  This is tailored
 	// to suit the screen size and orientation.  It should be invariant on
 	// any given device except that it will rotate 90 degrees when the
@@ -1396,7 +1669,11 @@ public class BoardView
     // by gridHeight, which is large enough to contain the game board at
 	// any skill level.
 	private Cell[][] cellMatrix;
-	
+    
+    // "Solved" (i.e. initial, pre-scrambled) state of the board.  This
+    // is the canonical solution.
+    private Bundle solvedState = null;
+
     // Width and height of the cells in the board,  in pixels.
 	private int cellWidth;
 	private int cellHeight;
@@ -1448,6 +1725,15 @@ public class BoardView
     
     // Count of data blip generations.
     private int blipCount = 0;
+    
+    // Programed moves -- if this list is non-null and non-empty,
+    // it contains a set of moves to be performed without user input.
+    // Each move consists of a cell X and Y, and the number of degrees
+    // to rotate the cell -- which must be either -180, -90, 90, or 180.
+    private LinkedList<int[]> programmedMoves = null;
 
+    // Time a which we executed the last move in the programme.
+    private long lastProgMove = 0;
+    
 }
 
