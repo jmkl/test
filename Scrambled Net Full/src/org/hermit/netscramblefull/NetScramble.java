@@ -147,10 +147,9 @@ public class NetScramble
         super.onCreate(icicle);
 
         // Set up the standard dialogs.
-        createMessageBox(R.string.button_close);
         setAboutInfo(R.string.about_text);
-        setHomeInfo(R.string.button_homepage, R.string.url_homepage);
-        setLicenseInfo(R.string.button_license, R.string.url_license);
+        setHomeInfo(R.string.url_homepage);
+        setLicenseInfo(R.string.url_license);
 
         // Create our EULA box.
         createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);       
