@@ -21,7 +21,9 @@ package org.hermit.android.sound;
 
 
 /**
- * Class representing a specific sound effect.
+ * Class representing a specific sound effect.  Apps can create an
+ * instance by calling {@link Player#addEffect(int)}, or
+ * {@link Player#addEffect(int, float)}.
  */
 public class Effect
 {

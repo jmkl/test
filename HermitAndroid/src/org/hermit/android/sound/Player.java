@@ -26,7 +26,9 @@ import android.media.SoundPool;
 
 
 /**
- * Main sound effects player class.
+ * Main sound effects player class.  This is a pretty thin wrapper around
+ * {@link android.media.SoundPool}, but adds some mild usefulness such as
+ * per-effect volume.
  */
 public class Player
 {
