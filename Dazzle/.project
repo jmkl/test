@@ -32,9 +32,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>Hermit Android</name>
+			<name>HermitAndroid</name>
 			<type>2</type>
-			<locationURI>Workspace/Hermit%20Android/lib</locationURI>
+			<locationURI>_android_HermitAndroid/src</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
