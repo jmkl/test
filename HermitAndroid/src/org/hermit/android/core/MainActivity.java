@@ -197,22 +197,9 @@ public class MainActivity
      * {@link #setHomeInfo(int, int)}, {@link #setAboutInfo(int)} and
      * {@link #setLicenseInfo(int, int)}; then pop up a dialog by calling
      * {@link #showAbout()}.
-     */
-    public void createMessageBox() {
-        messageDialog = new InfoBox(this);
-        String version = appUtils.getVersionString();
-        messageDialog.setTitle(version);
-    }
-
-
-    /**
-     * Create a dialog for help / about boxes etc.  If you want to display
-     * one of those, set up the info in it by calling
-     * {@link #setHomeInfo(int, int)}, {@link #setAboutInfo(int)} and
-     * {@link #setLicenseInfo(int, int)}; then pop up a dialog by calling
-     * {@link #showAbout()}.
      * 
      * @param   close        Resource ID of the close button.
+     * @deprecated           The message box is now created automatically.
      */
     @Deprecated
     public void createMessageBox(int close) {
@@ -223,8 +210,7 @@ public class MainActivity
 
 
     /**
-     * Set up the about info for dialogs.  See
-     * {@link #createMessageBox(int)}.
+     * Set up the about info for dialogs.  See {@link #showAbout()}.
      * 
      * @param   about        Resource ID of the about text.
      */
@@ -234,8 +220,7 @@ public class MainActivity
 
 
     /**
-     * Set up the homepage info for dialogs.  See
-     * {@link #createMessageBox(int)}.
+     * Set up the homepage info for dialogs.  See {@link #showAbout()}.
      * 
      * @param   link         Resource ID of the URL the button links to.
      */
@@ -246,8 +231,7 @@ public class MainActivity
 
 
     /**
-     * Set up the homepage info for dialogs.  See
-     * {@link #createMessageBox(int)}.
+     * Set up the homepage info for dialogs.  See {@link #showAbout()}.
      * 
      * @param   button       Resource ID of the button text.
      * @param   link         Resource ID of the URL the button links to.
@@ -260,8 +244,7 @@ public class MainActivity
 
 
     /**
-     * Set up the license info for dialogs.  See
-     * {@link #createMessageBox(int)}.
+     * Set up the license info for dialogs.  See {@link #showAbout()}.
      * 
      * @param   link         Resource ID of the URL the button links to.
      */
@@ -272,8 +255,7 @@ public class MainActivity
     
 
     /**
-     * Set up the license info for dialogs.  See
-     * {@link #createMessageBox(int)}.
+     * Set up the license info for dialogs.  See {@link #showAbout()}.
      * 
      * @param   button       Resource ID of the button text.
      * @param   link         Resource ID of the URL the button links to.
@@ -286,16 +268,33 @@ public class MainActivity
     
     
     /**
-     * Show an about dialog.  You need to have created the dialog by
-     * calling {@link #createMessageBox(int)}, and configured it by
+     * Show an about dialog.  You need to have configured it by
      * calling {@link #setAboutInfo(int)}, {@link #setHomeInfo(int, int)}
      * and {@link #setLicenseInfo(int, int)}.
      */
     public void showAbout() {
+        // Create the dialog the first time.
+        if (messageDialog == null)
+            createMessageBox();
+
         messageDialog.setLinkButton(1, homeButton, homeLink);
         if (licButton != 0 && licLink != 0)
             messageDialog.setLinkButton(2, licButton, licLink);
         messageDialog.show(aboutText);
+    }
+
+
+    /**
+     * Create a dialog for help / about boxes etc.  If you want to display
+     * one of those, set up the info in it by calling
+     * {@link #setHomeInfo(int, int)}, {@link #setAboutInfo(int)} and
+     * {@link #setLicenseInfo(int, int)}; then pop up a dialog by calling
+     * {@link #showAbout()}.
+     */
+    private void createMessageBox() {
+        messageDialog = new InfoBox(this);
+        String version = appUtils.getVersionString();
+        messageDialog.setTitle(version);
     }
 
 
@@ -409,7 +408,7 @@ public class MainActivity
     private OneTimeDialog eulaDialog = null;
 
     // Dialog used to display about etc.
-    private InfoBox messageDialog;
+    private InfoBox messageDialog = null;
 
     // IDs of the button strings and URLs for "Home" and "License".
     private int homeButton = 0;

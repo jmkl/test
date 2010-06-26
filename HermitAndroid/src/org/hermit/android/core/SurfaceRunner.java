@@ -703,7 +703,6 @@ public abstract class SurfaceRunner
     /**
      * Determine whether the caller is on the surface's animation thread.
      * 
-     * @param  resid       The ID of the resource we want.
      * @return             The resource value.
      */
     public boolean onSurfaceThread() {
@@ -901,31 +900,22 @@ public abstract class SurfaceRunner
 	/**
 	 * Base interface for the ticker we use to control the animation.
 	 */
-	private interface Ticker
-	{
-	    /**
-	     * Stop this thread.  There will be no new calls to tick() after this.
-	     */
+	private interface Ticker {
+	    // Stop this thread.  There will be no new calls to tick() after this.
 	    public void kill();
 
-	    /**
-	     * Stop this thread and wait for it to die.  When we return, it is
-	     * guaranteed that tick() will never be called again.
-	     * 
-	     * Caution: if this is called from within tick(), deadlock is
-	     * guaranteed.
-	     */
+	    // Stop this thread and wait for it to die.  When we return, it is
+	    // guaranteed that tick() will never be called again.
+	    // 
+	    // Caution: if this is called from within tick(), deadlock is
+	    // guaranteed.
 	    public void killAndWait();
 
-	    /**
-	     * Run method for this thread -- simply call tick() a lot until
-	     * enable is false.
-	     */
+	    // Run method for this thread -- simply call tick() a lot until
+	    // enable is false.
 	    public void run();
 
-	    /**
-	     * Determine whether this ticker is still going.
-	     */
+	    // Determine whether this ticker is still going.
 	    public boolean isAlive();
 	}
 	
@@ -938,9 +928,7 @@ public abstract class SurfaceRunner
 	    implements Ticker
 	{
 
-	    /**
-	     * Constructor -- start at once.
-	     */
+	    // Constructor -- start at once.
 	    private ThreadTicker() {
 	        super("Surface Runner");
 	        Log.v(TAG, "ThreadTicker: start");
@@ -948,22 +936,18 @@ public abstract class SurfaceRunner
 	        start();
 	    }
 
-	    /**
-	     * Stop this thread.  There will be no new calls to tick() after this.
-	     */
+	    // Stop this thread.  There will be no new calls to tick() after this.
 	    public void kill() {
 	        Log.v(TAG, "ThreadTicker: kill");
 	        
 	        enable = false;
 	    }
 
-	    /**
-	     * Stop this thread and wait for it to die.  When we return, it is
-	     * guaranteed that tick() will never be called again.
-	     * 
-	     * Caution: if this is called from within tick(), deadlock is
-	     * guaranteed.
-	     */
+	    // Stop this thread and wait for it to die.  When we return, it is
+	    // guaranteed that tick() will never be called again.
+	    // 
+	    // Caution: if this is called from within tick(), deadlock is
+	    // guaranteed.
 	    public void killAndWait() {
 	        Log.v(TAG, "ThreadTicker: killAndWait");
 	        
@@ -988,10 +972,8 @@ public abstract class SurfaceRunner
 	        }
 	    }
 
-	    /**
-	     * Run method for this thread -- simply call tick() a lot until
-	     * enable is false.
-	     */
+	    // Run method for this thread -- simply call tick() a lot until
+	    // enable is false.
 	    @Override
 	    public void run() {
 	        while (enable) {
@@ -1016,19 +998,15 @@ public abstract class SurfaceRunner
 		extends Thread
 	    implements Ticker
 	{
-	    /**
-	     * Constructor -- start at once.
-	     */
+	    // Constructor -- start at once.
 	    private LoopTicker() {
 	        super("Surface Runner");
 	        Log.v(TAG, "Ticker: start");
 	        start();
 	    }
 
-	    /**
-	     * Post a tick.  An update will be done near-immediately on the
-	     * appropriate thread.
-	     */
+	    // Post a tick.  An update will be done near-immediately on the
+	    // appropriate thread.
 	    public void post() {
 	    	synchronized (this) {
 	        	if (msgHandler == null)
@@ -1042,9 +1020,7 @@ public abstract class SurfaceRunner
 	    	}
 	    }
 
-	    /**
-	     * Stop this thread.  There will be no new calls to tick() after this.
-	     */
+	    // Stop this thread.  There will be no new calls to tick() after this.
 	    public void kill() {
 	        Log.v(TAG, "LoopTicker: kill");
 
@@ -1060,13 +1036,11 @@ public abstract class SurfaceRunner
 	        }
 	    }
 
-	    /**
-	     * Stop this thread and wait for it to die.  When we return, it is
-	     * guaranteed that tick() will never be called again.
-	     * 
-	     * Caution: if this is called from within tick(), deadlock is
-	     * guaranteed.
-	     */
+	    // Stop this thread and wait for it to die.  When we return, it is
+	    // guaranteed that tick() will never be called again.
+	    // 
+	    // Caution: if this is called from within tick(), deadlock is
+	    // guaranteed.
 	    public void killAndWait() {
 	        Log.v(TAG, "LoopTicker: killAndWait");
 	        
@@ -1100,11 +1074,13 @@ public abstract class SurfaceRunner
 	        }
 	    }
 
-		public void run() {
+		@Override
+        public void run() {
 			Looper.prepare();
 
 			msgHandler = new Handler() {
-				public void handleMessage(Message msg) {
+				@Override
+                public void handleMessage(Message msg) {
 					switch (msg.what) {
 					case MSG_TICK:
 						tick();
