@@ -4,6 +4,6 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="src" path="lib"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Hermit Library"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/HermitLibrary"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
