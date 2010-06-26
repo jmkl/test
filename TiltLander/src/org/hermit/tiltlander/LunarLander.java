@@ -82,10 +82,9 @@ public class LunarLander
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 
         // Set up the standard dialogs.
-        createMessageBox(R.string.button_close);
         setAboutInfo(R.string.about_text);
-        setHomeInfo(R.string.button_homepage, R.string.url_homepage);
-        setLicenseInfo(R.string.button_license, R.string.url_license);
+        setHomeInfo(R.string.url_homepage);
+        setLicenseInfo(R.string.url_license);
 
         // turn off the window's title bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
