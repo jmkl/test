@@ -43,7 +43,6 @@ import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
-import android.util.Log;
 
 
 /**
@@ -497,7 +496,6 @@ class CommView
 	    public void onSignalStrengthChanged(int asu) {
 	        try {
 	            synchronized (this) {
-	                Log.v(TAG, "OLD SIG: ASU=" + asu);
 	                cellAsu = asu;
 	                updateHead();
 	                if (cellState == ServiceState.STATE_IN_SERVICE ||
@@ -515,10 +513,9 @@ class CommView
 	            synchronized (this) {
 	                if (signalStrength.isGsm()) {
 	                    cellAsu = signalStrength.getGsmSignalStrength();
-	                    Log.v(TAG, "NEW SIG: GSM=" + cellAsu);
 	                } else {
 	                    int cdma = signalStrength.getCdmaDbm();
-	                    int evdo = signalStrength.getEvdoDbm();
+	                    // int evdo = signalStrength.getEvdoDbm();
 
 	                    // TODO: The EVDO numbers seem crazy big.  Using just the
 	                    // CDMA number gives nice results.
@@ -526,7 +523,6 @@ class CommView
 
 	                    // Convert to ASU.  (Sort of.)
 	                    cellAsu = Math.round((max + 113f) / 2f);
-	                    Log.v(TAG, "NEW SIG: CDMA=" + cdma + "; evdo=" + evdo + "; asu=" + cellAsu);
 	                }
 	                updateHead();
 	                if (cellState == ServiceState.STATE_IN_SERVICE ||

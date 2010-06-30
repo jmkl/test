@@ -69,7 +69,7 @@ class ImageAtom
 		
 		loadHandler = new Handler();
 		
-		cache.addObserver(this);
+		fileCache.addObserver(this);
 	}
 
    
@@ -124,7 +124,7 @@ class ImageAtom
         private final URL imgUrl;
 	}
 	
-	
+
 	// ******************************************************************** //
 	// Image Loading.
 	// ******************************************************************** //

@@ -404,10 +404,11 @@ class SolarView
      * which links to the activity, the activity will be leaked (i.e.
      * prevented from being garbage collected).  Hence unbind it here.
      */
-	@Override
-    protected void unbindResources() {
-		FILES_SOHO.deleteObserver(this);
-		SRC_DSD.deleteObserver(this);
+	protected void unbindResources() {
+		databaseHelper = null;
+		FILES_SOHO.deleteObservers();
+		SRC_EPAM.deleteObservers();
+		SRC_DSD.deleteObservers();
     }
     
 
@@ -599,7 +600,7 @@ class SolarView
 	/**
      * This class helps open, create, and upgrade the solar database.
      */
-    private static final class DbHelper extends SQLiteOpenHelper {
+    private final class DbHelper extends SQLiteOpenHelper {
     	DbHelper(Context context) {
             super(context, DB_NAME, null, DB_VER);
         }
@@ -680,7 +681,7 @@ class SolarView
 		{ "Corona", "r=8.4M km", "" },
 		{ "Corona", "r=22M km", "" },
 	};
-	private static final CachedFile FILES_SOHO =
+	private CachedFile FILES_SOHO =
 								new CachedFile("images_soho", SUN_URLS);
 
 	
@@ -757,7 +758,7 @@ class SolarView
         "protonsL", "protonsM", "protonsH",
         "electronsL", "electronsH",
 	};
-	private static final WebBasedData SRC_EPAM =
+	private WebBasedData SRC_EPAM =
 		new WebBasedData("hourly_epam", URL_ACE_BASE, "_ace_epam_1h.txt",
 						 3600000, true, FIELDS_EPAM) {
         @Override
@@ -820,7 +821,7 @@ class SolarView
 		// Synthetic fields at the end so they don't screw up the parser.
 		"xflares", "oflares", "flares"
 	};
-	private static final WebBasedData SRC_DSD =
+	private WebBasedData SRC_DSD =
 		new WebBasedData("daily_solar", URL_DSD, null,
 						 24 * 3600000, false, FIELDS_DSD) {
 		@Override
@@ -859,7 +860,7 @@ class SolarView
 
 
 	// Our data sources.
-	private static final WebBasedData[] ALL_SOURCES = {
+	private WebBasedData[] ALL_SOURCES = {
 		/* SRC_SWEPAM, */ SRC_EPAM, SRC_DSD
 	};
 	
