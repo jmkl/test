@@ -167,7 +167,7 @@ class TableView
     	try {
     		tableTopo.setTableSize(width, height);
     	} catch (LevelReader.LevelException e) {
-    		appContext.reportError(e);
+    		appContext.reportException(e);
     		return;
     	}
 
@@ -301,7 +301,7 @@ class TableView
 			clockLastTime = icicle.getLong("clockLastTime");
 		} catch (LevelReader.LevelException e) {
 			Log.e(TAG, "Table: " + e.getMessage());
-			appContext.reportError(e);
+			appContext.reportException(e);
 			return State.READY;
 		}
 
@@ -359,7 +359,7 @@ class TableView
 				loadLevel();
 			} catch (LevelReader.LevelException e) {
 				Log.e(TAG, "Table: " + e.getMessage());
-				appContext.reportError(e);
+				appContext.reportException(e);
 				return;
 			}
 

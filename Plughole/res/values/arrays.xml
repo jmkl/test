@@ -11,9 +11,9 @@
 
     <!-- Values for the sound preferences menu. -->
     <string-array name="prefs_sound_values">
-        <item>NONE</item>
-        <item>QUIET</item>
-        <item>FULL</item>  
+        <item>0.00</item>
+        <item>0.25</item>
+        <item>1.00</item>  
     </string-array>
        
     <!-- Entry names for the recline preferences menu. -->

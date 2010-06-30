@@ -1,0 +1,161 @@
+OLD WAY
+=======
+
+Start
+    X,Y point.
+        float x = attrs.getFloat("x", 0);
+        float y = attrs.getFloat("y", 0);
+    
+Target
+    X,Y point.
+        float x = attrs.getFloat("x", 0);
+        float y = attrs.getFloat("y", 0);
+
+Poly
+    List of points.
+        String ref = attrs.getString("ref");
+            If set, use from common.
+    addBackground(poly, id);
+    addBarrier(poly, null);
+    
+Rect
+    Rectangle.
+        float sx = attrs.getFloat("sx", 0);
+        float sy = attrs.getFloat("sy", 0);
+        float ex = attrs.getFloat("ex", 0);
+        float ey = attrs.getFloat("ey", 0);
+        String actName = attrs.getString("action");
+            If set, adds an action.
+        String targId = attrs.getString("target");
+            If set, target for action.
+    addBackground(poly, id);
+    addBarrier(poly, id);
+
+Zone
+    Rectangle.
+        float sx = attrs.getFloat("sx", 0);
+        float sy = attrs.getFloat("sy", 0);
+        float ex = attrs.getFloat("ex", 0);
+        float ey = attrs.getFloat("ey", 0);
+        String actName = attrs.getString("action");
+            If set, adds an action.
+        String targId = attrs.getString("target");
+            If set, target for action.
+    addTrigger(poly, id);
+
+Hole
+    Hole.
+        String t = attrs.getString("type");
+        float x = attrs.getFloat("x", 0);
+        float y = attrs.getFloat("y", 0);
+        String targId = attrs.getString("target");
+            If set, destination for tport.
+    addAnim(hole, id);
+    addZone(hole, id);
+    Poly trap = hole.getCentreTrap();
+    if (trap != null)
+        addTrigger(trap, id);
+        
+ForceField
+    Rectangle.
+        float sx = attrs.getFloat("sx", 0);
+        float sy = attrs.getFloat("sy", 0);
+        float ex = attrs.getFloat("ex", 0);
+        float ey = attrs.getFloat("ey", 0);
+    addAnim(field, id);
+    Poly wall = field.getBarrier();
+    if (wall != null) {
+        addBarrier(wall, id);
+        field.setRealBarrier(wall);
+    }
+    
+Display
+    Rectangle with text.
+        float size = attrs.getFloat("size", 0);
+        float sx = attrs.getFloat("sx", 0);
+        float sy = attrs.getFloat("sy", 0);
+        float ex = attrs.getFloat("ex", 0);
+        float ey = attrs.getFloat("ey", 0);
+        String text = attrs.getString("text");
+            If set, text to display.
+    addBackground(dec, id);
+    
+Graphic
+    Rectangular graphic.
+        String type = attrs.getString("type");
+            If set, special type like clock.
+        int imgId = attrs.getInt("img", 0);
+        float sx = attrs.getFloat("sx", 0);
+        float sy = attrs.getFloat("sy", 0);
+        float ex = attrs.getFloat("ex", 0);
+        float ey = attrs.getFloat("ey", 0);
+        RectF box = new RectF(sx, sy, ex, ey);
+        boolean norot = attrs.getBoolean("norotate", false);
+        boolean vertical = attrs.getBoolean("vertical", false);
+            Flag for clock.
+    addBackground(dec, id);
+    
+Anim
+    Rectangular graphic.
+        String type = attrs.getString("type");
+            If set, special type like clock.
+        int imgId = attrs.getInt("img", 0);
+        float sx = attrs.getFloat("sx", 0);
+        float sy = attrs.getFloat("sy", 0);
+        float ex = attrs.getFloat("ex", 0);
+        float ey = attrs.getFloat("ey", 0);
+        RectF box = new RectF(sx, sy, ex, ey);
+        boolean norot = attrs.getBoolean("norotate", false);
+        boolean vertical = attrs.getBoolean("vertical", false);
+            Flag for clock.
+    addAnim(dec, id);
+
+
+COMPONENTS
+==========
+
+Point
+    For start or teleport
+    
+Polygon
+    Rectangle just convenience syntax
+    Can be
+        A barrier
+            Switchable
+        An edge trigger - cross or bounce
+        An area trigger
+        Self-drawn in background
+        Fixed graphic - Rectangle
+        Text display - Rectangle
+        Animation - Rectangle
+        Clock (self-drawn anim?) - Rectangle
+        
+
+NEW WAY
+=======
+
+<Start x="10" y="20" />
+
+<Target x="10" y="20" />
+
+<Rectangle wall="true,false" sx="" sy="" ex="" ey="">
+    <OnCross type="speed,accel,teleport,..." target="id" />
+    <OnBounce type="speed,accel,teleport,..." target="id" />
+    <WhileZone type="speed,accel,teleport,..." target="id" />
+    <Graphic img="id" orient="0,90,180,270" />
+    <Anim type="clock" img="id" orient="0,90,180,270" />
+    <Text name="id" text="string" />
+</Rectangle>
+
+<Polygon wall="true,false" sx="" sy="" ex="" ey="">
+    <OnCross type="speed,accel,teleport,..." target="id" />
+    <OnBounce type="speed,accel,teleport,..." target="id" />
+</Polygon>
+
+<Hole x="" y="">
+    <Graphic img="id" />
+    <Anim img="id" />
+    <OnCross type="speed,accel,teleport,..." target="id" />
+</Hole>
+    -- Creates an implicit <WhileZone>, <OnCross> is the centre area
+

@@ -17,15 +17,14 @@
 package org.hermit.plughole;
 
 import org.hermit.android.core.MainActivity;
+import org.hermit.android.sound.Player;
 import org.hermit.plughole.LevelReader.LevelException;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.Vibrator;
@@ -49,42 +48,6 @@ import android.widget.TextView;
 public class Plughole
 	extends MainActivity
 {
-
-    // ******************************************************************** //
-    // Class Data.
-    // ******************************************************************** //
-
-    /**
-     * The sounds that we make.
-     */
-    static enum Sound {
-    	BEEP_BOOP(R.raw.beep_boop),
-    	BOOP_BEEP(R.raw.boop_beep),
-    	CHIRP_LOW(R.raw.chirp_low),
-    	HMLU(R.raw.hmlu);
-    	
-    	private Sound(int res) {
-    		soundRes = res;
-    	}
-    	
-     	int soundRes;			// Resource ID for the sound file.
-    }
-
-    /**
-     * Sound play mode.
-     */
-    static enum SoundMode {
-    	NONE(0),
-    	QUIET(0),
-    	FULL(0);
-    	
-    	private SoundMode(int res) {
-    		menuId = res;
-    	}
-    	
-    	int menuId;				// ID of the corresponding menu item.
-    }
-
 
 	// ******************************************************************** //
     // Activity Lifecycle.
@@ -129,6 +92,9 @@ public class Plughole
                 		     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         
+        // Create our sound player.
+        effectsPlayer = new Player(this);
+
         // Create a level manager.
         levelManager = new LevelManager(this);
 
@@ -399,14 +365,14 @@ public class Plughole
     					PreferenceManager.getDefaultSharedPreferences(this);
     	
         // See if sounds are enabled and how.
-    	soundMode = SoundMode.FULL;
+    	float gain = effectsPlayer.getGain();
     	try {
-    		String smode = prefs.getString("soundMode", soundMode.toString());
-    		soundMode = SoundMode.valueOf(smode);
+    		gain = prefs.getFloat("soundMode", gain);
     	} catch (Exception e) {
     		Log.i(TAG, "Pref: bad soundMode");
     	}
-    	Log.i(TAG, "Prefs: sound " + soundMode);
+    	Log.i(TAG, "Prefs: sound gain " + gain);
+    	effectsPlayer.setGain(gain);
 
         // See if the vibrator is enabled.
     	vibeEnable = true;
@@ -467,7 +433,7 @@ public class Plughole
     	try {
     		levelManager.setLoadUserLevels(userLevels);
     	} catch (LevelException e) {
-    		reportError(e);
+            reportException(e);
     	}
     }
 
@@ -529,38 +495,8 @@ public class Plughole
 
 
 	// ******************************************************************** //
-	// Sound / Vibration.
+	// Vibration.
 	// ******************************************************************** //
-	
-	/**
-	 * Make a sound.
-	 * 
-	 * @param	which			ID of the sound to play.
-     */
-	void makeSound(Sound which) {
-		if (soundMode == SoundMode.NONE)
-			return;
-
-		try {
-			MediaPlayer mp = MediaPlayer.create(this, which.soundRes);
-			mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-				public void onPrepared(MediaPlayer mp) { mp.start(); }
-			});
-			mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-				public void onCompletion(MediaPlayer mp) { mp.release(); }
-			});
-			
-			float vol = 1.0f;
-			if (soundMode == SoundMode.QUIET)
-				vol = 0.3f;
-			mp.setVolume(vol, vol);
-			
-			mp.prepareAsync();
-		} catch (Exception e) {
-			Log.d(TAG, e.toString());
-		}
-	}
-	
 
 	/**
 	 * Make a "kick" with the vibrator.
@@ -577,25 +513,6 @@ public class Plughole
 		} catch (Exception e) {
 			Log.d(TAG, e.toString());
 		}
-	}
-	
-
-    // ******************************************************************** //
-    // Error Handling.
-    // ******************************************************************** //
-
-	/**
-	 * Report an error to the user.
-	 * 
-	 * @param	e			Exception representing the error.
-	 */
-	public void reportError(Exception e) {
-	   	new AlertDialog.Builder(this).
-	   							setIcon(android.R.drawable.ic_dialog_alert).
-	   							setTitle(R.string.title_level_error).
-	   							setMessage(e.getMessage()).
-	   							setPositiveButton(R.string.button_close, null).
-	   							show();
 	}
 	
 	
@@ -633,10 +550,10 @@ public class Plughole
     
     // The vibrator.
     private Vibrator vibrator;
+    
+    // Sound player; sound played when we change views; ping sound.
+    private Player effectsPlayer = null;
 
-	// Current sound mode.
-	private SoundMode soundMode;
-	
 	// True to enable the vibrator.
 	private boolean vibeEnable;
 	
