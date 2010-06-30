@@ -95,6 +95,17 @@ public class Player
     // ******************************************************************** //
 
     /**
+     * Get the overall gain for sounds.
+     * 
+     * @return		        Current gain.  1 = normal; 0 means don't play
+     *                      sounds.
+     */
+    public float getGain() {
+        return soundGain;
+    }
+    
+
+    /**
      * Set the overall gain for sounds.
      * 
      * @param   gain        Desired gain.  1 = normal; 0 means don't play

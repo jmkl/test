@@ -32,8 +32,9 @@
 package org.hermit.android.widgets;
 
 
+import java.util.List;
+
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Config;
@@ -49,8 +50,6 @@ import android.view.ViewParent;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.Scroller;
-
-import java.util.List;
 
 
 /**
