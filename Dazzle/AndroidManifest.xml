@@ -2,7 +2,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.hermit.dazzle"
-      android:installLocation="auto" android:versionCode="7" android:versionName="2.5">
+      android:versionCode="7" android:versionName="2.5" android:installLocation="internalOnly">
       
     <application android:icon="@drawable/icon" android:label="@string/app_name">
 
