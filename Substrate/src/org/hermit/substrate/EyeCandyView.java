@@ -75,7 +75,9 @@ public class EyeCandyView
      */
     @Override
     protected void appSize(int width, int height, Bitmap.Config config) {
-        // Do nothing if already set.
+        // Ignore junk updates.  Do nothing if already set.
+        if (width <= 0 || height <= 0)
+            return;
         if (width == screenWidth && height == screenHeight && config == screenConfig)
             return;
         

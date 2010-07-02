@@ -135,6 +135,10 @@ public abstract class EyeCandyWallpaper
         public void onSurfaceChanged(SurfaceHolder holder, int format,
                                      int width, int height)
         {
+            // Ignore junk updates.
+            if (width < 0 || height < 0)
+                return;
+            
             super.onSurfaceChanged(holder, format, width, height);
             
             // Create the pixmap for the background image.
