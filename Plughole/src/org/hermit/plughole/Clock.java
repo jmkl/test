@@ -35,16 +35,17 @@ class Clock
 	/**
 	 * Create a graphic which displays an animation.
 	 * 
-	 * @param	app				Application context.  This provides
-	 * 							access to resources and image loading.
-	 * @param	box				The bounding box for the graphic.
-	 * @param	xform			Transform to apply to the raw data.
-	 * @param	vertical		If false, the clock counts down from the
-	 * 							end X to the start X.  If true, end Y to
-	 * 							start Y.
+	 * @param	app			Application context.  This provides
+	 * 						access to resources and image loading.
+     * @param   id          The ID of this element.
+	 * @param	box			The bounding box for the graphic.
+	 * @param	xform		Transform to apply to the raw data.
+	 * @param	vertical	If false, the clock counts down from the
+	 * 						end X to the start X.  If true, end Y to
+	 * 						start Y.
 	 */
-	public Clock(Plughole app, RectF box, Matrix xform, boolean vertical) {
-		super(app);
+	public Clock(Plughole app, String id, RectF box, Matrix xform, boolean vertical) {
+		super(app, id, box, xform);
 		
 		// Calculate the actual geometry of the graphic.
 		bounds = xform.transform(box);

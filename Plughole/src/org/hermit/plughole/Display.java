@@ -23,7 +23,7 @@ import android.graphics.Typeface;
 
 
 /**
- * Class representing a graphic or text drawn on the game board.  It doesn't
+ * Class representing text drawn on the game board.  It doesn't
  * interact with the game in any way, it's just decoration.
  */
 class Display
@@ -37,69 +37,52 @@ class Display
 	/**
 	 * Create a decal by applying a transformation to a decal spec.
 	 * 
-	 * @param	app				Application context.  This provides
-	 * 							access to resources and image loading.
-	 * @param	size			The text size for the decal.
-	 * @param	box				The bounding box for the decal.
-	 * @param	xform			Transform to apply to the raw data.
+	 * @param	app			Application context.  This provides
+	 * 						access to resources and image loading.
+	 * @param	id			The ID of this element.
+	 * @param	text		The string to display.
+	 * @param	size		Size to display the text at; must be
+	 * 						transformed using xform.
+	 * @param	xform		Transform to apply to the raw data.
 	 */
-	Display(Plughole app, float size, RectF box, Matrix xform)
-	{
-		this(app, "", size, box, xform);
-	}
-
-
-	/**
-	 * Create a decal by applying a transformation to a decal spec.
-	 * 
-	 * @param	app				Application context.  This provides
-	 * 							access to resources and image loading.
-	 * @param	text			The string to display.
-	 * @param	size			Size to display the text at; must be
-	 * 							transformed using xform.
-	 * @param	box				The bounding box to draw the text
-	 * 							within; we will centre it here.
-	 * @param	xform			Transform to apply to the raw data.
-	 */
-	Display(Plughole app, String text, float size, RectF box, Matrix xform)
-	{
-		super(app);
-		init(app, text, size, box, xform);
-	}
-	
-	
-	/**
-	 * Set up this decal.
-	 * 
-	 * @param	app				Application context.  This provides
-	 * 							access to resources and image loading.
-	 * @param	text			The string to display.
-	 * @param	size			Size to display the text at; must be
-	 * 							transformed using xform.
-	 * @param	box				The bounding box to draw the text
-	 * 							within; we will centre it here.
-	 * @param	xform			Transform to apply to the raw data.
-	 */
-	private void init(Plughole app, String text,
-					  float size, RectF box, Matrix xform)
-	{
-		textString = text;
-
-		// Calculate the actual geometry of the decal.
-		bounds = xform.transform(box);
-		textSize = size * (float) xform.getScale();
-		textAngle = xform.getRotation();
-		centreX = (bounds.left + bounds.right) / 2;
-		centreY = (bounds.top + bounds.bottom) / 2;
+	Display(Plughole app, String id, String text, float size, Matrix xform) {
+		super(app, id, null, xform);
 		
-		// Calculate the vertical text layout parameters based on the
-		// general font metrics.
-		textPaint.setTextSize(textSize);
- 	   	Paint.FontMetricsInt fm = textPaint.getFontMetricsInt();
- 	   	textHeight = -fm.ascent + fm.descent;
- 	   	textBase = -fm.ascent - textHeight / 2;
+		textString = text;
+		textLevelSize = size;
 	}
 
+
+    // ******************************************************************** //
+    // Building.
+    // ******************************************************************** //
+
+    /**
+     * Set the visual rectangular box of this element.  This is called when
+     * we're added to our parent.
+     * 
+     * @param   rect        The rectangle, in level co-ordinates, suitable for
+     *                      attaching Graphics to.
+     */
+    void setRect(RectF rect) {
+        Matrix xform = getTransform();
+        RectF box = xform.transform(rect);
+
+        // Calculate the actual geometry of the decal.
+        bounds = xform.transform(box);
+        textSize = textLevelSize * (float) xform.getScale();
+        textAngle = xform.getRotation();
+        centreX = (bounds.left + bounds.right) / 2;
+        centreY = (bounds.top + bounds.bottom) / 2;
+        
+        // Calculate the vertical text layout parameters based on the
+        // general font metrics.
+        textPaint.setTextSize(textSize);
+        Paint.FontMetricsInt fm = textPaint.getFontMetricsInt();
+        textHeight = -fm.ascent + fm.descent;
+        textBase = -fm.ascent - textHeight / 2;
+    }
+    
 
 	// ******************************************************************** //
 	// Accessors.
@@ -210,14 +193,17 @@ class Display
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
+	
+    // Size to display the text at, in level co-ordinates.
+    private final float textLevelSize;
 
-	// Actual bounding box of this decal in the scaled playing board.
+	// Actual bounding box of this decal in screen co-ordinates.
 	private RectF bounds;
 
 	// The size text to display.
 	private String textString;
 
-	// The size of the text to display.
+	// The size of the text to display in screen co-ordinates.
 	private float textSize;
 
 	// The angle the text needs to be drawn at.

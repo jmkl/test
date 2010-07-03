@@ -89,12 +89,6 @@ class LevelManager {
 	 * @throws LevelException	Error encountered while reading.
 	 */
 	LevelData loadLevel(Matrix xform) throws LevelReader.LevelException {
-		// Get the ball size.  The reader needs the ball radius for
-		// growing barriers.
-		int size = (int) Math.round(LevelData.BALL * xform.getScale());
-		double ballRad = size / 2.0;
-		LevelData.setBallRadius(ballRad);
-
 		// Load the level.
 		levelReader.readCommon(R.xml.level_common, xform);
 		return levelReader.readLevel(levelIndex.valueAt(currentIndex), xform);

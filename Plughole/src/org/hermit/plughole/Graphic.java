@@ -123,110 +123,130 @@ class Graphic
 	// Constructor.
 	// ******************************************************************** //
 
-	/**
-	 * Create a graphic which displays an image.
-	 * 
-	 * @param	app				Application context.  This provides
-	 * 							access to resources and image loading.
-	 * @param	imgId			Resource ID of the graphic.
-	 * @param	box				The bounding box for the graphic.
-	 * @param	xform			Transform to apply to the raw data.
-	 */
-	public Graphic(Plughole app, int imgId, RectF box, Matrix xform)
-	{
-		this(app, new int[] { imgId }, box, xform, false);
-	}
+//	/**
+//	 * Create a graphic which displays an image.
+//	 * 
+//	 * @param	app			Application context.  This provides
+//	 * 						access to resources and image loading.
+//	 * @param	id			The ID of this element.
+//	 * @param	imgId		Resource ID of the graphic.
+//	 * @param	box			The bounding box for the graphic.
+//	 * @param	xform		Transform to apply to the raw data.
+//	 */
+//	public Graphic(Plughole app, String id, int imgId, RectF box, Matrix xform)
+//	{
+//		this(app, new int[] { imgId }, box, xform, false);
+//	}
 
 	
 	/**
 	 * Create a graphic which displays an image.
 	 * 
-	 * @param	app				Application context.  This provides
-	 * 							access to resources and image loading.
-	 * @param	imgId			Resource ID of the graphic.
-	 * @param	box				The bounding box for the graphic.
-	 * @param	xform			Transform to apply to the raw data.
-	 * @param	norotate		If true, do *not* rotate the image for display
-	 * 							on different screen orientations.  This means
-	 * 							that the image top will always be towards
-	 * 							screen top.  (In other words, the image
-	 * 							effectively rotates with the screen -- think
-	 * 							about it).  If false, the image is rotated
-	 * 							so it always lines up the same way with the
-	 * 							game board.
+	 * @param	app			Application context.  This provides
+	 * 						access to resources and image loading.
+	 * @param	id			The ID of this element.
+	 * @param	imgId		Resource ID of the graphic.
+	 * @param	xform		Transform to apply to the raw data.
+	 * @param	norotate	If true, do *not* rotate the image for display
+	 * 						on different screen orientations.  This means
+	 * 						that the image top will always be towards
+	 * 						screen top.  (In other words, the image
+	 * 						effectively rotates with the screen -- think
+	 * 						about it).  If false, the image is rotated
+	 * 						so it always lines up the same way with the
+	 * 						game board.
 	 */
-	public Graphic(Plughole app, int imgId, RectF box,
+	public Graphic(Plughole app, String id, int imgId,
 				   Matrix xform, boolean norotate)
 	{
-		this(app, new int[] { imgId }, box, xform, norotate);
+		this(app, id, new int[] { imgId }, xform, norotate);
 	}
 	
 
-	/**
-	 * Create a graphic which displays an animation.
-	 * 
-	 * @param	app				Application context.  This provides
-	 * 							access to resources and image loading.
-	 * @param	imgIds			Resource IDs of the graphics in the animation.
-	 * @param	box				The bounding box for the graphic.
-	 * @param	xform			Transform to apply to the raw data.
-	 */
-	public Graphic(Plughole app, int[] imgIds, RectF box, Matrix xform)
-	{
-		this(app, imgIds, box, xform, false);
-	}
+//	/**
+//	 * Create a graphic which displays an animation.
+//	 * 
+//	 * @param	app			Application context.  This provides
+//	 * 						access to resources and image loading.
+//	 * @param	id			The ID of this element.
+//	 * @param	imgIds		Resource IDs of the graphics in the animation.
+//	 * @param	box			The bounding box for the graphic.
+//	 * @param	xform		Transform to apply to the raw data.
+//	 */
+//	public Graphic(Plughole app, String id, int[] imgIds, RectF box, Matrix xform)
+//	{
+//		this(app, imgIds, box, xform, false);
+//	}
 
 
 	/**
 	 * Create a graphic which displays an animation.
 	 * 
-	 * @param	app				Application context.  This provides
-	 * 							access to resources and image loading.
-	 * @param	imgIds			Resource IDs of the graphics in the animation.
-	 * @param	box				The bounding box for the graphic.
-	 * @param	xform			Transform to apply to the raw data.
-	 * @param	norotate		If true, do *not* rotate the image for display
-	 * 							on different screen orientations.  This means
-	 * 							that the image top will always be towards
-	 * 							screen top.  (In other words, the image
-	 * 							effectively rotates with the screen -- think
-	 * 							about it).  If false, the image is rotated
-	 * 							so it always lines up the same way with the
-	 * 							game board.
+	 * @param	app			Application context.  This provides
+	 * 						access to resources and image loading.
+	 * @param	id			The ID of this element.
+	 * @param	imgIds		Resource IDs of the graphics in the animation.
+	 * @param	xform		Transform to apply to the raw data.
+	 * @param	norotate	If true, do *not* rotate the image for display
+	 * 						on different screen orientations.  This means
+	 * 						that the image top will always be towards
+	 * 						screen top.  (In other words, the image
+	 * 						effectively rotates with the screen -- think
+	 * 						about it).  If false, the image is rotated
+	 * 						so it always lines up the same way with the
+	 * 						game board.
 	 */
-	public Graphic(Plughole app, int[] imgIds, RectF box,
+	public Graphic(Plughole app, String id, int[] imgIds,
 				   Matrix xform, boolean norotate)
 	{
-		super(app);
+		super(app, id, null, xform);
 		
 		imageIds = imgIds;
-		
-		// Calculate the actual geometry of the graphic.
-		bounds = xform.transform(box);
-		int w = (int) (Math.round(bounds.right - bounds.left));
-		int h = (int) (Math.round(bounds.bottom - bounds.top));
-		
-		// Get the bitmaps.  We don't want to re-use a cached image if the
-		// size is new or if the rotation has changed, so key on all three
-		// factors as well as the ID.
-		bitmaps = new Bitmap[imageIds.length];
-		Matrix.ORotate rotate = norotate ? Matrix.ORotate.NONE : xform.getRotation();
-		for (int i = 0; i < imageIds.length; ++i) {
-			long key = (long) imageIds[i] | (long) w << 32 |
-					   (long) h << 43 | (long) rotate.degrees << 54;
-			Bitmap img = imageCache.get(key);
-			if (img == null) {
-				img = app.getScaledBitmap(imageIds[i], w, h, rotate);
-				imageCache.put(key, img);
-			}
-			bitmaps[i] = img;
-		}
 		
 		animOffset = rndInt(imageIds.length);
 		visible = true;
 	}
 	
-	
+
+    // ******************************************************************** //
+    // Building.
+    // ******************************************************************** //
+
+    /**
+     * Set the visual rectangular box of this element.  This is called when
+     * we're added to our parent.
+     * 
+     * @param   rect        The rectangle, in level co-ordinates, suitable for
+     *                      attaching Graphics to.
+     */
+    void setRect(RectF rect) {
+        Matrix xform = getTransform();
+        RectF box = xform.transform(rect);
+        
+        // Calculate the actual geometry of the graphic.
+        bounds = xform.transform(box);
+        int w = (int) (Math.round(bounds.right - bounds.left));
+        int h = (int) (Math.round(bounds.bottom - bounds.top));
+        
+        // Get the bitmaps.  We don't want to re-use a cached image if the
+        // size is new or if the rotation has changed, so key on all three
+        // factors as well as the ID.
+        Plughole app = getApp();
+        bitmaps = new Bitmap[imageIds.length];
+        Matrix.ORotate rotate = norotate ? Matrix.ORotate.NONE : xform.getRotation();
+        for (int i = 0; i < imageIds.length; ++i) {
+            long key = (long) imageIds[i] | (long) w << 32 |
+                       (long) h << 43 | (long) rotate.degrees << 54;
+            Bitmap img = imageCache.get(key);
+            if (img == null) {
+                img = app.getScaledBitmap(imageIds[i], w, h, rotate);
+                imageCache.put(key, img);
+            }
+            bitmaps[i] = img;
+        }
+    }
+    
+
 	// ******************************************************************** //
 	// Accessors.
 	// ******************************************************************** //
@@ -292,6 +312,13 @@ class Graphic
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
+	
+	// If true, do *not* rotate the image for display on different screen
+	// orientations.  This means that the image top will always be towards
+	// screen top.  (In other words, the image effectively rotates with
+	// the screen -- think about it).  If false, the image is rotated
+	// so it always lines up the same way with the game board.
+	private boolean norotate = true;
 
 	// Actual bounding box of this graphic in the scaled playing board.
 	private RectF bounds;

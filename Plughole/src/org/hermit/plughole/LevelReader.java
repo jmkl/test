@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -71,7 +70,6 @@ class LevelReader {
 	LevelReader(Plughole app) {
 		appContext = app;
 		resources = app.getResources();
-		common = new LevelData();
 	}
 
 
@@ -99,9 +97,9 @@ class LevelReader {
 			if (!findBlock(parser, "Common"))
 				throw new LevelException("Level common data " +
 										 " doesn't contain a <Common> tag!");
-
-			// Read the body of the level definition.
-			readBlock(parser, xform, common);
+			
+            // Read the level definition.
+			common = (LevelData) readItem(parser, xform, null);
 		} catch (LevelException e) {
 			throw e;
 		} catch (XmlPullParserException e) {
@@ -193,7 +191,7 @@ class LevelReader {
 										 " doesn't contain a <Level> tag!");
 			
 			// Read the level header.
-			LevelData.Header header = readHeader(parser);
+			LevelData.Header header = buildLevelHeader(parser);
 			return header;
 		} catch (LevelException e) {
 			throw e;
@@ -318,13 +316,10 @@ class LevelReader {
 				throw new LevelException("Level specification " +
 										 " doesn't contain a <Level> tag!");
 			
-			// Read the level header.
-			LevelData theLevel = new LevelData();
-			LevelData.Header header = readHeader(parser);
-			theLevel.setHeader(header);
+			// Read the level definition.
+			LevelData theLevel = (LevelData) readItem(parser, xform, null);
 
-			// Read the body of the level definition.
-			readBlock(parser, xform, theLevel);
+			// Check that we've got the elements we need.
 			if (theLevel.getStart() == null)
 				throw new LevelException("Level specification " +
 										 " doesn't contain a <Start>!");
@@ -387,7 +382,7 @@ class LevelReader {
 	 * @throws IOException
 	 * @throws LevelException	Error encountered while reading.
 	 */
-	private LevelData.Header readHeader(XmlPullParser parser)
+	private LevelData.Header buildLevelHeader(XmlPullParser parser)
 		throws XmlPullParserException, IOException, LevelException
 	{
 		// Read the level attributes.
@@ -404,373 +399,150 @@ class LevelReader {
 
 
 	/**
-	 * Read a level definition from the given parser.  Transform all the
-	 * constructs to fit the playing screen, and place the resulting
-	 * level data into a new LevelData object.
+	 * Read a level item from the given parser, transform it to fit the
+	 * playing screen, and return the resulting object.
 	 * 
-	 * The parser is currently at the opening <Level> tag.  We will
+	 * The parser is currently at the opening tag.  We will
+	 * leave it on the tag after the closing tag.
+	 * 
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	parent		The parent element of this element; null if none.
+	 * @throws XmlPullParserException
+	 * @throws IOException
+	 * @throws LevelException
+	 */
+	private Object readItem(XmlPullParser p, Matrix xform, Element parent)
+		throws XmlPullParserException, IOException, LevelException
+	{
+		// We should be at an open tag right now.
+		int eventType = p.getEventType();
+		if (eventType != XmlPullParser.START_TAG)
+			throw new LevelException(p, "expecting open tag, got \"" +
+										p.getText() + "\"");
+
+		// Read the item attributes from the open tag.
+		String tag = p.getName();
+		Bundle attrs = readAttributes(p);
+		
+		// Build the object for this node.
+		Object item = buildItem(p, xform, tag, attrs);
+
+		// Now if this is an Element, read any nested tags.  Some nested
+		// tags get pushed up and added to the parent.  The important thing
+		// is that they are added before finished() is called.
+		if (item instanceof Element) {
+			Element elem = (Element) item;
+			while ((eventType = p.nextTag()) != XmlPullParser.END_TAG) {
+				Object child = readItem(p, xform, elem);
+				if (!elem.addChild(p, tag, child) && parent != null)
+					parent.addChild(p, tag, child);
+			}
+			elem.finished();
+		}
+
+		// Check the close tag.  If we're at an open tag, produce
+		// an appropriate error
+		eventType = p.getEventType();
+		if (eventType == XmlPullParser.START_TAG)
+			throw new LevelException(p, "unexpected <" + p.getName() +
+										"> inside <" + tag + ">");
+		else if (eventType != XmlPullParser.END_TAG || !p.getName().equals(tag))
+			throw new LevelException(p, "expecting </" + tag +
+										">, got \"" + p.getText() + "\"");
+		
+		return item;
+	}
+
+
+    // ******************************************************************** //
+    // Level Element Parsing.
+    // ******************************************************************** //
+
+	/**
+	 * Read a level item from the given parser, transform it
+	 * to fit the playing screen, and place the resulting
+	 * level data into the given LevelData object.
+	 * 
+	 * The parser is currently at the opening tag.  We will
 	 * leave it after the closing tag.
 	 * 
-	 * @param	p				The parser to read from.
-	 * @param	xform			The transformation that needs to be applied
-	 * 							to the level to make it fit the screen.
-	 * @param	ldata			The level data we read in.
-	 * @throws XmlPullParserException
-	 * @throws IOException
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	attrs		The XML attributes for this item.
 	 * @throws LevelException
 	 */
-	private void readBlock(XmlPullParser p, Matrix xform, LevelData ldata)
-		throws XmlPullParserException, IOException, LevelException
+	private Object buildItem(XmlPullParser p, Matrix xform,
+							 String tag, Bundle attrs)
+		throws LevelException
 	{
-		int eventType;
-	reading:
-		while ((eventType = p.next()) != XmlPullParser.END_DOCUMENT) {
-			switch (eventType) {
-			case XmlPullParser.START_TAG:
-				// Get the object's name and attributes.
-				Bundle oattr = readAttributes(p);
-				String tag = p.getName();
-				
-				// See if this tag has an ID.
-				String id = oattr.getString("id");
+		// See if this tag has an ID.
+		String id = attrs.getString("id");
 
-				if (tag.equals("Start")) {
-					Point point = readPoint(p, xform, oattr);
-					ldata.setStart(point);
-				} else if (tag.equals("Target")) {
-					Point point = readPoint(p, xform, oattr);
-					ldata.addPoint(point, id);
-				} else if (tag.equals("Poly")) {
-					Poly poly = readPoly(p, xform, oattr);
-					ldata.addBackground(poly, id);
-					ldata.addBarrier(poly, null);
-				} else if (tag.equals("Rect")) {
-					Poly poly = readRect(p, xform, oattr, ldata);
-					ldata.addBackground(poly, id);
-					ldata.addBarrier(poly, id);
-                } else if (tag.equals("Zone")) {
-                    Poly poly = readRect(p, xform, oattr, ldata);
-                    ldata.addTrigger(poly, id);
-				} else if (tag.equals("Hole")) {
-					Hole hole = readHole(p, xform, oattr, ldata);
-					ldata.addAnim(hole, id);
-					ldata.addZone(hole, id);
-					Poly trap = hole.getCentreTrap();
-					if (trap != null)
-						ldata.addTrigger(trap, id);
-                } else if (tag.equals("ForceField")) {
-                    ForceField field = readForceField(p, xform, oattr);
-                    ldata.addAnim(field, id);
-                    Poly wall = field.getBarrier();
-                    if (wall != null) {
-                        wall = ldata.addBarrier(wall, id);
-                        field.setRealBarrier(wall);
-                    }
-				} else if (tag.equals("Display")) {
-					Display dec = readDisplay(p, xform, oattr);
-					ldata.addBackground(dec, id);
-				} else if (tag.equals("Graphic")) {
-					Element dec = readGraphic(p, xform, oattr);
-					ldata.addBackground(dec, id);
-				} else if (tag.equals("Anim")) {
-					Element dec = readGraphic(p, xform, oattr);
-					ldata.addAnim(dec, id);
-				}
-				break;
-			case XmlPullParser.END_TAG:
-				break reading;
-			}
-		}
-	}
-
-	
-	/**
-	 * Read a polygon definition from the level data, and transform it by
-	 * the given Matrix.
-	 * 
-	 * Leave the parser after the end of the tag.
-	 * 
-	 * @param	p				The parser to read from.
-	 * @param	xform			The transformation that needs to be applied
-	 * 							to the level to make it fit the screen.
-	 * @param	attrs			The tag's attributes.
-	 * @return					The transformed polygon.
-	 * @throws XmlPullParserException
-	 * @throws IOException
-	 * @throws LevelException
-	 */
-	private Poly readPoly(XmlPullParser p, Matrix xform, Bundle attrs)
-		throws XmlPullParserException, IOException, LevelException
-	{
-		// See if this is a reference to a common poly.
-		String ref = attrs.getString("ref");
-		if (ref != null) {
-			Object obj = common.getById(ref);
-			if (obj == null || !(obj instanceof Poly))
-				throw new LevelException(p, "no defined Poly with id " + ref);
-			
-			// Skip past the tag.
-			int eventType;
-			while ((eventType = p.next()) != XmlPullParser.END_DOCUMENT &&
-										eventType != XmlPullParser.END_TAG)
-				;
-			return (Poly) obj;
-		}
-
-		// Read the points that make up the polygon.
-		ArrayList<Point> points = new ArrayList<Point>();
-		int eventType;
-	reading:
-		while ((eventType = p.next()) != XmlPullParser.END_DOCUMENT) {
-			switch (eventType) {
-			case XmlPullParser.START_TAG:
-				if (p.getName().equals("Point")) {
-					Bundle oattr = readAttributes(p);
-					points.add(readPoint(p, xform, oattr));
-				}
-				break;
-			case XmlPullParser.END_TAG:
-				break reading;
-			}
-		}
-		
-		// The points are already transformed, so all we need to do is
-		// make a polygon.
-		return new Poly(appContext, points);
-	}
-
-	
-	/**
-	 * Read a rectangle from the given parser and make it into a new Poly.
-	 * Transform it by the given Matrix.
-	 * 
-	 * Leave the parser after the end of the tag.
-	 * 
-	 * @param	p				The parser to read from.
-	 * @param	xform			The transformation that needs to be applied
-	 * 							to the level to make it fit the screen.
-	 * @param	attrs			The tag's attributes.
-     * @param   ldata           The level we're building.
-	 * @return					The transformed polygon.
-	 * @throws XmlPullParserException
-	 * @throws IOException
-	 * @throws LevelException
-	 */
-	private Poly readRect(XmlPullParser p, Matrix xform, Bundle attrs, LevelData ldata)
-		throws XmlPullParserException, IOException, LevelException
-	{
-		float sx = attrs.getFloat("sx", 0);
-		float sy = attrs.getFloat("sy", 0);
-		float ex = attrs.getFloat("ex", 0);
-		float ey = attrs.getFloat("ey", 0);
-
-		// See if we have an action.
-		Action action = null;
-		String actName = attrs.getString("action");
-		if (actName != null) {
-		    Action.Type type;
-	        try {
-	            type = Action.Type.valueOf(actName);
-	        } catch (IllegalArgumentException e) {
-	            throw new LevelException(p, "invalid action type " + actName);
-	        }
-	        action = new Action(type);
-
-		    String targId = attrs.getString("target");
-		    if (targId != null) {
-		        Object target = ldata.getById(targId);
-		        if (target == null)
-		            throw new LevelException(p, "no defined object with id \"" + targId + "\"");
-		        action.setTarget(target);
-		    }
-		}
-
-		// Skip past the tag.
-		int eventType = p.getEventType();
-		while (eventType != XmlPullParser.END_DOCUMENT &&
-									eventType != XmlPullParser.END_TAG)
-			eventType = p.next();
-
-		// Create the transformed points, and make a Poly from them.
-		ArrayList<Point> points = new ArrayList<Point>();
-		points.add(xform.transform(new Point(sx, sy)));
-		points.add(xform.transform(new Point(ex, sy)));
-		points.add(xform.transform(new Point(ex, ey)));
-		points.add(xform.transform(new Point(sx, ey)));
-
-		return new Poly(appContext, points, action);
-	}
-
-	
-	/**
-	 * Read a hole from the given parser.  Transform it by the given Matrix.
-	 * 
-	 * Leave the parser after the end of the tag.
-	 * 
-	 * @param	p				The parser to read from.
-	 * @param	xform			The transformation that needs to be applied
-	 * 							to the level to make it fit the screen.
-	 * @param	attrs			The tag's attributes.
-     * @param   ldata           The level we're building.
-	 * @return					The transformed Hole.
-	 * @throws XmlPullParserException
-	 * @throws IOException
-	 * @throws LevelException
-	 */
-	private Hole readHole(XmlPullParser p, Matrix xform, Bundle attrs, LevelData ldata)
-		throws XmlPullParserException, IOException, LevelException
-	{
-		String t = attrs.getString("type");
-		float x = attrs.getFloat("x", 0);
-		float y = attrs.getFloat("y", 0);
-		String targId = attrs.getString("target");
-
-		Hole.Type type;
-		try {
-			type = Hole.Type.valueOf(t);
-		}
-		catch (IllegalArgumentException e) {
-			throw new LevelException(p, "invalid hole type " + t);
-		}
-		catch (NullPointerException e) {
-			throw new LevelException(p, "missing hole type");
-		}
-	     
-		Point target = null;
-		if (targId != null) {
-			Object tobj = ldata.getById(targId);
-			if (tobj == null || !(tobj instanceof Point))
-				throw new LevelException(p, "no defined Point with id " + targId);
-			target = (Point) tobj;
-		}
-		
-		// Skip past the tag.
-		int eventType = p.getEventType();
-		while (eventType != XmlPullParser.END_DOCUMENT &&
-									eventType != XmlPullParser.END_TAG)
-			eventType = p.next();
-		
-		return new Hole(appContext, type, x, y, target, xform);
-	}
-
-    
-    /**
-     * Read a force field from the given parser and make it into a new
-     * ForceField.  Transform it by the given Matrix.
-     * 
-     * Leave the parser after the end of the tag.
-     * 
-     * @param   p               The parser to read from.
-     * @param   xform           The transformation that needs to be applied
-     *                          to the level to make it fit the screen.
-     * @param   attrs           The tag's attributes.
-     * @return                  The transformed polygon.
-     * @throws XmlPullParserException
-     * @throws IOException
-     * @throws LevelException
-     */
-    private ForceField readForceField(XmlPullParser p, Matrix xform, Bundle attrs)
-        throws XmlPullParserException, IOException, LevelException
-    {
-        float sx = attrs.getFloat("sx", 0);
-        float sy = attrs.getFloat("sy", 0);
-        float ex = attrs.getFloat("ex", 0);
-        float ey = attrs.getFloat("ey", 0);
-        RectF box = new RectF(sx, sy, ex, ey);
-
-        // Skip past the tag.
-        int eventType = p.getEventType();
-        while (eventType != XmlPullParser.END_DOCUMENT &&
-                                    eventType != XmlPullParser.END_TAG)
-            eventType = p.next();
-
-        return new ForceField(appContext, box, xform);
-    }
-
-
-	/**
-	 * Read a display from the given parser.  Transform it by the given Matrix.
-	 * 
-	 * Leave the parser after the end of the tag.
-	 * 
-	 * @param	p				The parser to read from.
-	 * @param	xform			The transformation that needs to be applied
-	 * 							to the level to make it fit the screen.
-	 * @param	attrs			The tag's attributes.
-	 * @return					The transformed Display.
-	 * @throws XmlPullParserException
-	 * @throws IOException
-	 * @throws LevelException
-	 */
-	private Display readDisplay(XmlPullParser p, Matrix xform, Bundle attrs)
-		throws XmlPullParserException, IOException, LevelException
-	{
-		float size = attrs.getFloat("size", 0);
-		float sx = attrs.getFloat("sx", 0);
-		float sy = attrs.getFloat("sy", 0);
-		float ex = attrs.getFloat("ex", 0);
-		float ey = attrs.getFloat("ey", 0);
-		RectF box = new RectF(sx, sy, ex, ey);
-		String text = attrs.getString("text");
-
-		// Skip past the tag.
-		int eventType = p.getEventType();
-		while (eventType != XmlPullParser.END_DOCUMENT &&
-									eventType != XmlPullParser.END_TAG)
-			eventType = p.next();
-
-		if (text != null)
-			return new Display(appContext, text, size, box, xform);
-		else
-			return new Display(appContext, size, box, xform);
+		if (tag.equals("Level")) {
+			return buildLevel(p, xform, tag, id, attrs);
+		} else if (tag.equals("Point")) {
+			return buildPoint(p, xform, tag, id, attrs);
+		} else if (tag.equals("Start")) {
+			Point point = buildPoint(p, xform, tag, id, attrs);
+			return new Location(id, Location.Type.START, point);
+		} else if (tag.equals("Target")) {
+			if (id == null)
+				throw new LevelException(p, "<Target> must have an id");
+			Point point = buildPoint(p, xform, tag, id, attrs);
+			return new Location(id, Location.Type.TARGET, point);
+		} else if (tag.equals("Rect")) {
+			return readRect(p, xform, tag, id, attrs);
+		} else if (tag.equals("Poly")) {
+			return readPoly(p, xform, tag, id, attrs);
+		} else if (tag.equals("Hole")) {
+			return readHole(p, xform, tag, id, attrs);
+		} else if (tag.equals("OnCross") || tag.equals("OnBounce") ||
+													tag.equals("WhileZone")) {
+			return buildAction(p, xform, tag, id, attrs);
+		} else if (tag.equals("Graphic")) {
+			return buildGraphic(p, xform, tag, id, attrs);
+		} else if (tag.equals("Anim")) {
+			return buildGraphic(p, xform, tag, id, attrs);
+		} else if (tag.equals("Text")) {
+			return readDisplay(p, xform, tag, id, attrs);
+		} else
+			throw new LevelException(p, "unrecognised tag: <" + tag + ">");
 	}
 
 
 	/**
-	 * Read a graphic from the given parser.  Transform it by the given Matrix.
+	 * Read a level header from the given XML parser.  Assumes we are already
+	 * at the <Level> tag.
 	 * 
-	 * Leave the parser after the end of the tag.
-	 * 
-	 * @param	p				The parser to read from.
-	 * @param	xform			The transformation that needs to be applied
-	 * 							to the level to make it fit the screen.
-	 * @param	attrs			The tag's attributes.
-	 * @return					The transformed Display.
-	 * @throws XmlPullParserException
-	 * @throws IOException
-	 * @throws LevelException
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	id			The ID of this element.
+	 * @param	attrs		The XML attributes for this item.
+	 * @return				The constructed element.
+	 * @throws LevelException	Error encountered while reading.
 	 */
-	private Element readGraphic(XmlPullParser p, Matrix xform, Bundle attrs)
-		throws XmlPullParserException, IOException, LevelException
+	private LevelData buildLevel(XmlPullParser p, Matrix xform, String tag,
+			 					 String id, Bundle attrs)
+		throws LevelException
 	{
-		String type = attrs.getString("type");
-		int imgId = attrs.getInt("img", 0);
-		float sx = attrs.getFloat("sx", 0);
-		float sy = attrs.getFloat("sy", 0);
-		float ex = attrs.getFloat("ex", 0);
-		float ey = attrs.getFloat("ey", 0);
-		RectF box = new RectF(sx, sy, ex, ey);
-		boolean norot = attrs.getBoolean("norotate", false);
-		boolean vertical = attrs.getBoolean("vertical", false);
-		
-		// Skip past the tag.
-		int eventType = p.getEventType();
-		while (eventType != XmlPullParser.END_DOCUMENT &&
-									eventType != XmlPullParser.END_TAG)
-			eventType = p.next();
+		// Read the level attributes.
+		String name = attrs.getString("name");
+		if (name == null)
+			name = "???";
+		int group = attrs.getInt("group", 0);
+		int difficulty = attrs.getInt("difficulty", 0);
+		long time = attrs.getInt("time", 120) * 1000;
 
-		if (type != null) {
-			if (type.equals("clock"))
-				return new Clock(appContext, box, xform, vertical);
-			if (type.equals("green_arrow"))
-				return new Graphic(appContext, Graphic.GREEN_ARROW, box, xform, norot);
-			throw new LevelException(p, "animation type \"" +
-										type + "\"is not valid");
-		}
-		if (imgId == 0)
-			throw new LevelException(p, "graphics require either" +
-										" \"type\" or \"img\"");
-		return new Graphic(appContext, imgId, box, xform, norot);
+		// Read the level header.
+		LevelData theLevel = new LevelData(appContext, name,
+		                                   group, difficulty, time, xform);
+		return theLevel;
 	}
 
 
@@ -779,33 +551,212 @@ class LevelReader {
 	 * given parser.  Transform it by the given Matrix and return it as
 	 * a Point.
 	 * 
-	 * Leave the parser after the end of the tag.
-	 * 
-	 * @param	p				The parser to read from.
-	 * @param	xform			The transformation that needs to be applied
-	 * 							to the level to make it fit the screen.
-	 * @param	attrs			The tag's attributes.
-	 * @return					The transformed Point.
-	 * @throws XmlPullParserException
-	 * @throws IOException
-	 * @throws LevelException
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	id			The ID of this element.
+	 * @param	attrs		The XML attributes for this item.
+	 * @return				The constructed element.
+	 * @throws LevelException	Error encountered while reading.
 	 */
-	private Point readPoint(XmlPullParser p, Matrix xform, Bundle attrs)
-		throws XmlPullParserException, IOException, LevelException
+	private Point buildPoint(XmlPullParser p, Matrix xform, String tag,
+							 String id, Bundle attrs)
+		throws LevelException
 	{
 		float x = attrs.getFloat("x", 0);
 		float y = attrs.getFloat("y", 0);
-		
-		// Skip past the tag.
-		int eventType = p.getEventType();
-		while (eventType != XmlPullParser.END_DOCUMENT &&
-									eventType != XmlPullParser.END_TAG)
-			eventType = p.next();
-		
 		return xform.transform(new Point(x, y));
 	}
 
 	
+	/**
+	 * Read a rectangle from the given parser and make it into a new Poly.
+	 * Transform it by the given Matrix.
+	 * 
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	id			The ID of this element.
+	 * @param	attrs		The XML attributes for this item.
+	 * @return				The constructed element.
+	 * @throws LevelException	Error encountered while reading.
+	 */
+	private Poly readRect(XmlPullParser p, Matrix xform, String tag,
+			 			  String id, Bundle attrs)
+		throws LevelException
+	{
+		float sx = attrs.getFloat("sx", 0);
+		float sy = attrs.getFloat("sy", 0);
+		float ex = attrs.getFloat("ex", 0);
+		float ey = attrs.getFloat("ey", 0);
+		boolean wall = attrs.getBoolean("wall", true);
+
+        RectF box = new RectF(sx, sy, ex, ey);
+
+		return new Poly(appContext, id, box, xform);
+	}
+
+
+	/**
+	 * Read a polygon definition from the level data, and transform it by
+	 * the given Matrix.
+	 * 
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	id			The ID of this element.
+	 * @param	attrs		The XML attributes for this item.
+	 * @return				The constructed element.
+	 * @throws LevelException	Error encountered while reading.
+	 */
+	private Poly readPoly(XmlPullParser p, Matrix xform, String tag,
+			  			  String id, Bundle attrs)
+		throws LevelException
+	{
+		// See if this is a reference to a common poly.
+		String ref = attrs.getString("ref");
+		if (ref != null) {
+			Object obj = common.getById(ref);
+			if (obj == null || !(obj instanceof Poly))
+				throw new LevelException(p, "no defined Poly with id " + ref);
+			return (Poly) obj;
+		}
+		
+		// Make an empty polygon.
+		return new Poly(appContext, id, xform);
+	}
+
+
+	/**
+	 * Read a hole from the given parser.  Transform it by the given Matrix.
+	 * 
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	id			The ID of this element.
+	 * @param	attrs		The XML attributes for this item.
+	 * @return				The constructed element.
+	 * @throws LevelException	Error encountered while reading.
+	 */
+	private Hole readHole(XmlPullParser p, Matrix xform, String tag,
+			  			  String id, Bundle attrs)
+		throws LevelException
+	{
+		float x = attrs.getFloat("x", 0);
+		float y = attrs.getFloat("y", 0);
+		
+		return new Hole(appContext, id, x, y, xform);
+	}
+
+
+	/**
+	 * Build an Action from the current tag.
+	 * 
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	id			The ID of this element.
+	 * @param	attrs		The XML attributes for this item.
+	 * @return				The constructed element.
+	 * @throws LevelException	Error encountered while reading.
+	 */
+	private Action buildAction(XmlPullParser p, Matrix xform, String tag,
+							   String id, Bundle attrs)
+		throws LevelException
+	{
+		Action.Trigger trig = null;
+		try {
+			trig = Action.Trigger.valueOf(tag.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			throw new LevelException(p, "strange action trigger \"" + tag + "\"");
+		}
+
+		String tname = attrs.getString("type");
+		if (tname == null)
+			throw new LevelException(p, "<" + tag +
+									    "> requires a \"type\" attribute");
+		Action.Type type = null;
+		try {
+			type = Action.Type.valueOf(tname.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			throw new LevelException(p, "action type \"" +
+										tname + "\" is not valid");
+		}
+		
+		String msg = attrs.getString("message");
+
+		Action action = new Action(trig, type, msg);
+	    String targId = attrs.getString("target");
+	    if (targId != null)
+	        action.setTarget(targId);
+
+		return action;
+	}
+
+
+	/**
+	 * Read a graphic from the given parser.
+	 * 
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	id			The ID of this element.
+	 * @param	attrs		The XML attributes for this item.
+	 * @return				The constructed element.
+	 * @throws LevelException	Error encountered while reading.
+	 */
+	private Element buildGraphic(XmlPullParser p, Matrix xform, String tag,
+								 String id, Bundle attrs)
+		throws LevelException
+	{
+		int imgId = attrs.getInt("img", 0);
+		boolean norot = attrs.getBoolean("norotate", false);
+
+		if (imgId == 0)
+			throw new LevelException(p, "<" + tag +
+									    "> requires an \"img\" attribute");
+		
+		return new Graphic(appContext, id, imgId, xform, norot);
+	}
+
+
+	/**
+	 * Read a display from the given parser.  Transform it by the given Matrix.
+	 * 
+	 * @param	p			The parser to read from.
+	 * @param	xform		The transformation that needs to be applied
+	 * 						to the level to make it fit the screen.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	id			The ID of this element.
+	 * @param	attrs		The XML attributes for this item.
+	 * @return				The constructed element.
+	 * @throws LevelException	Error encountered while reading.
+	 */
+	private Display readDisplay(XmlPullParser p, Matrix xform, String tag,
+				 				String id, Bundle attrs)
+		throws LevelException
+	{
+		float size = attrs.getFloat("size", 1.0f);
+		String text = attrs.getString("text");
+		
+		if (text == null)
+			throw new LevelException(p, "<" + tag +
+									    "> requires a \"text\" attribute");
+		
+		return new Display(appContext, id, text, size, xform);
+	}
+
+
+    // ******************************************************************** //
+    // Parsing Utilities.
+    // ******************************************************************** //
+
 	/**
 	 * Read the attributes for the current tag, process them according to
 	 * the type defined in typeMap, and wrap them up in a bundle.
@@ -915,6 +866,7 @@ class LevelReader {
 		typeMap.put("type", 'S');
         typeMap.put("action", 'S');
 		typeMap.put("text", 'S');
+        typeMap.put("message", 'S');
 		typeMap.put("norotate", 'B');
 		typeMap.put("vertical", 'B');
 	}
@@ -930,8 +882,8 @@ class LevelReader {
 	// Application's resources.
 	private final Resources resources;
 	
-	// Shared level elements.
-	private final LevelData common;
+	// Shared level elements,if we have any.
+	private LevelData common = null;
 	
 }
 

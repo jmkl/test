@@ -43,9 +43,10 @@ class Topology {
 	public static final class Reflect {
 
 		/**
-		 * Any action triggered by the Line we bounced off.
+		 * List of actions triggered by the Line we bounced off.  Null if
+		 * none.
 		 */
-		public Action action = null;
+		public Action[] actions = null;
 
 		/**
 		 * Fraction (0 .. 1) along the motion vector where
@@ -94,7 +95,7 @@ class Topology {
 		 * @param	i			Intersect data to copy.
 		 */
 		public void copy(Reflect i) {
-			action = i.action;
+			actions = i.actions;
 			fraction = i.fraction;
 			angle = i.angle;
 			interX = i.interX;
@@ -116,9 +117,9 @@ class Topology {
     public static final class Intersect {
 
         /**
-         * Any action triggered by the Line we bounced off.
+         * List of actions triggered by the Line we crossed.  Null if none.
          */
-        public Action action = null;
+        public Action[] actions = null;
 
         /**
          * True if the motion crossed the base line inwards, i.e. from the
@@ -206,7 +207,7 @@ class Topology {
 		Iterator<Poly> walls = currentLevel.getWalls();
 		while (walls.hasNext()) {
 			Poly p = walls.next();
-			for (Line l : p.getLines())
+			for (Line l : p.getEffectiveLines())
 				lines.add(l);
 		}
 
@@ -215,7 +216,7 @@ class Topology {
         Iterator<Poly> trigs = currentLevel.getTriggers();
         while (trigs.hasNext()) {
             Poly p = trigs.next();
-            for (Line l : p.getLines())
+            for (Line l : p.getEffectiveLines())
                 triggers.add(l);
         }
 	}
@@ -289,21 +290,21 @@ class Topology {
 	/**
 	 * Given a position, check that position against all the special
 	 * zones (holes etc.) in this topology to see if it is inside any.
-	 * If so, return the action defined by the zone.
+	 * If so, return the actions defined by the zone.
 	 * 
 	 * @param	x			X of the position.
 	 * @param	y			Y of the position.
 	 * @param	res			Action to be set to the required action, if
 	 * 						the position is in a zone.
-	 * @return				Iff we entered a zone, the action to take.
+	 * @return				Iff we entered a zone, the actions to take.
 	 * 						Otherwise null.
 	 */
-	final Action zone(double x, double y) {
+	final Action[] zone(double x, double y) {
 		// Search every hole looking for hits.
-		Action act;
+		Action[] acts;
 		for (Hole zone : zones)
-			if ((act = zone.entered(x, y)) != null)
-				return act;
+			if ((acts = zone.entered(x, y)) != null)
+				return acts;
 
 		return null;
 	}
@@ -473,7 +474,7 @@ class Topology {
             angle = 180 - angle;
 
         // Set up the results.
-        reflectOut.action = base.getAction();
+        reflectOut.actions = base.getBounceActions();
         reflectOut.fraction = fracM;
         reflectOut.angle = angle;
         reflectOut.interX = interX;
@@ -521,7 +522,7 @@ class Topology {
             
             int flag = intersect(sense, sx, sy, ex, ey);
             if (flag != 0) {
-                intersectOut.action = sense.getAction();
+                intersectOut.actions = sense.getCrossActions();
                 intersectOut.inward = flag > 0;
                 return true;
             }

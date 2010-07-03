@@ -33,32 +33,19 @@ final class Line {
 	 * @param	end			End point.
 	 */
 	public Line(Point start, Point end) {
-		this(start.x, start.y, end.x, end.y, null);
-	}
-	
-	
-	/**
-	 * Create a line with given start and end points.
-	 * 
-	 * @param	start		Start point.
-	 * @param	end			End point.
-	 * @param	action		The action to take when hit.
-	 */
-	public Line(Point start, Point end, Action action) {
-		this(start.x, start.y, end.x, end.y, action);
+		this(start.x, start.y, end.x, end.y);
 	}
 	
 
-	/**
-	 * Create a line with given start and end points.
-	 * 
-	 * @param	sx			Start X.
-	 * @param	sy			Start Y.
-	 * @param	ex			End X.
-	 * @param	ey			End Y.
-	 * @param	action		The action to take when hit.
-	 */
-	public Line(double sx, double sy, double ex, double ey, Action action) {
+    /**
+     * Create a line with given start and end points.
+     * 
+     * @param   sx          Start X.
+     * @param   sy          Start Y.
+     * @param   ex          End X.
+     * @param   ey          End Y.
+     */
+    public Line(double sx, double sy, double ex, double ey) {
 	    this.reflectEnabled = true;
 		this.sx = sx;
 		this.sy = sy;
@@ -66,7 +53,6 @@ final class Line {
 		this.ey = ey;
 		this.dx = this.ex - this.sx;
 		this.dy = this.ey - this.sy;
-		this.action = action;
 		
 		// Calculate the line's magnitude.
 		this.mag = Math.sqrt(dx * dx + dy * dy);
@@ -121,14 +107,47 @@ final class Line {
     
 
 	/**
-	 * Get the action triggered by hitting this line.
+	 * Get the actions triggered by crossing this line.
 	 * 
-	 * @return				The action triggered by hitting this line;
+	 * @return				The actions triggered by crossing this line;
 	 * 						null if none.
 	 */
-	public Action getAction() {
-		return action;
+	public Action[] getCrossActions() {
+		return crossActions;
 	}
+
+
+    /**
+     * Set the actions triggered by crossing this line.
+     * 
+     * @param   acts        The actions triggered by crossing this line;
+     *                      null if none.
+     */
+    public void setCrossActions(Action[] acts) {
+        crossActions = acts;
+    }
+
+
+    /**
+     * Get the actions triggered by hitting and bouncing off this line.
+     * 
+     * @return              The actions triggered by hitting this line;
+     *                      null if none.
+     */
+    public Action[] getBounceActions() {
+        return bounceActions;
+    }
+
+
+    /**
+     * Set the actions triggered by hitting and bouncing off this line.
+     * 
+     * @param   acts        The actions triggered by hitting this line;
+     *                      null if none.
+     */
+    public void setBounceActions(Action[] acts) {
+        bounceActions = acts;
+    }
 
 
     // ******************************************************************** //
@@ -136,32 +155,20 @@ final class Line {
     // ******************************************************************** //
 
 	/**
-	 * Create a scaled version of this line according to the given scale
-	 * factor.  The scale is applied about the co-ordinate origin; so the
-	 * returned line will in general be moved as well as scaled.
-	 * 
-	 * @param	sf			Scale factor.
-	 * @return				A new line which is a scaled version of this one.
-	 */
-	public Line scale(double sf) {
-		return new Line(sx * sf, sy * sf, ex * sf, ey * sf, action);
-	}
-	
-
-	/**
 	 * Create a new line which is equal to this one moved left by a set
 	 * distance.  Left is defined by the directions of the start and end
 	 * points.
 	 * 
 	 * @param	dist		The offset distance.
-	 * @return				A new line which is a scaled version of this one.
+	 * @return				A new line which is a shifted version of this one.
+	 *                      Actions are not copied.
 	 */
 	public Line moveLeft(double dist) {
 		// Calculate the displacement.  This is the left-hand normal
 		// vector (which is the rotated unit vector) times the distance.
 		final double dispX = uy * dist;
 		final double dispY = -ux * dist;
-		return new Line(sx + dispX, sy + dispY, ex + dispX, ey + dispY, action);
+		return new Line(sx + dispX, sy + dispY, ex + dispX, ey + dispY);
 	}
 
 
@@ -238,8 +245,11 @@ final class Line {
 	public final double maxX;
 	public final double maxY;
 
-	// The action to take when hit.
-	private final Action action;
+	// The action to take when crossed.  Null if none.
+	private Action[] crossActions;
+
+    // The action to take when bounced off.  Null if none.
+    private Action[] bounceActions;
 
 }
 

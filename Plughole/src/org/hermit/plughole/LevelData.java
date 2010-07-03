@@ -16,16 +16,24 @@
 
 package org.hermit.plughole;
 
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.hermit.plughole.LevelReader.LevelException;
+import org.xmlpull.v1.XmlPullParser;
+
+import android.graphics.Canvas;
+
 
 /**
  * Class containing all of the data which defines a game level.
  */
-class LevelData {
+class LevelData
+    extends Element
+{
 
     // ******************************************************************** //
     // Public Classes.
@@ -105,29 +113,27 @@ class LevelData {
 
 	
     // ******************************************************************** //
-    // Configuration.
-    // ******************************************************************** //
-
-	/**
-	 * Set the ball radius.
-	 * 
-	 * @param	rad				The ball radius, used to map visible barriers
-	 * 							to the ball centre position.
-	 */
-	static void setBallRadius(double rad) {
-		ballRadius = rad;
-	}
-	
-	
-    // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
 	
 	/**
 	 * Create blank level data.
+     * 
+     * @param   app         Application context.
+     * @param   name        The name of this level.
+     * @param   group       Difficulty group.
+     * @param   diff        Level number within the difficulty group.
+     * @param   time        Time allowed for the level, in seconds.
+     * @param   xform       Transform to apply to the raw data.
 	 */
-	LevelData() {
-		this.pointItems = new ArrayList<Point>();
+	LevelData(Plughole app, String name,
+	          int group, int diff, long time, Matrix xform)
+	{
+        super(app, null, null, xform);
+        
+        setHeader(new Header(name, group, diff, time));
+
+		this.locationItems = new ArrayList<Location>();
 		this.fixedItems = new ArrayList<Element>();
 		this.animItems = new ArrayList<Element>();
 		this.zoneItems = new ArrayList<Hole>();
@@ -156,10 +162,45 @@ class LevelData {
 	 * 
 	 * @param	start		Level start position.
 	 */
-	public void setStart(Point start) {
+	public void setStart(Location start) {
 		startPos = start;
 	}
 	
+    
+    /**
+     * Add a child to this element.  This is used during level parsing.
+     * 
+     * @param   p           The parser the level is being read from.
+     * @param   tag         The name of this item's XML tag.
+     * @param   child       The child to add to this element.
+     * @return              true iff this child has been accepted.  If
+     *                      false, the child is actually a sibling; it
+     *                      has not been added here, and needs to be
+     *                      added to the parent.
+     */
+    @Override
+    boolean addChild(XmlPullParser p, String tag, Object child)
+        throws LevelException
+    {
+        if (child instanceof Location) {
+            Location loc = (Location) child;
+            switch (loc.type) {
+            case START:
+                setStart(loc);
+                break;
+            case TARGET:
+                addPoint(loc, loc.id);
+                break;
+            }
+            return true;
+        } else if (child instanceof Poly) {
+            
+        }
+
+        throw new LevelException(p, "element <" + p.getName() +
+                                    "> not permitted in <" + tag + ">");
+    }
+
 
 	/**
 	 * Add a non-animated background item to this level.
@@ -180,8 +221,8 @@ class LevelData {
 	 * @param	item		The element to add.
 	 * @param	id			The ID of the element, or null.
 	 */
-	public void addPoint(Point item, String id) {
-		pointItems.add(item);
+	public void addPoint(Location item, String id) {
+		locationItems.add(item);
 		if (id != null && !idMap.containsKey(id))
 			idMap.put(id, item);
 	}
@@ -241,7 +282,6 @@ class LevelData {
 	 *                      which will be the actual barrier.
 	 */
 	public Poly addBarrier(Poly item, String id) {
-	    item = item.createLarger(ballRadius);
 		wallItems.add(item);
 		
 		// Put the newly-created larger item in the ID map with a distinct ID.
@@ -298,7 +338,7 @@ class LevelData {
 	 * 
 	 * @return				The start position of this level.  null if not set.
 	 */
-	public Point getStart() {
+	public Location getStart() {
 		return startPos;
 	}
 	
@@ -364,16 +404,26 @@ class LevelData {
 		return zoneItems;
 	}
 	
-
+    
     // ******************************************************************** //
-    // Class Data.
+    // Drawing.
     // ******************************************************************** //
 
-	// The ball radius, used to map visible barriers to the ball
-	// centre position.
-	private static double ballRadius = 0;
+    /**
+     * Draw this level onto the given canvas.
+     * 
+     * @param   canvas          Canvas to draw on.
+     * @param   time            Total level time in ms.  A time of zero
+     *                          indicates that we're drawing statically,
+     *                          not in the game loop.
+     * @param   clock           Level time remaining in ms.
+     */
+    @Override
+    protected void draw(Canvas canvas, long time, long clock) {
+        // Nothing to do... all drawing is by children.
+    }
 
-	
+
     // ******************************************************************** //
     // Private Data.
     // ******************************************************************** //
@@ -382,10 +432,10 @@ class LevelData {
 	private Header header;
 
 	// Start position of this level.
-	private Point startPos = null;
+	private Location startPos = null;
 	
-	// The points (teleport targets etc.) in this level.
-	private final ArrayList<Point> pointItems;
+	// The locations (teleport targets etc.) in this level.
+	private final ArrayList<Location> locationItems;
 	
 	// The fixed items in this level.
 	private final ArrayList<Element> fixedItems;

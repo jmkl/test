@@ -18,6 +18,9 @@ package org.hermit.plughole;
 
 import java.util.ArrayList;
 
+import org.hermit.plughole.LevelReader.LevelException;
+import org.xmlpull.v1.XmlPullParser;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -27,6 +30,23 @@ import android.graphics.RectF;
 /**
  * Class representing a polygon.  This is designed to represent objects in
  * the level that the ball interacts with.
+ * 
+ * This is a rather complex class.  Every polygon -- whether it starts as
+ * a rectangle or a random poly -- has the potential to be drawn, and also
+ * to interact with the ball.  Interactions can take the form of the ball
+ * bouncing off it, or crossing it and triggering an action, or triggering
+ * an action by being contained within it (certain types only).
+ * 
+ * The wrinkle is that all ball interactions are done with reference to the
+ * centre of the ball; even though it appears to be the edge of the ball
+ * which actually bounces off a wall, etc.
+ * 
+ * So, each Poly is actually 2 polygons.  The level data defines the visible
+ * polygon, which we turn into a graphics path for drawing on the screen.
+ * Then we create a new set of lines, the "effective polygon", by enlarging
+ * the visible polygon by the ball radius -- these lines are the ones which
+ * take part in ball interactions.  The enlarged line set has its corners
+ * rounded.
  */
 class Poly
 	extends Element
@@ -35,126 +55,161 @@ class Poly
 	// ******************************************************************** //
 	// Constructor.
 	// ******************************************************************** //
-	
-	/**
-	 * Create a polygon from the given points array.
-	 * 
-	 * @param	app				Application context.
-	 * @param	points			Array of points representing the polygon,
-	 * 							assumed to be in clockwise order.
-	 */
-	public Poly(Plughole app, ArrayList<Point> points) {
-		this(app, points, null);
-	}
-	
-	
-	/**
-	 * Create a polygon from the given points array.
-	 * 
-	 * @param	app				Application context.
-	 * @param	points			Array of points representing the polygon,
-	 * 							assumed to be in clockwise order.
-	 * @param	action			Action to trigger if the ball hits this polygon.
-	 */
-	public Poly(Plughole app, ArrayList<Point> points, Action action) {
-        super(app, action);
-        
-        init(points, false);
-	}
-	
-	   
+    
     /**
-     * Create a polygon from the given rectangle.
+     * Create a polygon with no initial points.  Points will be added
+     * later as we read them.
      * 
-     * @param   app             Application context.
-     * @param   rect            Rectangle representing the polygon.
+     * @param   app         Application context.
+	 * @param	id			The ID of this element.
+	 * @param	xform		Transform to apply to the raw data.
      */
-    public Poly(Plughole app, RectF rect) {
-        this(app, rect, null);
+    public Poly(Plughole app, String id, Matrix xform) {
+        super(app, id, null, xform);
+        
+    	buildingPoints = new ArrayList<Point>();
     }
     
-    
+
     /**
      * Create a polygon from the given rectangle.
      * 
-     * @param   app             Application context.
-     * @param   rect            Rectangle representing the polygon.
-     * @param   action          Action to trigger if the ball hits this polygon.
+     * @param   app         Application context.
+	 * @param	id			The ID of this element.
+     * @param   visRect     The visible rectangle defining this element, in
+     *                      level co-ordinates.
+	 * @param	xform		Transform to apply to the raw data.
      */
-    public Poly(Plughole app, RectF rect, Action action) {
-        super(app, action);
+    public Poly(Plughole app, String id, RectF visRect, Matrix xform) {
+        super(app, id, visRect, xform);
 
         // Construct a points list in clockwise order.
-        ArrayList<Point> points = new ArrayList<Point>(4);
-        points.add(new Point(rect.left, rect.top));
-        points.add(new Point(rect.right, rect.top));
-        points.add(new Point(rect.right, rect.bottom));
-        points.add(new Point(rect.left, rect.bottom));
-        
-        init(points, false);
+    	buildingPoints = new ArrayList<Point>(4);
+    	buildingPoints.add(new Point(visRect.left, visRect.top));
+    	buildingPoints.add(new Point(visRect.right, visRect.top));
+    	buildingPoints.add(new Point(visRect.right, visRect.bottom));
+    	buildingPoints.add(new Point(visRect.left, visRect.bottom));
     }
-    
+
 
 	/**
 	 * Create a new Poly representing a circle as a set of line segments.
 	 * 
-	 * @param	app				Application context.
-	 * @param	centre			Centre point of the circle.
-	 * @param	r				Radius of the circle.
+	 * @param	app			Application context.
+	 * @param	id			The ID of this element.
+	 * @param	centre		Centre point of the circle, in level co-ordinates.
+	 * @param	r			Radius of the circle, in level co-ordinates.
+     * @param   visRect     The visible rectangle defining this element, in
+     *                      level co-ordinates.
+	 * @param	xform		Transform to apply to the raw data.
 	 */
-	public Poly(Plughole app, Point centre, double r) {
-		this(app, centre, r, null);
-	}
+	public Poly(Plughole app, String id, Point centre, double r,
+	            RectF visRect, Matrix xform)
+	{
+        super(app, id, null, xform);
 
-	
-	/**
-	 * Create a new Poly representing a circle as a set of line segments.
-	 * 
-	 * @param	app				Application context.
-	 * @param	centre			Centre point of the circle.
-	 * @param	r				Radius of the circle.
-	 * @param	action			Action to trigger if the ball hits this polygon.
-	 */
-	public Poly(Plughole app, Point centre, double r, Action action) {
-		super(app, action);
-
-		ArrayList<Point> points = new ArrayList<Point>(360 / CORNER_SEG);
+    	buildingPoints = new ArrayList<Point>(360 / CORNER_SEG + 1);
 
 		// Compute a vector representing three o'clock.
 		Vector v1 = new Vector(r, 0);
 
 		// Create points around the circle.
 		for (int i = 0; i < 360 / CORNER_SEG; ++i) {
-			points.add(centre.offset(v1));
+			buildingPoints.add(centre.offset(v1));
 			v1 = v1.rotate(CORNER_SEG);
 		}
+	}
 
-		// And make the points into a new polygon.
-		init(points, false);
+
+	// ******************************************************************** //
+	// Construction.
+	// ******************************************************************** //
+	
+	/**
+	 * Add a child to this element.  This is used during level parsing.
+	 * 
+	 * @param	p			The parser the level is being read from.
+	 * @param	tag 		The name of this item's XML tag.
+	 * @param	child		The child to add to this element.
+	 * @return				true iff this child has been accepted.  If
+	 * 						false, the child is actually a sibling; it
+	 * 						has not been added here, and needs to be
+	 * 						added to the parent.
+	 */
+	@Override
+    boolean addChild(XmlPullParser p, String tag, Object child)
+		throws LevelException
+	{
+		if (child instanceof Point) {
+			buildingPoints.add((Point) child);
+			return true;
+		} else if (child instanceof Action) {
+			addAction((Action) child);
+			return true;
+		} else if (child instanceof Graphic) {
+		    // Child needs its rect.
+		    ((Graphic) child).setRect(getVisualRect());
+			return false;
+        } else if (child instanceof Display) {
+            // Child needs its rect.
+            ((Display) child).setRect(getVisualRect());
+            return false;
+		}
+		throw new LevelException(p, "element <" + p.getName() +
+									"> not permitted in <" + tag + ">");
 	}
 
 	
 	/**
-	 * Set up this polygon from the given points array.
-	 * 
-	 * @param	app				Application context.
-	 * @param	points			Array of points representing the polygon,
-	 * 							assumed to be in clockwise order.
-	 * @param	inverted		If true, the polygon is inverted -- the
-	 * 							outside becomes the inside and vice versa.
+	 * We're finished adding children; do any required initialization.
 	 */
-	private void init(ArrayList<Point> points, boolean inverted) {
-		// Convert the points list into a lines list.  This is how
-		// we represent the poly internally.
-		final int npoints = points.size();
-		this.lines = new Line[npoints];
-		Action act = getAction();
-		for (int i = 0; i < npoints; ++i) {
-		    int j = i + 1;
-		    if (j >= npoints)
-		        j = 0;
-		    lines[i] = new Line(points.get(i), points.get(j), act);
+	@Override
+    void finished() {
+	    super.finished();
+	    
+	    // Now, we need to create two polygons.  The shape defined by the
+	    // user is the one we draw, so convert that into a graphics path.
+	    // But since all bounce calculations are done off the ball's centre,
+	    // we create a larger polygon to be the actual effective zone.  This
+	    // is the one that has all the actions connected to it.
+	    
+		// We need the ball radius in screen co-ordinates.
+        Matrix xform = getTransform();
+        double ballRad = LevelData.BALL * xform.getScale() / 2.0;
+
+		// First make the graphics path and a list of lines for the visible
+	    // polygon.  We have to transform all the points to screen co-ordinates.
+		drawingPath = new Path();
+        final int npoints = buildingPoints.size();
+        Line[] baseLines = new Line[npoints];
+		boolean first = true;
+        Point prev = xform.transform(buildingPoints.get(npoints - 1));
+        for (int i = 0; i < npoints; ++i) {
+		    Point curr = xform.transform(buildingPoints.get(i));
+		    
+		    // Add to the path.
+		    if (first) {
+		        drawingPath.moveTo((float) curr.x, (float) curr.y);
+		        first = false;
+		    } else
+		        drawingPath.lineTo((float) curr.x, (float) curr.y);
+		    
+		    // Add another line.
+		    baseLines[i] = new Line(prev, curr);
+            prev = curr;
 		}
+		drawingPath.close();
+		
+		// Now, expand the line set we just created to get the effective lines.
+		effectiveLines = createLarger(baseLines, ballRad);
+        
+        // Set the appropriate actions on all the effective lines.
+        Action[] cross = getActions(Action.Trigger.ONCROSS);
+        Action[] bounce = getActions(Action.Trigger.ONBOUNCE);
+        for (Line l : effectiveLines) {
+            l.setCrossActions(cross);
+            l.setBounceActions(bounce);
+        }
 	}
 	
 
@@ -163,39 +218,45 @@ class Poly
     // ******************************************************************** //
 
 	/**
-	 * Create a new Poly which is a larger version of this one.
+	 * Create a new polygon which is a larger version of a given one.
 	 * 
 	 * Each line which makes up the poly is moved outwards -- i.e. to the
 	 * left -- by a specified distance, in a direction perpendicular
 	 * to itself.  A new polygon is constructed from these lines.  Convex
 	 * corners are rounded off using multiple line segments.
 	 * 
-	 * This object is not altered.
-	 * 
 	 * @param	dist			Distance to grow by.
-	 * @return					The new, grown polygon.
+	 * @return					The new, grown polygon, as a line list.
 	 */
-	Poly createLarger(double dist) {
+	private static final Line[] createLarger(Line[] base, double dist) {
 		// Create the outward-displaced versions of all our lines.
-		Line[] grown = new Line[lines.length];
-		for (int i = 0; i < lines.length; ++i)
-			grown[i] = lines[i].moveLeft(dist);
+		Line[] grown = new Line[base.length];
+		for (int i = 0; i < base.length; ++i)
+			grown[i] = base[i].moveLeft(dist);
 
 		// Create the corners between all pairs of the new, moved lines.
 		// These corners become the boundary of the new polygon.
-		ArrayList<Point> npoints = new ArrayList<Point>(grown.length * 4);
+		ArrayList<Point> newpoints = new ArrayList<Point>(grown.length * 4);
 		for (int i = 0; i < grown.length; ++i) {
 			int j = i + 1;
 			if (j >= grown.length)
 				j = 0;
-			makeCorner(lines[i].getEnd(), grown[i], grown[j], npoints);
+			makeCorner(base[i].getEnd(), grown[i], grown[j], newpoints);
 		}
+		
+        final int npoints = newpoints.size();
+        Line[] newlines = new Line[npoints];
+        Point prev = newpoints.get(npoints - 1);
+        for (int i = 0; i < npoints; ++i) {
+            Point curr = newpoints.get(i);
+            newlines[i] = new Line(prev, curr);
+            prev = curr;
+        }
 
-		// And make the intersects into a new polygon.
-		return new Poly(getApp(), npoints, getAction());
+        return newlines;
 	}
 
-	
+
 	/**
 	 * Make a "rounded" corner between the two given line segments.  If
 	 * the corner is concave, these segments intersect; if it's convex,
@@ -208,8 +269,8 @@ class Poly
 	 * @param	points			Points list -- we will add new points to
 	 * 							this as required to make the corner.
 	 */
-	private void makeCorner(Point centre, Line l1, Line l2,
-						    ArrayList<Point> points)
+	private static final void makeCorner(Point centre, Line l1, Line l2,
+						                 ArrayList<Point> points)
 	{
 		// Compute the vectors from the centre point to the two line ends.
 		Vector v1 = new Vector(centre, l1.getEnd());
@@ -245,14 +306,20 @@ class Poly
 		}
 	}
 	
-	
+
+    // ******************************************************************** //
+    // Accessors.
+    // ******************************************************************** //
+
 	/**
-	 * Get the lines which make up this polygon.
+	 * Get the lines which make up the effective polygon outline.
 	 * 
-	 * @return				The lines which make up this polygon.
+	 * @return             The lines which make up the effective polygon.
+	 *                     These are the lines which the centre of the ball
+	 *                     should interact with.
 	 */
-	Line[] getLines() {
-		return lines;
+	Line[] getEffectiveLines() {
+		return effectiveLines;
 	}
 
 
@@ -265,33 +332,24 @@ class Poly
 	 * 
 	 * @param  enable      True iff the ball should bounce off.
 	 */
-	void setReflectEnable(boolean enable) {
-        for (Line l : lines)
+	void setBounceEnable(boolean enable) {
+        for (Line l : effectiveLines)
             l.reflectEnabled = enable;
 	}
 	
 
+    /**
+     * Toggle this polygon as a barrier which reflects the ball.
+     */
+    void toggleBounceEnable() {
+        for (Line l : effectiveLines)
+            l.reflectEnabled = !l.reflectEnabled;
+    }
+    
+
     // ******************************************************************** //
     // Drawing.
     // ******************************************************************** //
-    
-	/**
-	 * Create a graphics Path representing this polygon.  This is used
-	 * for drawing it.
-	 */
-	private void makepath() {
-		gfxPath = new Path();
-		boolean first = true;
-		for (Line l : lines) {
-			if (first) {
-				gfxPath.moveTo((float) l.sx, (float) l.sy);
-				first = false;
-			} else
-				gfxPath.lineTo((float) l.sx, (float) l.sy);
-		}
-		gfxPath.close();
-	}
-	
 
 	/**
 	 * Draw this graphic onto the given canvas.
@@ -304,26 +362,22 @@ class Poly
 	 */
 	@Override
 	protected void draw(Canvas canvas, long time, long clock) {
-		// Create the graphics path if we haven't yet.
-		if (gfxPath == null)
-			makepath();
-		
 		// Clip to the polygon, so when we draw the bevel using thick lines,
 		// we don't spread out.
 		canvas.save();
-		canvas.clipPath(gfxPath);
+		canvas.clipPath(drawingPath);
 		
 		// Fill the poly.
 		polyPaint.setStyle(Paint.Style.FILL);
 		polyPaint.setColor(0xffd0d0d0);
-		canvas.drawPath(gfxPath, polyPaint);
+		canvas.drawPath(drawingPath, polyPaint);
 	
 		// Draw a bevelled edge on the outside of the poly.
 		polyPaint.setStyle(Paint.Style.STROKE);
 		for (int width = 6, color = 0xa0; width > 0; color -= 0x45, width -= 2) {
 			polyPaint.setStrokeWidth(width);
 			polyPaint.setARGB(0xff, color, color, color);
-			canvas.drawPath(gfxPath, polyPaint);
+			canvas.drawPath(drawingPath, polyPaint);
 		}
 		
 		canvas.restore();
@@ -353,15 +407,20 @@ class Poly
 	// Private Data.
 	// ******************************************************************** //
 
-	// The points defining the polygon boundary.  These are assumed to
-	// go clockwise around the border, so moving from points[0] to
+	// Temporary list used to hold points as we read them from the level
+	// data, in level co-ordinates.
+	private ArrayList<Point> buildingPoints = null;
+	
+	// The points defining the effective polygon boundary.  These are the
+	// lines which will interact with the centre of the ball.  These are
+	// assumed to go clockwise around the border, so moving from points[0] to
 	// points[1], the left side is outside the polygon, right side inside.
 	// Of course the last point joins to the first.
-	private Line[] lines;
+	private Line[] effectiveLines;
 
 	// A graphics Path representing this polygon.  This is used for
 	// drawing it.  Null if not set up yet.
-	private Path gfxPath = null;
+	private Path drawingPath = null;
 	
 }
 

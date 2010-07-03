@@ -28,6 +28,28 @@ final class Action
 	// ******************************************************************** //
 	
 	/**
+	 * The events that can trigger an action.
+	 */
+	public static enum Trigger {
+	    /**
+	     * An action triggered by crossing a line.
+	     */
+        ONCROSS(),
+	    /**
+	     * An action triggered by bouncing off a wall.
+	     */
+        ONBOUNCE(),
+	    /**
+	     * An action triggered by being in a defined zone.
+	     */
+        WHILEZONE();
+        
+        public static final Trigger[] VALUES = values();
+        public static final int NUM_VALUES = VALUES.length;
+	}
+	
+	
+	/**
 	 * The types of hole that exist.
 	 */
 	public static enum Type {
@@ -76,23 +98,25 @@ final class Action
 	/**
 	 * Create an action.
 	 * 
-	 * @param	type			The type of this action.
+	 * @param	trig		How this action is triggered.
+	 * @param	type		The type of this action.
 	 */
-	public Action(Type type) {
-		this(type, 0);
+	public Action(Trigger trig, Type type) {
+		this(trig, type, null);
 	}
 
 
 	/**
 	 * Create an action that does something with a message.
 	 * 
-	 * @param	type			The type of this action.
-	 * @param	msgid			The resource ID of the message it displays.
-	 * 							Use zero for no message.
+	 * @param	trig		How this action is triggered.
+	 * @param	type		The type of this action.
+	 * @param	msg			The message it displays.  Null for no message.
 	 */
-	public Action(Type type, int msgid) {
+	public Action(Trigger trig, Type type, String msg) {
+		this.trigger = trig;
 		this.type = type;
-		this.messageId = msgid;
+		this.message = msg;
 	}
 
 
@@ -131,6 +155,16 @@ final class Action
 	 * 
 	 * @param	target		Target element for this action.
 	 */
+	void setTarget(String target) {
+		// FIXME this.target = target;
+	}
+	
+
+	/**
+	 * Set the target item (e.g. place to teleport to) in this action.
+	 * 
+	 * @param	target		Target element for this action.
+	 */
 	void setTarget(Object target) {
 		this.target = target;
 	}
@@ -139,6 +173,16 @@ final class Action
 	// ******************************************************************** //
 	// Accessors.
 	// ******************************************************************** //
+
+	/**
+	 * Get the event that triggers this action.
+	 * 
+	 * @return				The trigger for this action.
+	 */
+	public Trigger getTrigger() {
+		return trigger;
+	}
+
 
 	/**
 	 * Get the type of this action.
@@ -151,13 +195,12 @@ final class Action
 
 
 	/**
-	 * Get the resource ID of the message for this action.
+	 * Get the message for this action.
 	 * 
-	 * @return				The resource ID of the message for this action;
-	 * 						0 if no message.
+	 * @return				The message for this action; null if no message.
 	 */
-	public int getMessageId() {
-		return messageId;
+	public String getMessage() {
+		return message;
 	}
 
 
@@ -222,11 +265,14 @@ final class Action
     // Private Data.
     // ******************************************************************** //
 
+	// The trigger for this Action.
+	private final Trigger trigger;
+
 	// The type of this Action.
 	private final Type type;
 
-	// The resource ID of the message for this action; 0 if no message.
-	private final int messageId;
+	// The message for this action; null if no message.
+	private final String message;
 
 	// If this is a gravity action, the current acceleration.
 	private double accelX = 0;
