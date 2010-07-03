@@ -129,33 +129,46 @@ Polygon
         Text display - Rectangle
         Animation - Rectangle
         Clock (self-drawn anim?) - Rectangle
-        
+
 
 NEW WAY
 =======
 
-<Start x="10" y="20" />
+<?xml version="1.0" encoding="utf-8"?>
+<LevelData>
+    <Level name="@string/level1" group="1" difficulty="1" time="80">
+        <Start x="10" y="20" />
 
-<Target x="10" y="20" />
+        <Target x="10" y="20" />
 
-<Rectangle wall="true,false" sx="" sy="" ex="" ey="">
-    <OnCross type="speed,accel,teleport,..." target="id" />
-    <OnBounce type="speed,accel,teleport,..." target="id" />
-    <WhileZone type="speed,accel,teleport,..." target="id" />
-    <Graphic img="id" orient="0,90,180,270" />
-    <Anim type="clock" img="id" orient="0,90,180,270" />
-    <Text name="id" text="string" />
-</Rectangle>
+        <Rect wall="true,false" sx="" sy="" ex="" ey="">
+            <OnCross type="speed,accel,teleport,..."
+            						target="id" message="string" />
+            <OnBounce type="speed,accel,teleport,..."
+            						target="id" message="string" />
+            <WhileZone type="speed,accel,teleport,..."
+            						target="id" message="string" />
+            						
+            <Graphic img="id" screenorient="0,90,180,270"
+            				  levelorient="0,90,180,270" />
+            <Anim type="clock" img="id" screenorient="0,90,180,270"
+            				            levelorient="0,90,180,270" />
+            <Text size="12" text="string" />
+        </Rect>
 
-<Polygon wall="true,false" sx="" sy="" ex="" ey="">
-    <OnCross type="speed,accel,teleport,..." target="id" />
-    <OnBounce type="speed,accel,teleport,..." target="id" />
-</Polygon>
+        <Poly wall="true,false">
+            <Point x="10" y="20" />
+            . . .
+            <OnCross type="speed,accel,teleport,..." target="id" />
+            <OnBounce type="speed,accel,teleport,..." target="id" />
+        </Poly>
 
-<Hole x="" y="">
-    <Graphic img="id" />
-    <Anim img="id" />
-    <OnCross type="speed,accel,teleport,..." target="id" />
-</Hole>
-    -- Creates an implicit <WhileZone>, <OnCross> is the centre area
+        <Hole x="" y="">
+            <Graphic img="id" />
+            <Anim img="id" />
+            <OnCross type="speed,accel,teleport,..." target="id" />
+        </Hole>
+            -- Creates an implicit <WhileZone>, <OnCross> is the centre area
+    </Level>
+</LevelData>
 
