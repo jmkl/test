@@ -256,9 +256,9 @@ class TableView
 			// Set the state, which may be the saved state, but don't run yet.
 			// If there was a game running or paused, go to pause, else ready.
 			if (state == State.RUNNING || state == State.PAUSE)
-				setState(State.PAUSE, 0);
+				setState(State.PAUSE);
 			else
-				setState(State.READY, 0);
+				setState(State.READY);
 		}
 	}
 
@@ -324,7 +324,7 @@ class TableView
 	void pause() {
 		synchronized (this) {
 			if (gameState == State.RUNNING)
-				setState(State.PAUSE, 0);
+				setState(State.PAUSE);
 		}
 	}
 
@@ -339,9 +339,9 @@ class TableView
 			if (gameState == State.READY || gameState == State.LOSE || gameState == State.WIN)
 				newGame();
 			else if (gameState == State.PAUSE)
-				setState(State.RUNNING, 0);
+				setState(State.RUNNING);
 			else if (gameState == State.RUNNING)
-				setState(State.PAUSE, 0);
+				setState(State.PAUSE);
 		}
 	}
 	
@@ -368,7 +368,7 @@ class TableView
 
 			clockTotalTime = currentLevelData.getTime();
 			clockLastTime = clockTotalTime;
-			setState(State.RUNNING, 0);
+			setState(State.RUNNING);
 		}
 	}
 
@@ -384,9 +384,9 @@ class TableView
 		ballCY = ballImage.getHeight() / 2;
 
 		// Set the initial ball position.
-		Point sp = level.getStart();
-		ballX = sp.x;
-		ballY = sp.y;
+		Location sp = level.getStart();
+		ballX = sp.getX();
+		ballY = sp.getY();
 		ballVelX = 0;
 		ballVelY = 0;
 		Log.i(TAG, "Table: start " + ballX + "," + ballY);
@@ -411,37 +411,48 @@ class TableView
 	void restart() {
 		synchronized (this) {
 			if (gameState == State.RUNNING || gameState == State.PAUSE)
-				setState(State.LOSE, 0);
-			setState(State.READY, 0);
+				setState(State.LOSE);
+			setState(State.READY);
 		}
-	}
+    }
 
 
-	/**
-	 * Sets a deferred game state.  This is safe to call from the
-	 * drawing loop.
-	 * 
-	 * @param	state				New state to set.
-	 * @param	prefixid			Resource ID of a message to display; 0
-	 * 								for just the basic message for the state.
-	private void postState(State state, int prefixid) {
-		synchronized (this) {
-			nextState = state;
-			nextPrefix = prefixid;
-		}
+    /**
+     * Sets the game mode.  That is, whether we are running, paused, in the
+     * failure state, in the victory state, etc.
+     * 
+     * @param   state           New state to set.
+     */
+    private void setState(State state) {
+            setState(state, null);
+    }
+
+
+    /**
+     * Sets the game mode.  That is, whether we are running, paused, in the
+     * failure state, in the victory state, etc.
+     * 
+     * @param   state           New state to set.
+     * @param   prefixid        Resource ID of a message to display; 0 for just
+     *                          the basic message for the state.
+     */
+    private void setState(State state, int prefixid) {
+        if (prefixid != 0)
+            setState(state, appResources.getString(prefixid));
+        else
+            setState(state, null);
 	}
-	 */
 
 
 	/**
 	 * Sets the game mode.  That is, whether we are running, paused, in the
 	 * failure state, in the victory state, etc.
 	 * 
-	 * @param	state				New state to set.
-	 * @param	prefixid			Resource ID of a message to display; 0
-	 * 								for just the basic message for the state.
+	 * @param	state			New state to set.
+	 * @param	prefix   		A message to display; null for just
+	 *                          the basic message for the state.
 	 */
-	private void setState(State state, int prefixid) {
+	private void setState(State state, String prefix) {
 		synchronized (this) {
 			Log.i(TAG, "Table: set state " + state);
 
@@ -494,16 +505,16 @@ class TableView
 					levelManager.nextLevel();
 				}
 
-				showMessage(msgid, prefixid);
+				showMessage(msgid, prefix);
 			}
 		}
 	}
 	
 	
-	private void showMessage(int msgid, int prefixid) {
+	private void showMessage(int msgid, String prefix) {
 		String text = appResources.getString(msgid);
-		if (prefixid != 0)
-			text = appResources.getString(prefixid) + "\n" + text;
+		if (prefix != null)
+			text = prefix + "\n" + text;
 		
     	Bundle b = new Bundle();
     	b.putString("text", text);
@@ -706,11 +717,10 @@ class TableView
 			
 			// Take into account any zone we may be in, as this may
 			// affect acceleration.
-			Action action;
-			if ((action = tableTopo.zone(ballX, ballY)) != null) {
-				if (doAction(action, true, elapsed * doFraction))
+			Action[] zoneActs = tableTopo.zone(ballX, ballY);
+			if (zoneActs != null)
+				if (doActions(zoneActs, true, elapsed * doFraction))
 					return;
-			}
 			
 			// Change in velocity this turn is accel times elapsed time times
 			// the fraction of the move we're currently looking at.
@@ -767,19 +777,20 @@ class TableView
 				
 				// Does this trigger an action?  If so, does that action stop
 				// play?
-				if (bounceResults.action != null)
-					if (doAction(bounceResults.action, true, 0))
+				if (bounceResults.actions != null)
+					if (doActions(bounceResults.actions, true, 0))
 						return;
 			}
 
 			fraction -= doFraction;
 		} while (fraction > 0);
-        
+
         // Does this move trigger an action?  If so, does that action stop
         // play?
         if (tableTopo.intersect(startX, startY, ballX, ballY, triggerResults))
-            if (doAction(triggerResults.action, triggerResults.inward, 0))
-                return;
+            if (triggerResults.actions != null)
+                if (doActions(triggerResults.actions, triggerResults.inward, 0))
+                    return;
 
 		// See if we fell off the table.
 		if (ballX < 0 || ballX >= canvasWidth ||
@@ -789,55 +800,66 @@ class TableView
 
 
 	/**
-	 * Carry out the given action, and determine whether it stops play.
+	 * Carry out the given actions, and determine whether any of
+	 * them stops play.
 	 * 
-	 * @param	act			The Action to perform.
+	 * @param	acts		The Actions to perform.
      * @param   inward      True iff this is the "on"-direction trigger
      *                      for this action.
 	 * @param	time		The time in seconds we're acting over.
 	 * @return				true iff play is stopped; false to continue.
 	 */
-	private boolean doAction(Action act, boolean inward, double time) {
+	private boolean doActions(Action[] acts, boolean inward, double time) {
 	    if (!inward)
 	        return false;
 	    
 		if (!onSurfaceThread())
 			throw new IllegalStateException("doAction() called off surface thread");
 		
-		final int msgid = act.getMessageId();
-		switch (act.getType()) {
-        case SPEED:
-            ballVelX = ballVelX * act.getAccelMag();
-            ballVelY = ballVelY * act.getAccelMag();
-            return false;
-		case ACCEL:
-			double speed = Math.sqrt(ballVelX * ballVelX + ballVelY * ballVelY);
-			ballVelX = ballVelX * 0.85 + speed * act.getAccelX() * 0.15;
-			ballVelY = ballVelY * 0.85 + speed * act.getAccelY() * 0.15;
-			return false;
-		case TELEPORT:
-			Object dest = act.getTarget();
-			if (dest != null && dest instanceof Point) {
-				ballX = ((Point) dest).x;
-				ballY = ((Point) dest).y;
-			}
-			return false;
-        case OFF:
-        case ON:
-        case ONOFF:
-            Object obj = act.getTarget();
-            if (obj != null && obj instanceof ForceField)
-                ((ForceField) obj).activate(act.getType());
-            return false;
-		case WIN:
-			setState(State.WIN, msgid);
-			return true;
-		case LOSE:
-			setState(State.LOSE, msgid);
-			return true;
+		boolean gameover = false;
+		for (Action act : acts) {
+	        Object target = act.getTarget();
+		    final String msg = act.getMessage();
+		    switch (act.getType()) {
+		    case SPEED:
+		        ballVelX = ballVelX * act.getAccelMag();
+		        ballVelY = ballVelY * act.getAccelMag();
+		        break;
+		    case ACCEL:
+		        double speed = Math.sqrt(ballVelX * ballVelX + ballVelY * ballVelY);
+		        ballVelX = ballVelX * 0.85 + speed * act.getAccelX() * 0.15;
+		        ballVelY = ballVelY * 0.85 + speed * act.getAccelY() * 0.15;
+		        break;
+		    case TELEPORT:
+		        if (target != null && target instanceof Point) {
+		            ballX = ((Point) target).x;
+		            ballY = ((Point) target).y;
+		        }
+		        break;
+		    case OFF:
+                if (target != null && target instanceof Poly)
+                    ((Poly) target).setBounceEnable(false);
+                break;
+		    case ON:
+                if (target != null && target instanceof Poly)
+                    ((Poly) target).setBounceEnable(true);
+                break;
+		    case ONOFF:
+                if (target != null && target instanceof Poly)
+                    ((Poly) target).toggleBounceEnable();
+                break;
+		    case WIN:
+		        setState(State.WIN, msg);
+		        gameover = true;
+                break;
+		    case LOSE:
+		        setState(State.LOSE, msg);
+		        gameover = true;
+                break;
+		    }
 		}
 		
-		return false;
+		return gameover;
 	}
 
 
