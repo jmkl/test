@@ -164,9 +164,9 @@ class Poly
 		    // Child needs its rect.
 		    ((Graphic) child).setRect(getVisualRect());
 			return false;
-        } else if (child instanceof Display) {
+        } else if (child instanceof Text) {
             // Child needs its rect.
-            ((Display) child).setRect(getVisualRect());
+            ((Text) child).setRect(getVisualRect());
             return false;
 		}
 		throw new LevelException(p, "element <" + p.getName() +

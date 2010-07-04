@@ -17,6 +17,12 @@
 package org.hermit.plughole;
 
 
+import java.util.HashMap;
+
+import org.hermit.plughole.LevelReader.LevelException;
+import org.xmlpull.v1.XmlPullParser;
+
+
 /**
  * Class representing an action triggered by some event in the game.
  */
@@ -153,22 +159,30 @@ final class Action
 	/**
 	 * Set the target item (e.g. place to teleport to) in this action.
 	 * 
-	 * @param	target		Target element for this action.
+	 * @param	t		    Target element for this action.
 	 */
-	void setTarget(String target) {
-		// FIXME this.target = target;
+	void setTarget(String t) {
+	    targetId = t;
 	}
 	
-
-	/**
-	 * Set the target item (e.g. place to teleport to) in this action.
-	 * 
-	 * @param	target		Target element for this action.
-	 */
-	void setTarget(Object target) {
-		this.target = target;
-	}
-	
+    
+    /**
+     * Finalize all object references within this object.
+     * 
+     * @param   p           The parser the level is being read from.
+     * @param   map         Mapping of object IDs to objects.
+     */
+    void resolveRefs(XmlPullParser p, HashMap<String, Element> map)
+        throws LevelException
+    {
+        if (targetId != null) {
+            target = map.get(targetId);
+            if (target == null)
+                throw new LevelException(p, "action target \"" +
+                                         targetId + "\" is not defined");
+        }
+    }
+    
 
 	// ******************************************************************** //
 	// Accessors.
@@ -279,8 +293,11 @@ final class Action
 	private double accelY = 0;
 	private double accelMag = 0;
 
-	// If this is a TELEPORT action, the target point.
-	private Object target = null;
+	// If this is a TELEPORT action, the target point.  targetId is
+	// set to its ID during construction, and later target is set to
+	// the object.
+	private String targetId = null;
+    private Object target = null;
 
 }
 

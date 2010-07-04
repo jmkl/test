@@ -161,9 +161,12 @@ class LevelData
         throws LevelException
     {
         if (child instanceof Element) {
-            String id = ((Element) child).getId();
+            Element elem = ((Element) child);
+            String id = elem.getId();
             if (id != null && !idMap.containsKey(id))
-                idMap.put(id, (Element) child);
+                idMap.put(id, elem);
+            
+            elem.resolveRefs(p, idMap);
         }
         
         if (child instanceof Location) {
@@ -194,8 +197,8 @@ class LevelData
         } else if (child instanceof Anim) {
             animItems.add((Anim) child);
             return true;
-        } else if (child instanceof Display) {
-            fixedItems.add((Display) child);
+        } else if (child instanceof Text) {
+            fixedItems.add((Text) child);
             return true;
         }
 

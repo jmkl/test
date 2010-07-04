@@ -26,7 +26,7 @@ import android.graphics.Typeface;
  * Class representing text drawn on the game board.  It doesn't
  * interact with the game in any way, it's just decoration.
  */
-class Display
+class Text
 	extends Visual
 {
 	
@@ -45,7 +45,7 @@ class Display
 	 * 						transformed using xform.
 	 * @param	xform		Transform to apply to the raw data.
 	 */
-	Display(Plughole app, String id, String text, float size, Matrix xform) {
+	Text(Plughole app, String id, String text, float size, Matrix xform) {
 		super(app, id, null, xform);
 		
 		textString = text;

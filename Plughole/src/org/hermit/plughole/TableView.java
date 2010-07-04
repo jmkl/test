@@ -396,10 +396,10 @@ class TableView
 		if (levobj == null) {
 			levelDisplay = null;
 		} else {
-			if (!(levobj instanceof Display))
+			if (!(levobj instanceof Text))
 				throw new LevelReader.LevelException("Object \"level\" must" +
 														" be a <Display>");
-			levelDisplay = (Display) levobj;
+			levelDisplay = (Text) levobj;
 			levelDisplay.setText(level.getDisplayName());
 		}
 	}
@@ -1067,7 +1067,7 @@ class TableView
 	private float tiltYAccel;
 	
 	// Display in which the level name is drawn.  Null means no level name.
-	private Display levelDisplay = null;
+	private Text levelDisplay = null;
 
 	// The game clock.  For accuracy, we don't try to decrement the clock on
 	// each tick -- granularity would be an issue.  Instead we track time

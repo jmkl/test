@@ -106,9 +106,6 @@ class LevelReader {
 			throw new LevelException(parser, "Parser error: " + e.getMessage());
 		} catch (IOException e) {
 			throw new LevelException(parser, "I/O error: " + e.getMessage());
-		} catch (Throwable e) {
-			throw new LevelException(parser, "Error " + e.getClass().getName() +
-											 ": " + e.getMessage());
 		} finally {
 			parser.close();
 		}
@@ -429,15 +426,19 @@ class LevelReader {
 		// Build the object for this node.
 		Object item = buildItem(p, xform, tag, attrs);
 
+		// Get to the next token.
+		eventType = p.nextTag();
+		
 		// Now if this is an Element, read any nested tags.  Some nested
 		// tags get pushed up and added to the parent.  The important thing
 		// is that they are added before finished() is called.
 		if (item instanceof Element) {
 			Element elem = (Element) item;
-			while ((eventType = p.nextTag()) != XmlPullParser.END_TAG) {
+			while (eventType != XmlPullParser.END_TAG) {
 				Object child = readItem(p, xform, elem);
 				if (!elem.addChild(p, tag, child) && parent != null)
 					parent.addChild(p, tag, child);
+		        eventType = p.nextTag();
 			}
 			elem.finished();
 		}
@@ -482,7 +483,7 @@ class LevelReader {
 		// See if this tag has an ID.
 		String id = attrs.getString("id");
 
-		if (tag.equals("Level")) {
+		if (tag.equals("Level") || tag.equals("Common")) {
 			return buildLevel(p, xform, tag, id, attrs);
 		} else if (tag.equals("Point")) {
 			return buildPoint(p, xform, tag, id, attrs);
@@ -768,7 +769,7 @@ class LevelReader {
 	 * @return				The constructed element.
 	 * @throws LevelException	Error encountered while reading.
 	 */
-	private Display readDisplay(XmlPullParser p, Matrix xform, String tag,
+	private Text readDisplay(XmlPullParser p, Matrix xform, String tag,
 				 				String id, Bundle attrs)
 		throws LevelException
 	{
@@ -779,7 +780,7 @@ class LevelReader {
 			throw new LevelException(p, "<" + tag +
 									    "> requires a \"text\" attribute");
 		
-		return new Display(appContext, id, text, size, xform);
+		return new Text(appContext, id, text, size, xform);
 	}
 
 

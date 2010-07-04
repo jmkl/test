@@ -97,6 +97,26 @@ abstract class Element
 	    alist.add(act);
 	}
 	
+    
+    /**
+     * Finalize all object references within this object.
+     * 
+     * @param   p           The parser the level is being read from.
+     * @param   map         Mapping of object IDs to objects.
+     */
+    void resolveRefs(XmlPullParser p, HashMap<String, Element> map)
+        throws LevelException
+    {
+        if (buildingActions != null) {
+            for (Action.Trigger trig : Action.Trigger.VALUES) {
+                ArrayList<Action> alist = buildingActions.get(trig);
+                if (alist != null)
+                    for (Action act : alist)
+                        act.resolveRefs(p, map);
+            }
+        }
+    }
+
 
 	/**
 	 * We're finished adding children; do any required initialization.
