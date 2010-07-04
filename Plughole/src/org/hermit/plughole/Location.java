@@ -23,6 +23,7 @@ package org.hermit.plughole;
  * immutable class.
  */
 final class Location
+    extends Element
 {
 	
 	// ******************************************************************** //
@@ -41,12 +42,14 @@ final class Location
 	/**
 	 * Create a point at the given X and Y.
 	 * 
+     * @param   app         Application context.
 	 * @param	id 			The ID of this location.  May be null.
 	 * @param	type		What kind of location this is.
 	 * @param	where		It's position.
 	 */
-	public Location(String id, Type type, Point where) {
-		this.id = id;
+	public Location(Plughole app, String id, Type type, Point where) {
+        super(app, id);
+        
 		this.type = type;
 		this.where = where;
 	}
@@ -90,7 +93,6 @@ final class Location
 	// Public Data.
 	// ******************************************************************** //
 	
-	public final String id;
 	public final Type type;
 	public final Point where;
 

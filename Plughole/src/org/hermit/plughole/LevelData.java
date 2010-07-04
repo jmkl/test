@@ -25,8 +25,6 @@ import java.util.Iterator;
 import org.hermit.plughole.LevelReader.LevelException;
 import org.xmlpull.v1.XmlPullParser;
 
-import android.graphics.Canvas;
-
 
 /**
  * Class containing all of the data which defines a game level.
@@ -129,43 +127,23 @@ class LevelData
 	LevelData(Plughole app, String name,
 	          int group, int diff, long time, Matrix xform)
 	{
-        super(app, null, null, xform);
+        super(app, null);
         
-        setHeader(new Header(name, group, diff, time));
+        this.header = new Header(name, group, diff, time);
 
 		this.locationItems = new ArrayList<Location>();
-		this.fixedItems = new ArrayList<Element>();
-		this.animItems = new ArrayList<Element>();
+		this.fixedItems = new ArrayList<Visual>();
+		this.animItems = new ArrayList<Visual>();
 		this.zoneItems = new ArrayList<Hole>();
 		this.wallItems = new ArrayList<Poly>();
         this.triggerItems = new ArrayList<Poly>();
-		this.idMap = new HashMap<String, Object>();
+		this.idMap = new HashMap<String, Element>();
 	}
 
 
     // ******************************************************************** //
     // Level Building.
     // ******************************************************************** //
-	
-	/**
-	 * Set the level header data.
-	 * 
-	 * @param	header		Level header data.
-	 */
-	public void setHeader(Header header) {
-		this.header = header;
-	}
-	
-	
-	/**
-	 * Set the level start position.
-	 * 
-	 * @param	start		Level start position.
-	 */
-	public void setStart(Location start) {
-		startPos = start;
-	}
-	
     
     /**
      * Add a child to this element.  This is used during level parsing.
@@ -182,132 +160,49 @@ class LevelData
     boolean addChild(XmlPullParser p, String tag, Object child)
         throws LevelException
     {
+        if (child instanceof Element) {
+            String id = ((Element) child).getId();
+            if (id != null && !idMap.containsKey(id))
+                idMap.put(id, (Element) child);
+        }
+        
         if (child instanceof Location) {
             Location loc = (Location) child;
             switch (loc.type) {
             case START:
-                setStart(loc);
+                startPos = loc;
                 break;
             case TARGET:
-                addPoint(loc, loc.id);
+                locationItems.add(loc);
                 break;
             }
             return true;
         } else if (child instanceof Poly) {
-            
+            Poly poly = (Poly) child;
+            if (poly instanceof Hole)
+                zoneItems.add((Hole) poly);
+            if (poly.isDrawn())
+                fixedItems.add(poly);
+            if (poly.isWall())
+                wallItems.add(poly);    // Handles ONBOUNCE as well.
+            if (poly.getActions(Action.Trigger.ONCROSS) != null)
+                triggerItems.add(poly);
+            return true;
+        } else if (child instanceof Graphic) {
+            fixedItems.add((Graphic) child);
+            return true;
+        } else if (child instanceof Anim) {
+            animItems.add((Anim) child);
+            return true;
+        } else if (child instanceof Display) {
+            fixedItems.add((Display) child);
+            return true;
         }
 
         throw new LevelException(p, "element <" + p.getName() +
                                     "> not permitted in <" + tag + ">");
     }
 
-
-	/**
-	 * Add a non-animated background item to this level.
-	 * 
-	 * @param	item		The element to add.
-	 * @param	id			The ID of the element, or null.
-	 */
-	public void addBackground(Element item, String id) {
-		fixedItems.add(item);
-		if (id != null && !idMap.containsKey(id))
-			idMap.put(id, item);
-	}
-	
-
-	/**
-	 * Add a Point -- e.g. a teleport target -- to this level.
-	 * 
-	 * @param	item		The element to add.
-	 * @param	id			The ID of the element, or null.
-	 */
-	public void addPoint(Location item, String id) {
-		locationItems.add(item);
-		if (id != null && !idMap.containsKey(id))
-			idMap.put(id, item);
-	}
-	
-
-	/**
-	 * Add an animated background item to this level.
-	 * 
-	 * @param	item		The element to add.
-	 * @param	id			The ID of the element, or null.
-	 */
-	public void addAnim(Element item, String id) {
-		animItems.add(item);
-		if (id != null && !idMap.containsKey(id))
-			idMap.put(id, item);
-	}
-	
-
-	/**
-	 * Add an active zone item to this level.
-	 * 
-	 * @param	item		The element to add.
-	 * @param	id			The ID of the element, or null.
-	 */
-	public void addZone(Hole item, String id) {
-		zoneItems.add(item);
-		if (id != null && !idMap.containsKey(id))
-			idMap.put(id, item);
-	}
-	
-
-	/**
-	 * Add a physical barrier defined by an abstract shape to this level.
-	 * 
-	 * @param	item		The element to add; this item is assumed to
-	 * 						be the actual shape which the centre of the
-	 * 						ball is constrained by, so it doesn't need
-	 * 						to be grown.
-	 * @param	id			The ID of the element, or null.
-	 */
-	public void addWall(Poly item, String id) {
-		wallItems.add(item);
-		if (id != null && !idMap.containsKey(id))
-			idMap.put(id, item);
-	}
-	
-
-	/**
-	 * Add a physical barrier defined by a visible shape to this level.
-	 * 
-	 * @param	item		The element to add.  Since this item represents
-	 * 						the visible appearance, and since we model the
-	 * 						ball by its centre position, we need to grow
-	 * 						this item by the ball's radius.
-	 * @param	id			The ID of the element, or null.
-	 * @return              The Poly which is the grown version of item,
-	 *                      which will be the actual barrier.
-	 */
-	public Poly addBarrier(Poly item, String id) {
-		wallItems.add(item);
-		
-		// Put the newly-created larger item in the ID map with a distinct ID.
-		id = id + "_b";
-		if (id != null && !idMap.containsKey(id))
-			idMap.put(id, item);
-		
-		return item;
-	}
-	
-
-    /**
-     * Add a polygon which triggers actions without forming a barrier.
-     * 
-     * @param   item        The element to add; this item is assumed to
-     *                      be the actual shape which the centre of the
-     *                      ball triggers when crossing, so it doesn't need
-     *                      to be grown.
-     * @param   id          The ID of the element, or null.
-     */
-    public void addTrigger(Poly item, String id) {
-        triggerItems.add(item);
-        if (id != null && !idMap.containsKey(id))
-            idMap.put(id, item);
-    }
-    
 
     // ******************************************************************** //
     // Accessors.
@@ -380,7 +275,7 @@ class LevelData
 	 * 
 	 * @return				List of all background items in this level.
 	 */
-	public ArrayList<Element> getBackground() {
+	public ArrayList<Visual> getBackground() {
 		return fixedItems;
 	}
 	
@@ -390,7 +285,7 @@ class LevelData
 	 * 
 	 * @return				List of all animated items in this level.
 	 */
-	public ArrayList<Element> getAnims() {
+	public ArrayList<Visual> getAnims() {
 		return animItems;
 	}
 	
@@ -404,25 +299,6 @@ class LevelData
 		return zoneItems;
 	}
 	
-    
-    // ******************************************************************** //
-    // Drawing.
-    // ******************************************************************** //
-
-    /**
-     * Draw this level onto the given canvas.
-     * 
-     * @param   canvas          Canvas to draw on.
-     * @param   time            Total level time in ms.  A time of zero
-     *                          indicates that we're drawing statically,
-     *                          not in the game loop.
-     * @param   clock           Level time remaining in ms.
-     */
-    @Override
-    protected void draw(Canvas canvas, long time, long clock) {
-        // Nothing to do... all drawing is by children.
-    }
-
 
     // ******************************************************************** //
     // Private Data.
@@ -438,10 +314,10 @@ class LevelData
 	private final ArrayList<Location> locationItems;
 	
 	// The fixed items in this level.
-	private final ArrayList<Element> fixedItems;
+	private final ArrayList<Visual> fixedItems;
 
 	// The animated items in this level.
-	private final ArrayList<Element> animItems;
+	private final ArrayList<Visual> animItems;
 
 	// The zones in this level.
 	private final ArrayList<Hole> zoneItems;
@@ -454,7 +330,7 @@ class LevelData
 
 	// A Map of all the items in this level which have IDs set.  This is
 	// used so they can be referred to by name.
-	private HashMap<String, Object> idMap;
+	private HashMap<String, Element> idMap;
 
 }
 

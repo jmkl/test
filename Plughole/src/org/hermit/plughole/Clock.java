@@ -25,7 +25,7 @@ import android.graphics.RectF;
  * Class representing a graphic clock drawn on the game board.
  */
 class Clock
-	extends Element
+	extends Visual
 {
 	
 	// ******************************************************************** //

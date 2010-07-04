@@ -616,7 +616,7 @@ class Topology {
         // Draw all the fixed items in the topology.  The animated items
 		// shouldn't be drawn -- they will take care of themselves, and
 		// may sometimes want to be blank.
-		for (Element elem : fixedItems)
+		for (Visual elem : fixedItems)
 			elem.draw(canvas, 0, 0);
 
     	// Draw the lines for debug.
@@ -638,7 +638,7 @@ class Topology {
 	 */
 	public void drawAnim(Canvas canvas, long time, long clock) {
         // Draw all the animated items in the topology.
-		for (Element elem : animItems)
+		for (Visual elem : animItems)
 			elem.draw(canvas, time, clock);
 	}
 	
@@ -673,10 +673,10 @@ class Topology {
 	private LevelData currentLevel = null;
 
 	// The fixed items that make up the scene.
-	private ArrayList<Element> fixedItems = null;
+	private ArrayList<Visual> fixedItems = null;
 
 	// The animated items in the scene.
-	private ArrayList<Element> animItems = null;
+	private ArrayList<Visual> animItems = null;
 
 	// The zones in the scene.
 	private ArrayList<Hole> zones = null;

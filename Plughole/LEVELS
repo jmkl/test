@@ -141,7 +141,7 @@ NEW WAY
 
         <Target x="10" y="20" />
 
-        <Rect wall="true,false" sx="" sy="" ex="" ey="">
+        <Rect wall="true,false" draw="true,false" sx="" sy="" ex="" ey="">
             <OnCross type="speed,accel,teleport,..."
             						target="id" message="string" />
             <OnBounce type="speed,accel,teleport,..."
@@ -156,7 +156,7 @@ NEW WAY
             <Text size="12" text="string" />
         </Rect>
 
-        <Poly wall="true,false">
+        <Poly wall="true,false" draw="true,false">
             <Point x="10" y="20" />
             . . .
             <OnCross type="speed,accel,teleport,..." target="id" />

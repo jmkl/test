@@ -27,7 +27,7 @@ import android.graphics.Typeface;
  * interact with the game in any way, it's just decoration.
  */
 class Display
-	extends Element
+	extends Visual
 {
 	
 	// ******************************************************************** //

@@ -488,12 +488,12 @@ class LevelReader {
 			return buildPoint(p, xform, tag, id, attrs);
 		} else if (tag.equals("Start")) {
 			Point point = buildPoint(p, xform, tag, id, attrs);
-			return new Location(id, Location.Type.START, point);
+			return new Location(appContext, id, Location.Type.START, point);
 		} else if (tag.equals("Target")) {
 			if (id == null)
 				throw new LevelException(p, "<Target> must have an id");
 			Point point = buildPoint(p, xform, tag, id, attrs);
-			return new Location(id, Location.Type.TARGET, point);
+			return new Location(appContext, id, Location.Type.TARGET, point);
 		} else if (tag.equals("Rect")) {
 			return readRect(p, xform, tag, id, attrs);
 		} else if (tag.equals("Poly")) {
@@ -506,7 +506,7 @@ class LevelReader {
 		} else if (tag.equals("Graphic")) {
 			return buildGraphic(p, xform, tag, id, attrs);
 		} else if (tag.equals("Anim")) {
-			return buildGraphic(p, xform, tag, id, attrs);
+			return buildAnim(p, xform, tag, id, attrs);
 		} else if (tag.equals("Text")) {
 			return readDisplay(p, xform, tag, id, attrs);
 		} else
@@ -592,10 +592,10 @@ class LevelReader {
 		float ex = attrs.getFloat("ex", 0);
 		float ey = attrs.getFloat("ey", 0);
 		boolean wall = attrs.getBoolean("wall", true);
+        boolean draw = attrs.getBoolean("draw", true);
 
         RectF box = new RectF(sx, sy, ex, ey);
-
-		return new Poly(appContext, id, box, xform);
+		return new Poly(appContext, id, box, xform, wall, draw);
 	}
 
 
@@ -625,8 +625,11 @@ class LevelReader {
 			return (Poly) obj;
 		}
 		
+        boolean wall = attrs.getBoolean("wall", true);
+        boolean draw = attrs.getBoolean("draw", true);
+		
 		// Make an empty polygon.
-		return new Poly(appContext, id, xform);
+		return new Poly(appContext, id, xform, wall, draw);
 	}
 
 
@@ -724,6 +727,33 @@ class LevelReader {
 		
 		return new Graphic(appContext, id, imgId, xform, norot);
 	}
+
+
+    /**
+     * Read an animated graphic from the given parser.
+     * 
+     * @param   p           The parser to read from.
+     * @param   xform       The transformation that needs to be applied
+     *                      to the level to make it fit the screen.
+     * @param   tag         The name of this item's XML tag.
+     * @param   id          The ID of this element.
+     * @param   attrs       The XML attributes for this item.
+     * @return              The constructed element.
+     * @throws LevelException   Error encountered while reading.
+     */
+    private Element buildAnim(XmlPullParser p, Matrix xform, String tag,
+                              String id, Bundle attrs)
+        throws LevelException
+    {
+        int imgId = attrs.getInt("img", 0);
+        boolean norot = attrs.getBoolean("norotate", false);
+
+        if (imgId == 0)
+            throw new LevelException(p, "<" + tag +
+                                        "> requires an \"img\" attribute");
+        
+        return new Anim(appContext, id, new int[] { imgId }, xform, norot);
+    }
 
 
 	/**
@@ -869,6 +899,8 @@ class LevelReader {
         typeMap.put("message", 'S');
 		typeMap.put("norotate", 'B');
 		typeMap.put("vertical", 'B');
+        typeMap.put("wall", 'B');
+        typeMap.put("draw", 'B');
 	}
 
 	

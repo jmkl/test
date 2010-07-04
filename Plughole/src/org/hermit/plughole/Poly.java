@@ -49,7 +49,7 @@ import android.graphics.RectF;
  * rounded.
  */
 class Poly
-	extends Element
+	extends Visual
 {
 
 	// ******************************************************************** //
@@ -63,9 +63,16 @@ class Poly
      * @param   app         Application context.
 	 * @param	id			The ID of this element.
 	 * @param	xform		Transform to apply to the raw data.
+     * @param   wall        True if this polygon acts as a barrier.
+     * @param   draw        True if this polygon is to draw its outline.
      */
-    public Poly(Plughole app, String id, Matrix xform) {
+    public Poly(Plughole app, String id, Matrix xform,
+                boolean wall, boolean draw)
+    {
         super(app, id, null, xform);
+        
+        isWall = wall;
+        isDrawn = draw;
         
     	buildingPoints = new ArrayList<Point>();
     }
@@ -79,9 +86,16 @@ class Poly
      * @param   visRect     The visible rectangle defining this element, in
      *                      level co-ordinates.
 	 * @param	xform		Transform to apply to the raw data.
+     * @param   wall        True if this polygon acts as a barrier.
+     * @param   draw        True if this polygon is to draw its outline.
      */
-    public Poly(Plughole app, String id, RectF visRect, Matrix xform) {
+    public Poly(Plughole app, String id, RectF visRect, Matrix xform,
+                boolean wall, boolean draw)
+    {
         super(app, id, visRect, xform);
+
+        isWall = wall;
+        isDrawn = draw;
 
         // Construct a points list in clockwise order.
     	buildingPoints = new ArrayList<Point>(4);
@@ -312,6 +326,26 @@ class Poly
     // ******************************************************************** //
 
 	/**
+	 * Determine whether this polygon is a wall.
+	 * 
+	 * @return             True if this polygon acts as a barrier.
+	 */
+	boolean isWall() {
+	    return isWall;
+	}
+	
+
+    /**
+     * Determine whether this polygon draws its outline.
+     * 
+     * @return             True if this polygon draws its outline.
+     */
+    boolean isDrawn() {
+        return isDrawn;
+    }
+    
+
+	/**
 	 * Get the lines which make up the effective polygon outline.
 	 * 
 	 * @return             The lines which make up the effective polygon.
@@ -406,6 +440,12 @@ class Poly
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
+	
+    // True if this polygon acts as a barrier.
+	private boolean isWall = true;
+	
+    // True if this polygon is to draw its outline.
+    private boolean isDrawn = true;
 
 	// Temporary list used to hold points as we read them from the level
 	// data, in level co-ordinates.
