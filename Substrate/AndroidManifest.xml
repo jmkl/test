@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.hermit.substrate" android:installLocation="internalOnly" android:versionCode="7" android:versionName="1.6">
+	package="org.hermit.substrate" android:installLocation="internalOnly" android:versionCode="8" android:versionName="1.7">
 
-	<application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="false">
+	<application android:icon="@drawable/substrate_icon" android:label="@string/app_name" android:debuggable="false">
 
-		<activity android:icon="@drawable/icon"
+		<activity android:icon="@drawable/substrate_icon"
 				android:label="@string/app_name"
 				android:name="EyeCandyApp" android:screenOrientation="portrait" android:launchMode="singleTop" android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden">
 			<intent-filter>
@@ -138,5 +138,6 @@
 	<supports-screens android:resizeable="true" android:smallScreens="true" android:largeScreens="true" android:normalScreens="true" android:anyDensity="true"></supports-screens>
 	
 	
+<uses-feature android:name="android.software.live_wallpaper"></uses-feature>
 </manifest>
 
