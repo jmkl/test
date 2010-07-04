@@ -67,7 +67,24 @@ abstract class Visual
 		screenTransform = xform;
 	}
 
-	
+
+    // ******************************************************************** //
+    // Building.
+    // ******************************************************************** //
+
+    /**
+     * Set the visual rectangular box of this element.  This is called when
+     * we're added to our parent.
+     * 
+     * Subclasses that need a rect can override this.
+     * 
+     * @param   rect        The rectangle, in level co-ordinates, suitable for
+     *                      attaching Graphics to.
+     */
+    void setRect(RectF rect) {
+    }
+    
+
 	// ******************************************************************** //
 	// Accessors.
 	// ******************************************************************** //

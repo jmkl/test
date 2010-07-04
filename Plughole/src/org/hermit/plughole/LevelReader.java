@@ -328,9 +328,6 @@ class LevelReader {
 			throw new LevelException(parser, "Parser error: " + e.getMessage());
 		} catch (IOException e) {
 			throw new LevelException(parser, "I/O error: " + e.getMessage());
-		} catch (Throwable e) {
-			throw new LevelException(parser, "Error " + e.getClass().getName() +
-											 ": " + e.getMessage());
 		}
 	}
 
@@ -496,11 +493,11 @@ class LevelReader {
 			Point point = buildPoint(p, xform, tag, id, attrs);
 			return new Location(appContext, id, Location.Type.TARGET, point);
 		} else if (tag.equals("Rect")) {
-			return readRect(p, xform, tag, id, attrs);
+			return buildRect(p, xform, tag, id, attrs);
 		} else if (tag.equals("Poly")) {
-			return readPoly(p, xform, tag, id, attrs);
+			return buildPoly(p, xform, tag, id, attrs);
 		} else if (tag.equals("Hole")) {
-			return readHole(p, xform, tag, id, attrs);
+			return buildHole(p, xform, tag, id, attrs);
 		} else if (tag.equals("OnCross") || tag.equals("OnBounce") ||
 													tag.equals("WhileZone")) {
 			return buildAction(p, xform, tag, id, attrs);
@@ -509,7 +506,7 @@ class LevelReader {
 		} else if (tag.equals("Anim")) {
 			return buildAnim(p, xform, tag, id, attrs);
 		} else if (tag.equals("Text")) {
-			return readDisplay(p, xform, tag, id, attrs);
+			return buildText(p, xform, tag, id, attrs);
 		} else
 			throw new LevelException(p, "unrecognised tag: <" + tag + ">");
 	}
@@ -584,7 +581,7 @@ class LevelReader {
 	 * @return				The constructed element.
 	 * @throws LevelException	Error encountered while reading.
 	 */
-	private Poly readRect(XmlPullParser p, Matrix xform, String tag,
+	private Poly buildRect(XmlPullParser p, Matrix xform, String tag,
 			 			  String id, Bundle attrs)
 		throws LevelException
 	{
@@ -613,7 +610,7 @@ class LevelReader {
 	 * @return				The constructed element.
 	 * @throws LevelException	Error encountered while reading.
 	 */
-	private Poly readPoly(XmlPullParser p, Matrix xform, String tag,
+	private Poly buildPoly(XmlPullParser p, Matrix xform, String tag,
 			  			  String id, Bundle attrs)
 		throws LevelException
 	{
@@ -646,7 +643,7 @@ class LevelReader {
 	 * @return				The constructed element.
 	 * @throws LevelException	Error encountered while reading.
 	 */
-	private Hole readHole(XmlPullParser p, Matrix xform, String tag,
+	private Hole buildHole(XmlPullParser p, Matrix xform, String tag,
 			  			  String id, Bundle attrs)
 		throws LevelException
 	{
@@ -673,6 +670,7 @@ class LevelReader {
 							   String id, Bundle attrs)
 		throws LevelException
 	{
+        // Read the trigger type, and translate it to the proper value.
 		Action.Trigger trig = null;
 		try {
 			trig = Action.Trigger.valueOf(tag.toUpperCase());
@@ -680,6 +678,7 @@ class LevelReader {
 			throw new LevelException(p, "strange action trigger \"" + tag + "\"");
 		}
 
+		// Read the action type, and translate it to the proper value.
 		String tname = attrs.getString("type");
 		if (tname == null)
 			throw new LevelException(p, "<" + tag +
@@ -695,9 +694,27 @@ class LevelReader {
 		String msg = attrs.getString("message");
 
 		Action action = new Action(trig, type, msg);
-	    String targId = attrs.getString("target");
-	    if (targId != null)
-	        action.setTarget(targId);
+	    
+	    // Add type-specific action parameters.
+		switch (type) {
+		case SPEED:
+		    if (!attrs.containsKey("value"))
+		        throw new LevelException(p, "\"speed\" action requires" +
+		                                    " a \"value\" attribute");
+		    action.setSpeed(attrs.getDouble("value"));
+		    break;
+		case TELEPORT:
+        case OFF:
+        case ON:
+        case ONOFF:
+		    if (!attrs.containsKey("target"))
+		        throw new LevelException(p, "\"teleport\" action requires" +
+		                                    " a \"target\" attribute");
+		    action.setTarget(attrs.getString("target"));
+		    break;
+		default:
+		    break;
+		}
 
 		return action;
 	}
@@ -746,14 +763,22 @@ class LevelReader {
                               String id, Bundle attrs)
         throws LevelException
     {
-        int imgId = attrs.getInt("img", 0);
-        boolean norot = attrs.getBoolean("norotate", false);
-
-        if (imgId == 0)
+        // Read the animation type, and translate it to the proper value.
+        String tname = attrs.getString("type");
+        if (tname == null)
             throw new LevelException(p, "<" + tag +
-                                        "> requires an \"img\" attribute");
+                                        "> requires a \"type\" attribute");
+        Anim.Type type = null;
+        try {
+            type = Anim.Type.valueOf(tname.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new LevelException(p, "animation type \"" +
+                                        tname + "\" is not valid");
+        }
         
-        return new Anim(appContext, id, new int[] { imgId }, xform, norot);
+        boolean norot = attrs.getBoolean("norotate", false);
+        
+        return new Anim(appContext, id, type, xform, norot);
     }
 
 
@@ -769,7 +794,7 @@ class LevelReader {
 	 * @return				The constructed element.
 	 * @throws LevelException	Error encountered while reading.
 	 */
-	private Text readDisplay(XmlPullParser p, Matrix xform, String tag,
+	private Text buildText(XmlPullParser p, Matrix xform, String tag,
 				 				String id, Bundle attrs)
 		throws LevelException
 	{
@@ -885,6 +910,7 @@ class LevelReader {
 		typeMap.put("sy", 'F');
 		typeMap.put("ex", 'F');
 		typeMap.put("ey", 'F');
+        typeMap.put("value", 'F');
 		typeMap.put("size", 'F');
 		typeMap.put("name", 'S');
 		typeMap.put("img", '#');

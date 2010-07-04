@@ -21,6 +21,7 @@ import java.util.HashMap;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
+import android.util.Log;
 
 
 /**
@@ -73,12 +74,11 @@ class Graphic
      * @param   rect        The rectangle, in level co-ordinates, suitable for
      *                      attaching Graphics to.
      */
+    @Override
     void setRect(RectF rect) {
-        Matrix xform = getTransform();
-        RectF box = xform.transform(rect);
-        
         // Calculate the actual geometry of the graphic.
-        bounds = xform.transform(box);
+        Matrix xform = getTransform();
+        bounds = xform.transform(rect);
         int w = (int) (Math.round(bounds.right - bounds.left));
         int h = (int) (Math.round(bounds.bottom - bounds.top));
         
@@ -91,6 +91,7 @@ class Graphic
                                 (long) h << 43 | (long) rotate.degrees << 54;
         Bitmap img = imageCache.get(key);
         if (img == null) {
+            Log.v(TAG, "Allocate image for " + getId());
             img = app.getScaledBitmap(imageId, w, h, rotate);
             imageCache.put(key, img);
         }

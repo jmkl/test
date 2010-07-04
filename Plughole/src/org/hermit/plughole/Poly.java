@@ -98,11 +98,12 @@ class Poly
         isDrawn = draw;
 
         // Construct a points list in clockwise order.
+        RectF screenRect = xform.transform(visRect);
     	buildingPoints = new ArrayList<Point>(4);
-    	buildingPoints.add(new Point(visRect.left, visRect.top));
-    	buildingPoints.add(new Point(visRect.right, visRect.top));
-    	buildingPoints.add(new Point(visRect.right, visRect.bottom));
-    	buildingPoints.add(new Point(visRect.left, visRect.bottom));
+    	buildingPoints.add(new Point(screenRect.left, screenRect.top));
+    	buildingPoints.add(new Point(screenRect.right, screenRect.top));
+    	buildingPoints.add(new Point(screenRect.right, screenRect.bottom));
+    	buildingPoints.add(new Point(screenRect.left, screenRect.bottom));
     }
 
 
@@ -120,7 +121,7 @@ class Poly
 	public Poly(Plughole app, String id, Point centre, double r,
 	            RectF visRect, Matrix xform)
 	{
-        super(app, id, null, xform);
+        super(app, id, visRect, xform);
 
     	buildingPoints = new ArrayList<Point>(360 / CORNER_SEG + 1);
 
@@ -129,7 +130,7 @@ class Poly
 
 		// Create points around the circle.
 		for (int i = 0; i < 360 / CORNER_SEG; ++i) {
-			buildingPoints.add(centre.offset(v1));
+			buildingPoints.add(xform.transform(centre.offset(v1)));
 			v1 = v1.rotate(CORNER_SEG);
 		}
 	}
@@ -160,14 +161,15 @@ class Poly
 		} else if (child instanceof Action) {
 			addAction((Action) child);
 			return true;
-		} else if (child instanceof Graphic) {
+		} else if (child instanceof Graphic ||
+		                    child instanceof Anim || child instanceof Text) {
 		    // Child needs its rect.
-		    ((Graphic) child).setRect(getVisualRect());
+		    RectF rect = getVisualRect();
+		    if (rect == null)
+		        throw new LevelException(p, "element <" + tag +
+                        "> did not define a rect for <" + p.getName() + ">");
+		    ((Visual) child).setRect(rect);
 			return false;
-        } else if (child instanceof Text) {
-            // Child needs its rect.
-            ((Text) child).setRect(getVisualRect());
-            return false;
 		}
 		throw new LevelException(p, "element <" + p.getName() +
 									"> not permitted in <" + tag + ">");
@@ -197,9 +199,9 @@ class Poly
         final int npoints = buildingPoints.size();
         Line[] baseLines = new Line[npoints];
 		boolean first = true;
-        Point prev = xform.transform(buildingPoints.get(npoints - 1));
+        Point prev = buildingPoints.get(npoints - 1);
         for (int i = 0; i < npoints; ++i) {
-		    Point curr = xform.transform(buildingPoints.get(i));
+		    Point curr = buildingPoints.get(i);
 		    
 		    // Add to the path.
 		    if (first) {
@@ -448,7 +450,7 @@ class Poly
     private boolean isDrawn = true;
 
 	// Temporary list used to hold points as we read them from the level
-	// data, in level co-ordinates.
+	// data, in screen co-ordinates.
 	private ArrayList<Point> buildingPoints = null;
 	
 	// The points defining the effective polygon boundary.  These are the

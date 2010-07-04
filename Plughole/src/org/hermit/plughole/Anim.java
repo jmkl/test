@@ -16,11 +16,13 @@
 
 package org.hermit.plughole;
 
+
 import java.util.HashMap;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
+import android.util.Log;
 
 
 /**
@@ -37,90 +39,23 @@ class Anim
 	// Public Constants.
 	// ******************************************************************** //
 
-	/**
-	 * Bitmap for a blank hole.
-	 */
-	public static final int[] BLANK_HOLE = {
-		R.drawable.blank_hole,
-	};
-	
-
-	/**
-	 * Bitmaps making up the lava hole animation.
-	 */
-	public static final int[] LAVA_ANIM = {
-		R.drawable.red_hole_01,
-		R.drawable.red_hole_02,
-		R.drawable.red_hole_03,
-		R.drawable.red_hole_04,
-		R.drawable.red_hole_05,
-		R.drawable.red_hole_06,
-		R.drawable.red_hole_07,
-		R.drawable.red_hole_08,
-		R.drawable.red_hole_09,
-		R.drawable.red_hole_10,
-		R.drawable.red_hole_11,
-		R.drawable.red_hole_12,
-	};
-	
-
-	/**
-	 * Bitmaps making up the teleport hole animation.
-	 */
-	public static final int[] PORT_ANIM = {
-		R.drawable.blue_hole_01,
-		R.drawable.blue_hole_02,
-		R.drawable.blue_hole_03,
-		R.drawable.blue_hole_04,
-		R.drawable.blue_hole_05,
-		R.drawable.blue_hole_06,
-		R.drawable.blue_hole_07,
-		R.drawable.blue_hole_08,
-	};
-	
-
-	/**
-	 * Bitmaps making up the exit hole animation.
-	 */
-	public static final int[] EXIT_ANIM = {
-		R.drawable.green_hole_01,
-		R.drawable.green_hole_02,
-		R.drawable.green_hole_03,
-		R.drawable.green_hole_04,
-		R.drawable.green_hole_05,
-	};
-	
-
     /**
-     * Bitmaps making up the force field animation.
+     * The available animation types.
      */
-    public static final int[] FORCE_ANIM = {
-        R.drawable.force_field_01,
-        R.drawable.force_field_02,
-        R.drawable.force_field_03,
-        R.drawable.force_field_04,
-        R.drawable.force_field_05,
-        R.drawable.force_field_06,
-    };
+    public static enum Type {
+        LAVA_HOLE(LAVA_ANIM),
+        TELEPORT_HOLE(PORT_ANIM),
+        EXIT_HOLE(EXIT_ANIM),
+        GREEN_ARROW(GREEN_ARROW_ANIM),
+        FORCE_FIELD(FORCE_ANIM);
+        
+        Type(int[] images) {
+            imageIds = images;
+        }
+        public final int[] imageIds;
+    }
     
 
-	/**
-	 * Bitmaps making up the green arrow animation.
-	 */
-	public static final int[] GREEN_ARROW = {
-		R.drawable.green_arrow_01,
-		R.drawable.green_arrow_02,
-		R.drawable.green_arrow_03,
-		R.drawable.green_arrow_04,
-		R.drawable.green_arrow_05,
-		R.drawable.green_arrow_06,
-		R.drawable.green_arrow_07,
-		R.drawable.green_arrow_08,
-		R.drawable.green_arrow_09,
-		R.drawable.green_arrow_10,
-	};
-	
-	
 	// ******************************************************************** //
 	// Constructor.
 	// ******************************************************************** //
@@ -131,7 +66,7 @@ class Anim
 	 * @param	app			Application context.  This provides
 	 * 						access to resources and image loading.
 	 * @param	id			The ID of this element.
-	 * @param	imgIds		Resource IDs of the graphics in the animation.
+	 * @param	type		The animation type.
 	 * @param	xform		Transform to apply to the raw data.
 	 * @param	norotate	If true, do *not* rotate the image for display
 	 * 						on different screen orientations.  This means
@@ -142,14 +77,13 @@ class Anim
 	 * 						so it always lines up the same way with the
 	 * 						game board.
 	 */
-	public Anim(Plughole app, String id, int[] imgIds,
+	public Anim(Plughole app, String id, Type type,
 				   Matrix xform, boolean norotate)
 	{
 		super(app, id, null, xform);
 		
-		imageIds = imgIds;
+		imageIds = type.imageIds;
 		
-		animOffset = rndInt(imageIds.length);
 		visible = true;
 	}
 	
@@ -165,14 +99,15 @@ class Anim
      * @param   rect        The rectangle, in level co-ordinates, suitable for
      *                      attaching Graphics to.
      */
+    @Override
     void setRect(RectF rect) {
-        Matrix xform = getTransform();
-        RectF box = xform.transform(rect);
-        
         // Calculate the actual geometry of the graphic.
-        bounds = xform.transform(box);
+        Matrix xform = getTransform();
+        bounds = xform.transform(rect);
         int w = (int) (Math.round(bounds.right - bounds.left));
         int h = (int) (Math.round(bounds.bottom - bounds.top));
+        Log.v(TAG, "Anim setRect " + rect + "; scale=" +
+                                xform.getScale() + "; " + bounds);
         
         // Get the bitmaps.  We don't want to re-use a cached image if the
         // size is new or if the rotation has changed, so key on all three
@@ -185,11 +120,17 @@ class Anim
                        (long) h << 43 | (long) rotate.degrees << 54;
             Bitmap img = imageCache.get(key);
             if (img == null) {
+                Log.v(TAG, "Allocate image " + i + " for " +
+                            getId() + " @ " + w + "x" + h);
                 img = app.getScaledBitmap(imageIds[i], w, h, rotate);
                 imageCache.put(key, img);
             }
             bitmaps[i] = img;
         }
+        
+        // Go to a random place in the animation; otherwise multiple
+        // objects of the same type will be noticeably synchronised.
+        animOffset = rndInt(imageIds.length);
     }
     
 
@@ -254,7 +195,83 @@ class Anim
 	private static HashMap<Long, Bitmap> imageCache =
 												new HashMap<Long, Bitmap>();
 	
-	
+
+    /**
+     * Bitmaps making up the lava hole animation.
+     */
+	private static final int[] LAVA_ANIM = {
+        R.drawable.red_hole_01,
+        R.drawable.red_hole_02,
+        R.drawable.red_hole_03,
+        R.drawable.red_hole_04,
+        R.drawable.red_hole_05,
+        R.drawable.red_hole_06,
+        R.drawable.red_hole_07,
+        R.drawable.red_hole_08,
+        R.drawable.red_hole_09,
+        R.drawable.red_hole_10,
+        R.drawable.red_hole_11,
+        R.drawable.red_hole_12,
+    };
+    
+
+    /**
+     * Bitmaps making up the teleport hole animation.
+     */
+    private static final int[] PORT_ANIM = {
+        R.drawable.blue_hole_01,
+        R.drawable.blue_hole_02,
+        R.drawable.blue_hole_03,
+        R.drawable.blue_hole_04,
+        R.drawable.blue_hole_05,
+        R.drawable.blue_hole_06,
+        R.drawable.blue_hole_07,
+        R.drawable.blue_hole_08,
+    };
+    
+
+    /**
+     * Bitmaps making up the exit hole animation.
+     */
+    private static final int[] EXIT_ANIM = {
+        R.drawable.green_hole_01,
+        R.drawable.green_hole_02,
+        R.drawable.green_hole_03,
+        R.drawable.green_hole_04,
+        R.drawable.green_hole_05,
+    };
+    
+
+    /**
+     * Bitmaps making up the green arrow animation.
+     */
+    private static final int[] GREEN_ARROW_ANIM = {
+        R.drawable.green_arrow_01,
+        R.drawable.green_arrow_02,
+        R.drawable.green_arrow_03,
+        R.drawable.green_arrow_04,
+        R.drawable.green_arrow_05,
+        R.drawable.green_arrow_06,
+        R.drawable.green_arrow_07,
+        R.drawable.green_arrow_08,
+        R.drawable.green_arrow_09,
+        R.drawable.green_arrow_10,
+    };
+    
+
+    /**
+     * Bitmaps making up the force field animation.
+     */
+    private static final int[] FORCE_ANIM = {
+        R.drawable.force_field_01,
+        R.drawable.force_field_02,
+        R.drawable.force_field_03,
+        R.drawable.force_field_04,
+        R.drawable.force_field_05,
+        R.drawable.force_field_06,
+    };
+    
+
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //

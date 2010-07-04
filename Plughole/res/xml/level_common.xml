@@ -4,9 +4,9 @@
 
 	<Common>
 
-		<!-- A generic polygon making a border with an entrypoint at the top-left.
-			Use with a startpos of 2.5, 0.2. -->
-		<Poly id="ENTRY_TL_BORDER">
+		<!-- A generic polygon making a border with an entrypoint
+			 at the top-left.  Use with a startpos of 2.5, 0.2. -->
+		<Poly wall="true" draw="true" id="ENTRY_TL_BORDER">
 			<Point x="4" y="-2" />
 			<Point x="5" y="-2" />
 			<Point x="5" y="0" />

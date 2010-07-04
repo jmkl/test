@@ -172,6 +172,7 @@ class TableView
     	}
 
     	// Create the pixmap for the background image.
+        Log.v(TAG, "Allocate background bitmap");
     	backgroundImage = getBitmap();
     }
     

@@ -64,6 +64,7 @@ class Text
      * @param   rect        The rectangle, in level co-ordinates, suitable for
      *                      attaching Graphics to.
      */
+    @Override
     void setRect(RectF rect) {
         Matrix xform = getTransform();
         RectF box = xform.transform(rect);
