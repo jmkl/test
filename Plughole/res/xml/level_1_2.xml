@@ -7,38 +7,78 @@
 		<!--  Generic border with entry at top-left and a clock area.
 			  Start in the entrance. -->
 		<Poly ref="ENTRY_TL_BORDER" />
-		<Anim type="clock" sx="1" sy="35" ex="23" ey="35.5" vertical="false" />
+<!--		<Anim type="clock" sx="1" sy="35" ex="23" ey="35.5" vertical="false" />-->
 		<Start x="2.5" y="0.2" />
 
-		<Anim type="green_arrow" sx="1" sy="0" ex="4" ey="3" />
+		<!--  Green arrow at the start. -->
+		<Rect sx="1" sy="0" ex="4" ey="3">
+			<Anim id="green_arrow" type="green_arrow" />
+		</Rect>
 
 		<!--  Top bar under the entrance.  The level name goes here. -->
-		<Rect sx="1.5" sy="4" ex="19" ey="7" />
-		<Display id="level" size="1.6" sx="1.5" sy="4" ex="19" ey="7" />
+		<Rect id="top_bar" sx="1.5" sy="4" ex="19" ey="7">
+			<Wall />
+			<Draw />
+			<Text id="$level" size="1.6" />
+		</Rect>
 
 		<!--  Right-hand vertical bar.  Lava pit at bottom. -->
-		<Rect sx="18" sy="10" ex="19" ey="27.5" />
-		<Graphic img="@drawable/danger" sx="19.5" sy="12" ex="22.5" ey="15" norotate="true" />
-		<Graphic img="@drawable/danger" sx="19.5" sy="16" ex="22.5" ey="19" norotate="true" />
-		<Graphic img="@drawable/danger" sx="19.5" sy="20" ex="22.5" ey="23" norotate="true" />
-		<Hole type="LAVA" x="21" y="26" />
+		<Rect sx="18" sy="10" ex="19" ey="27.5">
+			<Wall />
+			<Draw />
+		</Rect>
+		
+		<Rect sx="19.5" sy="12" ex="22.5" ey="15">
+			<Graphic img="@drawable/danger" norotate="true" />
+		</Rect>
+		<Hole x="21" y="26">
+			<Anim id="top_lava" type="lava_hole" />
+            <OnCross type="lose" message="@string/message_lava" />
+		</Hole>
 		
 		<!--  Mazy bars above centre area. -->
-		<Rect sx="4" sy="10" ex="18" ey="11" />
-		<Rect sx="1" sy="14" ex="14" ey="15" />
+		<Rect sx="4" sy="10" ex="18" ey="11">
+			<Wall />
+			<Draw />
+		</Rect>
+		<Rect sx="1" sy="14" ex="14" ey="15">
+			<Wall />
+			<Draw />
+		</Rect>
 		
 		<!--  Middle block. -->
-		<Rect sx="9" sy="20" ex="10" ey="23" />
+		<Rect sx="9" sy="20" ex="10" ey="23">
+			<Wall />
+			<Draw />
+		</Rect>
 
 		<!--  Mazy bars around centre area. -->
-		<Rect sx="5" sy="18" ex="6" ey="28" />
-		<Rect sx="13" sy="15" ex="14" ey="25" />
+		<Rect sx="5" sy="18" ex="6" ey="28">
+			<Wall />
+			<Draw />
+		</Rect>
+		<Rect sx="13" sy="15" ex="14" ey="25">
+			<Wall />
+			<Draw />
+		</Rect>
 
 		<!--  Bottom bar complex guarding the exit. -->
-		<Rect sx="5" sy="28" ex="22.5" ey="29" />
-		<Rect sx="5.5" sy="30" ex="11" ey="31" />
-		<Rect sx="14" sy="32.5" ex="20" ey="33.5" />
-		<Hole type="EXIT" x="21.5" y="33" />
+		<Rect sx="5" sy="28" ex="22.5" ey="29">
+			<Wall />
+			<Draw />
+		</Rect>
+		<Rect sx="5.5" sy="30" ex="11" ey="31">
+			<Wall />
+			<Draw />
+		</Rect>
+		<Rect sx="14" sy="32.5" ex="20" ey="33.5">
+			<Wall />
+			<Draw />
+		</Rect>
+		<Hole x="21.5" y="33">
+			<Anim id="exit" type="exit_hole" />
+            <OnCross type="win" />
+		</Hole>
 
 	</Level>
 

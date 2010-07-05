@@ -18,6 +18,7 @@ package org.hermit.plughole;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -616,8 +617,10 @@ class Topology {
         // Draw all the fixed items in the topology.  The animated items
 		// shouldn't be drawn -- they will take care of themselves, and
 		// may sometimes want to be blank.
-		for (Visual elem : fixedItems)
+		for (Visual elem : fixedItems) {
+		      Log.v(TAG, "Draw fixed " + elem.getId());
 			elem.draw(canvas, 0, 0);
+        }
 
     	// Draw the lines for debug.
 //    	android.graphics.Paint lpaint = new android.graphics.Paint();
@@ -673,22 +676,22 @@ class Topology {
 	private LevelData currentLevel = null;
 
 	// The fixed items that make up the scene.
-	private ArrayList<Visual> fixedItems = null;
+	private List<Visual> fixedItems = null;
 
 	// The animated items in the scene.
-	private ArrayList<Visual> animItems = null;
+	private List<Visual> animItems = null;
 
 	// The zones in the scene.
-	private ArrayList<Hole> zones = null;
+	private List<Hole> zones = null;
 
 	// The lines that we use for collisions in the scene, by bouncing
 	// the centre of the ball off them.  These are derived by growing
 	// the wallItems.
-	private ArrayList<Line> lines = null;
+	private List<Line> lines = null;
 
     // The lines that we use to just trigger actions when the centre
     // of the ball crosses them.
-    private ArrayList<Line> triggers = null;
+    private List<Line> triggers = null;
 
 	// The ball image.
 	private Bitmap ballImage = null;

@@ -393,13 +393,13 @@ class TableView
 		Log.i(TAG, "Table: start " + ballX + "," + ballY);
 		
 		// Get the level name display, if any, and set its text up.
-		Object levobj = level.getById("level");
+		Object levobj = level.getById("$level");
 		if (levobj == null) {
 			levelDisplay = null;
 		} else {
 			if (!(levobj instanceof Text))
-				throw new LevelReader.LevelException("Object \"level\" must" +
-														" be a <Display>");
+				throw new LevelReader.LevelException("Object \"$level\" must" +
+														" be a <Text>");
 			levelDisplay = (Text) levobj;
 			levelDisplay.setText(level.getDisplayName());
 		}
@@ -832,22 +832,24 @@ class TableView
 		        ballVelY = ballVelY * 0.85 + speed * act.getAccelY() * 0.15;
 		        break;
 		    case TELEPORT:
-		        if (target != null && target instanceof Point) {
-		            ballX = ((Point) target).x;
-		            ballY = ((Point) target).y;
+		        if (target != null && target instanceof Location) {
+		            ballX = ((Location) target).getX();
+		            ballY = ((Location) target).getY();
 		        }
 		        break;
 		    case OFF:
-                if (target != null && target instanceof Poly)
-                    ((Poly) target).setBounceEnable(false);
+                if (target != null && target instanceof Element)
+                    ((Element) target).setEnable(false);
                 break;
 		    case ON:
-                if (target != null && target instanceof Poly)
-                    ((Poly) target).setBounceEnable(true);
+                if (target != null && target instanceof Element)
+                    ((Element) target).setEnable(true);
                 break;
 		    case ONOFF:
-                if (target != null && target instanceof Poly)
-                    ((Poly) target).toggleBounceEnable();
+                if (target != null && target instanceof Element) {
+                    Element elem = ((Element) target);
+                    elem.setEnable(!elem.getEnable());
+                }
                 break;
 		    case WIN:
 		        setState(State.WIN, msg);

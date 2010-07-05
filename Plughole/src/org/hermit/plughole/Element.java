@@ -172,6 +172,33 @@ abstract class Element
     }
     
 
+    // ******************************************************************** //
+    // State Control.
+    // ******************************************************************** //
+
+    /**
+     * Get the enable state of this item.
+     * 
+     * @return            Current enablement state.
+     */
+    boolean getEnable() {
+        return isEnabled;
+    }
+    
+
+    /**
+     * Enable or disable this item.  The effects of this depend on the
+     * type of element.
+     * 
+     * <p>Subclasses may override this, but must call through to this method.
+     * 
+     * @param  enable      New enablement state.
+     */
+    void setEnable(boolean enable) {
+        isEnabled = enable;
+    }
+    
+
 	// ******************************************************************** //
 	// Utility Methods.
 	// ******************************************************************** //
@@ -210,6 +237,9 @@ abstract class Element
     // List of OnCross actions this element has.  Null if none.
 	// Used in element construction.
     private HashMap<Action.Trigger, ArrayList<Action>> buildingActions = null;
+    
+    // Current enable flag.
+    private boolean isEnabled = true;
 
 }
 

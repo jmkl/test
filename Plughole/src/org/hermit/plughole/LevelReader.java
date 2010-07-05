@@ -498,6 +498,10 @@ class LevelReader {
 			return buildPoly(p, xform, tag, id, attrs);
 		} else if (tag.equals("Hole")) {
 			return buildHole(p, xform, tag, id, attrs);
+        } else if (tag.equals("Wall")) {
+            return buildWall(p, xform, tag, id, attrs);
+        } else if (tag.equals("Draw")) {
+            return buildDraw(p, xform, tag, id, attrs);
 		} else if (tag.equals("OnCross") || tag.equals("OnBounce") ||
 													tag.equals("WhileZone")) {
 			return buildAction(p, xform, tag, id, attrs);
@@ -589,11 +593,9 @@ class LevelReader {
 		float sy = attrs.getFloat("sy", 0);
 		float ex = attrs.getFloat("ex", 0);
 		float ey = attrs.getFloat("ey", 0);
-		boolean wall = attrs.getBoolean("wall", true);
-        boolean draw = attrs.getBoolean("draw", true);
 
         RectF box = new RectF(sx, sy, ex, ey);
-		return new Poly(appContext, id, box, xform, wall, draw);
+		return new Poly(appContext, id, box, xform);
 	}
 
 
@@ -623,11 +625,8 @@ class LevelReader {
 			return (Poly) obj;
 		}
 		
-        boolean wall = attrs.getBoolean("wall", true);
-        boolean draw = attrs.getBoolean("draw", true);
-		
 		// Make an empty polygon.
-		return new Poly(appContext, id, xform, wall, draw);
+		return new Poly(appContext, id, xform);
 	}
 
 
@@ -652,6 +651,50 @@ class LevelReader {
 		
 		return new Hole(appContext, id, x, y, xform);
 	}
+
+
+    /**
+     * Build a Wall definition from the current tag.
+     * 
+     * @param   p           The parser to read from.
+     * @param   xform       The transformation that needs to be applied
+     *                      to the level to make it fit the screen.
+     * @param   tag         The name of this item's XML tag.
+     * @param   id          The ID of this element.
+     * @param   attrs       The XML attributes for this item.
+     * @return              The constructed element.
+     * @throws LevelException   Error encountered while reading.
+     */
+    private Poly.Wall buildWall(XmlPullParser p, Matrix xform, String tag,
+                             String id, Bundle attrs)
+        throws LevelException
+    {
+        boolean init = attrs.getBoolean("initial", true);
+        Poly.Wall wall = new Poly.Wall(init);
+        return wall;
+    }
+
+
+    /**
+     * Build a Draw definition from the current tag.
+     * 
+     * @param   p           The parser to read from.
+     * @param   xform       The transformation that needs to be applied
+     *                      to the level to make it fit the screen.
+     * @param   tag         The name of this item's XML tag.
+     * @param   id          The ID of this element.
+     * @param   attrs       The XML attributes for this item.
+     * @return              The constructed element.
+     * @throws LevelException   Error encountered while reading.
+     */
+    private Poly.Draw buildDraw(XmlPullParser p, Matrix xform, String tag,
+                             String id, Bundle attrs)
+        throws LevelException
+    {
+        int col = attrs.getInt("color", 0xe0e0e0);
+        Poly.Draw draw = new Poly.Draw(col);
+        return draw;
+    }
 
 
 	/**
@@ -701,7 +744,7 @@ class LevelReader {
 		    if (!attrs.containsKey("value"))
 		        throw new LevelException(p, "\"speed\" action requires" +
 		                                    " a \"value\" attribute");
-		    action.setSpeed(attrs.getDouble("value"));
+		    action.setSpeed(attrs.getFloat("value"));
 		    break;
 		case TELEPORT:
         case OFF:
@@ -801,7 +844,10 @@ class LevelReader {
 		float size = attrs.getFloat("size", 1.0f);
 		String text = attrs.getString("text");
 		
-		if (text == null)
+		// We must have text; unless this is a special field, whose
+		// ID starts with "$".
+		boolean isSpecial = id != null && id.charAt(0) == '$';
+		if (text == null && !isSpecial)
 			throw new LevelException(p, "<" + tag +
 									    "> requires a \"text\" attribute");
 		
@@ -867,6 +913,10 @@ class LevelReader {
 					}
 					attrs.putString(n, s);
 					break;
+                case 'C':
+                    // FIXME: colour
+                    attrs.putInt(n, a.getAttributeIntValue(i, 0));
+                    break;
 				case '#':
 					String iname = a.getAttributeValue(i);
 					if (iname.charAt(0) != '@')
@@ -926,8 +976,8 @@ class LevelReader {
         typeMap.put("message", 'S');
 		typeMap.put("norotate", 'B');
 		typeMap.put("vertical", 'B');
-        typeMap.put("wall", 'B');
-        typeMap.put("draw", 'B');
+        typeMap.put("initial", 'B');
+        typeMap.put("color", 'C');
 	}
 
 	

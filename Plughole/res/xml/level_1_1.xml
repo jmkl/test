@@ -6,26 +6,9 @@
 
 		<!--  Generic border with entry at top-left and a clock area.
 			  Start in the entrance. -->
-<!--		<Poly ref="ENTRY_TL_BORDER" />-->
+		<Poly ref="ENTRY_TL_BORDER" />
 <!--		<Anim type="clock" sx="1" sy="35" ex="23" ey="35.5" vertical="false" />-->
 		<Start x="2.5" y="0.2" />
-		
-		<Poly wall="true" draw="true" id="ENTRY_TL_BORDER">
-			<Point x="4" y="1" />
-			<Point x="4" y="-2" />
-			<Point x="5" y="-2" />
-			<Point x="5" y="0" />
-			<Point x="24" y="0" />
-			<Point x="24" y="36" />
-			<Point x="0" y="36" />
-			<Point x="0" y="-2" />
-			<Point x="3.9" y="-2" />
-			<Point x="3.9" y="-0.9" />
-			<Point x="1" y="-0.9" />
-			<Point x="1" y="34.5" />
-			<Point x="23" y="34.5" />
-			<Point x="23" y="1" />
-		</Poly>
 
 		<!--  Green arrow at the start. -->
 		<Rect sx="1" sy="0" ex="4" ey="3">
@@ -33,8 +16,10 @@
 		</Rect>
 
 		<!--  Top bar under the entrance.  The level name goes here. -->
-		<Rect wall="true" draw="true" sx="1.5" sy="4" ex="19" ey="7">
-			<Text id="level" size="1.6" text="$$level" />
+		<Rect id="top_bar" sx="1.5" sy="4" ex="19" ey="7">
+			<Wall />
+			<Draw />
+			<Text id="$level" size="1.6" />
 		</Rect>
 
 		<!--  A couple of holes. -->
@@ -52,11 +37,14 @@
 		</Hole>
 
 		<!--  Bottom bar above the exit. -->
-		<Rect wall="true" draw="true" sx="5" sy="28" ex="22.5" ey="29">
+		<Rect id="bot_bar" sx="5" sy="28" ex="22.5" ey="29">
+			<Wall />
+			<Draw />
 		</Rect>
 		
 		<!--  A force field in the way of the exit. -->
-		<Rect id="field" wall="true" sx="9" sy="31.5" ex="12" ey="34.5">
+		<Rect id="field" sx="9" sy="31.5" ex="12" ey="34.5">
+			<Wall />
 			<Anim id="force_field" type="force_field" />
 			<OnBounce type="speed" value="3" />
 		</Rect>
@@ -65,10 +53,11 @@
 		<Rect sx="11" sy="24" ex="13" ey="26">
 			<Graphic id="pad" img="@drawable/pad" />
 			<OnCross type="onoff" target="field" />
+			<OnCross type="onoff" target="force_field" />
 		</Rect>
 
 		<!--  The exit. -->
-		<Hole type="EXIT" x="21.5" y="33">
+		<Hole x="21.5" y="33">
 			<Anim id="exit" type="exit_hole" />
             <OnCross type="win" />
 		</Hole>

@@ -79,6 +79,7 @@ for more details.\n</string>
     <!-- Level names. -->
     <string name="level1">A Good Start</string>
     <string name="level2">Look Out, Lava!</string>
+    <string name="level3">Wedgie</string>
 
 </resources>
 

@@ -146,14 +146,16 @@ class Anim
     }
     
 	
-	/**
-	 * Set whether this graphic is visible.
-	 * 
-	 * @param  vis             True to make this graphic visible, false
-	 *                         to hide.
-	 */
-	void setVisible(boolean vis) {
-	    visible = vis;
+    /**
+     * Enable or disable this animation.
+     * 
+     * @param  enable      True iff the animation should display itself.
+     */
+    @Override
+    void setEnable(boolean enable) {
+        super.setEnable(enable);
+        
+	    visible = enable;
 	}
 	
 

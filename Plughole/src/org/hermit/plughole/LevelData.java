@@ -21,6 +21,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.hermit.plughole.LevelReader.LevelException;
 import org.xmlpull.v1.XmlPullParser;
@@ -132,7 +134,7 @@ class LevelData
         this.header = new Header(name, group, diff, time);
 
 		this.locationItems = new ArrayList<Location>();
-		this.fixedItems = new ArrayList<Visual>();
+		this.fixedItems = new LinkedList<Visual>();
 		this.animItems = new ArrayList<Visual>();
 		this.zoneItems = new ArrayList<Hole>();
 		this.wallItems = new ArrayList<Poly>();
@@ -184,8 +186,10 @@ class LevelData
             Poly poly = (Poly) child;
             if (poly instanceof Hole)
                 zoneItems.add((Hole) poly);
+            // If a polygon is drawn, add it to the start of the list so
+            // children draw after it.
             if (poly.isDrawn())
-                fixedItems.add(poly);
+                fixedItems.addFirst(poly);
             if (poly.isWall())
                 wallItems.add(poly);    // Handles ONBOUNCE as well.
             if (poly.getActions(Action.Trigger.ONCROSS) != null)
@@ -278,7 +282,7 @@ class LevelData
 	 * 
 	 * @return				List of all background items in this level.
 	 */
-	public ArrayList<Visual> getBackground() {
+	public List<Visual> getBackground() {
 		return fixedItems;
 	}
 	
@@ -288,7 +292,7 @@ class LevelData
 	 * 
 	 * @return				List of all animated items in this level.
 	 */
-	public ArrayList<Visual> getAnims() {
+	public List<Visual> getAnims() {
 		return animItems;
 	}
 	
@@ -298,7 +302,7 @@ class LevelData
 	 * 
 	 * @return				List of all special zones in this level.
 	 */
-	public ArrayList<Hole> getZones() {
+	public List<Hole> getZones() {
 		return zoneItems;
 	}
 	
@@ -317,7 +321,7 @@ class LevelData
 	private final ArrayList<Location> locationItems;
 	
 	// The fixed items in this level.
-	private final ArrayList<Visual> fixedItems;
+	private final LinkedList<Visual> fixedItems;
 
 	// The animated items in this level.
 	private final ArrayList<Visual> animItems;

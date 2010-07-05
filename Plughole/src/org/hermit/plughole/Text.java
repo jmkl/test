@@ -20,6 +20,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.util.Log;
 
 
 /**
@@ -35,7 +36,7 @@ class Text
 	// ******************************************************************** //
 
 	/**
-	 * Create a decal by applying a transformation to a decal spec.
+	 * Create a text decal by applying a transformation to a text spec.
 	 * 
 	 * @param	app			Application context.  This provides
 	 * 						access to resources and image loading.
@@ -61,16 +62,13 @@ class Text
      * Set the visual rectangular box of this element.  This is called when
      * we're added to our parent.
      * 
-     * @param   rect        The rectangle, in level co-ordinates, suitable for
-     *                      attaching Graphics to.
+     * @param   rect        The rectangle, in level co-ordinates.
      */
     @Override
     void setRect(RectF rect) {
-        Matrix xform = getTransform();
-        RectF box = xform.transform(rect);
-
         // Calculate the actual geometry of the decal.
-        bounds = xform.transform(box);
+        Matrix xform = getTransform();
+        bounds = xform.transform(rect);
         textSize = textLevelSize * (float) xform.getScale();
         textAngle = xform.getRotation();
         centreX = (bounds.left + bounds.right) / 2;
@@ -90,7 +88,7 @@ class Text
 	// ******************************************************************** //
 
 	/**
-	 * Get the bounding box of this decal.
+	 * Get the bounding box of this text decal.
 	 */
 	RectF getBounds() {
 		return bounds;
@@ -98,7 +96,7 @@ class Text
 	
 
 	/**
-	 * Get the centre point of the text in this decal.
+	 * Get the centre point of the text in this text decal.
 	 */
 	Point getCentre() {
 		return new Point(centreX, centreY);
@@ -106,7 +104,7 @@ class Text
 	
 	
 	/**
-	 * Set the text of this decal.
+	 * Set the text of this text decal.
 	 */
 	void setText(String text) {
 		textString = text;
@@ -118,7 +116,7 @@ class Text
 	// ******************************************************************** //
 
 	/**
-	 * Draw this graphic onto the given canvas.
+	 * Draw this text decal onto the given canvas.
 	 * 
 	 * @param	canvas			Canvas to draw on.
 	 * @param	time			Total level time in ms.  A time of zero
@@ -133,11 +131,13 @@ class Text
 
 
 	/**
-	 * Draw this decal onto the given canvas with the given text.
+	 * Draw the given text onto the given canvas.
 	 * 
 	 * @param	canvas			Canvas to draw on.
 	 */
-	void draw(Canvas canvas, String text) {
+	private void draw(Canvas canvas, String text) {
+	    Log.v(TAG, "Draw text " + text);
+	    
 		// Position the text centred within the bounding box.
 		textPaint.setTextSize(textSize);
 		int hlen = (int) Math.ceil(textPaint.measureText(text) / 2);

@@ -25,6 +25,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.util.Log;
 
 
 /**
@@ -53,9 +54,39 @@ class Poly
 {
 
 	// ******************************************************************** //
-	// Constructor.
+	// Public Types.
 	// ******************************************************************** //
+
+    /**
+     * Class describing the blocking characteristics, if any, of a Poly.
+     */
+    static final class Wall {
+        Wall(boolean init) {
+            this.initial = init;
+        }
+        
+        // True if the poly is initially blocking, false if not.
+        public final boolean initial;
+    }
     
+
+    /**
+     * Class describing the drawing characteristics, if any, of a Poly.
+     */
+    static final class Draw {
+        Draw(int col) {
+            this.colour = col;
+        }
+        
+        // Base colour to draw with.
+        public final int colour;
+    }
+    
+
+    // ******************************************************************** //
+    // Constructor.
+    // ******************************************************************** //
+   
     /**
      * Create a polygon with no initial points.  Points will be added
      * later as we read them.
@@ -63,16 +94,10 @@ class Poly
      * @param   app         Application context.
 	 * @param	id			The ID of this element.
 	 * @param	xform		Transform to apply to the raw data.
-     * @param   wall        True if this polygon acts as a barrier.
-     * @param   draw        True if this polygon is to draw its outline.
      */
-    public Poly(Plughole app, String id, Matrix xform,
-                boolean wall, boolean draw)
+    public Poly(Plughole app, String id, Matrix xform)
     {
         super(app, id, null, xform);
-        
-        isWall = wall;
-        isDrawn = draw;
         
     	buildingPoints = new ArrayList<Point>();
     }
@@ -86,16 +111,10 @@ class Poly
      * @param   visRect     The visible rectangle defining this element, in
      *                      level co-ordinates.
 	 * @param	xform		Transform to apply to the raw data.
-     * @param   wall        True if this polygon acts as a barrier.
-     * @param   draw        True if this polygon is to draw its outline.
      */
-    public Poly(Plughole app, String id, RectF visRect, Matrix xform,
-                boolean wall, boolean draw)
+    public Poly(Plughole app, String id, RectF visRect, Matrix xform)
     {
         super(app, id, visRect, xform);
-
-        isWall = wall;
-        isDrawn = draw;
 
         // Construct a points list in clockwise order.
         RectF screenRect = xform.transform(visRect);
@@ -158,6 +177,12 @@ class Poly
 		if (child instanceof Point) {
 			buildingPoints.add((Point) child);
 			return true;
+        } else if (child instanceof Wall) {
+            isWall = true;
+            return true;
+        } else if (child instanceof Draw) {
+            isDrawn = true;
+            return true;
 		} else if (child instanceof Action) {
 			addAction((Action) child);
 			return true;
@@ -368,20 +393,15 @@ class Poly
 	 * 
 	 * @param  enable      True iff the ball should bounce off.
 	 */
-	void setBounceEnable(boolean enable) {
+	@Override
+    void setEnable(boolean enable) {
+	    super.setEnable(enable);
+	    
+	    // Set the bounce enable state of our lines.
         for (Line l : effectiveLines)
             l.reflectEnabled = enable;
 	}
 	
-
-    /**
-     * Toggle this polygon as a barrier which reflects the ball.
-     */
-    void toggleBounceEnable() {
-        for (Line l : effectiveLines)
-            l.reflectEnabled = !l.reflectEnabled;
-    }
-    
 
     // ******************************************************************** //
     // Drawing.
@@ -398,6 +418,11 @@ class Poly
 	 */
 	@Override
 	protected void draw(Canvas canvas, long time, long clock) {
+	    if (!isDrawn || !getEnable())
+	        return;
+	    
+        Log.v(TAG, "Draw poly " + getId());
+        
 		// Clip to the polygon, so when we draw the bevel using thick lines,
 		// we don't spread out.
 		canvas.save();
@@ -444,10 +469,10 @@ class Poly
 	// ******************************************************************** //
 	
     // True if this polygon acts as a barrier.
-	private boolean isWall = true;
+	private boolean isWall = false;
 	
     // True if this polygon is to draw its outline.
-    private boolean isDrawn = true;
+    private boolean isDrawn = false;
 
 	// Temporary list used to hold points as we read them from the level
 	// data, in screen co-ordinates.
