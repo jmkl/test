@@ -691,9 +691,10 @@ class LevelReader {
                              String id, Bundle attrs)
         throws LevelException
     {
-        int col = attrs.getInt("color", 0xe0e0e0);
-        Poly.Draw draw = new Poly.Draw(col);
-        return draw;
+        int col = LevelData.WALL_COLOR;
+        if (attrs.containsKey("color"))
+            col = attrs.getInt("color");
+        return new Poly.Draw(col);
     }
 
 
@@ -914,7 +915,6 @@ class LevelReader {
 					attrs.putString(n, s);
 					break;
                 case 'C':
-                    // FIXME: colour
                     attrs.putInt(n, a.getAttributeIntValue(i, 0));
                     break;
 				case '#':

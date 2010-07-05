@@ -18,7 +18,7 @@
 		<!--  Top bar under the entrance.  The level name goes here. -->
 		<Rect id="top_bar" sx="1.5" sy="4" ex="19" ey="7">
 			<Wall />
-			<Draw />
+			<Draw color="#ffa0a0" />
 			<Text id="$level" size="1.6" />
 		</Rect>
 

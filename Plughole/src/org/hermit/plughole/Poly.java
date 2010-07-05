@@ -22,9 +22,13 @@ import org.hermit.plughole.LevelReader.LevelException;
 import org.xmlpull.v1.XmlPullParser;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
 
 
@@ -182,6 +186,7 @@ class Poly
             return true;
         } else if (child instanceof Draw) {
             isDrawn = true;
+            drawColour = ((Draw) child).colour;
             return true;
 		} else if (child instanceof Action) {
 			addAction((Action) child);
@@ -219,14 +224,26 @@ class Poly
         double ballRad = LevelData.BALL * xform.getScale() / 2.0;
 
 		// First make the graphics path and a list of lines for the visible
-	    // polygon.  We have to transform all the points to screen co-ordinates.
+	    // polygon.  Also calculate the visible bounding box.
 		drawingPath = new Path();
         final int npoints = buildingPoints.size();
-        Line[] baseLines = new Line[npoints];
+        drawingLines = new Line[npoints];
+        screenBounds = new Rect(Integer.MAX_VALUE, Integer.MAX_VALUE,
+                                Integer.MIN_VALUE, Integer.MIN_VALUE);
 		boolean first = true;
         Point prev = buildingPoints.get(npoints - 1);
         for (int i = 0; i < npoints; ++i) {
 		    Point curr = buildingPoints.get(i);
+		    
+		    // Adjust the bounding box.
+		    if (curr.x < screenBounds.left)
+		        screenBounds.left = (int) curr.x;
+            if (curr.x > screenBounds.right)
+                screenBounds.right = (int) curr.x;
+            if (curr.y < screenBounds.top)
+                screenBounds.top = (int) curr.y;
+            if (curr.y > screenBounds.bottom)
+                screenBounds.bottom = (int) curr.y;
 		    
 		    // Add to the path.
 		    if (first) {
@@ -236,13 +253,13 @@ class Poly
 		        drawingPath.lineTo((float) curr.x, (float) curr.y);
 		    
 		    // Add another line.
-		    baseLines[i] = new Line(prev, curr);
+		    drawingLines[i] = new Line(prev, curr);
             prev = curr;
 		}
 		drawingPath.close();
 		
 		// Now, expand the line set we just created to get the effective lines.
-		effectiveLines = createLarger(baseLines, ballRad);
+		effectiveLines = createLarger(drawingLines, ballRad);
         
         // Set the appropriate actions on all the effective lines.
         Action[] cross = getActions(Action.Trigger.ONCROSS);
@@ -353,6 +370,18 @@ class Poly
     // ******************************************************************** //
 
 	/**
+	 * Get the overall bounding box of this polygon, in screen
+	 * co-ordinates.  This is not the same as the visual rect; it's the
+	 * minimal screen rectangle containing all the polygon's visible points.
+	 * 
+	 * @return             Screen visual bounding box for this polygon.
+	 */
+	Rect getScreenBounds() {
+	    return screenBounds;
+	}
+	
+	
+	/**
 	 * Determine whether this polygon is a wall.
 	 * 
 	 * @return             True if this polygon acts as a barrier.
@@ -428,20 +457,66 @@ class Poly
 		canvas.save();
 		canvas.clipPath(drawingPath);
 		
+		// Get our base colour as HSV.
+		float[] hsvBase = new float[3];
+		Color.colorToHSV(drawColour, hsvBase);
+		float[] hsvAdj = new float[3];
+
+		// Create a pretty gradient to highlight this polygon with.
+		int[] colors = new int[7];
+		colors[0] = drawColour;
+        colors[1] = bias(hsvBase, 0.1f, hsvAdj);
+        colors[2] = bias(hsvBase, 0.2f, hsvAdj);
+        colors[3] = bias(hsvBase, 1.0f, hsvAdj);
+        colors[4] = bias(hsvBase, 0.2f, hsvAdj);
+        colors[5] = bias(hsvBase, 0.1f, hsvAdj);
+        colors[6] = drawColour;
+        Drawable shape = new GradientDrawable(GradientDrawable.Orientation.TL_BR, colors);
+        shape.setBounds(getScreenBounds());
+        
 		// Fill the poly.
-		polyPaint.setStyle(Paint.Style.FILL);
-		polyPaint.setColor(0xffd0d0d0);
-		canvas.drawPath(drawingPath, polyPaint);
+		shape.draw(canvas);
 	
 		// Draw a bevelled edge on the outside of the poly.
 		polyPaint.setStyle(Paint.Style.STROKE);
-		for (int width = 6, color = 0xa0; width > 0; color -= 0x45, width -= 2) {
-			polyPaint.setStrokeWidth(width);
-			polyPaint.setARGB(0xff, color, color, color);
-			canvas.drawPath(drawingPath, polyPaint);
+		polyPaint.setStrokeWidth(3);
+		for (Line l : drawingLines) {
+		    // Calculate the bevel highlight / lowlight for this edge based
+		    // on its angle.  Zero angle is to +X; positive angles go
+		    // anti-clockwise.  But Y is DOWN THE SCREEN.
+		    float a = (float) Math.toDegrees(Math.atan2(-l.dy, l.dx));
+		    
+		    // Normalize so zero is orthogonal to top-left.
+		    a -= 45.0;
+		    if (a < -180.0)
+		        a += 360.0;
+		    
+		    // Calculate bias from 1 to -1.
+		    final float bias = -(Math.abs(a) - 90.0f) / 90.0f;
+		    
+		    Log.v(TAG, "a=" + Math.toDegrees(Math.atan2(-l.dy, l.dx)) +
+		               ", adj=" + a + ", b=" + bias);
+		    
+		    polyPaint.setColor(bias(hsvBase, bias, hsvAdj));
+		    canvas.drawLine((float) l.sx, (float) l.sy,
+		                    (float) l.ex, (float) l.ey, polyPaint);
 		}
 		
 		canvas.restore();
+	}
+	
+	
+	private static final int bias(float[] base, float bias, float[] adj) {
+        adj[0] = base[0];
+        adj[1] = base[1];
+        adj[2] = base[2] + bias * 0.5f;
+        if (adj[2] > 1) {
+            adj[1] -= adj[2] - 1;
+            if (adj[1] < 0)
+                adj[1] = 0;
+            adj[2] = 1;
+        }
+        return Color.HSVToColor(adj);
 	}
 	
 	
@@ -474,20 +549,32 @@ class Poly
     // True if this polygon is to draw its outline.
     private boolean isDrawn = false;
 
+    // If drawn, the colour to draw in.
+    private int drawColour = LevelData.WALL_COLOR;
+    
 	// Temporary list used to hold points as we read them from the level
 	// data, in screen co-ordinates.
 	private ArrayList<Point> buildingPoints = null;
-	
-	// The points defining the effective polygon boundary.  These are the
+
+    // The lines defining the visual polygon boundary.  This is used for
+    // drawing it.  Null if not set up yet.
+    private Line[] drawingLines;
+
+    // A graphics Path representing this polygon.  This is used for
+    // drawing it.  Null if not set up yet.
+    private Path drawingPath = null;
+
+	// The lines defining the effective polygon boundary.  These are the
 	// lines which will interact with the centre of the ball.  These are
 	// assumed to go clockwise around the border, so moving from points[0] to
 	// points[1], the left side is outside the polygon, right side inside.
 	// Of course the last point joins to the first.
 	private Line[] effectiveLines;
-
-	// A graphics Path representing this polygon.  This is used for
-	// drawing it.  Null if not set up yet.
-	private Path drawingPath = null;
+	
+	// The overall bounding box of this polygon, in screen
+	// co-ordinates.  This is not the same as the visual rect; it's the
+	// minimal screen rectangle containing all the polygon's visible points.
+	private Rect screenBounds;
 	
 }
 

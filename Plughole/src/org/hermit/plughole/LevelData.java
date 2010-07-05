@@ -111,6 +111,11 @@ class LevelData
 	 */
 	public static final int BALL = 2;
 
+    /**
+     * Default wall colour.
+     */
+    public static final int WALL_COLOR = 0xffa0a0a0;
+
 	
     // ******************************************************************** //
     // Constructor.
