@@ -173,6 +173,7 @@ class Poly
 	 * 						false, the child is actually a sibling; it
 	 * 						has not been added here, and needs to be
 	 * 						added to the parent.
+     * @throws LevelException 
 	 */
 	@Override
     boolean addChild(XmlPullParser p, String tag, Object child)
@@ -208,10 +209,19 @@ class Poly
 	
 	/**
 	 * We're finished adding children; do any required initialization.
+     * 
+     * @param   p           The parser the level is being read from.
+     * @throws LevelException 
 	 */
 	@Override
-    void finished() {
-	    super.finished();
+    void finished(XmlPullParser p)
+        throws LevelException
+	{
+	    super.finished(p);
+	    
+	    if (buildingPoints.size() < 3)
+            throw new LevelException(p, "a polygon must contain" +
+                                        " at least 3 <Point> tags");
 	    
 	    // Now, we need to create two polygons.  The shape defined by the
 	    // user is the one we draw, so convert that into a graphics path.

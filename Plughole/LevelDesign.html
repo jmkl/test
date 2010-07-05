@@ -1,0 +1,847 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>Plughole Level Specification Format</title>
+</head>
+
+<body bgcolor="white">
+<H1>Plughole Level Specification Format</H1>
+
+<p>This document specifies the format of a Plughole level specification
+file.</p>
+
+<H2>Basics</H2>
+
+<p>A Plughole level spec is written in XML.  Each level lives in its own
+file (for now).</p>
+
+<p>A level is identified by a difficulty group number, and a level number
+within its group.  Levels are sorted first by group, and then by the
+number within the group.  This scheme is designed to make it easy to
+add levels to the game, with new levels slotting into the most
+appropriate place in the levels list.</p>
+
+<p><hr /></p>
+
+<H2>Format</H2>
+
+<p>A Plughole level spec follows this basic format:</p>
+
+<p><pre>
+    &lt;?xml version="1.0" encoding="utf-8"?&gt;
+    &lt;LevelData&gt;
+        &lt;Level name="@string/level1" group="1" difficulty="1" time="80"&gt;
+            &lt;Rect sx="1" sy="0" ex="4" ey="3"&gt;
+                &lt;Anim id="green_arrow" type="green_arrow" /&gt;
+            &lt;/Rect&gt;
+            . . .
+        &lt;/Level&gt;
+    &lt;/LevelData&gt;
+</pre></p>
+
+<p>The file begins with a standard XML declaration.  There is then a single
+<tt>LevelData</tt> object defined; this contains (currently) a single
+<tt>Level</tt> object, which in turn contains all the objects that make
+up the level.</p>
+
+<p>The main objects which can be defined in a level are polygons.  These
+can be drawn as visible blocking objects; can physically act as blocks;
+can act as a trigger for actions; can act as a container for a graphic or
+animation; or any combination of these.  A rectangle is a special case of
+a polygon, which permits more operations; a hole is another special case,
+which provides a "fall-in" effect on the ball.</p>
+
+<p><hr /></p>
+
+<H2>Level Co-Ordinates</H2>
+
+<p><hr /></p>
+
+<H2>Attribute Types</H2>
+
+<p>The tags which make up the level take various attributes, each of which
+has a particular type, as defined in the tag's documentation below.
+This section documents the attribute types and their corresponding formats.
+
+<H3><tt>string</tt></H3>
+
+<p>A string of text.  This can be a plain string, or can refer to a string
+defined in a resource file by using the "@" notation; as in:</p>
+
+<p><pre>
+    name="@string/level1"
+</pre></p>
+
+<H3><tt>int</tt></H3>
+
+<p>A plain integer value; as in:</p>
+
+<p><pre>
+    difficulty="1"
+</pre></p>
+
+<H3><tt>float</tt></H3>
+
+<p>A floating-point value (which can be an integer); as in:</p>
+
+<p><pre>
+    sx="1.5" sy="4"
+</pre></p>
+
+<H3><tt>color</tt></H3>
+
+<p>A colour specification, as a 24-bit RGB value in hex notation.  Example:</p>
+
+<p><pre>
+    color="#ffa0a0"
+</pre></p>
+
+<H3><tt>imageid</tt></H3>
+
+<p>Resource ID of an image file.  Example:</p>
+
+<p><pre>
+    img="@drawable/pad"
+</pre></p>
+
+<p><hr /></p>
+
+<H2>Outer Tags</H2>
+
+<H3><tt>&lt;LevelData&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd>Top level of file.</dd>
+<dt>Contains:</dt>
+<dd><tt>&lt;Level&gt;</tt></dd>
+<dt>Attributes:</dt>
+<dd>none</dd>
+</dl></p>
+
+<p>The <tt>&lt;LevelData&gt;</tt> tag simply acts as the overall container for
+all the level's contents.</p>
+
+<H3><tt>&lt;Level&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;LevelData&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd><tt>&lt;Start&gt;</tt>, <tt>&lt;Poly&gt;</tt>, <tt>&lt;Rect&gt;</tt>,
+    <tt>&lt;Hole&gt;</tt>, <tt>&lt;Target&gt;</tt></dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>name</th> <td>string</td> <td>required</td> <td>The user-visible name of the level.</td>
+</tr>
+<tr>
+<th>group</th> <td>int</td> <td>required</td> <td>The difficulty group of the level.</td>
+</tr>
+<tr>
+<th>difficulty</th> <td>int</td> <td>required</td> <td>The relative difficulty within the group.</td>
+</tr>
+<tr>
+<th>time</th> <td>int</td> <td>required</td> <td>The permitted time to solve, in seconds.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Level&gt;</tt> tag wraps a level definition, and provides basic
+information about the level: name, difficulty, etc.</p>
+
+<p>Currently there can only be one <tt>&lt;Level&gt;</tt> tag in a file.</p>
+
+<p><hr /></p>
+
+<H2>Top-Level Tags</H2>
+
+<H3><tt>&lt;Start&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Level&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>x</th> <td>float</td> <td>required</td> <td>The X co-ordinate.</td>
+</tr>
+<tr>
+<th>y</th> <td>float</td> <td>required</td> <td>The Y co-ordinate.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Start&gt;</tt> tag defines the location within the level where
+the ball starts.  This is required, and there must be only one.</p>
+
+<H3><tt>&lt;Target&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Level&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>required</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>x</th> <td>float</td> <td>required</td> <td>The X co-ordinate.</td>
+</tr>
+<tr>
+<th>y</th> <td>float</td> <td>required</td> <td>The Y co-ordinate.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Target&gt;</tt> tag defines a location within the level.
+This can be used as a destination to teleport the ball to, for example.</p>
+
+<p>Note that the "id" attribute is mandatory; it is used to specify the
+target when used.</p>
+
+<H3><tt>&lt;Poly&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Level&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd><tt>&lt;Point&gt;</tt>, <tt>&lt;Wall&gt;</tt>, <tt>&lt;Draw&gt;</tt>,
+    <tt>&lt;OnCross&gt;</tt>, <tt>&lt;OnBounce&gt;</tt>,
+    <tt>&lt;WhileZone&gt;</tt></dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Poly&gt;</tt> tag defines an irregular polygon within the level.
+This polygon can act as a barrier (if it contains a <tt>&lt;Wall&gt;</tt> tag,
+visible if it contains a <tt>&lt;Draw&gt;</tt> tag); and/or it can act as a
+trigger for actions.  Note that it can not contain a <tt>&lt;Graphic&gt;</tt>,
+<tt>&lt;Anim&gt;</tt>, or <tt>&lt;Text&gt;</tt>, as it does not define
+a rectangular container -- use <tt>&lt;Rect&gt;</tt> for that.</p>
+
+<p>The shape of a <tt>&lt;Poly&gt;</tt> is defined by adding a set of
+<tt>&lt;Point&gt;</tt> objects to it.  There must be at least 3
+<tt>&lt;Point&gt;</tt> objects in each <tt>&lt;Poly&gt;</tt>.</p>
+
+<p>A <tt>&lt;Poly&gt;</tt> by itself does nothing -- it is invisible
+and does not interact with the ball.  Typical uses for this tag are:</p>
+
+<ul>
+<li><b>Wall:</b> make it a wall by adding both a <tt>&lt;Wall&gt;</tt> and
+    a <tt>&lt;Draw&gt;</tt> tag.  Optionally add an <tt>&lt;OnBounce&gt;</tt>
+    to trigger an action when the ball hits it.</li>
+<li><b>Trigger:</b> use the polygon as a trigger by adding
+	an <tt>&lt;OnCross&gt;</tt> to trigger an action when the ball crosses
+	the edge of the polygon inwards.</li>
+</ul>
+
+<p>Combinations of these may be used; and the attributes may be altered
+by actions.</p>
+
+<H3><tt>&lt;Rect&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Level&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd><tt>&lt;Wall&gt;</tt>, <tt>&lt;Draw&gt;</tt>,
+    <tt>&lt;OnCross&gt;</tt>, <tt>&lt;OnBounce&gt;</tt>,
+    <tt>&lt;WhileZone&gt;</tt>, <tt>&lt;Graphic&gt;</tt>,
+    <tt>&lt;Anim&gt;</tt>, <tt>&lt;Text&gt;</tt></dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>sx</th> <td>float</td> <td>required</td> <td>The left X co-ordinate.</td>
+</tr>
+<tr>
+<th>sy</th> <td>float</td> <td>required</td> <td>The top Y co-ordinate.</td>
+</tr>
+<tr>
+<th>ex</th> <td>float</td> <td>required</td> <td>The right X co-ordinate.</td>
+</tr>
+<tr>
+<th>ey</th> <td>float</td> <td>required</td> <td>The bottom Y co-ordinate.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Rect&gt;</tt> tag defines a rectangular polygon within the
+level.  This is essentially the same as a <tt>&lt;Poly&gt;</tt>, but
+being rectangular it can also be a container for a visual such as a
+<tt>&lt;Graphic&gt;</tt>, <tt>&lt;Anim&gt;</tt>, or <tt>&lt;Text&gt;</tt>.</p>
+
+<p>The uses described above for <tt>&lt;Poly&gt;</tt> can be combined with
+the addition of graphics.  For example, here's how to make a force field:</p>
+
+<p><pre>
+    &lt;Rect id="field" sx="9" sy="31.5" ex="12" ey="34.5"&gt;
+        &lt;Wall /&gt;
+        &lt;Anim id="force_field" type="force_field" /&gt;
+        &lt;OnBounce type="speed" value="3" /&gt;
+    &lt;/Rect&gt;
+</pre></p>
+
+<p>This creates a rectangle with an ID of "field".  It acts as a barrier
+due to the <tt>&lt;Wall&gt;</tt> tag, but doesn't draw itself.  Instead,
+it has an animation which displays the force field.  Finally, when the
+ball hits it, an action is triggered which speeds the ball up by a factor of
+3.</p>
+
+<H3><tt>&lt;Hole&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Level&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd><tt>&lt;OnCross&gt;</tt>, <tt>&lt;Graphic&gt;</tt>,
+    <tt>&lt;Anim&gt;</tt></dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>x</th> <td>float</td> <td>required</td> <td>The X co-ordinate of the hole's centre.</td>
+</tr>
+<tr>
+<th>y</th> <td>float</td> <td>required</td> <td>The Y co-ordinate of the hole's centre.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Hole&gt;</tt> tag defines a hole that the ball can fall into.
+The hole has a slope which tends to pull the ball in; once completely
+in, actions can be triggered by the use of <tt>&lt;OnCross&gt;</tt> tags.
+Typically a hole uses a <tt>&lt;Graphic&gt;</tt> or <tt>&lt;Anim&gt;</tt>
+to provide its appearance.</p>
+
+<p>For example, here's how to make a lethal lava pit:</p>
+
+<p><pre>
+    &lt;Hole x="16" y="18"&gt;
+        &lt;Anim id="top_lava" type="lava_hole" /&gt;
+        &lt;OnCross type="lose" message="@string/message_lava" /&gt;
+    &lt;/Hole&gt;
+</pre></p>
+
+<p><hr /></p>
+
+<H2>In-Object Tags</H2>
+
+<H3><tt>&lt;Wall&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Poly&gt;</tt>, <tt>&lt;Rect&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Wall&gt;</tt> tag, added to a polygon or rectangle,
+specifies that the polygon or rectangle acts as a barrier; when the
+ball hits it, it will bounce off, activating any <tt>&lt;OnBounce&gt;</tt>
+actions associated with the object.</p>
+
+<p>Without a <tt>&lt;Wall&gt;</tt> tag, the object will not impede the
+passage of the ball.</p>
+
+<H3><tt>&lt;Draw&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Poly&gt;</tt>, <tt>&lt;Rect&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>color</th> <td>color</td> <td>optional</td> <td>The base colour to
+draw the object with.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Draw&gt;</tt> tag, added to a polygon or rectangle,
+specifies that the polygon or rectangle will draw itself on the game
+board.  If a colour is supplied, that will be used as the base colour.
+Either way, decorative bevels and highlights are added.</p>
+
+<p>Without a <tt>&lt;Draw&gt;</tt> tag, the object will not draw itself.
+However, this does not affect contained <tt>&lt;Graphic&gt;</tt>,
+<tt>&lt;Anim&gt;</tt> and <tt>&lt;Text&gt;</tt> items.</p>
+
+<H3><tt>&lt;Graphic&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Rect&gt;</tt>, <tt>&lt;Hole&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>img</th> <td>imageid</td> <td>required</td> <td>The image to
+									draw the object with.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Graphic&gt;</tt> tag, added to a rectangle or hole,
+specifies a static graphic which will be drawn in the object's rectangle.
+This graphic is permanent; it can't be changed while the level is running,
+or turned off or on.</p>
+
+<H3><tt>&lt;Anim&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Rect&gt;</tt>, <tt>&lt;Hole&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>type</th> <td>string</td> <td>required</td> <td>The name of a supported
+								animation.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Anim&gt;</tt> tag, added to a rectangle or hole,
+specifies an animation which will be drawn in the object's rectangle.
+This animation can be turned off or on using an "on", "off" or "onoff"
+action; see below.</p>
+
+<p>There are a set number of animations supported; see the "Animations"
+section below.</p>
+
+<H3><tt>&lt;Text&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Rect&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>size</th> <td>float</td> <td>optional</td> <td>Relative size
+												for the text.</td>
+</tr>
+<tr>
+<th>text</th> <td>string</td> <td>required*</td> <td>The text to show.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;Text&gt;</tt> tag, added to a rectangle, draws a text
+message centred in the enclosing rectangle.</p>
+
+<p>The text parameter must be supplied, unless the ID is a special ID
+which causes it to be filled in automatically.  These special IDs are
+supported:</p>
+
+<p><table border="1" width="100%">
+<tr>
+<th><tt>$level</tt></th> <td>The level number and name.</td>
+</tr>
+</table></p>
+
+<p>Here's how to put in a "level name" header:</p>
+
+<p><pre>
+    &lt;Rect id="top_bar" sx="1.5" sy="4" ex="19" ey="7"&gt;
+        &lt;Wall /&gt;
+        &lt;Draw /&gt;
+        &lt;Text id="$level" size="1.6" /&gt;
+    &lt;/Rect&gt;
+</pre></p>
+
+<p>This creates a rectangle, which is a visible wall and hence forms part of
+the level.  Centred in the rectangle is the level name, 1.6 times bigger than
+the default size.</p>
+
+<p><hr /></p>
+
+<H2>Action Tags</H2>
+
+<H3><tt>&lt;OnCross&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Poly&gt;</tt>, <tt>&lt;Rect&gt;</tt>, <tt>&lt;Hole&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>type</th> <td>string</td> <td>required</td> <td>The type of action
+                                  to perform.</td>
+</tr>
+<tr>
+<th>message</th> <td>string</td> <td>optional</td> <td>A text message
+						to display, if appropriate.</td>
+</tr>
+<tr>
+<th>value</th> <td>float</td> <td>optional</td> <td>Value for the action;
+						depends on the action type.</td>
+</tr>
+<tr>
+<th>target</th> <td>string</td> <td>optional</td> <td>ID of the target object
+						for the action, if appropriate.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;OnCross&gt;</tt> tag, added to a polygon, rectangle or hole,
+specifies an action to be performed when the ball crosses into the
+object.  For a polygon or rectangle, this is triggered when the ball's
+edge crosses the visible edge of the object inwards (not outwards); for
+a hole, when the ball passes completely inside the hole (now when it passes
+out again).</p>
+
+<p>There may be multiple <tt>&lt;OnCross&gt;</tt> tags attached to any
+object.  Note that this action cannot be triggered as long as the
+object is configured to block the ball.</p>
+
+<H3><tt>&lt;OnBounce&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Poly&gt;</tt>, <tt>&lt;Rect&gt;</tt>, <tt>&lt;Hole&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>type</th> <td>string</td> <td>required</td> <td>The type of action
+                                  to perform.</td>
+</tr>
+<tr>
+<th>message</th> <td>string</td> <td>optional</td> <td>A text message
+						to display, if appropriate.</td>
+</tr>
+<tr>
+<th>value</th> <td>float</td> <td>optional</td> <td>Value for the action;
+						depends on the action type.</td>
+</tr>
+<tr>
+<th>target</th> <td>string</td> <td>optional</td> <td>ID of the target object
+						for the action, if appropriate.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;OnBounce&gt;</tt> tag, added to a polygon or rectangle,
+specifies an action to be performed when the ball bounces off the
+object.</p>
+
+<p>There may be multiple <tt>&lt;OnCross&gt;</tt> tags attached to any
+object.  Note that this action can only be triggered as long as the
+object is configured to block the ball.</p>
+
+<H3><tt>&lt;WhileZone&gt;</tt></H3>
+
+<p><dl>
+<dt>Contained in:</dt>
+<dd><tt>&lt;Rect&gt;</tt></dd>
+<dt>Contains:</dt>
+<dd>none</dd>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>id</th> <td>string</td> <td>optional</td> <td>The ID of this object.</td>
+</tr>
+<tr>
+<th>type</th> <td>string</td> <td>required</td> <td>The type of action
+                                  to perform.</td>
+</tr>
+<tr>
+<th>message</th> <td>string</td> <td>optional</td> <td>A text message
+						to display, if appropriate.</td>
+</tr>
+<tr>
+<th>value</th> <td>float</td> <td>optional</td> <td>Value for the action;
+						depends on the action type.</td>
+</tr>
+<tr>
+<th>target</th> <td>string</td> <td>optional</td> <td>ID of the target object
+						for the action, if appropriate.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>The <tt>&lt;WhileZone&gt;</tt> tag, attached to a rectangle,
+may do something one day.</p>
+
+<p>There may be multiple <tt>&lt;WhileZone&gt;</tt> tags attached to any
+rectangle.  Note that this action cannot be triggered as long as the
+object is configured to block the ball.</p>
+
+<p><hr /></p>
+
+<H2>Actions</H2>
+
+<p>The following action types are supported.</p>
+
+<H3><tt>speed</tt></H3>
+
+<p><dl>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>value</th> <td>float</td> <td>required</td> <td>Factor to multiply
+					the ball's speed by.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>This action causes the ball to speed up or slow down.  The "value"
+attribute specifies how much; e.g. 0.5 would halve the ball's speed,
+3.0 multiplies it by 3.</p>
+
+<H3><tt>accel</tt></H3>
+
+<p><dl>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+</table>
+</dd>
+</dl></p>
+
+<p>Not currently for general use.</p>
+
+<H3><tt>teleport</tt></H3>
+
+<p><dl>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>target</th> <td>string</td> <td>required</td> <td>The ID of a
+				<tt>&lt;Target&gt;</tt> to which the ball will teleport.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>This action instantly teleports the ball to a location specified
+by a <tt>&lt;Target&gt;</tt> tag.  For example, this is how to make a
+hole that teleports the ball:</p>
+
+<p><pre>
+    &lt;Target x="12" y="2.5" id="tele" /&gt;
+    &lt;Hole x="3" y="21"&gt;
+        &lt;Anim id="tport" type="teleport_hole" /&gt;
+        &lt;OnCross type="teleport" target="tele" /&gt;
+    &lt;/Hole&gt;
+</pre></p>
+
+<p>This defines a target with ID "tele", then defines a hole which displays
+a "teleport" animation.  The hole has an action set to trigger when the
+ball basses completely inside, which teleports the ball to "tele".</p>
+
+<H3><tt>off</tt></H3>
+
+<p><dl>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>target</th> <td>string</td> <td>required</td> <td>The ID of an object.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>This action disables the target object.  The effects of this depend
+on the object.  For a <tt>&lt;Poly&gt;</tt> or <tt>&lt;Rect&gt;</tt>,
+the effect is to turn off the blocking walls; for an <tt>&lt;Anim&gt;</tt>,
+it becomes invisible.</p>
+
+<H3><tt>on</tt></H3>
+
+<p><dl>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>target</th> <td>string</td> <td>required</td> <td>The ID of an object.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>This action enables the target object.  The effects of this depend
+on the object.  For a <tt>&lt;Poly&gt;</tt> or <tt>&lt;Rect&gt;</tt>,
+the effect is to turn on the blocking walls; note that this can only
+take effect if the object has a <tt>&lt;Wall&gt;</tt> tag.  For
+an <tt>&lt;Anim&gt;</tt> object, this action turns it on and makes it
+visible.</p>
+
+<H3><tt>onoff</tt></H3>
+
+<p><dl>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>target</th> <td>string</td> <td>required</td> <td>The ID of an object.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>This action toggles the enable state of the target object.  The effects
+of this are as described above.</p>
+
+<p>Continuing the force field example above, here's how to make a force
+field that is turned on or off when the ball rolls over a pad:
+
+<p><pre>
+    &lt;Rect id="field" sx="9" sy="31.5" ex="12" ey="34.5"&gt;
+        &lt;Wall /&gt;
+        &lt;Anim id="force_field" type="force_field" /&gt;
+        &lt;OnBounce type="speed" value="3" /&gt;
+    &lt;/Rect&gt;
+		
+    &lt;Rect sx="11" sy="24" ex="13" ey="26"&gt;
+        &lt;Graphic id="pad" img="@drawable/pad" /&gt;
+        &lt;OnCross type="onoff" target="field" /&gt;
+        &lt;OnCross type="onoff" target="force_field" /&gt;
+    &lt;/Rect&gt;
+</pre></p>
+
+<p>This defines a rectangle "field" which acts as the force field.  It is
+a barrier to the ball, but doesn't draw itself.  Instead, it contains a
+force field animation.  Its <tt>&lt;OnBounce&gt;</tt> action gives the ball
+a speed zap when hit.</pp>
+
+<p>Then we define the floor switch.  This is another rect, but it is not
+a wall.  Its appearance is provided by a "pad" graphic, and it has two
+actions that are fired when the ball crosses it.  The first disables the
+"field" rectangle; this makes "field" no longer a barrier, and also prevents
+its <tt>&lt;OnBounce&gt;</tt> action from being triggered.  The second
+pad action disables the "force_field" animation, so that the force field
+becomes invisible.  The second time the ball rolls over the pad, the
+effects are reversed.</p>
+
+<H3><tt>lose</tt></H3>
+
+<p><dl>
+<dt>Attributes:</dt>
+<dd>
+<table border="1" width="100%">
+<tr>
+<th>message</th> <td>string</td> <td>required</td> <td>A text message
+					to display to the user.</td>
+</tr>
+</table>
+</dd>
+</dl></p>
+
+<p>This action immediately terminates the level with the player losing.</p>
+
+<p>See the "lava pit" example under <tt>&lt;Hole&gt;</tt> above.
+
+<H3><tt>win</tt></H3>
+
+<p><dl>
+<dt>Attributes:</dt>
+<dd>none extra</dd>
+</dl></p>
+
+<p>This action immediately terminates the level with the player winning.</p>
+
+<p>Here's how to make an exit hole:</p>
+
+<p><pre>
+    &lt;Hole x="21.5" y="33"&gt;
+        &lt;Anim id="exit" type="exit_hole" /&gt;
+        &lt;OnCross type="win" /&gt;
+    &lt;/Hole&gt;
+</pre></p>
+
+<p><hr /></p>
+
+<H2>Animations</H2>
+
+<p>The following animation types are supported.</p>
+
+<H3><tt>speed</tt></H3>
+
+</body>
+</html>

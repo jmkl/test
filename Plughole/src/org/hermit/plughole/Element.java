@@ -70,6 +70,7 @@ abstract class Element
 	 * 						false, the child is actually a sibling; it
 	 * 						has not been added here, and needs to be
 	 * 						added to the parent.
+     * @throws LevelException 
 	 */
 	boolean addChild(XmlPullParser p, String tag, Object child)
 		throws LevelException
@@ -82,6 +83,7 @@ abstract class Element
 	 * Add an action to this element.  This is used during level parsing.
 	 * 
 	 * @param	act 		The action to add.
+     * @throws LevelException 
 	 */
 	void addAction(Action act)
 		throws LevelException
@@ -103,6 +105,7 @@ abstract class Element
      * 
      * @param   p           The parser the level is being read from.
      * @param   map         Mapping of object IDs to objects.
+     * @throws LevelException 
      */
     void resolveRefs(XmlPullParser p, HashMap<String, Element> map)
         throws LevelException
@@ -124,8 +127,11 @@ abstract class Element
 	 * <p>The default implementation does nothing.  Subclasses
 	 * can override this if they wish. Subclass implementations <b>must</b>
 	 * call through to this base implementation as their first action.
+     * 
+     * @param   p           The parser the level is being read from.
+     * @throws LevelException 
 	 */
-	void finished() {
+	void finished(XmlPullParser p) throws LevelException {
 	}
 	
 	

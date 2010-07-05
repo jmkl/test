@@ -437,7 +437,7 @@ class LevelReader {
 					parent.addChild(p, tag, child);
 		        eventType = p.nextTag();
 			}
-			elem.finished();
+			elem.finished(p);
 		}
 
 		// Check the close tag.  If we're at an open tag, produce
@@ -752,8 +752,8 @@ class LevelReader {
         case ON:
         case ONOFF:
 		    if (!attrs.containsKey("target"))
-		        throw new LevelException(p, "\"teleport\" action requires" +
-		                                    " a \"target\" attribute");
+		        throw new LevelException(p, "\"" + tname + "\" action" +
+		                                    " requires a \"target\" attribute");
 		    action.setTarget(attrs.getString("target"));
 		    break;
 		default:
@@ -954,30 +954,30 @@ class LevelReader {
 	private static final HashMap<String, Character> typeMap =
 									new HashMap<String, Character>();
 	static {
+        typeMap.put("id", 'S');
+        typeMap.put("name", 'S');
+        typeMap.put("group", 'I');
+        typeMap.put("difficulty", 'I');
+        typeMap.put("time", 'I');
 		typeMap.put("x", 'F');
 		typeMap.put("y", 'F');
 		typeMap.put("sx", 'F');
 		typeMap.put("sy", 'F');
 		typeMap.put("ex", 'F');
 		typeMap.put("ey", 'F');
-        typeMap.put("value", 'F');
-		typeMap.put("size", 'F');
-		typeMap.put("name", 'S');
-		typeMap.put("img", '#');
-		typeMap.put("id", 'S');
-		typeMap.put("ref", 'S');
-		typeMap.put("target", 'S');
-		typeMap.put("group", 'I');
-		typeMap.put("difficulty", 'I');
-		typeMap.put("time", 'I');
-		typeMap.put("type", 'S');
-        typeMap.put("action", 'S');
-		typeMap.put("text", 'S');
+        typeMap.put("color", 'C');
+        typeMap.put("type", 'S');
         typeMap.put("message", 'S');
+        typeMap.put("value", 'F');
+        typeMap.put("target", 'S');
+        typeMap.put("img", '#');
+		typeMap.put("size", 'F');
+		typeMap.put("text", 'S');
+		
+        typeMap.put("ref", 'S');
 		typeMap.put("norotate", 'B');
 		typeMap.put("vertical", 'B');
         typeMap.put("initial", 'B');
-        typeMap.put("color", 'C');
 	}
 
 	
