@@ -256,7 +256,7 @@ public final class EditPanel
     // ******************************************************************** //
 
     /**
-     * 
+     * UUID.
      */
     private static final long serialVersionUID = -8180953789572225102L;
 
