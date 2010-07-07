@@ -139,6 +139,11 @@ public abstract class SurfaceRunner
         surfaceHolder.addCallback(this);
         setFocusable(true);
         setFocusableInTouchMode(true);
+        
+        // Workaround for edge fading -- sometimes after repeated orientation
+        // changes one edge will fade; this fixes it.
+        setHorizontalFadingEdgeEnabled(false);
+        setVerticalFadingEdgeEnabled(false);
     }
     
 
