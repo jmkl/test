@@ -62,8 +62,6 @@ abstract class GridView
     	appDisplay = windowManager.getDefaultDisplay();
 
         trackedPointers = new Pointer[MAX_POINTER_ID];
-        for (int i = 0; i < MAX_POINTER_ID; ++i)
-            trackedPointers[i] = new Pointer();
 
         paint = new Paint();
         paint.setTextSize(20f);
@@ -211,6 +209,9 @@ abstract class GridView
 
 
     protected Pointer getPointer(int id) {
+    	if (trackedPointers[id] == null)
+    		trackedPointers[id] = new Pointer();
+
         return trackedPointers[id];
     }
     
@@ -291,7 +292,7 @@ abstract class GridView
         // Draw the user's fingers.
         for (int i = 0; i < MAX_POINTER_ID; ++i) {
             Pointer rec = trackedPointers[i];
-            if (!rec.seen)
+            if (rec == null || !rec.seen)
                 continue;
         	int col = POINTER_COLOURS[i % POINTER_COLOURS.length];
             paint.setStyle(Paint.Style.FILL);
@@ -347,10 +348,10 @@ abstract class GridView
     	return "?<" + val + ">?";
     }
     
+    // The maximum pointer index we can handle.
+    protected static final int MAX_POINTER_ID = 256;
     
-    protected static final int MAX_POINTER_ID = 8;
-    
-    
+    // Structure representing a pointer.
     protected class Pointer {
         boolean seen = false;
         boolean down = false;
