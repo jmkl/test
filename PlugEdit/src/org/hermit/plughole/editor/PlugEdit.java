@@ -24,12 +24,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.net.URL;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -43,7 +43,6 @@ import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
@@ -71,7 +70,8 @@ public class PlugEdit
         // Create all of our GUI actions and dialogs.
         makeActions();
         makeDialogs();
-
+        setIconImage(getIcon(ICONDIR + "/plugedit.png").getImage());
+        
         // Add the menus.
         setJMenuBar(makeMenuBar());
 
@@ -82,21 +82,18 @@ public class PlugEdit
         // Add the main GUI.
         pane.add(makeMainPanel(), BorderLayout.CENTER);
 
+        // Add the status bar.
+        pane.add(makeStatusBar(), BorderLayout.SOUTH);
+
         // Handle window events on this frame.
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(this);
 
         pack();
-        setTitle("Wordy");
+        setTitle("PlugEdit");
         setVisible(true);
 
-        // Make the dictionary.
-        try {
-//            dictionary = new Dictionary(new File(DEF_DICT));
-        }
-        catch (java.lang.Exception e) {
-            reportException(e);
-        }
+        // General init.
     }
 
 
@@ -109,6 +106,7 @@ public class PlugEdit
      */
     private void makeDialogs() {
         fileChooser = new JFileChooser(System.getProperty("user.dir"));
+        propsEditor = new LevelProps(this);
     }
 
 
@@ -116,35 +114,48 @@ public class PlugEdit
      * Make the GUI actions.
      */
     private void makeActions() {
-        fileNew = new AbstractAction("Open...") {
+        fileNew = new AbstractAction("New Level...") {
             public void actionPerformed(ActionEvent e) { fileNew(); }
             private static final long serialVersionUID = 1L;
         };
-        fileNew.putValue(Action.SMALL_ICON,
-                         new ImageIcon(ICONDIR + "actions/filenew.png"));
+        fileNew.putValue(Action.SMALL_ICON, getIcon(ICONDIR + "/filenew.png"));
         fileNew.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
         fileNew.putValue(Action.SHORT_DESCRIPTION, "Create a new level");
 
-        fileOpen = new AbstractAction("Open...") {
+        fileOpen = new AbstractAction("Open Level...") {
             public void actionPerformed(ActionEvent e) { fileOpen(); }
             private static final long serialVersionUID = 1L;
         };
-        fileOpen.putValue(Action.SMALL_ICON,
-                          new ImageIcon(ICONDIR + "actions/fileopen.png"));
+        fileOpen.putValue(Action.SMALL_ICON, getIcon(ICONDIR + "/fileopen.png"));
         fileOpen.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_O));
         fileOpen.putValue(Action.SHORT_DESCRIPTION, "Load a level from a file");
+
+        fileProps = new AbstractAction("Properties...") {
+            public void actionPerformed(ActionEvent e) { fileProps(); }
+            private static final long serialVersionUID = 1L;
+        };
+        fileProps.putValue(Action.SMALL_ICON, getIcon(ICONDIR + "/fileprops.png"));
+        fileProps.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
+        fileProps.putValue(Action.SHORT_DESCRIPTION, "Edit the level's properties");
 
         fileQuit = new AbstractAction("Quit") {
             public void actionPerformed(ActionEvent e) { fileQuit(); }
             private static final long serialVersionUID = 1L;
         };
-        fileQuit.putValue(Action.SMALL_ICON,
-                          new ImageIcon(ICONDIR + "actions/fileclose.png"));
+        fileQuit.putValue(Action.SMALL_ICON, getIcon(ICONDIR + "/exit.png"));
         fileQuit.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_Q));
         fileQuit.putValue(Action.SHORT_DESCRIPTION, "Quit this application");
     }
 
 
+    private ImageIcon getIcon(String path) {
+    	URL imgURL = getClass().getResource(path);
+    	if (imgURL != null)
+    		return new ImageIcon(imgURL);
+    	throw new RuntimeException("Can't find resources for " + path);
+    }
+
+    
     /**
      * Make the menu bar.
      *
@@ -161,6 +172,7 @@ public class PlugEdit
 
         menu.add(new JMenuItem(fileNew));
         menu.add(new JMenuItem(fileOpen));
+        menu.add(new JMenuItem(fileProps));
         menu.add(new JMenuItem(fileQuit));
 
         // Build the "Level" menu.
@@ -182,8 +194,11 @@ public class PlugEdit
 
         toolBar.add(fileNew);
         toolBar.add(fileOpen);
+        toolBar.add(fileProps);
 
         toolBar.addSeparator();
+        
+        toolBar.add(fileQuit);
 
         return toolBar;
     }
@@ -203,10 +218,6 @@ public class PlugEdit
         panel.rowWeight(1);
         panel.add(makeControls());
         panel.add(new EditPanel(this), 1, true, true);
-
-        panel.newRow();
-        panel.rowWeight(0);
-        panel.add(makeStatusBar(), 2, true, false);
 
         return panel;
     }
@@ -235,31 +246,28 @@ public class PlugEdit
 
         panel.widthMult(2);
 
-        // If we're not in julia mode, make the function choice and label.
-        // (In julia mode, the function is driven from the map fractal
-        // window.)  Note that calling addItem fires an ActionEvent, so
-        // add the listener after adding the items.
-        panel.newRow();
-        panel.add(lettersField = new JTextField("", 14), 2, true, false);
+        panel.newRow("Level name:");
+        panel.add(levelNameField = new JTextField("", 10), true);
 
-        panel.newRow();
-        panel.add(allCheckbox = new JCheckBox("Use all letters"));
-        allCheckbox.setSelected(true);
+        panel.newRow("Group:");
+        levelGroupSpin = new JSpinner(new SpinnerNumberModel(1, 1, 64, 1));
+        panel.add(levelGroupSpin);
 
-        panel.newRow();
-        panel.add(apostCheckbox = new JCheckBox("Allow apsotrophes"));
+        panel.newRow("Level:");
+        levelDiffSpin = new JSpinner(new SpinnerNumberModel(1, 1, 64, 1));
+        panel.add(levelDiffSpin);
 
-        panel.newRow();
-        panel.add(containCheckbox = new JCheckBox("Contains:"));
-        panel.add(containField = new JTextField("", 10), true);
+        panel.newRow("Grid width:");
+        gridWidthSpin = new JSpinner(new SpinnerNumberModel(24, 1, 80, 1));
+        panel.add(gridWidthSpin);
 
-        panel.newRow();
-        panel.add(patternCheckbox = new JCheckBox("Pattern:"));
-        panel.add(patternField = new JTextField("", 10), true);
+        panel.newRow("Grid height:");
+        gridHeightSpin = new JSpinner(new SpinnerNumberModel(36, 1, 100, 1));
+        panel.add(gridHeightSpin);
 
-        panel.newRow("Max words:");
-        maxWordsSpin = new JSpinner(new SpinnerNumberModel(2, 1, 255, 1));
-        panel.add(maxWordsSpin);
+        panel.newRow("Time:");
+        levelTimeSpin = new JSpinner(new SpinnerNumberModel(80, 1, 300, 1));
+        panel.add(levelTimeSpin);
 
         return panel;
     }
@@ -351,6 +359,19 @@ public class PlugEdit
             int returnVal = fileChooser.showOpenDialog(this);
             /*      if (returnVal == JFileChooser.APPROVE_OPTION)
     loadFile(fileChooser.getSelectedFile());*/
+        }
+        catch (java.lang.Exception e) {
+            reportException(e);
+        }
+    }
+
+
+    /**
+     * Pop up the level properties editor.
+     */
+    private void fileProps() {
+        try {
+        	propsEditor.setVisible(true);
         }
         catch (java.lang.Exception e) {
             reportException(e);
@@ -476,14 +497,7 @@ public class PlugEdit
     /**
      * Directory where we get icons from.
      */
-    private static final String ICONDIR =
-        "/opt/kde3/share/icons/crystalsvg/16x16/";
-
-    /**
-     * Default dictionary; null to use an's built-in default.
-     */
-    private static final String DEF_DICT =
-        "/usr/share/dict/british-80.scowl6";
+    private static final String ICONDIR = "icons";
 
 
     // ******************************************************************** //
@@ -491,30 +505,28 @@ public class PlugEdit
     // ******************************************************************** //
 
     /*
-     * GUI widgets.
-     */
-    private JTextField lettersField = null;
-    private JCheckBox allCheckbox = null;
-    private JCheckBox apostCheckbox = null;
-    private JCheckBox containCheckbox = null;
-    private JTextField containField = null;
-    private JCheckBox patternCheckbox = null;
-    private JTextField patternField = null;
-    private JSpinner maxWordsSpin = null;
-    private JLabel statusLabel = null;
-    private JTable resultsTable = null;
-
-    /*
-     * Actions.
+     * GUI Actions.
      */
     private Action fileNew = null;
     private Action fileOpen = null;
+    private Action fileProps = null;
     private Action fileQuit = null;
-
+    
     /*
-     * Dialogs.
+     * GUI widgets.
      */
+    private JTextField levelNameField = null;
+    private JSpinner levelGroupSpin = null;
+    private JSpinner levelDiffSpin = null;
+    private JSpinner gridWidthSpin = null;
+    private JSpinner gridHeightSpin = null;
+    private JSpinner levelTimeSpin = null;
+    private JLabel statusLabel = null;
+    private JTable resultsTable = null;
+
+    // Dialogs.
     private JFileChooser fileChooser = null;
+    private LevelProps propsEditor = null;
 
 }
 
