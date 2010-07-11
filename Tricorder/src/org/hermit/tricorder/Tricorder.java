@@ -155,6 +155,9 @@ public class Tricorder
 
         // Restore our preferences.
         updatePreferences();
+        
+        // Get ready to go to the first screen.
+        pendingView = ViewDefinition.GRA;
     }
 
 
@@ -228,8 +231,10 @@ public class Tricorder
         
         // If this is the first time through, set the initial view.
         // This also starts it so it gets updates.
-        if (currentView == null)
-            selectDataView(ViewDefinition.GRA);
+        if (pendingView != null) {
+            selectDataView(pendingView);
+            pendingView = null;
+        }
     }
 
 
@@ -795,7 +800,7 @@ public class Tricorder
         String v = icicle.getString("currentView");
         try {
             ViewDefinition vdef = ViewDefinition.valueOf(v);
-            selectDataView(vdef);
+            pendingView = vdef;
         } catch (IllegalArgumentException e) { }
         
         mainView.restoreState(icicle);
@@ -831,6 +836,9 @@ public class Tricorder
     
     // The currently selected view.
     private ViewDefinition currentView = null;
+
+    // If not null, the view which needs to be selected when we get resumed.
+    private ViewDefinition pendingView = null;
 
 	// Vertical navigation bar width, top bar height.
 	private int navBarWidth;
