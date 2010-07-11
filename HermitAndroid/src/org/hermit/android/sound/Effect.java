@@ -38,14 +38,15 @@ public class Effect
      * or {@link Player#addEffect(int, float)}.
      * 
      * @param   player     The Player this effect belongs to.
-     * @param   id         Player's ID of this effect.
+     * @param   resId      Resource ID of the sound sample for this effect.
      * @param   vol        Base volume for this effect (used to modify the
      *                     sound file's inherent volume, if needed).  1 is
      *                     normal.
      */
-    Effect(Player player, int id, float vol) {
+    Effect(Player player, int resId, float vol) {
         soundPlayer = player;
-        playerSoundId = id;
+        clipResourceId = resId;
+        playerSoundId = -1;
         playVol = vol;
     }
     
@@ -55,14 +56,56 @@ public class Effect
 	// ******************************************************************** //
 
     /**
+     * Get the resource ID of the sound sample for this effect.
+     * 
+     * @return              Resource ID of the sound sample for this effect.
+     */
+    final int getResourceId() {
+        return clipResourceId;
+    }
+
+
+    /**
      * Get the player's ID for this sound.
      * 
-     * @return              Player's ID of this effect.
+     * @return              Player's ID of this effect.  -1 f we don't have
+     *                      one.
      */
     final int getSoundId() {
         return playerSoundId;
     }
 
+    
+    /**
+     * Set the player's ID for this sound.
+     * 
+     * @param   id          Player's ID of this effect.  -1 f we don't have
+     *                      one.
+     */
+    final void setSoundId(int id) {
+        playerSoundId = id;
+    }
+    
+
+    /**
+     * Get the playing stream ID for this sound.
+     * 
+     * @return              Playing stream of this effect.  0 if not playing.
+     */
+    final int getStreamId() {
+        return streamId;
+    }
+
+    
+    /**
+     * Set the playing stream for this sound.
+     * 
+     * @param   id          Playing stream of this effect.  0 if not playing.
+     */
+    final void setStreamId(int id) {
+        streamId = id;
+    }
+    
 
     /**
      * Get the effect's volume.
@@ -92,7 +135,7 @@ public class Effect
      * Play this sound effect.
      */
     public void play() {
-        play(1f, false);
+        soundPlayer.play(this, playVol, false);
     }
 
 
@@ -102,7 +145,7 @@ public class Effect
      * @param   rvol            Relative volume for this sound, 0 - 1.
      */
     public void play(float rvol) {
-        play(rvol, false);
+        soundPlayer.play(this, rvol * playVol, false);
     }
 
 
@@ -110,7 +153,7 @@ public class Effect
      * Start playing this sound effect in a continuous loop.
      */
     public void loop() {
-        play(1f, true);
+        soundPlayer.play(this, playVol, true);
     }
 
 
@@ -121,7 +164,7 @@ public class Effect
      * @param   loop            If true, loop the sound forever.
      */
     void play(float rvol, boolean loop) {
-        streamId = soundPlayer.play(this, rvol * playVol, loop);
+        soundPlayer.play(this, rvol * playVol, loop);
     }
 
     
@@ -129,10 +172,7 @@ public class Effect
      * Stop this sound effect immediately.
      */
     public void stop() {
-        if (streamId != 0) {
-            soundPlayer.stop(streamId);
-            streamId = 0;
-        }
+        soundPlayer.stop(this);
     }
 
 
@@ -153,11 +193,15 @@ public class Effect
 	// The player this effect is attached to.
 	private final Player soundPlayer;
 
-    // Sound ID of this effect in the sound player.
-    private final int playerSoundId;
-
     // Base volume for this effect.
     private float playVol;
+
+    // Resource ID of the effect's audio clip.
+    private final int clipResourceId;
+
+    // Sound ID of this effect in the sound player.  -1 if not set; e.g.
+    // we don't currently have a media connection.
+    private int playerSoundId;
 
     // Stream ID of the stream which is playing this effect; 0
     // if it's not playing.
