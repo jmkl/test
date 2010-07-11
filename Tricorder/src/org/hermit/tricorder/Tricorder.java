@@ -274,6 +274,8 @@ public class Tricorder
         // Let go the wake lock if we have it.
         if (wakeLock != null && wakeLock.isHeld())
             wakeLock.release();
+        
+        effectsPlayer.stopAll();
     }
 
 
