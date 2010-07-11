@@ -20,6 +20,8 @@
 package org.hermit.android.sound;
 
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -57,6 +59,7 @@ public class Player
     public Player(Context context, int streams) {
         appContext = context;
         soundPool = new SoundPool(streams, AudioManager.STREAM_MUSIC, 0);
+        soundEffects = new ArrayList<Effect>();
     }
 
 
@@ -86,7 +89,9 @@ public class Player
      */
     public Effect addEffect(int sound, float vol) {
         int id = soundPool.load(appContext, sound, 1);
-        return new Effect(this, id, vol);
+        Effect effect = new Effect(this, id, vol);
+        soundEffects.add(effect);
+        return effect;
     }
 
 
@@ -165,6 +170,15 @@ public class Player
     }
     
 
+    /**
+     * Stop all streams.
+     */
+    public void stopAll() {
+    	for (Effect e : soundEffects)
+            e.stop();
+    }
+    
+
 	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
@@ -183,6 +197,9 @@ public class Player
     
     // Sound pool used for sound effects.
     private final SoundPool soundPool;
+    
+    // All sound effects.
+    private ArrayList<Effect> soundEffects;
     
 	// Current overall sound gain.  If zero, sounds are suppressed.
 	private float soundGain = 1f;
