@@ -155,9 +155,6 @@ public class Tricorder
 
         // Restore our preferences.
         updatePreferences();
-         
-        // Set the initial view.  This also starts it so it gets updates.
-		selectDataView(ViewDefinition.GRA);
     }
 
 
@@ -215,6 +212,8 @@ public class Tricorder
         
         super.onResume();
         
+        effectsPlayer.resume();
+        
         // Show the "new features" dialog.
         versionDialog.showFirst();
         
@@ -226,6 +225,11 @@ public class Tricorder
 
         // Just start straight away.
         mainView.surfaceStart();
+        
+        // If this is the first time through, set the initial view.
+        // This also starts it so it gets updates.
+        if (currentView == null)
+            selectDataView(ViewDefinition.GRA);
     }
 
 
@@ -275,7 +279,7 @@ public class Tricorder
         if (wakeLock != null && wakeLock.isHeld())
             wakeLock.release();
         
-        effectsPlayer.stopAll();
+        effectsPlayer.suspend();
     }
 
 
