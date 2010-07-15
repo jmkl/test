@@ -21,6 +21,9 @@ need to set it as follows:\n\
 • Select \"Wallpaper\", then \"Live wallpapers\".\n\
 • Pick your preferred wallpaper.\n\
 \n\
+If there is no \"Live wallpapers\" option, this means your device does
+not support live wallpapers.  You will not be able to use Substrate.\n\
+\n\
 For more information, please read the help available in this application\'s
 menu.\n</string>
 
