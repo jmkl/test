@@ -315,7 +315,10 @@ it as follows:\n\
 • Go to your home screen.\n\
 • Press the menu key.\n\
 • Select \"Wallpaper\", then \"Live wallpapers\".\n\
-• Pick your preferred wallpaper.</item>
+• Pick your preferred wallpaper.\n\
+\n\
+If there is no \"Live wallpapers\" option, this means your device does
+not support live wallpapers.  You will not be able to use Substrate.</item>
 
 <item>Within the Substrate application, the device\'s \"menu\" button pops
 up a menu containing a number of options:\n\
