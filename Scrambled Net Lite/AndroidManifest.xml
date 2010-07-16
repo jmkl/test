@@ -30,7 +30,7 @@
     		android:description="@string/description"
     		android:debuggable="false">
     		
-        <activity android:name="NetScramble" android:label="@string/title" android:launchMode="singleTop">
+        <activity android:name="NetScramble" android:label="@string/title" android:launchMode="singleTop" android:alwaysRetainTaskState="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
