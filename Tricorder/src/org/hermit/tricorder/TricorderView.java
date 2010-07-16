@@ -145,7 +145,8 @@ class TricorderView
     	    	vdef.view = new AudioView(context, this);
     	        break;
     		case GEO:
-    	    	vdef.view = new GeoView(context, this, sm);
+    		    geoView = new GeoView(context, this, sm);
+    	    	vdef.view = geoView;
     	        break;
     		case COM:
     	    	vdef.view = new CommView(context, this);
@@ -209,6 +210,7 @@ class TricorderView
     	Display disp = wm.getDefaultDisplay();
         gravView.setRotation(disp.getOrientation());
         magView.setRotation(disp.getOrientation());
+        geoView.setRotation(disp.getOrientation());
     }
     
 
@@ -461,9 +463,10 @@ class TricorderView
 	// Out application context.
 	private Tricorder appContext;
     
-    // The Grav and Mag views.
+    // The Grav, Mag and Geo views.
     private TridataView gravView = null;
     private TridataView magView = null;
+    private GeoView geoView;
 
     // True if we are running.
     private boolean enabled = false;

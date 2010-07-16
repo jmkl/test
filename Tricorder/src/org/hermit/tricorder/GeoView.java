@@ -39,6 +39,7 @@ import android.location.LocationProvider;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.Surface;
 
 
 /**
@@ -228,6 +229,31 @@ class GeoView
         satElement.setGeometry(satBounds);
     }
 
+    
+    /**
+     * Set the device rotation, so that we
+     * can adjust the sensor axes to match the screen axes.
+     * 
+     * @param   rotation    Device rotation, as one of the
+     *                      Surface.ROTATION_XXX flags.
+     */
+    public void setRotation(int rotation) {
+        switch (rotation) {
+        case Surface.ROTATION_0:
+            deviceTransformation = TRANSFORM_0;
+            break;
+        case Surface.ROTATION_90:
+            deviceTransformation = TRANSFORM_90;
+            break;
+        case Surface.ROTATION_180:
+            deviceTransformation = TRANSFORM_180;
+            break;
+        case Surface.ROTATION_270:
+            deviceTransformation = TRANSFORM_270;
+            break;
+        }
+    }
+    
 
     // ******************************************************************** //
     // Configuration.
@@ -580,15 +606,11 @@ class GeoView
             if (type == Sensor.TYPE_ACCELEROMETER) {
                 if (accelValues == null)
                     accelValues = new float[3];
-                accelValues[0] = values[0];
-                accelValues[1] = values[1];
-                accelValues[2] = values[2];
+                multiply(values, deviceTransformation, accelValues);
             } else if (type == Sensor.TYPE_MAGNETIC_FIELD) {
                 if (magValues == null)
                     magValues = new float[3];
-                magValues[0] = values[0];
-                magValues[1] = values[1];
-                magValues[2] = values[2];
+                multiply(values, deviceTransformation, magValues);
             }
             checkGeomag();
             if (accelValues == null || magValues == null || geomagneticField == null)
@@ -611,6 +633,19 @@ class GeoView
             satElement.setAzimuth(azimuth + dec, dec);
         } catch (Exception e) {
             appContext.reportException(e);
+        }
+    }
+
+    
+    /*
+     * Result[x] = vals[0]*tran[x][0] * vals[1]*tran[x][1] * vals[2]*tran[x][2].
+     */
+    private static final void multiply(float[] vals, int[][] tran, float[] result) {
+        for (int x = 0; x < 3; ++x) {
+            float r = 0;
+            for (int y = 0; y < 3; ++y)
+                r += vals[y] * tran[x][y];
+            result[x] = r;
         }
     }
 
@@ -702,6 +737,28 @@ class GeoView
     // Time in ms for which cached geomagnetic data is valid.
     private static final int GEOMAG_CACHE_TIME = 2 * 3600 * 1000;
     
+    // Co-ordinate transformations.
+    private static final int[][] TRANSFORM_0 = {
+        {  1,  0,  0 },
+        {  0,  1,  0 },
+        {  0,  0,  1 },
+    };
+    private static final int[][] TRANSFORM_90 = {
+        {  0, -1,  0 },
+        {  1,  0,  0 },
+        {  0,  0,  1 },
+    };
+    private static final int[][] TRANSFORM_180 = {
+        { -1,  0,  0 },
+        {  0, -1,  0 },
+        {  0,  0,  1 },
+    };
+    private static final int[][] TRANSFORM_270 = {
+        {  0,  1,  0 },
+        { -1,  0,  0 },
+        {  0,  0,  1 },
+    };
+
 	
 	// ******************************************************************** //
 	// Private Data.
@@ -738,6 +795,10 @@ class GeoView
     // The most recent network and GPS locations.
     private Location netLocation = null;
     private Location gpsLocation = null;
+    
+    // Current device orientation, as a matrix which can be used
+    // to correct sensor input.
+    private int[][] deviceTransformation = TRANSFORM_0;
 
     // Current geomagnetic data, and the time at which it was fetched.
     // null if it hasn't been got yet.

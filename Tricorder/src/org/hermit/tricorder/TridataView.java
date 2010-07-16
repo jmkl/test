@@ -597,7 +597,8 @@ class TridataView
 	public final float dataUnit;
 	public float dataRange;
     
-    // Current device rotation, as one of the Surface.ROTATION_XXX flags.
+    // Current device orientation, as a matrix which can be used
+    // to correct sensor input.
     private int[][] deviceTransformation = TRANSFORM_0;
     
     // Flags for enabling the view -- when this view is displayed -- and
