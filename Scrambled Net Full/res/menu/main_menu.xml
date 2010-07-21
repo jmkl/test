@@ -48,6 +48,18 @@
         </menu>
     </item>
 
+    <!-- "Animation...".  -->
+    <item android:id="@+id/anim_menu" android:title="@string/menu_anim">
+        <menu>
+            <group android:id="@+id/anim_group" android:checkableBehavior="single">
+
+                <item android:id="@+id/anim_off" android:title="@string/anim_off" />
+                <item android:id="@+id/anim_on" android:title="@string/anim_on" />
+                
+            </group>
+        </menu>
+    </item>
+
     <!-- "Help". -->
 	<item android:id="@+id/menu_help" android:title="@string/menu_help"
     	  android:icon="@drawable/ic_menu_help"></item>

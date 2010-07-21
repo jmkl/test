@@ -54,9 +54,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
 for more details.\n\
 \n\
-If you disagree with this license, please uninstall this app within 24 hours
-of purchase for a full refund.\n\
-\n\
 This program is open-source software.  The source code
 can be obtained on the project home page; see the About screen.</string>
 
@@ -110,6 +107,7 @@ or "Continue" to experiment with this layout.</string>
     <string name="menu_show_scores">High scores</string>
     <string name="menu_set_skill">Skill level</string>
     <string name="menu_sound">Sound...</string>
+    <string name="menu_anim">Animation...</string>
     <string name="menu_autosolve">Solve it!</string>
     <string name="menu_stopsolve">Stop solving</string>
     <string name="menu_help">Help</string>
@@ -117,6 +115,8 @@ or "Continue" to experiment with this layout.</string>
     <string name="no_sounds">No sounds</string>
     <string name="quiet_sounds">Quiet sounds</string>
     <string name="play_sounds">Full sounds</string>
+    <string name="anim_off">No animation</string>
+    <string name="anim_on">Animation</string>
     
     
     <!-- Skill levels. -->

@@ -166,6 +166,10 @@ public class NetScramble
         // We want the audio controls to control our sound volume.
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
+        // Create the GUI for the game.
+        mainView = createGui();
+        setContentView(mainView);
+
         // Restore our preferences.
     	SharedPreferences prefs = getPreferences(0);
     	
@@ -184,9 +188,9 @@ public class NetScramble
         	}
         }
         
-        // Create the GUI for the game.
-        mainView = createGui();
-        setContentView(mainView);
+        // See if animations are enabled.
+        animEnable = prefs.getBoolean("animEnable", true);
+        boardView.setAnimEnable(animEnable);
         
         // Load the sounds.
         soundPool = createSoundPool();
@@ -686,6 +690,7 @@ public class NetScramble
         // to re-sync the options menus.
         selectCurrentSkill();
         selectSoundMode();
+        selectAnimEnable();
 
         return true;
     }
@@ -704,11 +709,22 @@ public class NetScramble
     private void selectSoundMode() {
         // Set the sound enable menu item to the current state.
     	if (mainMenu != null) {
-    		int id = soundMode.menuId;
+            int id = soundMode.menuId;
     		MenuItem soundItem = mainMenu.findItem(id);
     		if (soundItem != null)
     			soundItem.setChecked(true);
     	}
+    }
+
+
+    private void selectAnimEnable() {
+        // Set the animation enable menu item to the current state.
+        if (mainMenu != null) {
+            int id = animEnable ? R.id.anim_on : R.id.anim_off;
+            MenuItem animItem = mainMenu.findItem(id);
+            if (animItem != null)
+                animItem.setChecked(true);
+        }
     }
 
 
@@ -787,6 +803,12 @@ public class NetScramble
     	case R.id.sounds_on:
     		setSoundMode(SoundMode.FULL);
     		break;
+        case R.id.anim_off:
+            setAnimEnable(false);
+            break;
+        case R.id.anim_on:
+            setAnimEnable(true);
+            break;
         case R.id.menu_autosolve:
             solverUsed = true;
             boardView.autosolve();
@@ -812,6 +834,20 @@ public class NetScramble
     }
     
     
+    private void setAnimEnable(boolean enable) {
+        animEnable = enable;
+        boardView.setAnimEnable(animEnable);
+        
+        // Save the new setting to prefs.
+        SharedPreferences prefs = getPreferences(0);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("animEnable", animEnable);
+        editor.commit();
+        
+        selectAnimEnable();
+    }
+    
+
     // ******************************************************************** //
     // Game progress.
     // ******************************************************************** //
@@ -1424,9 +1460,12 @@ public class NetScramble
 	// Timer used to time the game.
 	private GameTimer gameTimer;
 
-	// True to enable sounds.
+	// Current sound mode.
 	private SoundMode soundMode;
-	
+
+    // True to enable the network animation.
+    private boolean animEnable;
+
 	// Number of times the user has clicked.
 	private int clickCount = 0;
 	

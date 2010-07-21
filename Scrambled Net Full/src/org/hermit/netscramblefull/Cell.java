@@ -753,7 +753,7 @@ class Cell
         blipsIncoming = 0;
         
         // If we're the server, create new outgoing blips once in a while.
-        if (isRoot && count % 8 == 0) {
+        if (isRoot && count % 6 == 0) {
             for (int c = 0; c < Dir.cardinals.length; ++c) {
                 Dir d = Dir.cardinals[c];
                 int ord = d.ordinal();

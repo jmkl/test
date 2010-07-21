@@ -362,7 +362,17 @@ public class BoardView
 	// ******************************************************************** //
 	// Board Setup.
 	// ******************************************************************** //
+    
+    /**
+     * Enable or disable the network animation.
+     * 
+     * @param   enable          New network animation enablement state.
+     */
+    void setAnimEnable(boolean enable) {
+        drawBlips = enable;
+    }
 
+    
     /**
      * Set up the board for a new game.
      * 
@@ -809,7 +819,7 @@ public class BoardView
                     changedCell = cellMatrix[x][y];
 
         // Update all the data blips.
-        if (DRAW_BLIPS) {
+        if (drawBlips) {
             if (now - blipsLastAdvance >= BLIPS_TIME) {
                 for (int x = 0; x < gridWidth; ++x)
                     for (int y = 0; y < gridHeight; ++y)
@@ -872,7 +882,7 @@ public class BoardView
         // Draw the data blips in a separate pass so they can overlap
         // adjacent cells without getting overdrawn.  We draw directly
         // to the screen.
-        if (DRAW_BLIPS) {
+        if (drawBlips) {
             float frac = (float) (now - blipsLastAdvance) / (float) BLIPS_TIME;
             for (int x = 0; x < gridWidth; ++x)
                 for (int y = 0; y < gridHeight; ++y)
@@ -1618,9 +1628,6 @@ public class BoardView
     // Debugging tag.
 	private static final String TAG = "netscramble";
 	
-	// Iff true, draw blips representing data moving through the network.
-	private static final boolean DRAW_BLIPS = true;
-	
 	// Time in ms for a long screen or centre-button press.
 	private static final int LONG_PRESS = 650;
     
@@ -1648,6 +1655,9 @@ public class BoardView
     // Screen configuration which matches the physical screen size.
     private Screen screenConfig = null;
     
+    // Iff true, draw blips representing data moving through the network.
+    private boolean drawBlips = true;
+
     // Width and height of the playing board, in cells.  This is tailored
 	// to suit the screen size and orientation.  It should be invariant on
 	// any given device except that it will rotate 90 degrees when the
