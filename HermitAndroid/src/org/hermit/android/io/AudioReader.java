@@ -128,7 +128,7 @@ public class AudioReader
     
 
     /**
-     * Start this reader.
+     * Stop this reader.
      */
     public void stopReader() {
         Log.i(TAG, "Reader: Signal Stop");
