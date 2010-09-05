@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:orientation="vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent">
+
+	<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/head_status"
+			android:textSize="24dp" />
+			
+	<ProgressBar
+        	style="?android:attr/progressBarStyleHorizontal"
+			android:layout_height="wrap_content"
+			android:layout_width="fill_parent"
+			android:padding="10dp"
+			android:id="@+id/stats_age_bar"
+			android:max="30"
+			android:progress="0" />
+		
+	<TableLayout
+			android:layout_height="wrap_content"
+			android:layout_width="fill_parent"
+			android:stretchColumns="*" android:padding="10dp">
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_tech" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_tech" />
+		</TableRow>
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_present" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_present" />
+		</TableRow>
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_status" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_status" />
+		</TableRow>
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_health" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_health" />
+		</TableRow>
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_level" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_level" />
+		</TableRow>
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_voltage" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_voltage" />
+		</TableRow>
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_temp" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_temp" />
+		</TableRow>
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_plugged" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_plugged" />
+		</TableRow>
+	
+	</TableLayout>
+
+	<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/head_flags"
+			android:textSize="24dp" />
+			
+	<TableLayout
+			android:layout_height="wrap_content"
+			android:layout_width="fill_parent"
+			android:stretchColumns="*" android:padding="10dp">
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_connected" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_connected" />
+		</TableRow>
+		
+		<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/title_warning" />
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:id="@+id/display_warning" />
+		</TableRow>
+	
+	</TableLayout>
+
+</LinearLayout>
+

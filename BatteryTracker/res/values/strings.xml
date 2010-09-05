@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <string name="app_name">Battery Tracker</string>
+    
+    <string name="head_status">Battery Status</string>
+    
+    <string name="title_tech">Battery technology</string>
+    <string name="title_present">Battery present</string>
+    <string name="title_status">Battery status</string>
+    <string name="title_health">Battery health</string>
+    <string name="title_level">Battery level</string>
+    <string name="title_voltage">Battery voltage</string>
+    <string name="title_temp">Battery temp</string>
+    <string name="title_plugged">Plugged</string>
+        
+    <string name="head_flags">Broadcast Flags</string>
+    
+    <string name="title_connected">Power connected</string>
+    <string name="title_warning">Warning state</string>
+    
+</resources>
+
