@@ -9,7 +9,7 @@
     <!-- Control IDs. -->
 	<item name="dazzle_ringer" type="id" />
 	<item name="dazzle_otringer" type="id" />
-	<item name="dazzle_radio" type="id" />
+	<item name="dazzle_mobile_data" type="id" />
 	<item name="dazzle_wifi" type="id" />
 	<item name="dazzle_bluetooth" type="id" />
 	<item name="dazzle_gps" type="id" />
@@ -20,5 +20,6 @@
 	<item name="dazzle_brightauto" type="id" />
 	<item name="dazzle_otbrightauto" type="id" />
 	
+<item name="dazzle_phone_radio" type="id"></item>
 </resources>
 

@@ -1,12 +1,13 @@
 #!/bin/csh -f
 
 set icons = ( airplane.png  brightness.png sync.png         \
-              bluetooth.png gps.png ringer.png radio.png wifi.png )
+              bluetooth.png gps.png phone.png ringer.png radio.png wifi.png )
 
 foreach icon ( $icons )
     set name = $icon:r
     set masked = ${name}-m.png
     set final = ${name}-f.png
+    set disabled = ${name}_off.png
     set hdpi = ../res/drawable-hdpi/$icon
     set mdpi = ../res/drawable-mdpi/$icon
     set ldpi = ../res/drawable-ldpi/$icon
@@ -23,6 +24,14 @@ foreach icon ( $icons )
     cp $final $hdpi
     convert $final -resize 66.6667% $mdpi
     convert $final -resize 50% $ldpi
+
+    if ( "radio" == $name ) then
+        convert ${final} -modulate 50,30 ${disabled}
+        cp $disabled ${hdpi:r}_off.png
+        convert $disabled -resize 66.6667% ${mdpi:r}_off.png
+        convert $disabled -resize 50% ${ldpi:r}_off.png
+        rm $disabled
+    endif
     
     rm ${masked} ${final}
 end

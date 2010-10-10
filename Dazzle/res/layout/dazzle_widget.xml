@@ -10,6 +10,7 @@
 	<LinearLayout android:id="@id/dazzle_ringer"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -29,6 +30,7 @@
 	<LinearLayout android:id="@id/dazzle_otringer"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -45,23 +47,51 @@
 
 	</LinearLayout>
 
-	<LinearLayout android:id="@id/dazzle_radio"
+	<LinearLayout android:id="@id/dazzle_mobile_data"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
 
-		<ImageView android:layout_width="wrap_content"
+		<ImageView android:id="@+id/mobile_data_icon"
+		        android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:src="@drawable/radio"
+				android:src="@drawable/radio_off"
 				android:layout_gravity="center"/>
 
+        <ImageView android:id="@+id/mobile_data_ind"
+                android:layout_width="wrap_content"
+                android:src="@drawable/red"
+                android:layout_gravity="center" android:layout_height="16dp"/>
+
 	</LinearLayout>
+
+    <LinearLayout android:id="@id/dazzle_phone_radio"
+            android:orientation="vertical"
+            android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+        <ImageView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/phone"
+                android:layout_gravity="center"/>
+
+        <ImageView android:id="@+id/phone_radio_ind"
+                android:layout_width="wrap_content"
+                android:src="@drawable/red"
+                android:layout_gravity="center" android:layout_height="16dp"/>
+
+    </LinearLayout>
 
 	<LinearLayout android:id="@id/dazzle_wifi"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -81,6 +111,7 @@
 	<LinearLayout android:id="@id/dazzle_bluetooth"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -100,6 +131,7 @@
 	<LinearLayout android:id="@id/dazzle_gps"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+			android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -109,11 +141,17 @@
 				android:src="@drawable/gps"
 				android:layout_gravity="center"/>
 
+        <ImageView android:id="@+id/gps_ind"
+                android:layout_width="wrap_content"
+                android:src="@drawable/blue"
+                android:layout_gravity="center" android:layout_height="16dp"/>
+
 	</LinearLayout>
 
 	<LinearLayout android:id="@id/dazzle_airplane"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -133,6 +171,7 @@
 	<LinearLayout android:id="@id/dazzle_sync"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -152,6 +191,7 @@
 	<LinearLayout android:id="@id/dazzle_brightness"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -173,6 +213,7 @@
 	<LinearLayout android:id="@id/dazzle_otbrightness"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -194,6 +235,7 @@
 	<LinearLayout android:id="@id/dazzle_brightauto"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >
@@ -215,6 +257,7 @@
 	<LinearLayout android:id="@id/dazzle_otbrightauto"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" >

@@ -20,6 +20,7 @@ package org.hermit.dazzle;
 import org.hermit.android.core.Errors;
 
 import android.app.PendingIntent;
+import android.app.PendingIntent.CanceledException;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
@@ -28,6 +29,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -54,7 +56,8 @@ public abstract class DazzleProvider
     enum Control {
         RINGER(R.id.dazzle_ringer, "enableRinger"),
         OTRINGER(R.id.dazzle_otringer, "enableOtRinger"),
-        RADIO(R.id.dazzle_radio, "enableRadio"),
+        MOBILE_DATA(R.id.dazzle_mobile_data, "enableRadio"),
+        PHONE_RADIO(R.id.dazzle_phone_radio, "enablePhoneRadio"),
         WIFI(R.id.dazzle_wifi, "enableWifi"),
         BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
         GPS(R.id.dazzle_gps, "enableGps"),
@@ -83,6 +86,41 @@ public abstract class DazzleProvider
         String pref;
     }
 
+    final static String CATEGORY_UPDATE_WIDGET
+			= DazzleProvider.class.getPackage().getName() + ".CATEGORY_UPDATE_WIDGET";
+
+    private static PendingIntent refresh = null;
+    
+    private static ContentObserver locationSettingsObserver = null;
+    
+    private static void initGpsObserver(final Context context, final Class<?> caller) {
+        if  (null == refresh) {
+        	final Intent intent = new Intent();
+        	intent.addCategory(DazzleProvider.CATEGORY_UPDATE_WIDGET);
+        	intent.setClassName(context.getApplicationContext(), caller.getName());
+        	intent.setData(Uri.parse("custom:" + Control.GPS.ordinal()));
+        	refresh = PendingIntent.getBroadcast(context, 0, intent,
+        			PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+        if (null == locationSettingsObserver) {
+        	locationSettingsObserver = new ContentObserver(null) {
+        		@Override
+        		public void onChange(boolean selfChange) {
+        			Log.d(TAG, "Settings.Secure.LOCATION_PROVIDERS_ALLOWED change");
+        			try {
+        				refresh.send();
+        			} catch (CanceledException e) {
+        				Log.e(TAG, "ContentObserver.onChange()", e);
+        			}
+        		}
+        	};
+            context.getApplicationContext().getContentResolver().registerContentObserver(
+            		Settings.Secure.getUriFor(Settings.Secure.LOCATION_PROVIDERS_ALLOWED),
+            		true, locationSettingsObserver);
+            Log.d(TAG, "Registered observer for Settings.Secure.LOCATION_PROVIDERS_ALLOWED "
+            		+ " for " + caller.getSimpleName());
+        }
+    }
     
     // ******************************************************************** //
     // Widget Lifecycle.
@@ -145,6 +183,12 @@ public abstract class DazzleProvider
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         Log.d(TAG, "onUpdate()");
         
+        // Listen for GPS settings changes, these aren't generating any broadcasts
+        // If widget is being updated, onEnabled is never called, we can either
+        // ask user to remove and add widget again or simply try to bind observer
+        // here, if it's not bound already
+        // TODO: smarter: check if package was updated and re-bind the observer
+        initGpsObserver(context, this.getClass());
         // Update the specified widgets.  Be aware that some of these IDs
         // could be stale.
         final int num = ids.length;
@@ -160,7 +204,6 @@ public abstract class DazzleProvider
         Log.d(TAG, "onUpdate() DONE");
     }
 
-
     /**
      * Called when one or more AppWidget instances have been deleted.
      * Override this method to implement your own AppWidget functionality.
@@ -173,7 +216,7 @@ public abstract class DazzleProvider
     @Override
     public void onDeleted(Context context, int[] ids) {
         Log.d(TAG, "onDeleted()");
-        
+
         // Delete all the prefs for each widget instance.  Be aware that
         // some of these IDs could be stale.
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -197,6 +240,16 @@ public abstract class DazzleProvider
     public void onDisabled(Context context) {
         Log.d(TAG, "onDisabled()");
         
+        if (null != refresh) {
+        	refresh.cancel();
+        	refresh = null;
+        }
+        if (null != locationSettingsObserver) {
+	        Log.d(TAG, "Removing Settings.Secure.LOCATION_PROVIDERS_ALLOWED observer");
+	        context.getApplicationContext().getContentResolver()
+	        		.unregisterContentObserver(locationSettingsObserver);
+	        locationSettingsObserver = null;
+        }
         // When the last widget is deleted, stop listening for system
         // broadcasts.
         PackageManager pm = context.getPackageManager();
@@ -231,6 +284,11 @@ public abstract class DazzleProvider
                     Control control = Control.CONTROLS[id];
                     handleClick(context, control);
                 }
+            } else if (intent.hasCategory(DazzleProvider.CATEGORY_UPDATE_WIDGET)) {
+            	Uri data = intent.getData();
+            	Log.d(TAG, CATEGORY_UPDATE_WIDGET
+            			+ " requested update for control id: " + data);
+            	// no op for now, update entire widget
             }
         } catch (Exception e) {
             Errors.reportException(context, e);
@@ -239,7 +297,6 @@ public abstract class DazzleProvider
         // State changes fall through.
         updateAllWidgets(context);
     }
-
 
     private void handleClick(Context context, Control control) {
         Log.d(TAG, "Handle control " + control.toString());
@@ -253,12 +310,12 @@ public abstract class DazzleProvider
         case OTRINGER:
             RingerSettings.toggle(context);
             break;
-        case RADIO:
-            Intent radioIntent = new Intent(Intent.ACTION_MAIN);
-            radioIntent.setClassName("com.android.phone", "com.android.phone.Settings");
-            radioIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(radioIntent);
+        case MOBILE_DATA:
+        	MobileDataSettings.toggle(context);
             break;
+        case PHONE_RADIO:
+        	PhoneRadioSettings.toggle(context);
+        	break;
         case WIFI:
             WiFiSettings.toggle(context);
             break;
@@ -269,9 +326,7 @@ public abstract class DazzleProvider
                 BluetoothSettings.toggle(context);
             break;
         case GPS:
-            Intent gpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            gpsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(gpsIntent);
+        	LocationSettings.toggle(context);
             break;
         case AIRPLANE:
             AirplaneSettings.toggle(context);
@@ -365,7 +420,6 @@ public abstract class DazzleProvider
             return;
         }
 
-        Log.d(TAG, "updateWidget(" + id + ") = " + clazz.getName());
         RemoteViews views = buildViews(context, clazz, id);
         manager.updateAppWidget(id, views);
     }
@@ -408,10 +462,13 @@ public abstract class DazzleProvider
         case OTRINGER:
             RingerSettings.setWidget(context, views, R.id.otringer_ind);
             break;
-        case RADIO:
-            // Sadly, we can't do this.
-            // RadioSettings.setWidget(context, views, R.id.radio_ind);
+        case MOBILE_DATA:
+            MobileDataSettings.setWidgetState(context, views,
+            		R.id.mobile_data_icon, R.id.mobile_data_ind);
             break;
+        case PHONE_RADIO:
+        	PhoneRadioSettings.setWidget(context, views, R.id.phone_radio_ind);
+        	break;
         case WIFI:
             WiFiSettings.setWidget(context, views, R.id.wifi_ind);
             break;
@@ -422,8 +479,7 @@ public abstract class DazzleProvider
                 BluetoothSettings.setWidget(context, views, R.id.bluetooth_ind);
             break;
         case GPS:
-            // Sadly, we can't do this.
-            // GpsSettings.setWidget(context, views, R.id.gps_ind);
+        	LocationSettings.setWidget(context, views, R.id.gps_ind);
             break;
         case AIRPLANE:
             AirplaneSettings.setWidget(context, views, R.id.airplane_ind);
