@@ -244,6 +244,26 @@
 
     </LinearLayout>
 
+    <LinearLayout android:id="@id/dazzle_screen_always_on"
+            android:orientation="vertical"
+            android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+        <ImageView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/screenon"
+                android:layout_gravity="center"/>
+
+        <ImageView android:id="@+id/screen_always_on_ind"
+                android:layout_width="wrap_content"
+                android:src="@drawable/red"
+                android:layout_gravity="center" android:layout_height="16dp"/>
+
+    </LinearLayout>
+
 	<LinearLayout android:id="@id/dazzle_brightness"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"

@@ -18,6 +18,7 @@
 	<item name="dazzle_airplane" type="id" />
 	<item name="dazzle_sync" type="id" />
     <item name="dazzle_autorotate" type="id" />
+    <item name="dazzle_screen_always_on" type="id" />
 	<item name="dazzle_brightness" type="id" />
 	<item name="dazzle_otbrightness" type="id" />
 	<item name="dazzle_brightauto" type="id" />

@@ -53,6 +53,9 @@ Android 2.0 or later</string>
 Android 2.0 or later</string>
     <string name="prefs_auto_rotate">Auto-rotate screen</string>
     <string name="prefs_auto_rotate_summary">Enable/disable screen auto rotation</string>
+    <string name="prefs_screen_always_on">Always on screen backlight</string>
+    <string name="prefs_screen_always_on_summary">Keep the screen backlight
+on</string>
     <string name="prefs_enable_brightness">Brightness popup</string>
     <string name="prefs_brightness_summary">Show screen brightness control
 with popup mode selection</string>

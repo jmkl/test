@@ -374,6 +374,35 @@
             android:layout_height="wrap_content"
             android:src="@drawable/divider" />
     
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+        <CheckBox android:id="@id/dazzle_screen_always_on"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top" />
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prefs_screen_always_on"
+                    android:textSize="20sp" />
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prefs_screen_always_on_summary" />
+        </LinearLayout>
+    </LinearLayout>
+    
+    <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/divider" />
+    
 	<LinearLayout
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"

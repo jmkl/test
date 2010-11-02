@@ -59,6 +59,9 @@ public abstract class DazzleProvider
 
     // Debugging tag.
     static final String TAG = "Dazzle";
+    
+    // system-wide persistent settings
+    private final static String SHADOW_SETTINGS = "settings.system";
 
     // The controls we support.
     enum Control {
@@ -77,7 +80,8 @@ public abstract class DazzleProvider
         OTBRIGHTNESS(R.id.dazzle_otbrightness, "enableOtBrightness"),
         BRIGHTAUTO(R.id.dazzle_brightauto, "enableBrightauto"),
         OTBRIGHTAUTO(R.id.dazzle_otbrightauto, "enableOtBrightauto"),
-        AUTORORATE(R.id.dazzle_autorotate, "enableAutoRotate");
+        AUTORORATE(R.id.dazzle_autorotate, "enableAutoRotate"),
+        SCREEN_ALWAYS_ON(R.id.dazzle_screen_always_on, "enableScreenAlwaysOn");
         
         Control(int id, String pref) {
             this.id = id;
@@ -130,6 +134,10 @@ public abstract class DazzleProvider
     	observers.add(observer);
     }
     
+    static SharedPreferences getShadowPreferences(final Context context) {
+		return context.getSharedPreferences(SHADOW_SETTINGS, Context.MODE_PRIVATE);
+    }
+
     // ******************************************************************** //
     // Widget Lifecycle.
     // ******************************************************************** //
@@ -352,6 +360,9 @@ public abstract class DazzleProvider
         case AUTORORATE:
         	ScreenAutoRotateSettings.toggle(context);
         	break;
+        case SCREEN_ALWAYS_ON:
+        	ScreenAlwaysOnSettings.toggle(context);
+        	break;
         case BRIGHTNESS:
         case BRIGHTAUTO:
         case OTBRIGHTNESS:
@@ -519,6 +530,11 @@ public abstract class DazzleProvider
         	ScreenAutoRotateSettings.subscribe(context);
         	ScreenAutoRotateSettings.setWidget(context, views,
                     R.id.autorotate_ind);
+        	break;
+        case SCREEN_ALWAYS_ON:
+        	ScreenAlwaysOnSettings.subscribe(context);
+        	ScreenAlwaysOnSettings.setWidget(context, views,
+        			R.id.screen_always_on_ind);
         	break;
         case BRIGHTNESS:
             BrightnessSettings.setWidget(context, views, R.id.brightness_ind);
