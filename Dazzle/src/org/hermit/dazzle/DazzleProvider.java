@@ -17,6 +17,11 @@
 package org.hermit.dazzle;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hermit.android.core.Errors;
 
 import android.app.PendingIntent;
@@ -25,12 +30,15 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -56,9 +64,11 @@ public abstract class DazzleProvider
     enum Control {
         RINGER(R.id.dazzle_ringer, "enableRinger"),
         OTRINGER(R.id.dazzle_otringer, "enableOtRinger"),
+        RADIO_SETTINGS(R.id.dazzle_radio_settings, "enableRadioSettings"),
         MOBILE_DATA(R.id.dazzle_mobile_data, "enableRadio"),
         PHONE_RADIO(R.id.dazzle_phone_radio, "enablePhoneRadio"),
         WIFI(R.id.dazzle_wifi, "enableWifi"),
+        WIFI_AP(R.id.dazzle_wifi_ap, "enableWifiAp"),
         BLUETOOTH(R.id.dazzle_bluetooth, "enableBluetooth"),
         GPS(R.id.dazzle_gps, "enableGps"),
         AIRPLANE(R.id.dazzle_airplane, "enableAirplane"),
@@ -66,7 +76,8 @@ public abstract class DazzleProvider
         BRIGHTNESS(R.id.dazzle_brightness, "enableBrightness"),
         OTBRIGHTNESS(R.id.dazzle_otbrightness, "enableOtBrightness"),
         BRIGHTAUTO(R.id.dazzle_brightauto, "enableBrightauto"),
-        OTBRIGHTAUTO(R.id.dazzle_otbrightauto, "enableOtBrightauto");
+        OTBRIGHTAUTO(R.id.dazzle_otbrightauto, "enableOtBrightauto"),
+        AUTORORATE(R.id.dazzle_autorotate, "enableAutoRotate");
         
         Control(int id, String pref) {
             this.id = id;
@@ -87,39 +98,36 @@ public abstract class DazzleProvider
     }
 
     final static String CATEGORY_UPDATE_WIDGET
-			= DazzleProvider.class.getPackage().getName() + ".CATEGORY_UPDATE_WIDGET";
-
+    	= DazzleProvider.class.getPackage().getName() + ".CATEGORY_UPDATE_WIDGET";
     private static PendingIntent refresh = null;
     
-    private static ContentObserver locationSettingsObserver = null;
-    
-    private static void initGpsObserver(final Context context, final Class<?> caller) {
-        if  (null == refresh) {
+    private static void initRefreshIntent(final Context context, final Class<?> caller) {
+        if( null == refresh ) {
         	final Intent intent = new Intent();
         	intent.addCategory(DazzleProvider.CATEGORY_UPDATE_WIDGET);
         	intent.setClassName(context.getApplicationContext(), caller.getName());
-        	intent.setData(Uri.parse("custom:" + Control.GPS.ordinal()));
-        	refresh = PendingIntent.getBroadcast(context, 0, intent,
-        			PendingIntent.FLAG_UPDATE_CURRENT);
+        	refresh = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         }
-        if (null == locationSettingsObserver) {
-        	locationSettingsObserver = new ContentObserver(null) {
-        		@Override
-        		public void onChange(boolean selfChange) {
-        			Log.d(TAG, "Settings.Secure.LOCATION_PROVIDERS_ALLOWED change");
-        			try {
-        				refresh.send();
-        			} catch (CanceledException e) {
-        				Log.e(TAG, "ContentObserver.onChange()", e);
-        			}
-        		}
-        	};
-            context.getApplicationContext().getContentResolver().registerContentObserver(
-            		Settings.Secure.getUriFor(Settings.Secure.LOCATION_PROVIDERS_ALLOWED),
-            		true, locationSettingsObserver);
-            Log.d(TAG, "Registered observer for Settings.Secure.LOCATION_PROVIDERS_ALLOWED "
-            		+ " for " + caller.getSimpleName());
-        }
+    }
+    
+    static void requestUpdate() {
+    	if( null != refresh ) {
+    		//Log.d(TAG, "Out of band update requested");
+			try {
+				refresh.send();
+				Log.d(TAG, "Sent update request to " + refresh.getTargetPackage());
+			} catch (CanceledException e) {
+				Log.e(TAG, "ContentObserver.onChange()", e);
+			}
+    	}
+    }
+    
+    private final static List<SettingsObserver> observers
+    		= new ArrayList<SettingsObserver>();
+    
+    static void registerSettingsObserver(final SettingsObserver observer)
+    {
+    	observers.add(observer);
     }
     
     // ******************************************************************** //
@@ -183,12 +191,7 @@ public abstract class DazzleProvider
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         Log.d(TAG, "onUpdate()");
         
-        // Listen for GPS settings changes, these aren't generating any broadcasts
-        // If widget is being updated, onEnabled is never called, we can either
-        // ask user to remove and add widget again or simply try to bind observer
-        // here, if it's not bound already
-        // TODO: smarter: check if package was updated and re-bind the observer
-        initGpsObserver(context, this.getClass());
+        initRefreshIntent(context, this.getClass());
         // Update the specified widgets.  Be aware that some of these IDs
         // could be stale.
         final int num = ids.length;
@@ -240,15 +243,15 @@ public abstract class DazzleProvider
     public void onDisabled(Context context) {
         Log.d(TAG, "onDisabled()");
         
-        if (null != refresh) {
+        // cleanup remaining observers
+        for( final SettingsObserver so : observers ) {
+        	so.unsubscribe(context.getContentResolver());
+        }
+        observers.clear();
+        if( null != refresh ) {
+        	Log.d(TAG, "Cancel update PendingIntent");
         	refresh.cancel();
         	refresh = null;
-        }
-        if (null != locationSettingsObserver) {
-	        Log.d(TAG, "Removing Settings.Secure.LOCATION_PROVIDERS_ALLOWED observer");
-	        context.getApplicationContext().getContentResolver()
-	        		.unregisterContentObserver(locationSettingsObserver);
-	        locationSettingsObserver = null;
         }
         // When the last widget is deleted, stop listening for system
         // broadcasts.
@@ -285,9 +288,7 @@ public abstract class DazzleProvider
                     handleClick(context, control);
                 }
             } else if (intent.hasCategory(DazzleProvider.CATEGORY_UPDATE_WIDGET)) {
-            	Uri data = intent.getData();
-            	Log.d(TAG, CATEGORY_UPDATE_WIDGET
-            			+ " requested update for control id: " + data);
+            	Log.d(TAG, "Widget update requested via " + CATEGORY_UPDATE_WIDGET);
             	// no op for now, update entire widget
             }
         } catch (Exception e) {
@@ -310,6 +311,11 @@ public abstract class DazzleProvider
         case OTRINGER:
             RingerSettings.toggle(context);
             break;
+        case RADIO_SETTINGS:
+        	Intent radioIntent = new Intent(Intent.ACTION_MAIN);
+        	radioIntent.setClassName("com.android.phone", "com.android.phone.Settings");
+        	radioIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        	context.startActivity(radioIntent);
         case MOBILE_DATA:
         	MobileDataSettings.toggle(context);
             break;
@@ -319,6 +325,11 @@ public abstract class DazzleProvider
         case WIFI:
             WiFiSettings.toggle(context);
             break;
+        case WIFI_AP:
+        	if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO ) {
+        		WiFiApSettings.toggle(context);
+        	}
+        	break;
         case BLUETOOTH:
             // Can only do Bluetooth from Eclair on.
             if (android.os.Build.VERSION.SDK_INT >=
@@ -337,6 +348,9 @@ public abstract class DazzleProvider
                                         android.os.Build.VERSION_CODES.ECLAIR)
                 SyncSettings.toggle(context);
             break;
+        case AUTORORATE:
+        	ScreenAutoRotateSettings.toggle(context);
+        	break;
         case BRIGHTNESS:
         case BRIGHTAUTO:
         case OTBRIGHTNESS:
@@ -462,9 +476,12 @@ public abstract class DazzleProvider
         case OTRINGER:
             RingerSettings.setWidget(context, views, R.id.otringer_ind);
             break;
+        case RADIO_SETTINGS:
+        	// no op
+        	break;
         case MOBILE_DATA:
             MobileDataSettings.setWidgetState(context, views,
-            		R.id.mobile_data_icon, R.id.mobile_data_ind);
+                       R.id.mobile_data_icon, R.id.mobile_data_ind);
             break;
         case PHONE_RADIO:
         	PhoneRadioSettings.setWidget(context, views, R.id.phone_radio_ind);
@@ -472,6 +489,12 @@ public abstract class DazzleProvider
         case WIFI:
             WiFiSettings.setWidget(context, views, R.id.wifi_ind);
             break;
+        case WIFI_AP:
+        	if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO ) {
+        		WiFiApSettings.subscribe(context);
+        		WiFiApSettings.setWidget(context, views, R.id.wifi_ap_ind);
+        	}
+        	break;
         case BLUETOOTH:
             // Can only do Bluetooth from Eclair on.
             if (android.os.Build.VERSION.SDK_INT >=
@@ -479,6 +502,7 @@ public abstract class DazzleProvider
                 BluetoothSettings.setWidget(context, views, R.id.bluetooth_ind);
             break;
         case GPS:
+        	LocationSettings.subscribe(context);
         	LocationSettings.setWidget(context, views, R.id.gps_ind);
             break;
         case AIRPLANE:
@@ -490,6 +514,11 @@ public abstract class DazzleProvider
                                         android.os.Build.VERSION_CODES.ECLAIR)
                 SyncSettings.setWidget(context, views, R.id.sync_ind);
             break;
+        case AUTORORATE:
+        	ScreenAutoRotateSettings.subscribe(context);
+        	ScreenAutoRotateSettings.setWidget(context, views,
+                    R.id.autorotate_ind);
+        	break;
         case BRIGHTNESS:
             BrightnessSettings.setWidget(context, views, R.id.brightness_ind);
             break;

@@ -26,7 +26,7 @@ import android.widget.RemoteViews;
 /**
  * This static class provides utilities to manage the WiFi state.
  */
-public class WiFiSettings
+public class WiFiSettings extends AbsCommonWiFiSettings
 {
 
     // ******************************************************************** //
@@ -56,10 +56,18 @@ public class WiFiSettings
         // an intermediate state.
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         int state = wifiManager.getWifiState();
-        if (state == WifiManager.WIFI_STATE_DISABLED)
+        if (state == WifiManager.WIFI_STATE_DISABLED) {
+        	final int wifiApState = getWifiApState(wifiManager);
+        	if (/*WifiManager.*/WIFI_AP_STATE_ENABLING == wifiApState
+        			|| /*WifiManager.*/WIFI_AP_STATE_ENABLED == wifiApState) {
+        		// disable tethering, if active
+        		Log.d(TAG, "Disable tethering before enabling WiFi");
+        		setWifiApEnabled(wifiManager, false);
+        	}
             wifiManager.setWifiEnabled(true);
-        else if (state == WifiManager.WIFI_STATE_ENABLED)
+        } else if (state == WifiManager.WIFI_STATE_ENABLED) {
             wifiManager.setWifiEnabled(false);
+        }
     }
 
 

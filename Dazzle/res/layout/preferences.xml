@@ -170,6 +170,36 @@
 			android:layout_height="wrap_content"
 			android:src="@drawable/divider" />
 
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+        <CheckBox android:id="@id/dazzle_wifi_ap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top" />
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prefs_enable_wifi_ap"
+                    android:textSize="20sp" />
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/prefs_wifi_ap_help"
+                    android:text="@string/prefs_wifi_ap_summary" />
+        </LinearLayout>
+    </LinearLayout>
+    
+    <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/divider" />
+
 	<LinearLayout
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
@@ -286,6 +316,35 @@
 			android:layout_height="wrap_content"
 			android:src="@drawable/divider" />
 	
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+        <CheckBox android:id="@id/dazzle_autorotate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top" />
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prefs_auto_rotate"
+                    android:textSize="20sp" />
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prefs_auto_rotate_summary" />
+        </LinearLayout>
+    </LinearLayout>
+    
+    <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/divider" />
+    
 	<LinearLayout
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"

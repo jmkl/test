@@ -108,6 +108,26 @@
 
 	</LinearLayout>
 
+    <LinearLayout android:id="@id/dazzle_wifi_ap"
+            android:orientation="vertical"
+            android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+        <ImageView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/wifi"
+                android:layout_gravity="center"/>
+
+        <ImageView android:id="@+id/wifi_ap_ind"
+                android:layout_width="wrap_content"
+                android:src="@drawable/red"
+                android:layout_gravity="center" android:layout_height="16dp"/>
+
+    </LinearLayout>
+
 	<LinearLayout android:id="@id/dazzle_bluetooth"
 			android:orientation="vertical"
 			android:layout_gravity="top|center_horizontal"
@@ -187,6 +207,26 @@
 				android:layout_gravity="center" android:layout_height="16dp"/>
 
 	</LinearLayout>
+
+    <LinearLayout android:id="@id/dazzle_autorotate"
+            android:orientation="vertical"
+            android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/appwidget_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+        <ImageView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/rotate"
+                android:layout_gravity="center"/>
+
+        <ImageView android:id="@+id/autorotate_ind"
+                android:layout_width="wrap_content"
+                android:src="@drawable/red"
+                android:layout_gravity="center" android:layout_height="16dp"/>
+
+    </LinearLayout>
 
 	<LinearLayout android:id="@id/dazzle_brightness"
 			android:orientation="vertical"

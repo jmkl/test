@@ -1,8 +1,8 @@
 /**
  * Dazzle: a GPS control widget for Android.
  * <br>Copyright 2010 Dmitry DELTA Malykhanov
- * 		for Ian Cameron Smith Dazzle widget
- * 		special thanks to Sergej Shafarenka for inspiration
+ *             for Ian Cameron Smith Dazzle widget
+ *             special thanks to Sergej Shafarenka for inspiration
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -27,6 +27,18 @@ import android.widget.RemoteViews;
 public class LocationSettings {
 
 	private LocationSettings() { }
+	
+	private static SettingsObserver observer = null;
+	
+	static void subscribe(final Context context) {
+		if( null == observer ) {
+			observer = new SettingsObserver(context.getContentResolver(),
+					Settings.Secure.getUriFor(Settings.Secure.LOCATION_PROVIDERS_ALLOWED),
+					"Settings.Secure.LOCATION_PROVIDERS_ALLOWED");
+			DazzleProvider.registerSettingsObserver(observer);
+		}
+		
+	}
 	
 	private static boolean getGpsState(final Context context) {
 		final LocationManager manager = (LocationManager)

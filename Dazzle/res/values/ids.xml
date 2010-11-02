@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-     Declarations of ID sthat are used in multiple places.
+     Declarations of IDs that are used in multiple places.
 -->
 
 <resources>
@@ -9,12 +9,15 @@
     <!-- Control IDs. -->
 	<item name="dazzle_ringer" type="id" />
 	<item name="dazzle_otringer" type="id" />
+    <item name="dazzle_radio_settings" type="id" />
 	<item name="dazzle_mobile_data" type="id" />
 	<item name="dazzle_wifi" type="id" />
+    <item name="dazzle_wifi_ap" type="id" />
 	<item name="dazzle_bluetooth" type="id" />
 	<item name="dazzle_gps" type="id" />
 	<item name="dazzle_airplane" type="id" />
 	<item name="dazzle_sync" type="id" />
+    <item name="dazzle_autorotate" type="id" />
 	<item name="dazzle_brightness" type="id" />
 	<item name="dazzle_otbrightness" type="id" />
 	<item name="dazzle_brightauto" type="id" />
