@@ -316,6 +316,7 @@ public abstract class DazzleProvider
         	radioIntent.setClassName("com.android.phone", "com.android.phone.Settings");
         	radioIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         	context.startActivity(radioIntent);
+        	break;
         case MOBILE_DATA:
         	MobileDataSettings.toggle(context);
             break;

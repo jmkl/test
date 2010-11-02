@@ -2,13 +2,13 @@
 
 <resources>
 
-    <string name="app_name">BeDazzle</string>
+    <string name="app_name">Dazzle</string>
     
     <!-- Widget names. -->
-    <string name="widget_11_name">BeDazzle (1x1)</string>
-    <string name="widget_21_name">BeDazzle (2x1)</string>
-    <string name="widget_31_name">BeDazzle (3x1)</string>
-    <string name="widget_41_name">BeDazzle (4x1)</string>
+    <string name="widget_11_name">Dazzle (1x1)</string>
+    <string name="widget_21_name">Dazzle (2x1)</string>
+    <string name="widget_31_name">Dazzle (3x1)</string>
+    <string name="widget_41_name">Dazzle (4x1)</string>
         
     <!-- Preferences. -->
     <string name="prefs_help">Choose which controls you would like to have
@@ -19,9 +19,9 @@ different controls.</string>
 with popup mode selection</string>
     <string name="prefs_enable_otringer">Ringer one-touch</string>
     <string name="prefs_otringer_summary">Show ring / silent / vibrate control
+with one-touch mode toggle</string>
     <string name="prefs_enable_radio">Cellular</string>
     <string name="prefs_radio_summary">Show data roaming/band control
-with one-touch mode toggle</string>
 (depending on device) (no indicator; takes you to the settings page.  Sorry,
 but only system apps can directly control these settings)</string>
     <string name="prefs_enable_mobile_data">Mobile Data</string>
