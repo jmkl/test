@@ -87,6 +87,7 @@ one-touch with auto -- needs Android 2.0 or later</string>
     <string name="button_auto">Auto</string>
 
     <!-- Errors. -->
+    <string name="system_mobile_data_disabled">Mobile Data disabled in system settings</string>
     
 </resources>
 

@@ -15,55 +15,25 @@
 
 package org.hermit.dazzle;
 
-import java.lang.reflect.Method;
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 public class MobileDataSettings extends AbsCommonTelephonySettings {
 
 	private MobileDataSettings() { }
-
+	
 	private static boolean getMobileDataState(final Context context) {
 		final int dataState = ((TelephonyManager)
 				context.getSystemService(Context.TELEPHONY_SERVICE))
 					.getDataState();
 		return TelephonyManager.DATA_CONNECTED == dataState
 				|| TelephonyManager.DATA_SUSPENDED == dataState;
-	}
-	
-    private static boolean isEnabled(final Context context) {
-    	if (isRadioOn(context)) {
-			final NetworkInfo.State wifiState = ((ConnectivityManager)
-					context.getSystemService(Context.CONNECTIVITY_SERVICE))
-						.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
-			return NetworkInfo.State.CONNECTING != wifiState
-					&& NetworkInfo.State.CONNECTED != wifiState;
-    	} else {
-    		return false;
-    	}
-    }
-
-	private static void toggleMobileDataState(final Context context) {
-		if (isEnabled(context)) {
-			final boolean enabled = getMobileDataState(context);
-			try {
-				Object iTelephony = getITelephony(context);
-				Method action = iTelephony.getClass().getMethod(enabled
-						? "disableDataConnectivity" : "enableDataConnectivity");
-				action.invoke(iTelephony);
-				Log.d(DazzleProvider.TAG, "Mobile data "
-						+ (!enabled ? "enabled" : "disabled"));
-			} catch (Exception e) {
-				Log.e(DazzleProvider.TAG, "Cannot toggle mobile data state", e);
-			}
-		} else {
-			Log.d(DazzleProvider.TAG, "Data connectivity not possible or radio is off");
-		}
 	}
 	
     /**
@@ -74,7 +44,18 @@ public class MobileDataSettings extends AbsCommonTelephonySettings {
     static void toggle(final Context context) {
         Log.i(DazzleProvider.TAG, "toggle mobile data");
         
-        toggleMobileDataState(context);
+        if (isMobileDataEnabledInSettings(context)) {
+        	if (isMobileDataTogglePossible(context)) {
+        		setMobileDataEnabled(context, !getMobileDataState(context));
+        	} else {
+        		Log.d(DazzleProvider.TAG, "Mobile Data connectivity not possible or radio is off");
+        	}
+        } else {
+        	Log.d(DazzleProvider.TAG, "Mobile Data disabled in system settings");
+        	Toast.makeText(context.getApplicationContext(),
+        			R.string.system_mobile_data_disabled, Toast.LENGTH_LONG)
+        				.show();
+        }
     }
 
     /**
@@ -86,23 +67,47 @@ public class MobileDataSettings extends AbsCommonTelephonySettings {
      * @param   indicatorWidget The ID of the widget icon.
      */
     static void setWidgetState(final Context context, final RemoteViews views,
-    		final int iconWidget, final int indicatorWidget)
+            final int iconWidget, final int indicatorWidget)
     {
-    	views.setImageViewResource(iconWidget,
-    			isEnabled(context)
-    				? R.drawable.radio : R.drawable.radio_off);
-		final NetworkInfo.State mobileState = ((ConnectivityManager)
-				context.getSystemService(Context.CONNECTIVITY_SERVICE))
-					.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
-    	final int indicator;
-    	if (NetworkInfo.State.CONNECTED == mobileState) {
-    		indicator = R.drawable.green;
-    	} else if (NetworkInfo.State.DISCONNECTED == mobileState) {
-    		indicator = R.drawable.grey;
-    	} else {
-    		indicator = R.drawable.orange;
-    	}
+        final boolean enabled = isMobileDataTogglePossible(context);
+        // calling "setEnabled" prevents view from being clickable and we
+        // cannot show a Toast with explanation
+        views.setInt(R.id.dazzle_mobile_data, "setBackgroundResource",
+                enabled ? R.drawable.appwidget_button : android.R.color.transparent);
+        views.setImageViewResource(iconWidget,
+                    enabled ? R.drawable.radio : R.drawable.radio_off);
+        final int indicator;
+        if (enabled) {
+        	views.setViewVisibility(indicatorWidget, View.VISIBLE);
+            if (mobileDataTransition.inProgress()) {
+            	if (getMobileDataState(context) == mobileDataTransition.to) {
+                	indicator = getIndicatorState(context);
+            	} else {
+            		indicator = R.drawable.orange;
+            	}
+            } else {
+            	indicator = getIndicatorState(context);
+            }
+        } else {
+        	views.setViewVisibility(indicatorWidget, View.GONE);
+        	indicator = R.drawable.grey;
+        }
         views.setImageViewResource(indicatorWidget, indicator);
+    }
+    
+    private static int getIndicatorState(final Context context) {
+    	final int indicator;
+        final NetworkInfo.State mobileState = ((ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE))
+                    .getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
+        if( NetworkInfo.State.CONNECTED == mobileState ) {
+            indicator = R.drawable.green;
+        } else if( NetworkInfo.State.DISCONNECTED == mobileState ) {
+            indicator = R.drawable.grey;
+        } else {
+            indicator = R.drawable.orange;
+        }
+        return indicator;
     }
     
 }

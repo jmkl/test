@@ -16,10 +16,14 @@
 
 package org.hermit.dazzle;
 
+import org.hermit.dazzle.DazzleProvider.Control;
+
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 
@@ -58,11 +62,31 @@ public class SystemBroadcastReceiver
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "SystemB/C intent=" + intent);
 
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+        	// Update system settings from shadow copy, no other way to do it.
+        	// For now we have only radio/mobile data settings.
+        	if (hasRadioControlsEnabled(context)) {
+        		Log.d(TAG, "Restoring radio/mobile data settings from shadow copy");
+        		PhoneRadioSettings.onBoot(context, intent);
+        	}
+        }
         // For any broadcast we're registered for, just update all the widgets.
         DazzleProvider.updateAllWidgets(context);
     }
     
-    
+    private boolean hasRadioControlsEnabled(final Context context) {
+    	boolean hasRadioControls = false;
+    	final SharedPreferences prefs
+    			= PreferenceManager.getDefaultSharedPreferences(context);
+    	for (final String key : prefs.getAll().keySet()) {
+    		if (key.startsWith(Control.MOBILE_DATA.pref)
+    				|| key.startsWith(Control.PHONE_RADIO.pref)) {
+    			hasRadioControls = true;
+    		}
+    	}
+    	return hasRadioControls;
+    }
+
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //

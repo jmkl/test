@@ -18,6 +18,8 @@ package org.hermit.dazzle;
 import java.lang.reflect.Method;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -25,23 +27,51 @@ public class PhoneRadioSettings extends AbsCommonTelephonySettings {
 
 	private PhoneRadioSettings() { }
 
-	private static void toggleRadioOnOff(final Context context) {
-		final boolean enable = !isRadioOn(context);
+	public static void onBoot(final Context context, final Intent intent) {
+        final SharedPreferences prefs = DazzleProvider.getShadowPreferences(context);
+        if (prefs.getBoolean(SHADOW_PHONE_RADIO, true)) {
+        	if (isMobileDataEnabledInSettings(context)) {
+        		restoreMobileDataState(context, prefs);
+        	}
+        } else {
+        	setRadioEnabled(context, false);
+        }
+	}
+    
+	private static void restoreMobileDataState(final Context context,
+			final SharedPreferences prefs)
+	{
+    	final boolean mobileDataState
+				= prefs.getBoolean(SHADOW_MOBILE_DATA, true);
+    	Log.d(DazzleProvider.TAG, "Restoring last known mobile data state: "
+    			+ (mobileDataState ? "enabled" : "disabled"));
+    	setMobileDataEnabled(context, mobileDataState);
+	}
+
+	private static void setRadioEnabled(final Context context, final boolean enabled) {
         if (transition.inProgress()) {
         	Log.w(DazzleProvider.TAG, "Radio is already in transition "
         			+ transition + " when requesting "
-        			+ (enable ? "ON" : "OFF"));
+        			+ (enabled ? "ON" : "OFF"));
         }
 		try {
 			final Object iTelephony = getITelephony(context);
 			final Method toggleRadioOnOff
-				= iTelephony.getClass().getDeclaredMethod("toggleRadioOnOff");
-			toggleRadioOnOff.invoke(iTelephony);
-	        transition.start(enable);
-	        Log.d(DazzleProvider.TAG, "Starting radio transition " + transition);
+				= iTelephony.getClass().getDeclaredMethod("setRadio", boolean.class);
+			toggleRadioOnOff.invoke(iTelephony, enabled);
+	        transition.start(enabled);
+	        final SharedPreferences prefs = DazzleProvider.getShadowPreferences(context);
+	        if (enabled != prefs.getBoolean(SHADOW_PHONE_RADIO, true)) {
+	        	prefs.edit().putBoolean(SHADOW_PHONE_RADIO, enabled).commit();
+	        }
+	        if (enabled && isMobileDataEnabledInSettings(context)) {
+	        	restoreMobileDataState(context, prefs);
+	        }
+	        Log.d(DazzleProvider.TAG, "setRadioEnabled: Starting radio transition "
+	        		+ transition);
 		} catch(Exception e) {
-			transition.stop(!enable);
-			Log.e(DazzleProvider.TAG, "toggleRadioOnOff()", e);
+			transition.stop(!enabled);
+			Log.e(DazzleProvider.TAG, "setRadioEnabled(" + enabled + ")", e);
 		}
 	}
 
@@ -53,7 +83,7 @@ public class PhoneRadioSettings extends AbsCommonTelephonySettings {
     static void toggle(final Context context) {
         Log.i(DazzleProvider.TAG, "toggle radio data");
         
-        toggleRadioOnOff(context);
+        setRadioEnabled(context, !isRadioOn(context));
     }
 
     /**
@@ -70,7 +100,6 @@ public class PhoneRadioSettings extends AbsCommonTelephonySettings {
 			if( radioState == transition.to) {
 				transition.stop(radioState);
 				indicator = radioState ? R.drawable.green : R.drawable.grey;
-				// TODO: check mobile data persistent setting and apply if required
 				// TODO: watch the system mobile data setting and adjust the internal settings accordingly
 			} else {
 				indicator = R.drawable.orange;
@@ -81,33 +110,7 @@ public class PhoneRadioSettings extends AbsCommonTelephonySettings {
         views.setImageViewResource(widget, indicator);
     }
     
-    /*
-     * There are no useful callbacks/broadcasts about the phone radio state.
-     * Hence we try to track the progress manually.
-     */
-    private static class Transition {
-    	private boolean from;
-    	private boolean to;
-    	
-    	public void start(final boolean target) {
-    		from = !target;
-    		to = target;
-    	}
-    	
-    	public void stop(final boolean state) {
-    		from = to = state;
-    	}
-
-    	public boolean inProgress() {
-    		return from != to;
-    	}
-    	
-    	public String toString() {
-    		return (from ? "ON" : "OFF") + " -> " + (to ? "ON" : "OFF"); 
-    	}
-    }
-    
     private static Transition transition = new Transition();
-    
+
 }
 // EOF
