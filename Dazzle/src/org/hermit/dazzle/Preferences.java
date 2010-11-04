@@ -81,6 +81,13 @@ public class Preferences
             boHelp.setText(R.string.prefs_otbrightauto_summary_noauto);
         }
 
+        // Tethering exists since Froyo
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
+            findViewById(R.id.dazzle_wifi_ap).setEnabled(false);
+            ((TextView) findViewById(R.id.prefs_wifi_ap_help))
+                    .setText(R.string.prefs_wifi_ap_summary_froyo);
+        }
+
         // Add a handler to the save button.
         Button saveBut = (Button) findViewById(R.id.save_button);
         saveBut.setOnClickListener(new View.OnClickListener() {
