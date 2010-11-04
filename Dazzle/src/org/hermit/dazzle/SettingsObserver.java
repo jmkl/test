@@ -21,7 +21,7 @@ import android.util.Log;
 
 public class SettingsObserver extends ContentObserver {
 
-	private final String logMessage;
+	protected final String logMessage;
 		
 	public SettingsObserver(final ContentResolver resolver,
 			final Uri uri, final String logMessage) {

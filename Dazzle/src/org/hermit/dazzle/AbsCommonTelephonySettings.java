@@ -52,9 +52,11 @@ abstract class AbsCommonTelephonySettings {
 		boolean radioOn = false;
 		try {
 			final Object iTelephony = getITelephony(context);
-			final Method isRadioOn
-					= iTelephony.getClass().getDeclaredMethod("isRadioOn");
-			radioOn = ((Boolean) isRadioOn.invoke(iTelephony)).booleanValue();
+			if (null != iTelephony) {
+				final Method isRadioOn
+						= iTelephony.getClass().getDeclaredMethod("isRadioOn");
+				radioOn = ((Boolean) isRadioOn.invoke(iTelephony)).booleanValue();
+			}
 			//Log.d(DazzleProvider.TAG, "Radio state: " + radioOn);
 		} catch(Exception e) {
 			Log.e(DazzleProvider.TAG, "isRadioOn()", e);
@@ -78,6 +80,15 @@ abstract class AbsCommonTelephonySettings {
     		return false;
     	}
     }
+    
+    protected static void setShadowMobileDataEnabled(final Context context,
+    		final boolean enabled)
+    {
+		final SharedPreferences prefs = DazzleProvider.getShadowPreferences(context);
+		if (prefs.getBoolean(SHADOW_MOBILE_DATA, true) != enabled) {
+			prefs.edit().putBoolean(SHADOW_MOBILE_DATA, enabled).commit();
+		}
+    }
 
 	protected static void setMobileDataEnabled(final Context context,
 			final boolean enabled)
@@ -93,10 +104,7 @@ abstract class AbsCommonTelephonySettings {
 					? "enableDataConnectivity" : "disableDataConnectivity");
 			action.invoke(iTelephony);
 			mobileDataTransition.start(enabled);
-			final SharedPreferences prefs = DazzleProvider.getShadowPreferences(context);
-			if (prefs.getBoolean(SHADOW_MOBILE_DATA, true) != enabled) {
-				prefs.edit().putBoolean(SHADOW_MOBILE_DATA, enabled).commit();
-			}
+			setShadowMobileDataEnabled(context, enabled);
 			Log.d(DazzleProvider.TAG, "setMobileDataEnabled: Mobile data "
 					+ (enabled ? "enabled" : "disabled"));
 		} catch (Exception e) {

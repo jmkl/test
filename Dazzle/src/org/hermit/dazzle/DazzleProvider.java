@@ -492,6 +492,7 @@ public abstract class DazzleProvider
         	// no op
         	break;
         case MOBILE_DATA:
+        	MobileDataSettings.subscribe(context);
             MobileDataSettings.setWidgetState(context, views,
                        R.id.mobile_data_icon, R.id.mobile_data_ind);
             break;

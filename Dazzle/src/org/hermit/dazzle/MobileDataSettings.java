@@ -18,6 +18,9 @@ package org.hermit.dazzle;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +28,36 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 public class MobileDataSettings extends AbsCommonTelephonySettings {
+	
+	/**
+	 * Track the system mobile data settings and update our shadow copy.
+	 * 
+	 * @author dmitry
+	 *
+	 */
+	private static class SyncingSettingsObserver extends SettingsObserver {
+
+		// is there any other way to react to the settings change and not
+		// to cache the context?
+		private final Context context;
+		
+		public SyncingSettingsObserver(final Context context,
+				final Uri uri, final String logMessage)
+		{
+			super(context.getContentResolver(), uri, logMessage);
+			this.context = context.getApplicationContext();
+		}
+
+		@Override
+		public void onChange(boolean selfChange) {
+			final boolean enabled = isMobileDataEnabledInSettings(context);
+			Log.d(DazzleProvider.TAG, logMessage + " changed, new state:"
+					+ (enabled ? "enabled" : "disabled"));
+			// update shadow settings to match the system settings
+			setShadowMobileDataEnabled(context, enabled);
+		}
+
+	}
 
 	private MobileDataSettings() { }
 	
@@ -35,7 +68,18 @@ public class MobileDataSettings extends AbsCommonTelephonySettings {
 		return TelephonyManager.DATA_CONNECTED == dataState
 				|| TelephonyManager.DATA_SUSPENDED == dataState;
 	}
+
+	private static SettingsObserver observer = null;
 	
+	static void subscribe(final Context context) {
+		if (null == observer) {
+			observer = new SyncingSettingsObserver(context,
+					Settings.Secure.getUriFor("mobile_data"),
+					"Settings.Secure.MOBILE_DATA");
+			DazzleProvider.registerSettingsObserver(observer);
+		}
+	}
+    
     /**
      * Toggle the current state.
      * 
@@ -70,10 +114,16 @@ public class MobileDataSettings extends AbsCommonTelephonySettings {
             final int iconWidget, final int indicatorWidget)
     {
         final boolean enabled = isMobileDataTogglePossible(context);
-        // calling "setEnabled" prevents view from being clickable and we
-        // cannot show a Toast with explanation
-        views.setInt(R.id.dazzle_mobile_data, "setBackgroundResource",
-                enabled ? R.drawable.appwidget_button : android.R.color.transparent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+            // calling "setEnabled" prevents view from being clickable and we
+            // cannot show a Toast with explanation
+            views.setInt(R.id.dazzle_mobile_data, "setBackgroundResource",
+                    enabled ? R.drawable.appwidget_button : android.R.color.transparent);
+        //} else {
+        	// Sadly, we can only do views.setImageViewBitmap() which won't work
+        	// here because we do not have a bitmap for background.
+        	// views.setBoolean(..., "setEnabled", ...) does not work either...
+        }
         views.setImageViewResource(iconWidget,
                     enabled ? R.drawable.radio : R.drawable.radio_off);
         final int indicator;
@@ -109,6 +159,6 @@ public class MobileDataSettings extends AbsCommonTelephonySettings {
         }
         return indicator;
     }
-    
+
 }
 // EOF
