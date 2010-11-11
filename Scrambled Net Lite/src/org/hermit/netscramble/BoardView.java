@@ -40,6 +40,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -175,7 +176,25 @@ public class BoardView
 	// ******************************************************************** //
 	// Constructor.
 	// ******************************************************************** //
-  	
+    
+	/**
+	 * Construct a board view.
+	 * 
+	 * @param	context			The context we're running in.
+	 * @param	attrs			Our layout attributes.
+	 */
+    public BoardView(Context context, AttributeSet attrs) {
+    	super(context, attrs);
+    	
+    	try {
+    		NetScramble parent = (NetScramble) context;
+    		init(parent);
+    	} catch (ClassCastException e) {
+    		throw new IllegalStateException("BoardView must be part of NetScramble", e);
+    	}
+    }
+    
+    
 	/**
 	 * Construct a board view.
 	 * 
@@ -183,6 +202,16 @@ public class BoardView
 	 */
     public BoardView(NetScramble parent) {
         super(parent);
+        init(parent);
+    }
+
+    
+	/**
+	 * Initialise this board view.
+	 * 
+	 * @param	parent			The application context we're running in.
+	 */
+    private void init(NetScramble parent) {
         parentApp = parent;
         
         // Animation delay.
@@ -214,7 +243,7 @@ public class BoardView
         focusedCell = null;
         setFocus(rootCell);
     }
-
+    
 
     /**
      * Find the size of board that can fit in the window.

@@ -28,32 +28,27 @@ import org.hermit.android.core.MainActivity;
 import org.hermit.netscramble.BoardView.Skill;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.Display;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
-import android.widget.LinearLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.ViewAnimator;
 
@@ -166,9 +161,13 @@ public class NetScramble
         // We want the audio controls to control our sound volume.
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
+        // Create string formatting buffers.
+        clicksText = new StringBuilder(10);
+        timeText = new StringBuilder(10);
+
         // Create the GUI for the game.
-        mainView = createGui();
-        setContentView(mainView);
+        setContentView(R.layout.main);
+        setupGui();
 
         // Restore our preferences.
     	SharedPreferences prefs = getPreferences(0);
@@ -308,7 +307,7 @@ public class NetScramble
         showFirstEula();
 
         // Display the skill level.
-		statusMid.setText(gameSkill.label);
+		statusMode.setText(gameSkill.label);
 
         // If we restored a state, go to that state.  Otherwise start
         // at the welcome screen.
@@ -480,20 +479,13 @@ public class NetScramble
     // ******************************************************************** //
 
     /**
-     * Create the GUI for the game.  We basically create a board which
-     * fills the screen; but we also create a text display for status
-     * messages, which covers the board when visible.
+     * Set up the GUI for the game.  Add handlers and animations where
+     * needed.
      * 
      * @return					The game GUI's top-level view.
      */
-    private ViewGroup createGui() {
-    	WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-    	Display disp = wm.getDefaultDisplay();
-    	int width = disp.getWidth();
-    	int height = disp.getHeight();
-        
-    	viewSwitcher = new ViewAnimator(this);
-    	final int FPAR = LinearLayout.LayoutParams.FILL_PARENT;
+    private void setupGui() {
+    	viewSwitcher = (ViewAnimator) findViewById(R.id.view_switcher);
 
     	// Make the animations for the switcher.
     	animSlideInLeft =
@@ -521,134 +513,49 @@ public class NetScramble
 				   			   	   	   Animation.RELATIVE_TO_SELF, 0.0f);
     	animSlideOutRight.setDuration(ANIM_TIME);
 
-        // Add the board and status to the layout, filling all the space.
-    	View playView = createPlayView(width > height);
-        viewSwitcher.addView(playView, 0,
-					   new ViewGroup.LayoutParams(FPAR, FPAR));
-
-        // Add the splash screen to the top-level layout, filling the space.
-        // This will hide the board when it is visible.
-        splashText = createSplashScreen();
-        viewSwitcher.addView(splashText, 1,
-				       new ViewGroup.LayoutParams(FPAR, FPAR));
-
-    	return viewSwitcher;
-    }
-
-
-    /**
-     * Create the play view, containing the board and status bar.
-     * 
-     * @param	landscape		True if the layout is in landscape
-     * 							orientation, false for portrait.
-     * @return					The play view's top-level view.
-     */
-    private View createPlayView(boolean landscape) {
-    	final int WCON = LinearLayout.LayoutParams.WRAP_CONTENT;
-    	final int FPAR = LinearLayout.LayoutParams.FILL_PARENT;
-    	final int HORI = LinearLayout.HORIZONTAL;
-    	final int VERT = LinearLayout.VERTICAL;
-
-        // Set up our orientation and fill modes.
-    	final int orient = landscape ? HORI : VERT;
-    	final int orient2 = landscape ? VERT : HORI;
-    	final int hfill = landscape ? WCON : FPAR;
-    	final int vfill = landscape ? FPAR : WCON;
-
-        // Create a layout to hold the board and status bar.
-    	LinearLayout boardWrapper = new LinearLayout(this);
-        boardWrapper.setOrientation(orient);
-
-        // Construct the board, and add it to the layout.
-        boardView = new BoardView(this);
-        boardWrapper.addView(boardView,
-        					 new LinearLayout.LayoutParams(FPAR, FPAR, 1));
-        
-        // Add a status bar after the board.
-        boardWrapper.addView(createStatusBar(orient2),
-        					 new LinearLayout.LayoutParams(hfill, vfill));
-        
-        return boardWrapper;
-    }
-    
-    
-    /**
-     * Create the status bar, containing two status fields.
-     * 
-     * @return					The status bar's top-level view.
-     */
-    private View createStatusBar(int orientation) {
-        // Add a status bar under the board.
-        LinearLayout statusWrapper = new LinearLayout(this);
-        statusWrapper.setBackgroundColor(Color.BLACK);
-        statusWrapper.setOrientation(orientation);
+        // Get handles on the important widgets.
+        splashText = (TextView) findViewById(R.id.splash_text);
+        boardView = (BoardView) findViewById(R.id.board_view);
         
         // Create the left status field.
-        statusLeft = new TextView(this);
-        statusLeft.setGravity(Gravity.LEFT);
-        statusLeft.setText("00");
-        LinearLayout.LayoutParams lpl = new LinearLayout.LayoutParams(
-        		LinearLayout.LayoutParams.WRAP_CONTENT,
-        		LinearLayout.LayoutParams.WRAP_CONTENT, 1);
-        statusWrapper.addView(statusLeft, lpl);
+        statusClicks = (TextView) findViewById(R.id.status_clicks);
+        statusMode = (TextView) findViewById(R.id.status_mode);
+        statusTime = (TextView) findViewById(R.id.status_time);
 
-        // Create the center status field.
-        statusMid = new TextView(this);
-        statusMid.setGravity(Gravity.CENTER_HORIZONTAL);
-        statusMid.setText("");
-        LinearLayout.LayoutParams lpm = new LinearLayout.LayoutParams(
-        		LinearLayout.LayoutParams.WRAP_CONTENT,
-        		LinearLayout.LayoutParams.WRAP_CONTENT, 1);
-        statusWrapper.addView(statusMid, lpm);
-        
-        // Create the right status field.
-        statusRight = new TextView(this);
-        statusRight.setGravity(Gravity.RIGHT);
-        clicksText = new StringBuilder(10);
-        timeText = new StringBuilder(10);
-        LinearLayout.LayoutParams lpr = new LinearLayout.LayoutParams(
-        		LinearLayout.LayoutParams.WRAP_CONTENT,
-        		LinearLayout.LayoutParams.WRAP_CONTENT, 1);
-        statusWrapper.addView(statusRight, lpr);
-
-        return statusWrapper;
-    }
-
-
-    /**
-     * Create the splash screen, which is just a big text view.
-     * 
-     * @return					The splash screen's top-level view.
-     */
-    private TextView createSplashScreen() {
-        // Create the splash text view.  Set it up to call wakeUp() when
+        // Set up the splash text view to call wakeUp() when
         // the user presses a key or taps the screen.
-    	TextView text = new TextView(this) {
-        	// Handle taps/clicks.
-        	@Override
-            public boolean onTouchEvent(MotionEvent event) {
+    	splashText.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
             	if (event.getAction() == MotionEvent.ACTION_DOWN) {
     				wakeUp();
             		return true;
             	} else
             		return false;
-            }
-        	// Handle key presses.
-        	@Override
-            public boolean onKeyDown(int keyCode, KeyEvent event) {
-        		wakeUp();
-        		return true;
-        	}
-        };
-        text.setFocusable(true);
-        text.setFocusableInTouchMode(true);
-        text.setGravity(Gravity.CENTER);
-        text.setBackgroundResource(R.drawable.splash_bg);
-        text.setTextColor(0xff000000);
-        text.setTextSize(20f);
-        text.setText("Wait...");
-
-        return text;
+			}
+        });
+    	splashText.setOnKeyListener(new View.OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if (event.getAction() == KeyEvent.ACTION_DOWN) {
+	        		wakeUp();
+	        		return true;
+	        	}
+				return false;
+			}
+		});
+    	
+    	// If we have a soft menu button (which depends on the screen size),
+    	// then set it up.
+    	ImageButton menuButton = (ImageButton) findViewById(R.id.menu_button);
+    	if (menuButton != null) {
+    		menuButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					openOptionsMenu();
+				}
+			});
+    	}
     }
     
     
@@ -919,7 +826,7 @@ public class NetScramble
 
         // Set the selected skill menu item to the current skill.
         selectCurrentSkill();
-		statusMid.setText(gameSkill.label);
+		statusMode.setText(gameSkill.label);
 
         // OK, now get going!
         Log.i(TAG, "startGame: " + gameSkill + " (was " + prevSkill + ")");
@@ -1138,7 +1045,7 @@ public class NetScramble
 		clicksText.setCharAt(0, (char) ('0' + clickCount / 100 % 10));
         clicksText.setCharAt(1, (char) ('0' + clickCount / 10 % 10));
         clicksText.setCharAt(2, (char) ('0' + clickCount % 10));
-		statusLeft.setText(clicksText);
+		statusClicks.setText(clicksText);
 		
 		timeText.setLength(5);
 		int time = (int) (gameTimer.getTime() / 1000);
@@ -1149,7 +1056,7 @@ public class NetScramble
         timeText.setCharAt(2, ':');
         timeText.setCharAt(3, (char) ('0' + sec / 10));
         timeText.setCharAt(4, (char) ('0' + sec % 10));
-		statusRight.setText(timeText);
+		statusTime.setText(timeText);
 	}
 
 
@@ -1406,16 +1313,13 @@ public class NetScramble
 	// The app's resources.
 	private Resources appResources;
 	
-	// The top-level view.
-	private ViewGroup mainView;
-	
     // The game board.
     private BoardView boardView = null;
 
     // The status bar, consisting of 3 status fields.
-    private TextView statusLeft;
-    private TextView statusMid;
-    private TextView statusRight;
+    private TextView statusClicks;
+    private TextView statusMode;
+    private TextView statusTime;
 
     // Text buffers used to format the click count and time.  We allocate
     // these here, so we don't allocate new String objects every time
