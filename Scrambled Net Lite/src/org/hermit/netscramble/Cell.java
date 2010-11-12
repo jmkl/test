@@ -24,6 +24,9 @@
 package org.hermit.netscramble;
 
 
+import java.util.Random;
+
+import net.goui.util.MTRandom;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -918,8 +921,30 @@ class Cell
      *                      any, along whatever connection leg they're on.
      */
     protected void doDrawBlips(Canvas canvas, long now, float frac) {
+        // Normal cable sections and the server get blips, including the
+        // section of cable going into a terminal cell.  Otherwise, terminals
+        // get special treatment.
+        if (isRoot || numDirs() > 1 || (numDirs() == 1 && frac < 0.3f))
+            drawBlips(canvas, now, frac);
+        else
+            drawTermData(canvas, now, frac);
+    }
+
+    
+    /**
+     * This method is called to ask the cell to draw its active data
+     * blips.  This happens in a separate pass, so that blips which are
+     * in transition from one cell to another don't get cropped by
+     * the drawing of the next cell.
+     * 
+     * @param   canvas      Canvas to draw into.
+     * @param   now         Current time in ms.
+     * @param   frac        Fractional position of the data blips, if
+     *                      any, along whatever connection leg they're on.
+     */
+    private void drawBlips(Canvas canvas, long now, float frac) {
         // We don't check stateValid.  Blips are always drawn.
-        
+
         // But if this cell's wiring is invisible, then its blips need
         // to be too.
         if (isBlind)
@@ -933,9 +958,9 @@ class Cell
         // cells.
         
         // Now draw in all blips.  We use "glow-in" / "glow-out" images
-        // for the server and terminals.
-        final boolean isTerm = numDirs() == 1 || isRoot;
-        final Image[] blips = isTerm ? BLIP_T_IMAGES :
+        // for the server; otherwise blips, whose colour depends on whether
+        // this cell is connected.
+        final Image[] blips = isRoot ? BLIP_T_IMAGES :
                               isConnected ? BLIP_IMAGES : BLIP_G_IMAGES;
         final int nblips = blips.length;
         int indexIn = Math.round((float) (nblips - 1) * frac) % nblips;
@@ -966,7 +991,40 @@ class Cell
         }
     }
 
-	
+    
+    /**
+     * This method is called to ask the cell to draw its active data
+     * blips.  This happens in a separate pass, so that blips which are
+     * in transition from one cell to another don't get cropped by
+     * the drawing of the next cell.
+     * 
+     * @param   canvas      Canvas to draw into.
+     * @param   now         Current time in ms.
+     * @param   frac        Fractional position of the data blips, if
+     *                      any, along whatever connection leg they're on.
+     */
+    private void drawTermData(Canvas canvas, long now, float frac) {
+        // We don't check stateValid.  Blips are always drawn.
+        
+        // If this cell is invisible or not connected, or there's no
+        // blip, then nothing gets drawn.
+        if (isBlind || !isConnected || blipsIncoming == 0)
+            return;
+        
+        final int sx = cellLeft;
+        final int sy = cellTop;
+        
+        cellPaint.setStyle(Paint.Style.STROKE);
+        cellPaint.setStrokeWidth(1f);
+        cellPaint.setColor(0xff00ff00);
+        for (float y = cellHeight / 3f; y < cellHeight * 0.55f; y += 2f) {
+            float l = cellWidth / 3f;
+            float r = cellWidth / 3f * rng.nextFloat() + cellWidth / 3f;
+            canvas.drawLine(sx + l, sy + y, sx + r, sy + y, cellPaint);
+        }
+    }
+
+
     // ******************************************************************** //
     // State Save/Restore.
     // ******************************************************************** //
@@ -1096,7 +1154,11 @@ class Cell
     
 	// Time taken to display a highlight flash, in ms.
 	private static final long HIGHLIGHT_TIME = 200;
-	
+
+    // Random number generator for the game.  We use a Mersenne Twister,
+    // which is a high-quality and fast implementation of java.util.Random.
+    private static final Random rng = new MTRandom();
+
 	
 	// ******************************************************************** //
 	// Private Data.

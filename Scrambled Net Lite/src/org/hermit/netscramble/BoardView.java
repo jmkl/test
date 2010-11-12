@@ -83,22 +83,8 @@ public class BoardView
 
 	/**
 	 * Enumeration defining a game skill level.  Each enum member also
-	 * stores the configuration parameters for that skill level.
-	 * 
-	 * Traditional knetwalk has these board sizes:
-	 *     Novice:  5x5  = 25 tiles = 31%
-	 *     Normal:  7x7  = 49 tiles = 60%
-	 *     Expert:  9x9  = 81 tiles = 100%
-	 *     Master:  9x9  = 81 tiles = 100% wrapped
-	 *     
-	 * We have to deal with a small screen, and we want the cells to be big
-	 * enough to touch.  So, we set the board sizes as shown below.  We also
-	 * introduce the wrinkle of blind tiles, to make an insane level:
-	 *     Novice:  4x5
-	 *     Normal:  6x5
-	 *     Expert:  6x9
-	 *     Master:  6x9 wrapped
-	 *     Insane:  6x9 wrapped blind
+	 * stores the configuration parameters for that skill level.  We also
+     * introduce the wrinkle of blind tiles, to make an insane level:
 	 */
 	enum Skill {
 		//     Name                   id                 brch  wrap  blind
@@ -126,7 +112,15 @@ public class BoardView
 
 
     /**
-     * This enum defines the supported screen layouts.  We choose either
+     * This enum defines the board sizes for the supported screen layouts.
+     * Traditional knetwalk has these board sizes:
+     *     Novice:  5x5  = 25 tiles = 31%
+     *     Normal:  7x7  = 49 tiles = 60%
+     *     Expert:  9x9  = 81 tiles = 100%
+     *     Master:  9x9  = 81 tiles = 100% wrapped
+     *     
+     * We have to deal with various screen sizes, and we want the cells to be
+     * big enough to touch.  So, to set the board sizes, we choose either
      * SMALL, MEDIUM, or LARGE based on the physical screen size.  Then,
      * sizes[skill][0] is the major grid size for that skill, and
      * sizes[skill][1] is the minor grid size for that skill.
