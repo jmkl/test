@@ -18,6 +18,8 @@ package org.hermit.dazzle;
 
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -83,12 +85,19 @@ public class WiFiSettings extends AbsCommonWiFiSettings
         int state = wifiManager.getWifiState();
         
         int image = R.drawable.grey;
-        if (state == WifiManager.WIFI_STATE_DISABLED)
+        if (state == WifiManager.WIFI_STATE_DISABLED) {
             image = R.drawable.grey;
-        else if (state == WifiManager.WIFI_STATE_ENABLED)
-            image = R.drawable.green;
-        else
+        } else if (state == WifiManager.WIFI_STATE_ENABLED) {
+        	final NetworkInfo.State wifiState = ((ConnectivityManager)
+					context.getSystemService(Context.CONNECTIVITY_SERVICE))
+						.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
+							.getState();
+            image = NetworkInfo.State.CONNECTED == wifiState
+            	? R.drawable.green : R.drawable.blue;
+        } else {
             image = R.drawable.orange;
+        }
+        // TODO: track off->on transition and restore mobile data state
 
         views.setImageViewResource(widget, image);
     }
