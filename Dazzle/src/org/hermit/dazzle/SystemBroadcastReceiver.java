@@ -23,6 +23,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -65,7 +66,8 @@ public class SystemBroadcastReceiver
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
         	// Update system settings from shadow copy, no other way to do it.
         	// For now we have only radio/mobile data settings.
-        	if (hasRadioControlsEnabled(context)) {
+        	if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD
+        			&& hasRadioControlsEnabled(context)) {
         		Log.d(TAG, "Restoring radio/mobile data settings from shadow copy");
         		PhoneRadioSettings.onBoot(context, intent);
         	}
