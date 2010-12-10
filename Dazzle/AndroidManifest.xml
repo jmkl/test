@@ -84,7 +84,7 @@
 			</intent-filter>
 		</activity>
 
-    <service android:exported="false" android:name=".observers.ObserverService"></service>
+    <service android:exported="false" android:name=".observers.ObserverService" android:description="@string/int_obsrv_svc_desc" android:label="@string/int_obsrv_svc_name"></service>
 </application>
     
     <uses-sdk android:minSdkVersion="4" />

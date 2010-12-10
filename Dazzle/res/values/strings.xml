@@ -89,5 +89,9 @@ one-touch with auto -- needs Android 2.0 or later</string>
     <!-- Errors. -->
     <string name="system_mobile_data_disabled">Mobile Data disabled in system settings</string>
     
+    <!-- internal components -->
+    <string name="int_obsrv_svc_name">Dazzle Settings Observer</string>
+    <string name="int_obsrv_svc_desc">Service holding the system settings observers</string>
+    
 </resources>
 
