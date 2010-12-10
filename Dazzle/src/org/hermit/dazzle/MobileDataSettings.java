@@ -15,10 +15,11 @@
 
 package org.hermit.dazzle;
 
+import java.util.HashMap;
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -29,36 +30,6 @@ import android.widget.Toast;
 
 public class MobileDataSettings extends AbsCommonTelephonySettings {
 	
-	/**
-	 * Track the system mobile data settings and update our shadow copy.
-	 * 
-	 * @author dmitry
-	 *
-	 */
-	private static class SyncingSettingsObserver extends SettingsObserver {
-
-		// is there any other way to react to the settings change and not
-		// to cache the context?
-		private final Context context;
-		
-		public SyncingSettingsObserver(final Context context,
-				final Uri uri, final String logMessage)
-		{
-			super(context.getContentResolver(), uri, logMessage);
-			this.context = context.getApplicationContext();
-		}
-
-		@Override
-		public void onChange(boolean selfChange) {
-			final boolean enabled = isMobileDataEnabledInSettings(context);
-			Log.d(DazzleProvider.TAG, logMessage + " changed, new state:"
-					+ (enabled ? "enabled" : "disabled"));
-			// update shadow settings to match the system settings
-			setShadowMobileDataEnabled(context, enabled);
-		}
-
-	}
-
 	private MobileDataSettings() { }
 	
 	private static boolean getMobileDataState(final Context context) {
@@ -69,14 +40,24 @@ public class MobileDataSettings extends AbsCommonTelephonySettings {
 				|| TelephonyManager.DATA_SUSPENDED == dataState;
 	}
 
-	private static SettingsObserver observer = null;
+	public static void updateShadowSettings(final Context context) {
+		final boolean enabled = isMobileDataEnabledInSettings(context);
+		Log.d(DazzleProvider.TAG, "Settings.Secure.MOBILE_DATA changed, new state:"
+				+ (enabled ? "enabled" : "disabled"));
+		// update shadow settings to match the system settings
+		setShadowMobileDataEnabled(context, enabled);
+	}
+
+	private static HashMap<Class<?>, Boolean> observer = new HashMap<Class<?>, Boolean>();
 	
-	static void subscribe(final Context context) {
-		if (null == observer) {
-			observer = new SyncingSettingsObserver(context,
+	static void subscribe(final Context context, final int widgetId, final Class<?> providerClass) {
+		if (null == observer.get(providerClass) ) {
+			DazzleProvider.registerSettingsObserver(context,
+					widgetId,
 					Settings.Secure.getUriFor("mobile_data"),
-					"Settings.Secure.MOBILE_DATA");
-			DazzleProvider.registerSettingsObserver(observer);
+					"Settings.Secure.MOBILE_DATA",
+					providerClass);
+			observer.put(providerClass, Boolean.TRUE);
 		}
 	}
     

@@ -15,6 +15,8 @@
 
 package org.hermit.dazzle;
 
+import java.util.HashMap;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -69,14 +71,16 @@ public class ScreenAlwaysOnSettings {
 		}
 	}
 
-	private static SettingsObserver observer = null;
+	private static HashMap<Class<?>, Boolean> observer = new HashMap<Class<?>, Boolean>();
 	
-	static void subscribe(final Context context) {
-		if( null == observer ) {
-			observer = new SettingsObserver(context.getContentResolver(),
+	static void subscribe(final Context context, final int widgetId, final Class<?> providerClass) {
+		if( null == observer.get(providerClass) ) {
+			DazzleProvider.registerSettingsObserver(context,
+					widgetId,
 					Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT),
-					"Settings.System.SCREEN_OFF_TIMEOUT");
-			DazzleProvider.registerSettingsObserver(observer);
+					"Settings.System.SCREEN_OFF_TIMEOUT",
+					providerClass);
+			observer.put(providerClass, Boolean.TRUE);
 		}
 		
 	}

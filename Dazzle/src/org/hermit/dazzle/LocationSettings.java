@@ -16,6 +16,8 @@
 
 package org.hermit.dazzle;
 
+import java.util.HashMap;
+
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
@@ -28,14 +30,16 @@ public class LocationSettings {
 
 	private LocationSettings() { }
 	
-	private static SettingsObserver observer = null;
+	private static HashMap<Class<?>, Boolean> observer = new HashMap<Class<?>, Boolean>();
 	
-	static void subscribe(final Context context) {
-		if( null == observer ) {
-			observer = new SettingsObserver(context.getContentResolver(),
+	static void subscribe(final Context context, final int widgetId, final Class<?> providerClass) {
+		if( null == observer.get(providerClass) ) {
+			DazzleProvider.registerSettingsObserver(context,
+					widgetId,
 					Settings.Secure.getUriFor(Settings.Secure.LOCATION_PROVIDERS_ALLOWED),
-					"Settings.Secure.LOCATION_PROVIDERS_ALLOWED");
-			DazzleProvider.registerSettingsObserver(observer);
+					"Settings.Secure.LOCATION_PROVIDERS_ALLOWED",
+					providerClass);
+			observer.put(providerClass, Boolean.TRUE);
 		}
 		
 	}

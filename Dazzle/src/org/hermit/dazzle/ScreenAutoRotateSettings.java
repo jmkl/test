@@ -15,6 +15,8 @@
 
 package org.hermit.dazzle;
 
+import java.util.HashMap;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.provider.Settings;
@@ -36,14 +38,16 @@ public class ScreenAutoRotateSettings {
 				Settings.System.ACCELEROMETER_ROTATION, enabled ? 1 : 0);
 	}
 
-	private static SettingsObserver observer = null;
+	private static HashMap<Class<?>, Boolean> observer = new HashMap<Class<?>, Boolean>();
 	
-	static void subscribe(final Context context) {
-		if( null == observer ) {
-			observer = new SettingsObserver(context.getContentResolver(),
+	static void subscribe(final Context context, final int widgetId, final Class<?> providerClass) {
+		if( null == observer.get(providerClass) ) {
+			DazzleProvider.registerSettingsObserver(context,
+					widgetId,
 					Settings.System.getUriFor(Settings.System.ACCELEROMETER_ROTATION),
-					"Settings.System.ACCELEROMETER_ROTATION");
-			DazzleProvider.registerSettingsObserver(observer);
+					"Settings.System.ACCELEROMETER_ROTATION",
+					providerClass);
+			observer.put(providerClass, Boolean.TRUE);
 		}
 		
 	}
