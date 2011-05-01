@@ -19,7 +19,6 @@ package org.hermit.formula;
 
 import org.hermit.android.core.AppUtils;
 import org.hermit.android.core.MainActivity;
-import org.hermit.android.notice.EulaBox;
 import org.hermit.android.notice.InfoBox;
 import org.hermit.formula.provider.Formula;
 
@@ -81,9 +80,8 @@ public class FormulaRunner
         formulaWidget = (FormulaView) findViewById(R.id.runner_view);
 
         // Create the EULA dialog.
-        eulaDialog = new EulaBox(this, R.string.eula_title,
-        						 R.string.eula_text, R.string.button_close);
-        
+        createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);
+
         // Create the dialog we use for help and about.
         AppUtils autils = AppUtils.getInstance(this);
         messageDialog = new InfoBox(this, R.string.button_close);
@@ -124,8 +122,8 @@ public class FormulaRunner
         super.onResume();
         
         // First time round, show the EULA.
-        eulaDialog.showFirstTime();
-        
+        showFirstEula();
+
         // If we have a URI, get a cursor on the formula.  If we don't have
         // one, then query for any formula, in order of when used,
         // so we get the most recent one.
@@ -337,7 +335,7 @@ public class FormulaRunner
  			messageDialog.show(R.string.about_text);
      		break;
     	case R.id.menu_eula:
-            eulaDialog.showNow();
+            showEula();
      		break;
         case R.id.menu_exit:
         	finish();
@@ -397,9 +395,6 @@ public class FormulaRunner
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-
-    // The EULA dialog.
-    private EulaBox eulaDialog;
 
 	// Dialog used to display about etc.
 	private InfoBox messageDialog;
