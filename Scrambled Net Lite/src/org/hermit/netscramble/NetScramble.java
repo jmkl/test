@@ -481,8 +481,6 @@ public class NetScramble
     /**
      * Set up the GUI for the game.  Add handlers and animations where
      * needed.
-     * 
-     * @return					The game GUI's top-level view.
      */
     private void setupGui() {
     	viewSwitcher = (ViewAnimator) findViewById(R.id.view_switcher);
