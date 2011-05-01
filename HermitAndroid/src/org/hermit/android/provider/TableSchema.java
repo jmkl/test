@@ -69,15 +69,18 @@ public abstract class TableSchema
      *                      { { "name", "TEXT" }, { "time", "INTEGER" }}.
      *                      The standard ID field "_id" will be prepended
      *                      automatically.
+     * @param   projection  Default projection for this table.
      */
     protected TableSchema(String name, String type,
-                          Uri uri, String sort, String[][] fields)
+                          Uri uri, String sort,
+                          String[][] fields, String[] projection)
     {
         tableName = name;
         itemType = type;
         contentUri = uri;
         sortOrder = sort;
         fieldDefs = fields;
+        defProjection = projection;
     }
 
 
@@ -97,9 +100,8 @@ public abstract class TableSchema
         // Add the implicit ID field.
         projectionMap.put(BaseColumns._ID, BaseColumns._ID);
 
-        for (String[] field : fieldDefs) {
+        for (String[] field : fieldDefs)
             projectionMap.put(field[0], field[0]);
-        }
     }
 
 
@@ -132,7 +134,7 @@ public abstract class TableSchema
         return projection;
     }
     
-    
+
     // ******************************************************************** //
     // Public Accessors.
     // ******************************************************************** //
@@ -176,6 +178,17 @@ public abstract class TableSchema
         return "vnd.android.cursor.item/" + itemType;
     }
 
+
+    /**
+     * Get the default projection.  The returned projection includes all
+     * fields, including the implicit "_id" field.
+     * 
+     * @return              An all-fields projection for this table.
+     */
+    public String[] getDefaultProjection() {
+        return defProjection;
+    }
+    
 
     // ******************************************************************** //
     // Event Handlers.
@@ -249,6 +262,9 @@ public abstract class TableSchema
 
     // Definitions of the fields.
     private final String[][] fieldDefs;
+
+    // The default projection for this table.
+    private final String[] defProjection;
 
     // Projection map for this table.
     private HashMap<String, String> projectionMap;
