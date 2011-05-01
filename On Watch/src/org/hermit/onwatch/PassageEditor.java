@@ -17,7 +17,7 @@
 package org.hermit.onwatch;
 
 
-import org.hermit.provider.PassageData;
+import org.hermit.onwatch.provider.PassageSchema;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -160,36 +160,6 @@ public class PassageEditor
         savePassage();
     }
 
-    
-    /**
-     * Perform any final cleanup before an activity is destroyed.  This
-     * can happen either because the activity is finishing (someone called
-     * finish() on it, or because the system is temporarily destroying this
-     * instance of the activity to save space. You can distinguish between
-     * these two scenarios with the isFinishing() method.
-     * 
-     * Note: do not count on this method being called as a place for saving
-     * data!  For example, if an activity is editing data in a content
-     * provider, those edits should be committed in either onPause()
-     * or onSaveInstanceState(Bundle), not here.  This method is usually
-     * implemented to free resources like threads that are associated
-     * with an activity, so that a destroyed activity does not leave such
-     * things around while the rest of its application is still running.
-     * There are situations where the system will simply kill the activity's
-     * hosting process without calling this method (or any others) in it,
-     * so it should not be used to do things that are intended to remain
-     * around after the process goes away.
-     * 
-     * Derived classes must call through to the super class's implementation
-     * of this method.  If they do not, an exception will be thrown.
-     */
-    @Override
-    protected void onDestroy() {
-        Log.i(TAG, "onDestroy()");
-        
-        super.onDestroy();
-    }
-    
 
 	// ******************************************************************** //
 	// User Interface.
@@ -242,9 +212,9 @@ public class PassageEditor
 
     	    // Write the passage back into the provider.
     	    ContentValues values = new ContentValues();
-    	    values.put(PassageData.Passages.NAME, name);
-    	    values.put(PassageData.Passages.START_NAME, from);
-    	    values.put(PassageData.Passages.DEST_NAME, to);
+    	    values.put(PassageSchema.Passages.NAME, name);
+    	    values.put(PassageSchema.Passages.START_NAME, from);
+    	    values.put(PassageSchema.Passages.DEST_NAME, to);
 
     	    // Commit all of our changes to persistent storage.  When the
     	    // update completes the content provider will notify the
@@ -305,10 +275,10 @@ public class PassageEditor
 
     // Standard projection for reading a passage.
     private static final String[] PROJECTION = new String[] {
-        PassageData.Passages._ID,
-        PassageData.Passages.NAME,
-        PassageData.Passages.START_NAME,
-        PassageData.Passages.DEST_NAME,
+        PassageSchema.Passages._ID,
+        PassageSchema.Passages.NAME,
+        PassageSchema.Passages.START_NAME,
+        PassageSchema.Passages.DEST_NAME,
     };
     
     // The indices of the columns in the projection.

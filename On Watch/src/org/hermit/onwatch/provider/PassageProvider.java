@@ -18,12 +18,10 @@ package org.hermit.onwatch.provider;
 
 
 import org.hermit.android.provider.TableProvider;
-import org.hermit.provider.PassageData;
 
 
 /**
- * Provides access to a database of notes. Each note has a title, the note
- * itself, a creation date and a modified data.
+ * Content provider for stored passage data.
  */
 public class PassageProvider
     extends TableProvider
@@ -37,7 +35,7 @@ public class PassageProvider
      * Create an instance of this content provider.
      */
     public PassageProvider() {
-        super(new PassageData());
+        super(new PassageSchema());
     }
     
 }
