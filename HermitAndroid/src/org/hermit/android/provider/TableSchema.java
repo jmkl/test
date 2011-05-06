@@ -56,6 +56,30 @@ public abstract class TableSchema
     // ******************************************************************** //
 
     /**
+     * Create a table schema instance.  Create a default projection for
+     * the table.
+     * 
+     * @param   name        Name for the table; e.g. "points".
+     * @param   type        Base MIME type identifying the content of this
+     *                      table; e.g. "vnd.hermit.org.passage.point".
+     * @param   uri         Content URI for this table.
+     * @param   sort        Default sort order for this table; e.g.
+     *                      "time ASC".
+     * @param   fields      List of field definitions.  Each one is two
+     *                      strings, being the field name and type.  E.g.
+     *                      { { "name", "TEXT" }, { "time", "INTEGER" }}.
+     *                      The standard ID field "_id" will be prepended
+     *                      automatically.
+     */
+    protected TableSchema(String name, String type,
+                          Uri uri, String sort,
+                          String[][] fields)
+    {
+        this(name, type, uri, sort, fields, makeProjection(fields));
+    }
+
+
+    /**
      * Create a table schema instance.
      * 
      * @param   name        Name for the table; e.g. "points".

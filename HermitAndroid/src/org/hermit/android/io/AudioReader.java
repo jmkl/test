@@ -272,7 +272,6 @@ public class AudioReader
     // ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "WindMeter";
 
 	
