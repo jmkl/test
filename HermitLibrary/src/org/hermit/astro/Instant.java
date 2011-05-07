@@ -51,6 +51,14 @@ public class Instant
     // ******************************************************************** //
 
 	/**
+	 * Create an instant representing the current time.
+	 */
+	public Instant() {
+		this(System.currentTimeMillis());
+	}
+
+
+	/**
 	 * Create an instant from a Julian day number in UT.
 	 * 
 	 * @param	jd			The date to set as a fractional Julian day
