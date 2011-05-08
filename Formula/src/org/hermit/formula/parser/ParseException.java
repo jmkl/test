@@ -109,7 +109,8 @@ public class ParseException extends Exception {
 		Token curr = currentToken;
 		Token next = curr != null ? curr.next : null;
 		Token tok = curr;
-		for (int i = 0; tok != null; i++) {
+		int i;
+		for (i = 0; tok != null; i++) {
 			if (i != 0)
 				retval += " ";
 			if (tok.kind == 0) {
@@ -117,14 +118,20 @@ public class ParseException extends Exception {
 				break;
 			}
 			if (i == 1)
-				retval += "_" + tok.image + "_";
+				retval += "_" + add_escapes(tok.image) + "_";
 			else
-				retval += tok.image;
+				retval += add_escapes(tok.image);
 			tok = tok.next;
 		}
+		if (i == 0)
+			retval += "<empty>";
+			
 		retval += "\"";
 		if (next != null)
 			retval += " at line " + next.beginLine + ", column " + next.beginColumn;
+		else if (curr != null)
+			retval += " after line " + curr.beginLine + ", column " + curr.beginColumn;
+		
 		retval += "." + eol;
 		return retval;
 	}
@@ -184,4 +191,9 @@ public class ParseException extends Exception {
 		return retval.toString();
 	}
 
+
+	// Serialization version ID.
+	private static final long serialVersionUID = 4956458427623933383L;
+
 }
+

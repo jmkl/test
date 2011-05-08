@@ -17,7 +17,7 @@
 package org.hermit.formula;
 
 
-import org.hermit.formula.provider.Formula;
+import org.hermit.formula.provider.FormulaSchema;
 
 import android.app.ListActivity;
 import android.content.ComponentName;
@@ -80,19 +80,25 @@ public class FormulaList
         // as a MAIN activity), then use our default content provider.
         Intent intent = getIntent();
         if (intent.getData() == null)
-            intent.setData(Formula.Formulae.CONTENT_URI);
+            intent.setData(FormulaSchema.Formulae.CONTENT_URI);
 
         // Inform the list we provide context menus for items
         getListView().setOnCreateContextMenuListener(this);
         
-        // Perform a managed query. The Activity will handle closing and requerying the cursor
-        // when needed.
-        Cursor cursor = managedQuery(getIntent().getData(), PROJECTION, null, null,
-        		Formula.Formulae.DEFAULT_SORT_ORDER);
+        // Perform a managed query.  The Activity will handle closing and
+        // re-querying the cursor when needed.
+        Cursor cursor = managedQuery(getIntent().getData(),
+        						     PROJECTION, null, null,
+        						     FormulaSchema.Formulae.SORT_ORDER);
 
-        // Used to map notes entries from the database to views
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, cursor,
-                new String[] { Formula.Formulae.TITLE }, new int[] { android.R.id.text1 });
+        // Set up an adaptor to map formulae from the database to the list
+        // view.  We set up a mapping from the relevant database field to
+        // the text widget in the list.
+        String[] dbFields = new String[] { FormulaSchema.Formulae.TITLE };
+        int[] uiFields = new int[] { android.R.id.text1 };
+        SimpleCursorAdapter adapter =
+        	new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1,
+        						    cursor, dbFields, uiFields);
         setListAdapter(adapter);
     }
 
@@ -253,7 +259,7 @@ public class FormulaList
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         Uri uri = ContentUris.withAppendedId(getIntent().getData(), id);
-        
+
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
             // The caller is waiting for us to return a note selected by
@@ -265,33 +271,30 @@ public class FormulaList
         }
     }
 
-    
+
 	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "formula";
 
     // Menu item ids
     public static final int MENU_ITEM_DELETE = Menu.FIRST;
     public static final int MENU_ITEM_INSERT = Menu.FIRST + 1;
 
-    /**
-     * The columns we are interested in from the database
-     */
+    // The columns we are interested in from the database
     private static final String[] PROJECTION = new String[] {
-    	Formula.Formulae._ID, // 0
-            Formula.Formulae.TITLE, // 1
+    	FormulaSchema.Formulae._ID,
+        FormulaSchema.Formulae.TITLE,
     };
 
-    
+
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
 
-    /** The index of the title column */
+    // The index of the title column.
     private static final int COLUMN_INDEX_TITLE = 1;
 
 }

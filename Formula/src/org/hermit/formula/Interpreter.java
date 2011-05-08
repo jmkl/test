@@ -84,10 +84,9 @@ public class Interpreter
 	 * @return					If the formula is not syntactically correct,
 	 * 							an error message; else null.
 	 */
-	public static final String verifyFormula(String formula)
-	{
+	public static String verifyFormula(String formula) {
 		try {
-			Interpreter.parseFormula(formula);
+			parseFormula(formula);
 			return null;
 		} catch (ParseException e) {
 			return e.getMessage();
@@ -102,18 +101,25 @@ public class Interpreter
 	 * @return					The parse tree.
 	 * @throws	ParseException 	Parse error in the given formula.
 	 */
-	public static final ProgramNode parseFormula(String formula)
+	public static ProgramNode parseFormula(String formula)
 		throws ParseException
 	{
 		// Create a reader which reads from the given String; then
 		// create or re-initialize the parser.
 		Reader reader = new StringReader(formula);
 		try {
-			FormulaParser parser = new FormulaParser(reader);
-
+			// Either create or re-initialize the parser, as needed.
+			// Since the parser is static (see option STATIC in the .jj
+			// file), instantiating it is just a trick to give it
+			// an input reader.
+			if (formulaParser == null)
+				formulaParser = new FormulaParser(reader);
+			else
+				FormulaParser.ReInit(reader);
+			
 			// Start parsing from the nonterminal "Program".
 			try {
-				return parser.Program();
+				return FormulaParser.Program();
 			} catch (TokenMgrError e) {
 				throw new ParseException(e.getMessage());
 			}
@@ -508,17 +514,20 @@ public class Interpreter
 	// ******************************************************************** //
 
 	// Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "formula";
 
 	// The name of the "main" function.
 	private static final String MAIN_FUNC = "main";
 
+	// Our formula parser.  This is constructed once and used repeatedly.
+	// This will be null until we initialize it.
+	private static FormulaParser formulaParser = null;
+
 
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-
+	
 	// The current formula.
 	private ProgramNode currentFormula;
 

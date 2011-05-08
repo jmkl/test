@@ -20,7 +20,7 @@ package org.hermit.formula;
 import org.hermit.android.notice.ErrorDialog;
 import org.hermit.android.notice.TextInputDialog;
 import org.hermit.android.notice.YesNoDialog;
-import org.hermit.formula.provider.Formula;
+import org.hermit.formula.provider.FormulaSchema;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -108,8 +108,8 @@ public class FormulaEditor
         	text = icicle.getString("text");
         } else {
         	formulaCursor.moveToFirst();
-        	int tindex = formulaCursor.getColumnIndex(Formula.Formulae.TITLE);
-        	int findex = formulaCursor.getColumnIndex(Formula.Formulae.FORMULA);
+        	int tindex = formulaCursor.getColumnIndex(FormulaSchema.Formulae.TITLE);
+        	int findex = formulaCursor.getColumnIndex(FormulaSchema.Formulae.FORMULA);
         	formulaTitle = formulaCursor.getString(tindex);
         	text = formulaCursor.getString(findex);
         }
@@ -328,7 +328,7 @@ public class FormulaEditor
 				renameFormula(title);
 			}
     	});
-    	int tindex = formulaCursor.getColumnIndex(Formula.Formulae.TITLE);
+    	int tindex = formulaCursor.getColumnIndex(FormulaSchema.Formulae.TITLE);
     	String title = formulaCursor.getString(tindex);
     	int head = init ? R.string.editor_title_init_head :
     					  R.string.editor_title_head;
@@ -353,7 +353,7 @@ public class FormulaEditor
     	// Save the title and text.
         formulaTitle = title.toString();
     	ContentValues values = new ContentValues();
-    	values.put(Formula.Formulae.TITLE, title.toString());
+    	values.put(FormulaSchema.Formulae.TITLE, title.toString());
     	
     	// Commit all of our changes to persistent storage.  When the
     	// update completes the content provider will notify the cursor
@@ -408,13 +408,13 @@ public class FormulaEditor
     	
     	// Save the text.
     	ContentValues values = new ContentValues();
-    	values.put(Formula.Formulae.FORMULA, text);
+    	values.put(FormulaSchema.Formulae.FORMULA, text);
 
     	// Bump the modification time to now.  Leave the used time alone.
-    	values.put(Formula.Formulae.CREATED_DATE, System.currentTimeMillis());
+    	values.put(FormulaSchema.Formulae.CREATED_DATE, System.currentTimeMillis());
 
     	// Save the "valid" flag.
-    	values.put(Formula.Formulae.VALID, valid);
+    	values.put(FormulaSchema.Formulae.VALID, valid);
 
     	// Commit all of our changes to persistent storage. When the update completes
     	// the content provider will notify the cursor of the change, which will
@@ -477,9 +477,9 @@ public class FormulaEditor
 
     // Projection to select the text of a formula.
     private static final String[] BODY_PROJECTION = new String[] {
-            Formula.Formulae._ID,
-            Formula.Formulae.TITLE,
-            Formula.Formulae.FORMULA,
+            FormulaSchema.Formulae._ID,
+            FormulaSchema.Formulae.TITLE,
+            FormulaSchema.Formulae.FORMULA,
     };
     
     

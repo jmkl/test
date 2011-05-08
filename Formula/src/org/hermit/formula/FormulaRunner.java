@@ -20,7 +20,7 @@ package org.hermit.formula;
 import org.hermit.android.core.AppUtils;
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.notice.InfoBox;
-import org.hermit.formula.provider.Formula;
+import org.hermit.formula.provider.FormulaSchema;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -130,11 +130,11 @@ public class FormulaRunner
         if (formulaUri != null)
         	formulaCursor = managedQuery(formulaUri, BODY_PROJECTION, null, null, null);
         else {
-        	formulaCursor = managedQuery(Formula.Formulae.CONTENT_URI,
+        	formulaCursor = managedQuery(FormulaSchema.Formulae.CONTENT_URI,
         								 BODY_PROJECTION,
-        								 Formula.Formulae.VALID + ">0",
+        								 FormulaSchema.Formulae.VALID + ">0",
         								 null,
-        								 Formula.Formulae.USED_DATE + " DESC");
+        								 FormulaSchema.Formulae.USED_DATE + " DESC");
         }
 
         // If we have a matching formula, display it.  Otherwise
@@ -142,21 +142,21 @@ public class FormulaRunner
         if (formulaCursor != null && formulaCursor.moveToFirst()) {
         	// If we don't have a URI, sort it out.
         	if (formulaUri == null) {
-                int iindex = formulaCursor.getColumnIndex(Formula.Formulae._ID);
+                int iindex = formulaCursor.getColumnIndex(FormulaSchema.Formulae._ID);
                 long rowId = formulaCursor.getLong(iindex);
-            	formulaUri = ContentUris.withAppendedId(Formula.Formulae.CONTENT_URI, rowId);
+            	formulaUri = ContentUris.withAppendedId(FormulaSchema.Formulae.CONTENT_URI, rowId);
         	}
 
             // Get the formula and display it.
-            int tindex = formulaCursor.getColumnIndex(Formula.Formulae.TITLE);
+            int tindex = formulaCursor.getColumnIndex(FormulaSchema.Formulae.TITLE);
             String title = formulaCursor.getString(tindex);
-            int findex = formulaCursor.getColumnIndex(Formula.Formulae.FORMULA);
+            int findex = formulaCursor.getColumnIndex(FormulaSchema.Formulae.FORMULA);
             String text = formulaCursor.getString(findex);
             setFormula(title, text);
             
         	// Update the last-used date.
         	ContentValues values = new ContentValues();
-        	values.put(Formula.Formulae.USED_DATE, System.currentTimeMillis());
+        	values.put(FormulaSchema.Formulae.USED_DATE, System.currentTimeMillis());
         	getContentResolver().update(formulaUri, values, null, null);
         } else {
         	// TODO: inform the user.
@@ -203,6 +203,8 @@ public class FormulaRunner
         Log.i(TAG, "onPause()");
         
         super.onPause();
+        
+        formulaCursor.close();
     }
 
 
@@ -294,7 +296,7 @@ public class FormulaRunner
     	switch (item.getItemId()) {
         case R.id.menu_select:
         	Intent pick = new Intent(Intent.ACTION_VIEW,
-					   				 Formula.Formulae.CONTENT_URI);
+					   				 FormulaSchema.Formulae.CONTENT_URI);
     		startActivity(pick);
         	break;
         case R.id.menu_edit:
@@ -305,7 +307,7 @@ public class FormulaRunner
         	break;
         case R.id.menu_new:
         	Intent insert = new Intent(Intent.ACTION_INSERT,
-        							   Formula.Formulae.CONTENT_URI);
+        							   FormulaSchema.Formulae.CONTENT_URI);
         	startActivity(insert);
         	break;
         case R.id.menu_prefs:
@@ -381,14 +383,13 @@ public class FormulaRunner
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "formula";
 
     // Projection to select the text of a formula.
     private static final String[] BODY_PROJECTION = new String[] {
-            Formula.Formulae._ID,
-            Formula.Formulae.TITLE,
-            Formula.Formulae.FORMULA,
+            FormulaSchema.Formulae._ID,
+            FormulaSchema.Formulae.TITLE,
+            FormulaSchema.Formulae.FORMULA,
     };
 
     

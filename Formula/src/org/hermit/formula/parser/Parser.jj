@@ -22,7 +22,13 @@ main() {
 // ************************************************************************ //
 // Parser Class Specification.
 // ************************************************************************ //
-	
+
+options
+{
+  STATIC = true;
+  UNICODE_INPUT = true;
+}
+
 PARSER_BEGIN(FormulaParser)
 
 package org.hermit.formula.parser;
@@ -88,6 +94,8 @@ TOKEN: {
 | < WHILE: "while">
 | < BREAK: "break">
 | < RETURN: "return">
+| < PI: "PI" >
+| < G: "G" >
 }
 
 
@@ -618,6 +626,12 @@ double FloatLiteral():
   			// the text must match the FLOAT_LITERAL pattern.
   			return Double.parseDouble(t.image);
  		}
+|
+    <PI>
+        { return Math.PI; }
+|
+    <G>
+        { return 9.80665; }
 }
 
 
