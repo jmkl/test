@@ -20,6 +20,9 @@
 package org.hermit.android.provider;
 
 
+import java.util.HashMap;
+import java.util.Set;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -31,6 +34,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
+import android.util.Log;
 
 
 
@@ -65,6 +69,7 @@ public class TableProvider
             String tn = t.getTableName();
             sUriMatcher.addURI(schema.getDbAuth(), tn, i);
             sUriMatcher.addURI(schema.getDbAuth(), tn + "/#", 0x10000 | i);
+            ++i;
         }
     }
     
@@ -278,7 +283,7 @@ public class TableProvider
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(t.getTableName());
         qb.setProjectionMap(t.getProjectionMap());
-
+        
         // If no sort order is specified, use the default for the table.
         if (TextUtils.isEmpty(sortOrder))
             sortOrder = t.getSortOrder();
