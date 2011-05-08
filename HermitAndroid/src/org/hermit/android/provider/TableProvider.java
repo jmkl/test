@@ -31,6 +31,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
+import android.util.Log;
 
 
 
@@ -60,11 +61,13 @@ public class TableProvider
         dbSchema = schema;
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
+        String auth = schema.getDbAuth();
         int i = 0;
         for (TableSchema t : schema.getDbTables()) {
             String tn = t.getTableName();
-            sUriMatcher.addURI(schema.getDbAuth(), tn, i);
-            sUriMatcher.addURI(schema.getDbAuth(), tn + "/#", 0x10000 | i);
+            sUriMatcher.addURI(auth, tn, i);
+            sUriMatcher.addURI(auth, tn + "/#", 0x10000 | i);
+            Log.i(TAG, "Match " + auth + "/" + tn + "=" + i);
             ++i;
         }
     }

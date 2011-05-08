@@ -61,7 +61,7 @@ public abstract class TableSchema
      * 
      * @param   name        Name for the table; e.g. "points".
      * @param   type        Base MIME type identifying the content of this
-     *                      table; e.g. "vnd.hermit.org.passage.point".
+     *                      table; e.g. "vnd.org.hermit.passage.point".
      * @param   uri         Content URI for this table.
      * @param   sort        Default sort order for this table; e.g.
      *                      "time ASC".
@@ -84,7 +84,7 @@ public abstract class TableSchema
      * 
      * @param   name        Name for the table; e.g. "points".
      * @param   type        Base MIME type identifying the content of this
-     *                      table; e.g. "vnd.hermit.org.passage.point".
+     *                      table; e.g. "vnd.org.hermit.passage.point".
      * @param   uri         Content URI for this table.
      * @param   sort        Default sort order for this table; e.g.
      *                      "time ASC".
