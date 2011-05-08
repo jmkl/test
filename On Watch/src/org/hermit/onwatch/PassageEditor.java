@@ -270,7 +270,6 @@ public class PassageEditor
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "PassageEditor";
 
     // Standard projection for reading a passage.

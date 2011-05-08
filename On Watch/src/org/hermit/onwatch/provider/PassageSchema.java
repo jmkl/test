@@ -36,7 +36,7 @@ public final class PassageSchema
     
     // Database name and version.
     private static final String DB_NAME = "passages.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 4;
     
     // Provider authority name.
     private static final String AUTHORITY = "org.hermit.provider.PassageData";
@@ -78,6 +78,23 @@ public final class PassageSchema
         public static final String START_NAME = "start_name";
 
         /**
+         * Passages table field: the destination location name for the passage.
+         */
+        public static final String DEST_NAME = "dest_name";
+
+        /**
+         * Passages table field: the latitude in degrees of the indended
+         * destination.
+         */
+        public static final String DEST_LAT = "dest_latitude";
+
+        /**
+         * Passages table field: the longitude in degrees of the indended
+         * destination.
+         */
+        public static final String DEST_LON = "dest_longitude";
+
+        /**
          * Passages table field: the timestamp for when the passage started.
          */
         public static final String START_TIME = "start_time";
@@ -93,24 +110,19 @@ public final class PassageSchema
         public static final String START_LON = "start_longitude";
 
         /**
-         * Passages table field: the destination location name for the passage.
-         */
-        public static final String DEST_NAME = "dest_name";
-
-        /**
          * Passages table field: the timestamp for when the passage ended.
          */
-        public static final String DEST_TIME = "dest_time";
+        public static final String FINISH_TIME = "finish_time";
 
         /**
          * Passages table field: the latitude in degrees where the passage ended.
          */
-        public static final String DEST_LAT = "dest_latitude";
+        public static final String FINISH_LAT = "finish_latitude";
 
         /**
          * Passages table field: the longitude in degrees where the passage ended.
          */
-        public static final String DEST_LON = "dest_longitude";
+        public static final String FINISH_LON = "finish_longitude";
 
         /**
          * Passages table field: flag if this passage is in progress.  Only
@@ -128,13 +140,15 @@ public final class PassageSchema
         private static final String[][] FIELDS = {
             { NAME, "TEXT" },
             { START_NAME, "TEXT" },
+            { DEST_NAME, "TEXT" },
+            { DEST_LAT, "REAL" },
+            { DEST_LON, "REAL" },
             { START_TIME, "INTEGER" },
             { START_LAT, "REAL" },
             { START_LON, "REAL" },
-            { DEST_NAME, "TEXT" },
-            { DEST_TIME, "INTEGER" },
-            { DEST_LAT, "REAL" },
-            { DEST_LON, "REAL" },
+            { FINISH_TIME, "INTEGER" },
+            { FINISH_LAT, "REAL" },
+            { FINISH_LON, "REAL" },
             { UNDER_WAY, "INTEGER" },
             { DISTANCE, "REAL" },
         };
@@ -224,8 +238,8 @@ public final class PassageSchema
             { TIME, "INTEGER" },
             { LAT, "REAL" },
             { LON, "REAL" },
-            { DIST, "INTEGER" },
-            { TOT_DIST, "INTEGER" },
+            { DIST, "REAL" },
+            { TOT_DIST, "REAL" },
         };
         
         /**

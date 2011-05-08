@@ -667,7 +667,6 @@ public class PassageModel
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "onwatch";
 	 
 	// Database for crew data.  Bump the version number to nuke the data
