@@ -32,11 +32,6 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>HermitAndroid</name>
-			<type>2</type>
-			<locationURI>_android_HermitAndroid/src</locationURI>
-		</link>
-		<link>
 			<name>HermitAndroid_src</name>
 			<type>2</type>
 			<locationURI>_android_HermitAndroid_810781ac/src</locationURI>
