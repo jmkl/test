@@ -84,7 +84,8 @@ public abstract class DbRow {
     // ******************************************************************** //
 
     // Schema of the table this row belongs to.
-    private final TableSchema tableSchema;
+    @SuppressWarnings("unused")
+	private final TableSchema tableSchema;
     
     // The values of the fields in this row.
     private final ContentValues rowValues;

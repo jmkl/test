@@ -20,9 +20,6 @@
 package org.hermit.android.provider;
 
 
-import java.util.HashMap;
-import java.util.Set;
-
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -34,7 +31,6 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
-import android.util.Log;
 
 
 
