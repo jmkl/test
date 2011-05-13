@@ -34,6 +34,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
@@ -94,11 +95,40 @@ public class FormulaList
         // Set up an adaptor to map formulae from the database to the list
         // view.  We set up a mapping from the relevant database field to
         // the text widget in the list.
-        String[] dbFields = new String[] { FormulaSchema.Formulae.TITLE };
-        int[] uiFields = new int[] { android.R.id.text1 };
+        String[] dbFields = new String[] { FormulaSchema.Formulae.TITLE,
+        								   FormulaSchema.Formulae.DESCR,
+        								   FormulaSchema.Formulae.VALID };
+        int[] uiFields = new int[] { R.id.title, R.id.description, R.id.icon };
         SimpleCursorAdapter adapter =
-        	new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1,
+        	new SimpleCursorAdapter(this, R.layout.formula_list_item,
         						    cursor, dbFields, uiFields);
+        
+        // Set a custom view binder, so we can set the indicator icon
+        // appropriately.
+        adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+    		@Override
+    		public boolean setViewValue(View v, Cursor c, int cindex) {
+    			if (v instanceof ImageView) {
+    				ImageView iv = (ImageView) v;
+    				int valid = c.getInt(cindex);
+    				int icon;
+    				switch (valid) {
+    				case 0:
+    					icon = R.drawable.indicator_error;
+    					break;
+    				default:
+    					icon = R.drawable.indicator_ok;
+    					break;
+    				}
+    				iv.setImageResource(icon);
+    				return true;
+    			}
+    			
+    			// Leave to the base class.
+    			return false;
+    		}
+        });
+        
         setListAdapter(adapter);
     }
 
@@ -287,6 +317,8 @@ public class FormulaList
     private static final String[] PROJECTION = new String[] {
     	FormulaSchema.Formulae._ID,
         FormulaSchema.Formulae.TITLE,
+        FormulaSchema.Formulae.DESCR,
+        FormulaSchema.Formulae.VALID,
     };
 
 

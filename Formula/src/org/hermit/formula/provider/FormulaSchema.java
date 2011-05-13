@@ -36,7 +36,7 @@ public final class FormulaSchema
     
     // Database name and version.
     private static final String DB_NAME = "formulae.db";
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 6;
     
     // Provider authority name.
     private static final String AUTHORITY = "org.hermit.provider.Formula";
@@ -78,6 +78,12 @@ public final class FormulaSchema
         public static final String TITLE = "title";
 
         /**
+         * Formulae table field: the description of the formula.
+         * <P>Type: TEXT</P>
+         */
+        public static final String DESCR = "descr";
+
+        /**
          * Formulae table field: the formula itself.
          * <P>Type: TEXT</P>
          */
@@ -105,6 +111,7 @@ public final class FormulaSchema
         // Definitions of the fields.
         private static final String[][] FIELDS = {
             { TITLE, "TEXT" },
+            { DESCR, "TEXT" },
             { FORMULA, "TEXT" },
             { CREATED_DATE, "INTEGER" },
             { USED_DATE, "INTEGER" },
