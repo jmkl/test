@@ -40,7 +40,7 @@ import android.util.Log;
 public class Interpreter
 	implements FormulaParserConstants
 {
-
+	
 	// ******************************************************************** //
 	// Constructor.
 	// ******************************************************************** //
@@ -210,8 +210,8 @@ public class Interpreter
 	 * @throws	SemanticException	A semantic error occurred.
 	 */
 	public void runProgram() throws SemanticException {
-		// Execute the main() function in the formula.
-		executeFunction(MAIN_FUNC, new FormulaNode(COMMA));
+		// Execute the system main function in the formula.
+		executeFunction(FormulaParser.SYS_MAIN, new FormulaNode(COMMA));
 	}
 	
 	
@@ -515,9 +515,6 @@ public class Interpreter
 
 	// Debugging tag.
 	private static final String TAG = "formula";
-
-	// The name of the "main" function.
-	private static final String MAIN_FUNC = "main";
 
 	// Our formula parser.  This is constructed once and used repeatedly.
 	// This will be null until we initialize it.

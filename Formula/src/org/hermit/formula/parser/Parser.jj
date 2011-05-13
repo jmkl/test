@@ -11,7 +11,7 @@ output "Gravity" "%4.1fg" grav;
 output "Rim Vel" "%5.1fg" velocity;
 
 main() {
-	float circum = 2 * radius * PI;
+	circum = 2 * radius * PI;
 	grav = circum * rpm / 5;
 	velocity = grav * 4 / 3;
 }
@@ -33,7 +33,22 @@ PARSER_BEGIN(FormulaParser)
 
 package org.hermit.formula.parser;
 
-public class FormulaParser {}
+public class FormulaParser {
+
+    // ******************************************************************** //
+    // Public Constants.
+    // ******************************************************************** //
+
+    // The name of the "main" function which is executed by the system
+    // to start a formula.  This is the system-level entry point for all
+    // programs.
+    public static final String SYS_MAIN = "/main/";
+
+    // The name of the default user entry point, in the case where the
+    // program has no global code.
+    public static final String USER_MAIN = "main";
+
+}
 
 PARSER_END(FormulaParser)
 
@@ -86,6 +101,7 @@ TOKEN: {
 TOKEN: {
   < INPUT: "input">
 | < OUTPUT: "output">
+| < FUNC: "func">
 | < LOCAL: "local">
 | < INT: "int">
 | < FLOAT: "float">
@@ -179,6 +195,8 @@ ProgramNode Program():
 	InputNode i;
 	OutputNode o;
 	FuncNode f;
+    FormulaNode stmts = new FormulaNode(OBRACE);
+    FormulaNode stmt;
 }
 {
 	(
@@ -190,8 +208,32 @@ ProgramNode Program():
 	|
 		f=Func()
 			{ prog.addFunc(f); }
+    |
+        stmt=Statement()
+            { stmts.addChild(stmt); }
 	)+
-		{ return prog; }
+		{
+		    // Create the "/main/" function, our entry point, by concatenating
+		    // all global (i.e. outside of functions) statements.  If there
+		    // are none, then create a call to "main", the user's default
+		    // entry point.
+		    if (stmts.getNumChildren() == 0) {
+		        // The actual function call (OPAREN) expression, with
+		        // an empty actual parameter list (COMMA) ...                FormulaNode expr = new FormulaNode(OPAREN, USER_MAIN);
+                expr.addChild(new FormulaNode(COMMA));
+
+                // ... made into a statement (SEMICOL) ...
+                stmt = new FormulaNode(SEMICOL, expr);
+
+                // ... added to the statements list.
+                stmts.addChild(stmt);
+		    }
+		    
+            FuncNode sysMain = new FuncNode(SYS_MAIN, new NameList(), stmts);
+            prog.addFunc(sysMain);
+            
+            return prog;
+		}
 }
 
 
@@ -247,7 +289,7 @@ FuncNode Func():
 	FormulaNode stmts;
 }
 {
-	name=Identifier() <OPAREN> params=FormalParams() <CPAREN>
+	<FUNC> name=Identifier() <OPAREN> params=FormalParams() <CPAREN>
 						<OBRACE> stmts=Statements() <CBRACE>
   		{ return new FuncNode(name, params, stmts); }
 }
