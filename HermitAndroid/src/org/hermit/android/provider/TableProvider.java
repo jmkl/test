@@ -34,7 +34,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
-
 /**
  * This class is a base for content providers which provide access to
  * table-organized data in an SQL database.
