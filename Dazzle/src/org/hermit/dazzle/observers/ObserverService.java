@@ -78,7 +78,8 @@ public class ObserverService extends Service {
         // and load it in onCreate (and start the server if there are any)
 		final Uri uri = intent.getData();
 		SettingsObserver observer;
-		if( ACTION_REMOVE.equals(intent.getStringExtra(EXTRA_ACTION)) ) {
+		String action = intent.getStringExtra(EXTRA_ACTION);
+		if( ACTION_REMOVE.equals(action) ) {
 			if( null != uri ) {
 				observer = observers.remove(uri);
 				if( null != observer ) {
@@ -91,12 +92,16 @@ public class ObserverService extends Service {
 				unregisterClient(intent);
 			}
 		} else if( null == (observer = observers.get(uri)) ) {
-			Log.d(TAG, "Registering new observer for " + uri);
-			observer = new SettingsObserver(
-					getApplicationContext(), uri,
-					intent.getStringExtra(EXTRA_LOG_MESSAGE));
-			registerClient(intent, observer);
-			observers.put(uri, observer);
+			if( null != uri ) {
+				Log.d(TAG, "Registering new observer for " + uri);
+				observer = new SettingsObserver(
+						getApplicationContext(), uri,
+						intent.getStringExtra(EXTRA_LOG_MESSAGE));
+				registerClient(intent, observer);
+				observers.put(uri, observer);
+			} else {
+				Log.e(TAG, "Null URI passed in for action " + action);
+			}
 		} else { // observer is not null here, register new widget id
 			registerClient(intent, observer);
 		}
