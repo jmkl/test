@@ -341,19 +341,20 @@ public class FormulaEditor
     /**
      * Rename the formula with a given new name.
      * 
-     * @param	title			The new name for the formula.
+     * @param	tchars			The new name for the formula.
      */
-    private final void renameFormula(CharSequence title) {
+    private final void renameFormula(CharSequence tchars) {
         // Insist on a title.
+    	String title = tchars.toString().trim();
         if (title.length() == 0) {
         	errorDialog.show("You must enter a valid title.");
             return;
         }
 
     	// Save the title and text.
-        formulaTitle = title.toString();
+        formulaTitle = title;
     	ContentValues values = new ContentValues();
-    	values.put(FormulaSchema.Formulae.TITLE, title.toString());
+    	values.put(FormulaSchema.Formulae.TITLE, title);
     	
     	// Commit all of our changes to persistent storage.  When the
     	// update completes the content provider will notify the cursor

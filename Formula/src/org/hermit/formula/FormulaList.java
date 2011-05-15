@@ -37,6 +37,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 
 /**
@@ -91,7 +92,11 @@ public class FormulaList
         Cursor cursor = managedQuery(getIntent().getData(),
         						     PROJECTION, null, null,
         						     FormulaSchema.Formulae.SORT_ORDER);
-
+        
+        // Get the columns of our displayed fields.
+        titleCol = cursor.getColumnIndexOrThrow(FormulaSchema.Formulae.TITLE);
+        validCol = cursor.getColumnIndexOrThrow(FormulaSchema.Formulae.VALID);
+        
         // Set up an adaptor to map formulae from the database to the list
         // view.  We set up a mapping from the relevant database field to
         // the text widget in the list.
@@ -108,7 +113,15 @@ public class FormulaList
         adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
     		@Override
     		public boolean setViewValue(View v, Cursor c, int cindex) {
-    			if (v instanceof ImageView) {
+    			if (cindex == titleCol && v instanceof TextView) {
+    				String title = c.getString(cindex);
+    				if (title != null)
+    					title = title.trim();
+    				if (title == null || title.length() == 0)
+    					title = "<unnamed>";
+    				((TextView) v).setText(title);
+    				return true;
+    			} else if (cindex == validCol && v instanceof ImageView) {
     				ImageView iv = (ImageView) v;
     				int valid = c.getInt(cindex);
     				int icon;
@@ -328,6 +341,11 @@ public class FormulaList
 
     // The index of the title column.
     private static final int COLUMN_INDEX_TITLE = 1;
+    
+    // The column numbers of our displayed fields in the current query.
+    private int titleCol = -1;
+    private int validCol = -1;
+
 
 }
 
