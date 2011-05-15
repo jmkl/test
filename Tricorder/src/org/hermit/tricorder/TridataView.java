@@ -513,7 +513,6 @@ class TridataView
 	        appContext.reportException(e);
 	    }
 
-		event.recycle();
 		return done;
 	}
 

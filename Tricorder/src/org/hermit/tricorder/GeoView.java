@@ -681,7 +681,6 @@ class GeoView
             appContext.reportException(e);
         }
 
-        event.recycle();
         return done;
     }
 

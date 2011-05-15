@@ -554,8 +554,6 @@ class SolarView
 	                }
 	            }
 	        }
-
-	        event.recycle();
 	    } catch (Exception e) {
 	        appContext.reportException(e);
 	    }
@@ -665,8 +663,8 @@ class SolarView
 				new URL("http://sohowww.nascom.nasa.gov/data/realtime/eit_284/512/latest.jpg"),
 				new URL("http://sohowww.nascom.nasa.gov/data/realtime/eit_195/512/latest.jpg"),
 				new URL("http://sohowww.nascom.nasa.gov/data/realtime/eit_171/512/latest.jpg"),
-				new URL("http://sohowww.nascom.nasa.gov/data/realtime/mdi_igr/512/latest.jpg"),
-				new URL("http://sohowww.nascom.nasa.gov/data/realtime/mdi_mag/512/latest.jpg"),
+				new URL("http://sohowww.nascom.nasa.gov/data/realtime/hmi_igr/512/latest.jpg"),
+				new URL("http://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg"),
 				new URL("http://sohowww.nascom.nasa.gov/data/realtime/c2/512/latest.jpg"),
 				new URL("http://sohowww.nascom.nasa.gov/data/realtime/c3/512/latest.jpg"),
 			};
