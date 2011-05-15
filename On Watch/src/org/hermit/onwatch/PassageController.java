@@ -364,17 +364,17 @@ public class PassageController
         if (passageData == null)
             return;
     	long id = passageData.getId();
-        
+
         // Delete all points belonging to the passage.
         int count1 = contentResolver.delete(PassageSchema.Points.CONTENT_URI,
                                             PassageSchema.Points.PASSAGE + "=" + id,
                                             null);
-  
+
         // Delete the passage record.
         int count2 = contentResolver.delete(passageUri, null, null);
-  
+
         // FIXME: do we need this?
-//        allPassagesCursor.requery();
+        // allPassagesCursor.requery();
 
         passageData = null;
         passageUri = null;
