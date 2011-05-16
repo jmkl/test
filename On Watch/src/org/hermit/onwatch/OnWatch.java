@@ -19,13 +19,18 @@
 
 package org.hermit.onwatch;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.core.SplashActivity;
 import org.hermit.android.widgets.TimeZoneActivity;
 
+import android.app.ActionBar.Tab;
 import android.app.AlarmManager;
+import android.app.ActionBar;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
@@ -104,10 +109,9 @@ public class OnWatch
         createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);       
 
         // Set up the standard dialogs.
-        createMessageBox(R.string.button_close);
         setAboutInfo(R.string.about_text);
-        setHomeInfo(R.string.button_homepage, R.string.url_homepage);
-        setLicenseInfo(R.string.button_license, R.string.url_license);
+        setHomeInfo(R.string.url_homepage);
+        setLicenseInfo(R.string.url_license);
 
         // Create the time and location models.
         locationModel = LocationModel.getInstance(this);
@@ -115,8 +119,21 @@ public class OnWatch
  
         // Create the application GUI.
         setContentView(R.layout.on_watch);
-        viewController = new MainController(this);
+
+        // Set up our Action Bar for tabs.
+        final ActionBar actionBar = getActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         
+        // Remove the activity title to make space for tabs.
+        actionBar.setDisplayShowTitleEnabled(false);
+
+        // Add the view fragments to the tab bar.
+        childViews = new ArrayList<ViewFragment>();
+        addChild(actionBar, new HomeFragment(), R.string.tab_location);
+        addChild(actionBar, new PassageFragment(), R.string.tab_passage);
+        addChild(actionBar, new ScheduleFragment(), R.string.tab_watch);
+        addChild(actionBar, new AstroFragment(), R.string.tab_astro);
+
 		// Create a handler for tick events.
 		tickHandler = new Handler() {
 			@Override
@@ -124,7 +141,8 @@ public class OnWatch
 				long time = System.currentTimeMillis();
 				timeModel.tick(time);
 				locationModel.tick(time);
-		        viewController.tick(time);
+				for (ViewFragment v : childViews)
+					v.tick(time);
 			}
 		};
         
@@ -157,8 +175,40 @@ public class OnWatch
             shownSplash = true;
         }
     }
-    
 
+
+    private void addChild(ActionBar bar, ViewFragment frag, int label) {
+    	ActionBar.Tab tab = bar.newTab();
+    	tab.setText(label);
+    	tab.setTabListener(new MyTabListener(frag));
+        bar.addTab(tab);
+        childViews.add(frag);
+    }
+
+
+    private class MyTabListener implements ActionBar.TabListener {
+        private Fragment mFragment;
+
+        // Called to create an instance of the listener when adding a new tab
+        public MyTabListener(Fragment fragment) {
+            mFragment = fragment;
+        }
+
+        public void onTabSelected(Tab tab, FragmentTransaction ft) {
+            ft.add(R.id.main_view, mFragment, null);
+        }
+
+        public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+            ft.remove(mFragment);
+        }
+
+        public void onTabReselected(Tab tab, FragmentTransaction ft) {
+            // do nothing
+        }
+
+    }
+    
+    
     /**
      * Called after {@link #onCreate} or {@link #onStop} when the current
      * activity is now being displayed to the user.  It will
@@ -170,7 +220,9 @@ public class OnWatch
         
         super.onStart();
         
-        viewController.start();
+        // FIXME: do we need this?
+//		for (ViewFragment v : childViews)
+//			v.start();
     }
 
 
@@ -192,7 +244,9 @@ public class OnWatch
         // First time round, show the EULA.
         showFirstEula();
         
-        viewController.resume();
+        // FIXME: do we need this?
+//		for (ViewFragment v : childViews)
+//			v.resume();
         locationModel.resume();
 
         // Start the 1-second tick events.
@@ -250,7 +304,10 @@ public class OnWatch
 		}
 		
         locationModel.pause();
-        viewController.pause();
+        
+        // FIXME: do we need this?
+//		for (ViewFragment v : childViews)
+//			v.pause();
     }
 
 
@@ -269,7 +326,9 @@ public class OnWatch
         
         super.onStop();
 		
-        viewController.stop();
+        // FIXME: do we need this?
+//		for (ViewFragment v : childViews)
+//			stop();
     }
 
 
@@ -286,8 +345,10 @@ public class OnWatch
     public void saveState(Bundle icicle) {
         icicle.putBoolean("shownSplash", shownSplash);
         
+//      icicle.putInt("currentView", viewFlipper.getDisplayedChild());
+
         // Now save our sub-components.
-        viewController.saveState(icicle);
+        // FIXME: do so.
     }
 
 
@@ -299,8 +360,10 @@ public class OnWatch
     public void restoreState(Bundle icicle) {
         shownSplash = icicle.getBoolean("shownSplash");
         
+//      viewFlipper.setDisplayedChild(icicle.getInt("currentView"));
+
         // Now restore our sub-components.
-        viewController.restoreState(icicle);
+        // FIXME: do so.
     }
 
 
@@ -351,6 +414,10 @@ public class OnWatch
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     	switch (item.getItemId()) {
+    	case android.R.id.home:
+    		// App icon has been pressed.
+    		// FIXME: do something.
+    		break;
         case R.id.menu_prefs:
         	// Launch the preferences activity as a subactivity, so we
         	// know when it returns.
@@ -418,7 +485,8 @@ public class OnWatch
     	}
     	Log.i(TAG, "Prefs: debugTime " + debugTime);
     	
-    	viewController.setDebug(debugSpace, debugTime);
+    	// FIXME:
+//    	viewController.setDebug(debugSpace, debugTime);
    }
 
 
@@ -614,7 +682,6 @@ public class OnWatch
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "onwatch";
 	
 	// Time in ms for which the splash screen is displayed.
@@ -625,14 +692,14 @@ public class OnWatch
 	// Private Data.
 	// ******************************************************************** //
 
+	// The views we display in our tabs.
+	private ArrayList<ViewFragment> childViews;
+	
 	// The time model we use for all our timekeeping.
 	private TimeModel timeModel;
 
 	// The location model we use for all our positioning.
 	private LocationModel locationModel;
-
-	// View controller used to manage switching between the various views.
-	private MainController viewController = null;
 
     // Timer we use to generate tick events.
     private Ticker ticker = null;

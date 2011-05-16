@@ -51,74 +51,74 @@ public class MainController
 	public MainController(OnWatch context) {
 		appContext = context;
     	
-		// Get the main screen elements.
-		viewFlipper = (ViewAnimator) context.findViewById(R.id.main_view_flipper);
-		
-		// Get the number of child views.  Create the controllers for
-		// each child.
-		numChildren = viewFlipper.getChildCount();
-		childViews = new ArrayList<OnWatchController>();
-		for (int i = 0; i < numChildren; ++i) {
-			View child = viewFlipper.getChildAt(i);
-			int id = child.getId();
-			OnWatchController controller = null;
-			switch (id) {
-			case R.id.home_view:
-				controller = new HomeController(context);
-				break;
-			case R.id.passage_view:
-				controller = new PassageController(context);
-				break;
-			case R.id.schedule_view:
-				controller = new ScheduleController(context);
-				break;
-			case R.id.astro_view:
-				controller = new AstroController(context);
-				break;
-			default:
-				throw new RuntimeException("MainController: unexpected child ID " + id);
-			}
-			childViews.add(controller);
+//		// Get the main screen elements.
+//		viewFlipper = (ViewAnimator) context.findViewById(R.id.main_view_flipper);
+//		
+//		// Get the number of child views.  Create the controllers for
+//		// each child.
+//		numChildren = viewFlipper.getChildCount();
+//		childViews = new ArrayList<OnWatchController>();
+//		for (int i = 0; i < numChildren; ++i) {
+//			View child = viewFlipper.getChildAt(i);
+//			int id = child.getId();
+//			OnWatchController controller = null;
+//			switch (id) {
+//			case R.id.home_view:
+//				controller = new HomeController(context);
+//				break;
+//			case R.id.passage_view:
+//				controller = new PassageController(context);
+//				break;
+//			case R.id.schedule_view:
+//				controller = new ScheduleController(context);
+//				break;
+//			case R.id.astro_view:
+//				controller = new AstroController(context);
+//				break;
+//			default:
+//				throw new RuntimeException("MainController: unexpected child ID " + id);
+//			}
+//			childViews.add(controller);
+//
+//			// Set handlers on the control buttons.
+//			ImageButton left = (ImageButton) child.findViewById(R.id.flip_left);
+//			if (left != null) {
+//				left.setOnClickListener(new OnClickListener() {
+//					@Override
+//					public void onClick(View arg0) {
+//						flipLeft();
+//					}
+//				});
+//			}
+//			ImageButton right = (ImageButton) child.findViewById(R.id.flip_right);
+//			if (right != null) {
+//				right.setOnClickListener(new OnClickListener() {
+//					@Override
+//					public void onClick(View arg0) {
+//						flipRight();
+//					}
+//				});
+//			}
+//		}
 
-			// Set handlers on the control buttons.
-			ImageButton left = (ImageButton) child.findViewById(R.id.flip_left);
-			if (left != null) {
-				left.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View arg0) {
-						flipLeft();
-					}
-				});
-			}
-			ImageButton right = (ImageButton) child.findViewById(R.id.flip_right);
-			if (right != null) {
-				right.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View arg0) {
-						flipRight();
-					}
-				});
-			}
-		}
-
-    	// Handle keys on the main view for debugging.
-		mainView = (LinearLayout) context.findViewById(R.id.main_view);
-		mainView.setOnKeyListener(new OnKeyListener() {
-			@Override
-			public boolean onKey(View arg0, int keyCode, KeyEvent event) {
-				return debugKey(keyCode, event);
-			}
-		});
-		
-    	// Load the animations for the switchers.
-    	animSlideInLeft = AnimationUtils.loadAnimation(context,
-                									   R.anim.slide_in_left);
-    	animSlideOutLeft = AnimationUtils.loadAnimation(context,
-				   										R.anim.slide_out_left);
-    	animSlideInRight = AnimationUtils.loadAnimation(context,
-				   										R.anim.slide_in_right);
-    	animSlideOutRight = AnimationUtils.loadAnimation(context,
-				   										 R.anim.slide_out_right);
+//    	// Handle keys on the main view for debugging.
+//		mainView = (LinearLayout) context.findViewById(R.id.main_view);
+//		mainView.setOnKeyListener(new OnKeyListener() {
+//			@Override
+//			public boolean onKey(View arg0, int keyCode, KeyEvent event) {
+//				return debugKey(keyCode, event);
+//			}
+//		});
+//		
+//    	// Load the animations for the switchers.
+//    	animSlideInLeft = AnimationUtils.loadAnimation(context,
+//                									   R.anim.slide_in_left);
+//    	animSlideOutLeft = AnimationUtils.loadAnimation(context,
+//				   										R.anim.slide_out_left);
+//    	animSlideInRight = AnimationUtils.loadAnimation(context,
+//				   										R.anim.slide_in_right);
+//    	animSlideOutRight = AnimationUtils.loadAnimation(context,
+//				   										 R.anim.slide_out_right);
 	}
 	
 	   
@@ -133,7 +133,7 @@ public class MainController
      *                          be saved.
      */
     public void saveState(Bundle icicle) {
-        icicle.putInt("currentView", viewFlipper.getDisplayedChild());
+//        icicle.putInt("currentView", viewFlipper.getDisplayedChild());
     }
 
 
@@ -143,7 +143,7 @@ public class MainController
      * @param   icicle          The app's saved state.
      */
     public void restoreState(Bundle icicle) {
-        viewFlipper.setDisplayedChild(icicle.getInt("currentView"));
+//        viewFlipper.setDisplayedChild(icicle.getInt("currentView"));
     }
 
 
@@ -155,8 +155,8 @@ public class MainController
 	 * Start the application.  Called at initial start-up.
 	 */
 	void start() {
-		for (OnWatchController v : childViews)
-        	v.start();
+//		for (OnWatchController v : childViews)
+//        	v.start();
 	}
 	
 
@@ -164,8 +164,8 @@ public class MainController
 	 * Resume the application.
 	 */
 	public void resume() {
-		for (OnWatchController v : childViews)
-        	v.resume();
+//		for (OnWatchController v : childViews)
+//        	v.resume();
 	}
 
 
@@ -173,8 +173,8 @@ public class MainController
 	 * Pause the application.
 	 */
 	public void pause() {
-		for (OnWatchController v : childViews)
-        	v.pause();
+//		for (OnWatchController v : childViews)
+//        	v.pause();
 	}
 	
 
@@ -182,8 +182,8 @@ public class MainController
 	 * Stop the application.  Called (probably) when shutting down completely.
 	 */
 	void stop() {
-		for (OnWatchController v : childViews)
-        	v.stop();
+//		for (OnWatchController v : childViews)
+//        	v.stop();
 	}
 	
 
@@ -194,8 +194,8 @@ public class MainController
 	 * @param	time			Current system time in millis.
 	 */
 	public void tick(long time) {
-		for (OnWatchController v : childViews)
-        	v.tick(time);
+//		for (OnWatchController v : childViews)
+//        	v.tick(time);
 	}
 
 
@@ -207,15 +207,15 @@ public class MainController
 	 * Move to the next child view on the left.
 	 */
 	private void flipLeft() {
-		int curr = viewFlipper.getDisplayedChild();
-
-		viewFlipper.setInAnimation(animSlideInRight);
-		viewFlipper.setOutAnimation(animSlideOutRight);
-		
-		if (curr > 0)
-			viewFlipper.showPrevious();
-		else
-			viewFlipper.setDisplayedChild(numChildren - 1);
+//		int curr = viewFlipper.getDisplayedChild();
+//
+//		viewFlipper.setInAnimation(animSlideInRight);
+//		viewFlipper.setOutAnimation(animSlideOutRight);
+//		
+//		if (curr > 0)
+//			viewFlipper.showPrevious();
+//		else
+//			viewFlipper.setDisplayedChild(numChildren - 1);
 	}
 
 
@@ -223,15 +223,15 @@ public class MainController
 	 * Move to the next child view on the right.
 	 */
 	private void flipRight() {
-		int curr = viewFlipper.getDisplayedChild();
-
-		viewFlipper.setInAnimation(animSlideInLeft);
-		viewFlipper.setOutAnimation(animSlideOutLeft);
-		
-		if (curr < numChildren - 1)
-			viewFlipper.showNext();
-		else
-			viewFlipper.setDisplayedChild(0);
+//		int curr = viewFlipper.getDisplayedChild();
+//
+//		viewFlipper.setInAnimation(animSlideInLeft);
+//		viewFlipper.setOutAnimation(animSlideOutLeft);
+//		
+//		if (curr < numChildren - 1)
+//			viewFlipper.showNext();
+//		else
+//			viewFlipper.setDisplayedChild(0);
 	}
 
 	
@@ -240,67 +240,67 @@ public class MainController
 	// ******************************************************************** //
 
 	void setDebug(boolean space, boolean time) {
-		debugSpace = space;
-		debugTime = time;
-		mainView.setFocusable(space || time);
-		
-		if (!space) {
-			LocationModel locModel = LocationModel.getInstance(appContext);
-			locModel.adjustReset();
-		}
-		if (!time) {
-			TimeModel timeModel = TimeModel.getInstance(appContext);
-			timeModel.adjustReset();
-		}
+//		debugSpace = space;
+//		debugTime = time;
+//		mainView.setFocusable(space || time);
+//		
+//		if (!space) {
+//			LocationModel locModel = LocationModel.getInstance(appContext);
+//			locModel.adjustReset();
+//		}
+//		if (!time) {
+//			TimeModel timeModel = TimeModel.getInstance(appContext);
+//			timeModel.adjustReset();
+//		}
 	}
 	
 
-	/**
-	 * Handle a key event.
-	 * 
-	 * @param	keyCode			Key code that represents the button pressed.
-	 * @param	event			KeyEvent object that defines the button action.
-	 * @return					If you handled the event, return true.
-	 * 							If you want to allow the event to be handled
-	 *							by the next receiver, return false. 
-	 */
-	private boolean debugKey(int keyCode, KeyEvent event) {
-		if (debugSpace) {
-			LocationModel locModel = LocationModel.getInstance(appContext);
-			double amt = 11.33;
-			switch (keyCode) {
-			case KeyEvent.KEYCODE_DPAD_LEFT:
-				locModel.adjust(0, -amt);
-				return true;
-			case KeyEvent.KEYCODE_DPAD_UP:
-				locModel.adjust(amt, 0);
-				return true;
-			case KeyEvent.KEYCODE_DPAD_RIGHT:
-				locModel.adjust(0, amt);
-				return true;
-			case KeyEvent.KEYCODE_DPAD_DOWN:
-				locModel.adjust(-amt, 0);
-				return true;
-			}
-		}
-
-		if (debugTime) {
-			TimeModel timeModel = TimeModel.getInstance(appContext);
-			switch (keyCode) {
-			case KeyEvent.KEYCODE_DPAD_UP:
-				timeModel.adjust(1);
-				return true;
-			case KeyEvent.KEYCODE_DPAD_RIGHT:
-				timeModel.adjust(2);
-				return true;
-			case KeyEvent.KEYCODE_DPAD_DOWN:
-				timeModel.adjust(3);
-				return true;
-			}
-		}
-
-		return false;
-	}
+//	/**
+//	 * Handle a key event.
+//	 * 
+//	 * @param	keyCode			Key code that represents the button pressed.
+//	 * @param	event			KeyEvent object that defines the button action.
+//	 * @return					If you handled the event, return true.
+//	 * 							If you want to allow the event to be handled
+//	 *							by the next receiver, return false. 
+//	 */
+//	private boolean debugKey(int keyCode, KeyEvent event) {
+//		if (debugSpace) {
+//			LocationModel locModel = LocationModel.getInstance(appContext);
+//			double amt = 11.33;
+//			switch (keyCode) {
+//			case KeyEvent.KEYCODE_DPAD_LEFT:
+//				locModel.adjust(0, -amt);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_UP:
+//				locModel.adjust(amt, 0);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_RIGHT:
+//				locModel.adjust(0, amt);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_DOWN:
+//				locModel.adjust(-amt, 0);
+//				return true;
+//			}
+//		}
+//
+//		if (debugTime) {
+//			TimeModel timeModel = TimeModel.getInstance(appContext);
+//			switch (keyCode) {
+//			case KeyEvent.KEYCODE_DPAD_UP:
+//				timeModel.adjust(1);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_RIGHT:
+//				timeModel.adjust(2);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_DOWN:
+//				timeModel.adjust(3);
+//				return true;
+//			}
+//		}
+//
+//		return false;
+//	}
 
 
 	// ******************************************************************** //

@@ -73,6 +73,12 @@ for more details.\n</string>
     <string name="button_license">License</string>
     <string name="button_homepage">Project</string>
 
+    <!-- Tab Bar strings. -->
+    <string name="tab_location">Location</string>
+    <string name="tab_passage">Passage</string>
+    <string name="tab_watch">Watches</string>
+    <string name="tab_astro">Astro</string>
+
     <!-- URLs. -->
     <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
     <string name="url_homepage">http://code.google.com/p/tricorder/</string>

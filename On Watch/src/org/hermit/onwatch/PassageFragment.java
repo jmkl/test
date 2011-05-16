@@ -29,8 +29,11 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -57,30 +60,72 @@ import android.widget.TextView;
  * . . .
  * <        Done        >  -- Commit
  */
-public class PassageController
-	extends OnWatchController
+public class PassageFragment
+	extends ViewFragment
 {
 
+	// ******************************************************************** //
+    // Fragment Lifecycle.
     // ******************************************************************** //
-    // Constructors.
-    // ******************************************************************** //
-    
-    /**
-	 * Create a passage controller.
+	
+	/**
+	 * Called to do initial creation of a fragment. This is called after
+	 * onAttach(Activity) and before
+	 * onCreateView(LayoutInflater, ViewGroup, Bundle).
 	 * 
-	 * @param	context			Parent application.
+	 * Note that this can be called while the fragment's activity is still
+	 * in the process of being created.  As such, you can not rely on things
+	 * like the activity's content view hierarchy being initialized at this
+	 * point.  If you want to do work once the activity itself is created,
+	 * see onActivityCreated(Bundle).
+	 * 
+	 * @param	icicle		If the fragment is being re-created from a
+	 * 						previous saved state, this is the state.
 	 */
-	public PassageController(OnWatch context) {
-		super(context);
+	public void onCreate(Bundle icicle) {
+		Log.i(TAG, "onCreate(" + (icicle != null ? "icicle" : "null") + ")");
 		
-		appContext = context;
+		super.onCreate(icicle);
+	}
+
+
+	/**
+	 * Called to have the fragment instantiate its user interface view.
+	 * This is optional, and non-graphical fragments can return null
+	 * (which is the default implementation).  This will be called between
+	 * onCreate(Bundle) and onActivityCreated(Bundle).
+	 *
+	 * If you return a View from here, you will later be called in
+	 * onDestroyView() when the view is being released.
+	 *
+	 * @param	inflater	The LayoutInflater object that can be used to
+	 * 						inflate any views in the fragment.
+	 * @param	container	If non-null, this is the parent view that the
+	 * 						fragment's UI should be attached to.  The
+	 * 						fragment should not add the view itself, but
+	 * 						this can be used to generate the LayoutParams
+	 * 						of the view.
+	 * @param	icicle		If non-null, this fragment is being re-constructed
+	 * 						from a previous saved state as given here.
+	 * @return				The View for the fragment's UI, or null.
+	 */
+	public View onCreateView(LayoutInflater inflater,
+							 ViewGroup container,
+							 Bundle icicle)
+	{
+		Log.i(TAG, "onCreateView(" + (icicle != null ? "icicle" : "null") + ")");
+		
+        // Inflate the layout for this fragment
+        appContext = (OnWatch) container.getContext();
+        View view = inflater.inflate(R.layout.passage_view, container, false);
+        
 		contentResolver = appContext.getContentResolver();
 		
         // Perform a managed query to get the passage list from the content
 		// provider.  The Activity will handle closing and requerying the
 		// cursor when needed.
 		allPassagesCursor =
-			context.managedQuery(PassageSchema.Passages.CONTENT_URI,
+			appContext.managedQuery(PassageSchema.Passages.CONTENT_URI,
 		                         PassageSchema.Passages.PROJECTION,
 		                         null, null,
 		                         PassageSchema.Passages.START_TIME + " DESC");
@@ -88,7 +133,7 @@ public class PassageController
         // Perform a managed query to get the currently running passage,
 		// if any, from the content provider.
         openPassageCursor =
-        	context.managedQuery(PassageSchema.Passages.CONTENT_URI,
+        	appContext.managedQuery(PassageSchema.Passages.CONTENT_URI,
                                  PassageSchema.Passages.PROJECTION,
                                  "? != 0",
                                  new String[] { PassageSchema.Passages.UNDER_WAY },
@@ -96,9 +141,9 @@ public class PassageController
         
 		// Get the passage selector widget.  Give it an adapter which maps
 		// on to the passage names list.
-		passagePicker = (Spinner) context.findViewById(R.id.passage_picker);
+		passagePicker = (Spinner) view.findViewById(R.id.passage_picker);
 		passageAdapter =
-            new SimpleCursorAdapter(context,
+            new SimpleCursorAdapter(appContext,
                                     android.R.layout.simple_spinner_item,
                                     allPassagesCursor,
                                     new String[] { PassageSchema.Passages.NAME },
@@ -119,14 +164,14 @@ public class PassageController
         });
 
 		// Get the relevant widgets.  Set a handlers on the buttons.
-        startPlaceField = (TextView) context.findViewById(R.id.pass_start_place);
-        startTimeField = (TextView) context.findViewById(R.id.pass_start_time);
-        endPlaceField = (TextView) context.findViewById(R.id.pass_end_place);
-        endTimeField = (TextView) context.findViewById(R.id.pass_end_time);
-		statusDescField = (TextView) context.findViewById(R.id.pass_stat_desc);
-		statusAuxField = (TextView) context.findViewById(R.id.pass_stat_aux);
+        startPlaceField = (TextView) view.findViewById(R.id.pass_start_place);
+        startTimeField = (TextView) view.findViewById(R.id.pass_start_time);
+        endPlaceField = (TextView) view.findViewById(R.id.pass_end_place);
+        endTimeField = (TextView) view.findViewById(R.id.pass_end_time);
+		statusDescField = (TextView) view.findViewById(R.id.pass_stat_desc);
+		statusAuxField = (TextView) view.findViewById(R.id.pass_stat_aux);
 		
-        Button newButton = (Button) context.findViewById(R.id.passage_new_button);
+        Button newButton = (Button) view.findViewById(R.id.passage_new_button);
         newButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -135,7 +180,7 @@ public class PassageController
         });
         
         // Add the handler to the edit button.
-        Button editButton = (Button) context.findViewById(R.id.passage_edit_button);
+        Button editButton = (Button) view.findViewById(R.id.passage_edit_button);
         editButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -143,7 +188,7 @@ public class PassageController
             }
         });
 
-        Button deleteButton = (Button) context.findViewById(R.id.passage_delete_button);
+        Button deleteButton = (Button) view.findViewById(R.id.passage_delete_button);
         deleteButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -151,7 +196,7 @@ public class PassageController
             }
         });
 
-        startButton = (Button) context.findViewById(R.id.passage_start_button);
+        startButton = (Button) view.findViewById(R.id.passage_start_button);
 		startButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
@@ -160,7 +205,7 @@ public class PassageController
 		});
         
         // Get the time model.  Ask it to ping us each bell.
-        timeModel = TimeModel.getInstance(context);
+        timeModel = TimeModel.getInstance(appContext);
         timeModel.listen(TimeModel.Field.MINUTE, new TimeModel.Listener() {
             @Override
             public void change(Field field, int value, long time) {
@@ -169,7 +214,7 @@ public class PassageController
         });
 
         // Get our location model.  Ask it to keep us up to date.
-        locationModel = LocationModel.getInstance(context);
+        locationModel = LocationModel.getInstance(appContext);
         locationModel.listen(new LocationModel.Listener() {
             @Override
             public void posChange(GpsState state, String stateMsg,
@@ -181,6 +226,31 @@ public class PassageController
                 }
             }
         });
+
+        return view;
+	}
+
+	
+	/**
+	 * Called when the fragment is visible to the user and actively running.
+	 * This is generally tied to Activity.onResume() of the containing
+	 * Activity's lifecycle.
+	 */
+	public void onResume () {
+		Log.i(TAG, "onResume()");
+		
+		super.onResume();
+	}
+
+	
+	/**
+	 * Called when the Fragment is no longer resumed.  This is generally
+	 * tied to Activity.onPause of the containing Activity's lifecycle.
+	 */
+	public void onPause() {
+		Log.i(TAG, "onPause()");
+		
+		super.onPause();
 	}
 
 

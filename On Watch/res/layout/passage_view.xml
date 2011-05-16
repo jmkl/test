@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical">
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+	    android:orientation="vertical">
 
 	<Spinner android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:id="@+id/passage_picker"></Spinner>
@@ -71,19 +73,12 @@
 	<LinearLayout android:orientation="horizontal"
 		android:layout_width="fill_parent" android:layout_height="wrap_content">
 
-		<ImageButton android:id="@+id/flip_left"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:background="@drawable/btn_thin" android:src="@drawable/ic_left" />
-
 		<Button android:id="@+id/passage_start_button"
 			android:layout_width="fill_parent" android:layout_height="fill_parent"
 			android:layout_weight="1" android:background="@drawable/btn_thin"
 			android:text="@string/passage_start" android:textColor="#ffffff"
 			android:textSize="24dip" />
 
-		<ImageButton android:id="@+id/flip_right"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:background="@drawable/btn_thin" android:src="@drawable/ic_right" />
 	</LinearLayout>
 
 </LinearLayout>
