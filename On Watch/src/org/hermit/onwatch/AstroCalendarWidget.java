@@ -610,7 +610,6 @@ public class AstroCalendarWidget
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "onwatch";
 
     // The names of all the celestial bodies we calculate for.  This includes

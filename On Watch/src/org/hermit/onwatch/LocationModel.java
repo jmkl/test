@@ -581,7 +581,6 @@ public class LocationModel
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "onwatch";
 
 	// The instance of the location model; null if not created yet.

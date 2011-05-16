@@ -22,9 +22,6 @@ import org.hermit.onwatch.CrewModel.Crew;
 import org.hermit.utils.Angle;
 import org.hermit.utils.TimeUtils;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
@@ -32,8 +29,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -129,7 +126,8 @@ public class HomeFragment
 		
 		timeModel = TimeModel.getInstance(appContext);
 		crewModel = CrewModel.getInstance(appContext);
-		
+        crewModel.open();
+
 		// Register for watch crew changes.
 		crewModel.listen(new CrewModel.Listener() {
 			@Override
@@ -386,13 +384,80 @@ public class HomeFragment
 		}
 	}
 
+	
+	// ******************************************************************** //
+	// Debug Control.
+	// ******************************************************************** //
+
+//	void setDebug(boolean space, boolean time) {
+//		debugSpace = space;
+//		debugTime = time;
+//		mainView.setFocusable(space || time);
+//		
+//		if (!space) {
+//			LocationModel locModel = LocationModel.getInstance(appContext);
+//			locModel.adjustReset();
+//		}
+//		if (!time) {
+//			TimeModel timeModel = TimeModel.getInstance(appContext);
+//			timeModel.adjustReset();
+//		}
+//	}
+	
+
+//	/**
+//	 * Handle a key event.
+//	 * 
+//	 * @param	keyCode			Key code that represents the button pressed.
+//	 * @param	event			KeyEvent object that defines the button action.
+//	 * @return					If you handled the event, return true.
+//	 * 							If you want to allow the event to be handled
+//	 *							by the next receiver, return false. 
+//	 */
+//	private boolean debugKey(int keyCode, KeyEvent event) {
+//		if (debugSpace) {
+//			LocationModel locModel = LocationModel.getInstance(appContext);
+//			double amt = 11.33;
+//			switch (keyCode) {
+//			case KeyEvent.KEYCODE_DPAD_LEFT:
+//				locModel.adjust(0, -amt);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_UP:
+//				locModel.adjust(amt, 0);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_RIGHT:
+//				locModel.adjust(0, amt);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_DOWN:
+//				locModel.adjust(-amt, 0);
+//				return true;
+//			}
+//		}
+//
+//		if (debugTime) {
+//			TimeModel timeModel = TimeModel.getInstance(appContext);
+//			switch (keyCode) {
+//			case KeyEvent.KEYCODE_DPAD_UP:
+//				timeModel.adjust(1);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_RIGHT:
+//				timeModel.adjust(2);
+//				return true;
+//			case KeyEvent.KEYCODE_DPAD_DOWN:
+//				timeModel.adjust(3);
+//				return true;
+//			}
+//		}
+//
+//		return false;
+//	}
+
 
 	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "onwatch";
 
     

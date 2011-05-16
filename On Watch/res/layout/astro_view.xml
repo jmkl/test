@@ -5,7 +5,7 @@
         android:layout_height="fill_parent"
 	    android:orientation="vertical">
 
-	<org.hermit.android.widgets.HScrollView
+	<HorizontalScrollView
 			android:id="@+id/astro_scroller"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"
@@ -18,7 +18,7 @@
 				android:layout_width="fill_parent"
 				android:layout_height="fill_parent" />
 
-    </org.hermit.android.widgets.HScrollView>
+    </HorizontalScrollView>
 
 </LinearLayout>
 

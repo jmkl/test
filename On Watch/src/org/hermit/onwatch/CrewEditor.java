@@ -341,7 +341,6 @@ public class CrewEditor
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "onwatch";
     
 	// Menu item IDs for the context menu.
