@@ -13,22 +13,23 @@
         
 	   <include
 			    layout="@layout/clock_view"
-			    android:layout_width="wrap_content"
+			    android:layout_width="fill_parent"
 			    android:layout_height="fill_parent"
                 android:layout_weight="1" />
     
 	   <include
 			    layout="@layout/location_view"
-			    android:layout_width="wrap_content"
+			    android:layout_width="fill_parent"
 			    android:layout_height="fill_parent"
                 android:layout_weight="1" />
 
     </LinearLayout>
 
 	<LinearLayout
-		android:orientation="horizontal"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content" >
+		    android:orientation="horizontal"
+		    android:layout_width="fill_parent"
+		    android:layout_height="fill_parent"
+            android:layout_weight="1" >
 
 		<org.hermit.onwatch.ChimeButton
 			android:id="@+id/home_chime_button" android:layout_width="fill_parent"

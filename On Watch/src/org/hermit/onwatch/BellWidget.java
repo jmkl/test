@@ -105,7 +105,10 @@ public class BellWidget
 		// Our height is half the specified width.
 	    int wd = getDefaultSize(getSuggestedMinimumWidth(), wspec);
 		int bell = wd / 8 - BELL_PAD_X * 2;
-		setMeasuredDimension(wd, bell + BELL_PAD_Y * 2);
+		if (bell > 32)
+			bell = 32;
+		
+		setMeasuredDimension(bell * 8 + BELL_PAD_X * 2, bell + BELL_PAD_Y * 2);
 	}
 	
 	 
