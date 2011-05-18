@@ -1,23 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
-<!--    <PreferenceCategory android:title="@string/prefs_cat_sound">-->
-<!---->
-<!--        <CheckBoxPreference-->
-<!--                android:key="chimeWatch"-->
-<!--                android:title="@string/prefs_chime_watch"-->
-<!--                android:summary="@string/prefs_chime_watch_summary" />-->
-<!---->
-<!--        <ListPreference-->
-<!--                android:key="alertMode"-->
-<!--                android:title="@string/prefs_alert"-->
-<!--                android:summary="@string/prefs_alert_summary"-->
-<!--                android:entries="@array/prefs_alert_entries"-->
-<!--                android:entryValues="@array/prefs_alert_values"-->
-<!--                android:dialogTitle="@string/prefs_alert_title" />-->
-<!--            -->
-<!--    </PreferenceCategory>-->
     
     <PreferenceCategory android:title="@string/prefs_cat_time">
 

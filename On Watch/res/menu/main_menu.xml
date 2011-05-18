@@ -2,25 +2,47 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- "Toggle Watch Chimes". -->
+	<item android:id="@+id/menu_chimes"
+	      android:title="@string/menu_chimes"
+    	  android:icon="@drawable/ic_menu_chimes_on"
+          android:showAsAction="ifRoom" />
+
+    <!-- "Toggle Wakeup Alerts". -->
+    <item android:id="@+id/menu_alerts"
+          android:title="@string/menu_alerts"
+          android:icon="@drawable/ic_menu_alert_off"
+          android:showAsAction="ifRoom" />
+
     <!-- "Preferences". -->
-	<item android:id="@+id/menu_prefs" android:title="@string/menu_prefs"
-    	  android:icon="@drawable/ic_menu_preferences"></item>
+    <item android:id="@+id/menu_prefs"
+          android:title="@string/menu_prefs"
+          android:icon="@drawable/ic_menu_preferences" />
+
+    <!-- "Preferences". -->
+    <item android:id="@+id/menu_prefs"
+          android:title="@string/menu_prefs"
+          android:icon="@drawable/ic_menu_preferences" />
 
     <!-- "Help". -->
-	<item android:id="@+id/menu_help" android:title="@string/menu_help"
-    	  android:icon="@drawable/ic_menu_help"></item>
+	<item android:id="@+id/menu_help"
+          android:title="@string/menu_help"
+    	  android:icon="@drawable/ic_menu_help" />
 
     <!-- "About". -->
-	<item android:id="@+id/menu_about" android:title="@string/menu_about"
-    	  android:icon="@drawable/ic_menu_info"></item>
+	<item android:id="@+id/menu_about"
+          android:title="@string/menu_about"
+    	  android:icon="@drawable/ic_menu_info" />
 
     <!-- "Show Eula". -->
-	<item android:id="@+id/menu_eula" android:title="@string/menu_eula"
-    	  android:icon="@drawable/ic_menu_info"></item>
+	<item android:id="@+id/menu_eula"
+          android:title="@string/menu_eula"
+    	  android:icon="@drawable/ic_menu_info" />
 	
     <!-- "Exit". -->
-	<item android:id="@+id/menu_exit" android:title="@string/menu_exit"
-    	  android:icon="@drawable/ic_menu_close_clear_cancel"></item>
+	<item android:id="@+id/menu_exit"
+          android:title="@string/menu_exit"
+    	  android:icon="@drawable/ic_menu_close_clear_cancel" />
 	
 </menu>
 

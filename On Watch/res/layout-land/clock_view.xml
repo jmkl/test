@@ -63,6 +63,13 @@
                     android:layout_weight="1"
                     android:singleLine="true" />
 
+            <TextView
+                    style="@style/ClockWatch"
+                    android:id="@+id/clock_nextcrew"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true" />
+
             </LinearLayout>
 
         </LinearLayout>
@@ -78,13 +85,6 @@
     				android:id="@+id/clock_watch"
             		android:layout_width="fill_parent"
             		android:layout_height="wrap_content" />
-
-    		<TextView
-					style="@style/ClockWatch"
-    				android:id="@+id/clock_nextcrew"
-            		android:layout_width="fill_parent"
-            		android:layout_height="wrap_content"
-            		android:singleLine="true" />
 
     </LinearLayout>
 

@@ -162,6 +162,9 @@ public class OnWatch
 		};
 		soundPlaying = false;
 
+		// Get the chimer.
+		bellChime = Chimer.getInstance(this);
+
         // Restore our preferences.
         updatePreferences();
         
@@ -398,7 +401,13 @@ public class OnWatch
     	
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        
+        // Get the menu items we need to control.
+        chimeMenuItem = menu.findItem(R.id.menu_chimes);
+        alertsMenuItem = menu.findItem(R.id.menu_alerts);
 
+        updatePreferences();
+        
         return true;
     }
 
@@ -417,6 +426,12 @@ public class OnWatch
     	case android.R.id.home:
     		// App icon has been pressed.
     		// FIXME: do something.
+    		break;
+    	case R.id.menu_chimes:
+    		setChimes(!bellChime.getChimeEnable());
+    		break;
+    	case R.id.menu_alerts:
+    		setAlarms(bellChime.getRepeatAlert().next());
     		break;
         case R.id.menu_prefs:
         	// Launch the preferences activity as a subactivity, so we
@@ -451,7 +466,7 @@ public class OnWatch
     	
     	return true;
     }
-    
+
 
     /**
      * Read our application preferences and configure ourself appropriately.
@@ -459,6 +474,30 @@ public class OnWatch
     private void updatePreferences() {
     	SharedPreferences prefs =
     					PreferenceManager.getDefaultSharedPreferences(this);
+
+    	boolean chimeWatch = true;
+    	try {
+    		chimeWatch = prefs.getBoolean("chimeWatch", true);
+    	} catch (Exception e) {
+    		Log.i(TAG, "Pref: bad chimeWatch");
+    	}
+    	Log.i(TAG, "Prefs: chimeWatch " + chimeWatch);
+    	bellChime.setChimeEnable(chimeWatch);
+    	if (chimeMenuItem != null)
+    		chimeMenuItem.setIcon(chimeWatch ? R.drawable.ic_menu_chimes_on :
+			  		 		  	               R.drawable.ic_menu_chimes_off);
+
+    	Chimer.AlertMode alertMode = Chimer.AlertMode.OFF;
+    	try {
+    		String mval = prefs.getString("alertMode", "OFF");
+    		alertMode = Chimer.AlertMode.valueOf(mval);
+    	} catch (Exception e) {
+    		Log.i(TAG, "Pref: bad alertMode");
+    	}
+    	Log.i(TAG, "Prefs: alertMode " + alertMode);
+        bellChime.setRepeatAlert(alertMode);
+        if (alertsMenuItem != null)
+        	alertsMenuItem.setIcon(alertMode.icon);
 
     	boolean nautTime = false;
     	try {
@@ -484,10 +523,49 @@ public class OnWatch
     		Log.i(TAG, "Pref: bad debugTime");
     	}
     	Log.i(TAG, "Prefs: debugTime " + debugTime);
-    	
+
     	// FIXME:
 //    	viewController.setDebug(debugSpace, debugTime);
    }
+
+
+	// ******************************************************************** //
+	// Alert Controls Handling.
+	// ******************************************************************** //
+
+    /**
+     * Set the half-hourly watch chimes on or off.
+     * 
+     * @param	enable				Requested state.
+     */
+    private void setChimes(boolean enable) {
+    	SharedPreferences prefs =
+			PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("chimeWatch", enable);
+        editor.commit();
+        
+        bellChime.setChimeEnable(enable);
+        chimeMenuItem.setIcon(enable ? R.drawable.ic_menu_chimes_on :
+        					  		   R.drawable.ic_menu_chimes_off);
+    }
+    
+
+    /**
+     * Set the repeating alarm on or off.
+     * 
+     * @param	mode				Requested alert mode.
+     */
+    private void setAlarms(Chimer.AlertMode mode) {
+    	SharedPreferences prefs =
+			PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("alertMode", mode.toString());
+        editor.commit();
+        
+        bellChime.setRepeatAlert(mode);
+        alertsMenuItem.setIcon(mode.icon);
+    }
 
 
 	// ******************************************************************** //
@@ -643,7 +721,7 @@ public class OnWatch
     // ******************************************************************** //
     // Private Types.
     // ******************************************************************** //
-
+    
 	/**
 	 * Class which generates our ticks.
 	 */
@@ -691,7 +769,11 @@ public class OnWatch
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-
+    
+    // Menu items for the chimes and alerts controls.
+    private MenuItem chimeMenuItem = null;
+    private MenuItem alertsMenuItem = null;
+  
 	// The views we display in our tabs.
 	private ArrayList<ViewFragment> childViews;
 	
@@ -707,6 +789,9 @@ public class OnWatch
 	// Handler for updates.  We need this to get back onto
 	// our thread so we can update the GUI.
 	private Handler tickHandler;
+	
+	// Chimer.
+	private Chimer bellChime;
 
 	// Handler for sounds.  We need this to get back onto the main thread.
 	private Handler soundHandler;

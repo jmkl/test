@@ -17,20 +17,17 @@
 package org.hermit.onwatch;
 
 
-import org.hermit.android.widgets.MultistateImageButton;
 import org.hermit.onwatch.CrewModel.Crew;
 import org.hermit.utils.Angle;
 import org.hermit.utils.TimeUtils;
 
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -97,30 +94,7 @@ public class HomeFragment
         // Inflate the layout for this fragment
         appContext = (OnWatch) container.getContext();
         View view = inflater.inflate(R.layout.home_view, container, false);
-        
-		// Get the control buttons and set up their handlers.
-		chimeSwitch = (MultistateImageButton)
-								view.findViewById(R.id.home_chime_button);
-		alertSwitch = (MultistateImageButton)
-								view.findViewById(R.id.home_alert_button);
-		chimeSwitch.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				MultistateImageButton but = (MultistateImageButton) arg0;
-				setChimes(but.getState());
-			}
-		});
-		alertSwitch.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				MultistateImageButton but = (MultistateImageButton) arg0;
-				setAlarms(but.getState());
-			}
-		});
-
-		// Get the chimer.
-		bellChime = Chimer.getInstance(appContext);
-		
+ 		
 		
 		// Clock
 		
@@ -195,8 +169,6 @@ public class HomeFragment
 
     	
     	
-		
-		updateSettings();
         
         return view;
 	}
@@ -223,72 +195,6 @@ public class HomeFragment
 		
 		super.onPause();
 	}
-
-    
-	// ******************************************************************** //
-	// Settings Control.
-	// ******************************************************************** //
-
-    /**
-     * Read our application preferences and configure ourself appropriately.
-     */
-    private void updateSettings() {
-    	SharedPreferences prefs =
-    				PreferenceManager.getDefaultSharedPreferences(appContext);
-
-    	boolean chimeWatch = true;
-    	try {
-    		chimeWatch = prefs.getBoolean("chimeWatch", true);
-    	} catch (Exception e) {
-    		Log.i(TAG, "Pref: bad chimeWatch");
-    	}
-    	Log.i(TAG, "Prefs: chimeWatch " + chimeWatch);
-    	chimeSwitch.setState(chimeWatch ? 1 : 0);
-    	bellChime.setChimeEnable(chimeWatch);
-
-    	int alertMode = 0;
-    	try {
-    		alertMode = prefs.getInt("alertMode", 0);
-    	} catch (Exception e) {
-    		Log.i(TAG, "Pref: bad alertMode");
-    	}
-    	Log.i(TAG, "Prefs: alertMode " + alertMode);
-    	alertSwitch.setState(alertMode);
-    	bellChime.setRepeatAlert(alertMode == 1 ? 5 :
-    							     alertMode == 2 ? 10 : alertMode == 3 ? 15 : 0);
-    }
-
-
-    /**
-     * Set the half-hourly watch chimes on or off.
-     * 
-     * @param	state				Requested state: 0=off, 1=on.
-     */
-    private void setChimes(int state) {
-    	SharedPreferences prefs =
-			PreferenceManager.getDefaultSharedPreferences(appContext);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("chimeWatch", state > 0);
-        editor.commit();
-        bellChime.setChimeEnable(state > 0);
-    }
-    
-
-    /**
-     * Set the repeating alarm on or off.
-     * 
-     * @param	alertMode			Requested state: 0=off, 1=5 min,
-     * 								2=10 min, 3=15 min.
-     */
-    private void setAlarms(int alertMode) {
-    	SharedPreferences prefs =
-			PreferenceManager.getDefaultSharedPreferences(appContext);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("alertMode", alertMode);
-        editor.commit();
-        bellChime.setRepeatAlert(alertMode == 1 ? 5 :
-			  					     alertMode == 2 ? 10 : alertMode == 3 ? 15 : 0);
-    }
 
 
 	// ******************************************************************** //
@@ -467,13 +373,6 @@ public class HomeFragment
 
 	// Parent app we're running in.
 	private OnWatch appContext;
-	
-	// Chimer.
-	private Chimer bellChime;
-
-    // Switches used to control the half-hour chimes and wake-up alarms.
-    private MultistateImageButton chimeSwitch;
-    private MultistateImageButton alertSwitch;
 
     
     

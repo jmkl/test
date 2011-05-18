@@ -2,23 +2,6 @@
 
 <resources>
     
-    <!-- Entry names for the alert preferences menu. -->
-    <string-array name="prefs_alert_entries">
-        <item>No alert</item>
-        <item>Every 5 min</item>
-        <item>Every 10 min</item>  
-        <item>Every 15 min</item>  
-    </string-array>
-
-    <!-- Values for the alert preferences menu. -->
-    <string-array name="prefs_alert_values">
-        <item>0</item>
-        <item>5</item>
-        <item>10</item>
-        <item>15</item>  
-    </string-array>
-    
-    
     <!-- Help section titles. -->
     <string-array name="help_titles">
 		<item></item>

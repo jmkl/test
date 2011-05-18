@@ -46,6 +46,8 @@ for more details.\n</string>
 
 
     <!-- Menu strings. -->
+    <string name="menu_chimes">Chimes</string>
+    <string name="menu_alerts">Alerts</string>
     <string name="menu_prefs">Settings</string>
     <string name="menu_help">Help</string>
     <string name="menu_about">About</string>

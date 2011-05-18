@@ -30,6 +30,37 @@ public class Chimer
 {
 
 	// ******************************************************************** //
+    // Public Classes.
+    // ******************************************************************** //
+	
+    /**
+     * Enum defining the alert modes.
+     */
+    enum AlertMode {
+    	OFF(0, R.drawable.ic_menu_alert_off),
+    	EVERY_05(5, R.drawable.ic_menu_alert_5),
+    	EVERY_10(10, R.drawable.ic_menu_alert_10),
+    	EVERY_15(15, R.drawable.ic_menu_alert_15);
+    	
+    	AlertMode(int mins, int icon) {
+    		this.minutes = mins;
+    		this.icon = icon;
+    	}
+    	
+    	AlertMode next() {
+    		if (this == EVERY_15)
+    			return OFF;
+    		else
+    			return VALUES[ordinal() + 1];
+    	}
+    	
+    	private static final AlertMode[] VALUES = values();
+    	final int minutes;
+    	final int icon;
+    }
+    
+
+	// ******************************************************************** //
     // Constructors.
     // ******************************************************************** //
 	
@@ -64,8 +95,9 @@ public class Chimer
 			@Override
 			public void change(Field field, int min, long time) {
 		    	// Only alert if we're not chiming the half-hour.
+				int interval = alertMode.minutes;
 				boolean bells = timeModel.changed(TimeModel.Field.BELLS);
-		    	if (alertInterval > 0 && !bells && min % alertInterval == 0)
+		    	if (interval > 0 && !bells && min % interval == 0)
 		    		appContext.makeSound(OnWatch.Sound.RINGRING);
 			}
 		});
@@ -91,6 +123,16 @@ public class Chimer
 	// ******************************************************************** //
 
 	/**
+	 * Query whether the half-hour watch chimes are enabled.
+	 * 
+	 * @return					true iff the chimes are enabled.
+	 */
+	public boolean getChimeEnable() {
+    	return chimeWatch;
+    }
+
+
+	/**
 	 * Enable or disable the half-hour watch chimes.
 	 * 
 	 * @param	enable			true to enable chimes, false to disable.
@@ -101,13 +143,22 @@ public class Chimer
 
     
     /**
+     * Get the current repeating alert mode.
+     * 
+     * @return					The current mode.
+     */
+    public AlertMode getRepeatAlert() {
+    	return alertMode;
+    }
+    
+
+    /**
      * Set up a repeating alert.
      * 
-     * @param	interval		Alert interval in minutes.  Zero to
-     * 							disable alerts.
+     * @param	interval		Desired alert mode.
      */
-    public void setRepeatAlert(int interval) {
-    	alertInterval = interval;
+    public void setRepeatAlert(AlertMode mode) {
+    	alertMode = mode;
     }
     
 
@@ -136,8 +187,8 @@ public class Chimer
 	// True if the half-hour watch chimes are enabled.
 	private boolean chimeWatch = false;
 
-    // Repeating alert interval in minutes.  Zero to disable alerts
-    private int alertInterval = 0;
+    // Repeating alert mode.
+    private AlertMode alertMode = AlertMode.OFF;
 
 }
 
