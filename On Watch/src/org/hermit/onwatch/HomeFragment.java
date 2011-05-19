@@ -21,6 +21,7 @@ import org.hermit.onwatch.CrewModel.Crew;
 import org.hermit.utils.Angle;
 import org.hermit.utils.TimeUtils;
 
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -123,7 +124,7 @@ public class HomeFragment
 		zoneChoice = (Button) view.findViewById(R.id.clock_set_zone);
 		timeField = (TextView) view.findViewById(R.id.clock_time);
 		watchField = (TextView) view.findViewById(R.id.clock_watch);
-		crewField = (BarTextWidget) view.findViewById(R.id.clock_watchcrew);
+		crewField = (TextView) view.findViewById(R.id.clock_watchcrew);
 		nextCrewField = (TextView) view.findViewById(R.id.clock_nextcrew);
 
     	zoneChoice.setOnClickListener(new OnClickListener() {
@@ -243,7 +244,8 @@ public class HomeFragment
     	// Display the watch name and names of the on-watch crew.
     	watchField.setText(timeModel.getWatchName());
 //    	crewField.setText(crewModel.getWatchCrewNames());
-    	crewField.setBar(crewModel.getWatchFrac());
+    	Drawable bar = crewField.getBackground();
+    	bar.setLevel((int) (crewModel.getWatchFrac() * 10000));
 //    	nextCrewField.setText(crewModel.getNextCrewNames());
     }
 
@@ -396,7 +398,7 @@ public class HomeFragment
     
     // Field for displaying the watch name and the watch crew names.
     private TextView watchField;
-    private BarTextWidget crewField;
+    private TextView crewField;
     private TextView nextCrewField;
 
     

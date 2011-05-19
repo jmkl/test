@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+
+    <!-- The clock. -->
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+                
+        <Button
+                android:id="@+id/clock_set_zone"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+
+        <TextView
+                android:id="@+id/clock_date"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="24dp"
+                android:singleLine="true" />
+                
+        <AnalogClock
+        	    android:layout_width="350dp"
+        	    android:layout_height="350dp"
+        	    android:dial="@drawable/clock_dial"
+                android:hand_hour="@drawable/clock_hand_hour"
+                android:hand_minute="@drawable/clock_hand_minute" />
+
+		<TextView
+            	style="@style/ClockTime"
+				android:id="@+id/clock_time"
+        		android:layout_width="fill_parent"
+        		android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <!-- The watch info. -->
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+        <TextView
+                style="@style/ClockWatch"
+                android:id="@+id/clock_watch"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+
+        <org.hermit.onwatch.BellWidget
+                android:id="@+id/clock_bells"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+
+        <TextView
+                style="@style/ClockWatch"
+                android:background="@drawable/scale_bar_bg"
+                android:id="@+id/clock_watchcrew"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true" />
+
+        <TextView
+                style="@style/ClockWatch"
+                android:id="@+id/clock_nextcrew"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true" />
+
+    </LinearLayout>
+
+</LinearLayout>
+
