@@ -98,24 +98,26 @@ public class HomeFragment
  		
 		
 		// Clock
-		
+
+		timeText = new StringBuilder(8);
+		timeText.append("00:00:00");
+
 		timeModel = TimeModel.getInstance(appContext);
 		crewModel = CrewModel.getInstance(appContext);
-        crewModel.open();
 
 		// Register for watch crew changes.
 		crewModel.listen(new CrewModel.Listener() {
 			@Override
 			public void watchPlanChanged() {
+				updateWatch();
 			}
 			@Override
 			public void watchChange(int day, int watch, Crew[] crew) {
-				crewField.setText(crewModel.getWatchCrewNames());
-		    	nextCrewField.setText("");
+				updateWatch();
 			}
 			@Override
 			public void watchAlert(Crew[] nextCrew) {
-		    	nextCrewField.setText(crewModel.getNextCrewNames());
+				updateWatch();
 			}
 		});
 
@@ -133,15 +135,7 @@ public class HomeFragment
 				((OnWatch) appContext).requestTimezone();
 			}
     	});
-
-		timeText = new StringBuilder(8);
-		timeText.append("00:00:00");
 		
-    	crewField.setText(crewModel.getWatchCrewNames());
-    	if (crewModel.getTimeToNext() < 15)
-    		nextCrewField.setText(crewModel.getNextCrewNames());
-    	else
-    		nextCrewField.setText("");
 
     	
     	
@@ -169,8 +163,9 @@ public class HomeFragment
 		longitudeText = new StringBuilder(12);
 
     	
-    	
-        
+		updateClock();
+		updateWatch();
+		
         return view;
 	}
 
@@ -241,12 +236,22 @@ public class HomeFragment
     	timeText.setCharAt(7, (char) ('0' + sec % 10));
     	timeField.setText(timeText);
 
-    	// Display the watch name and names of the on-watch crew.
-    	watchField.setText(timeModel.getWatchName());
-//    	crewField.setText(crewModel.getWatchCrewNames());
+    	// Display the watch time graphically.
     	Drawable bar = crewField.getBackground();
     	bar.setLevel((int) (crewModel.getWatchFrac() * 10000));
-//    	nextCrewField.setText(crewModel.getNextCrewNames());
+	}
+
+
+    /**
+     * Display the current watch info.
+     */
+    private void updateWatch() {
+    	watchField.setText(timeModel.getWatchName());
+    	crewField.setText(crewModel.getWatchCrewNames());
+    	if (crewModel.getTimeToNext() < 15)
+    		nextCrewField.setText(crewModel.getNextCrewNames());
+    	else
+    		nextCrewField.setText("");
     }
 
 
@@ -256,39 +261,35 @@ public class HomeFragment
 	private void updateLocation(LocationModel.GpsState gpsState, String stateMsg,
 			  			Location l, String locMsg)
 	{
-//		Log.v(TAG, "Location Display: update");
-		
-		synchronized (this) {
-			statusField.setText(stateMsg);
-			
-			boolean ok = gpsState == LocationModel.GpsState.ENABLED ||
-						 gpsState == LocationModel.GpsState.TEMP_OOS;
-			if (!ok || l == null) {
-				latitudeField.setText(" ---°--.---'");
-				longitudeField.setText(" ---°--.---'");
+		statusField.setText(stateMsg);
+
+		boolean ok = gpsState == LocationModel.GpsState.ENABLED ||
+		gpsState == LocationModel.GpsState.TEMP_OOS;
+		if (!ok || l == null) {
+			latitudeField.setText(" ---°--.---'");
+			longitudeField.setText(" ---°--.---'");
+			headField.setText("---");
+			speedField.setText("---");
+			descriptionField.setText("---");
+		} else {
+			Angle.formatDegMin(l.getLatitude(), 'N', 'S', latitudeText);
+			latitudeField.setText(latitudeText);
+			Angle.formatDegMin(l.getLongitude(), 'E', 'W', longitudeText);
+			longitudeField.setText(longitudeText);
+
+			if (l.hasBearing())
+				headField.setText("" + Math.round(l.getBearing()) + "°");
+			else
 				headField.setText("---");
+			if (l.hasSpeed()) {
+				// Display in knots.
+				float kt0 = l.getSpeed() * 19.438445f;
+				speedField.setText("" + (int) (kt0 / 10) + "." +
+						(int) (kt0 % 10) + " kt");
+			} else
 				speedField.setText("---");
-				descriptionField.setText("---");
-			} else {
-				Angle.formatDegMin(l.getLatitude(), 'N', 'S', latitudeText);
-				latitudeField.setText(latitudeText);
-				Angle.formatDegMin(l.getLongitude(), 'E', 'W', longitudeText);
-				longitudeField.setText(longitudeText);
-				
-				if (l.hasBearing())
-					headField.setText("" + Math.round(l.getBearing()) + "°");
-				else
-					headField.setText("---");
-				if (l.hasSpeed()) {
-					// Display in knots.
-					float kt0 = l.getSpeed() * 19.438445f;
-					speedField.setText("" + (int) (kt0 / 10) + "." +
-											(int) (kt0 % 10) + " kt");
-				} else
-					speedField.setText("---");
-				
-				descriptionField.setText(locMsg);
-			}
+
+			descriptionField.setText(locMsg);
 		}
 	}
 

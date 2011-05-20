@@ -23,7 +23,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -43,11 +42,9 @@ public class BellWidget
 	 * Create a watch clock.
 	 * 
 	 * @param	context			Parent application.
-	 * @param	bar				True to draw a progress bar behind the bells.
 	 */
-	public BellWidget(Context context, boolean bar) {
+	public BellWidget(Context context) {
 		super(context);
-		drawBar = bar;
 		init(context);
 	}
 
@@ -70,14 +67,12 @@ public class BellWidget
 		// Get the time model.  Get a callback every minute to update
 		// the display.
 		timeModel = TimeModel.getInstance(context);
-		timeModel.listen(TimeModel.Field.MINUTE, new TimeModel.Listener() {
+		timeModel.listen(TimeModel.Field.WATCH, new TimeModel.Listener() {
 			@Override
 			public void change(Field field, int value, long time) {
 				invalidate();
 			}
 		});
-
-		bellPaint = new Paint();
 	}
 
 
@@ -105,10 +100,8 @@ public class BellWidget
 		// Our height is half the specified width.
 	    int wd = getDefaultSize(getSuggestedMinimumWidth(), wspec);
 		int bell = wd / 8 - BELL_PAD_X * 2;
-		if (bell > 32)
-			bell = 32;
-		
-		setMeasuredDimension(bell * 8 + BELL_PAD_X * 2, bell + BELL_PAD_Y * 2);
+		int by = Math.min(bell, BELL_SIZE);
+		setMeasuredDimension(bell * 8 + BELL_PAD_X * 2, by + BELL_PAD_Y * 2);
 	}
 	
 	 
@@ -130,19 +123,34 @@ public class BellWidget
 
     	if (width <= 0 || height <= 0)
     		return;
-    	winWidth = width;
-    	winHeight = height;
 
-    	bellWidth = width / 8 - BELL_PAD_X * 2;
-    	bellHeight = bellWidth;
-
-    	// Get the bell images, scaled to the screen.
+    	bellBoxWidth = width / 8 - BELL_PAD_X * 2;
+    	bellBoxHeight = height;
+    	
+    	// Get the bell images.
     	Resources res = appContext.getResources();
     	Bitmap l = BitmapFactory.decodeResource(res, R.drawable.bell);
-    	bellLight = Bitmap.createScaledBitmap(l, bellWidth, bellHeight, true);
     	Bitmap g = BitmapFactory.decodeResource(res, R.drawable.bell_gray);
-    	bellGray = Bitmap.createScaledBitmap(g, bellWidth, bellHeight, true);
-    	
+    	Bitmap n = BitmapFactory.decodeResource(res, R.drawable.bell_ghost);
+    	int iw = l.getWidth();
+    	int ih = l.getHeight();
+    	bellImageWidth = Math.min(bellBoxWidth, iw);
+    	bellImageHeight = Math.min(bellBoxHeight, ih);
+
+    	// Create bell images scaled to the screen.
+    	if (bellImageWidth == iw && bellImageHeight == ih) {
+    		bellLight = l;
+    		bellGray = g;
+    		bellGhost = n;
+    	} else {
+    		bellLight = Bitmap.createScaledBitmap(l, bellImageWidth, bellImageHeight, true);
+    		bellGray = Bitmap.createScaledBitmap(g, bellImageWidth, bellImageHeight, true);
+    		bellGhost = Bitmap.createScaledBitmap(n, bellImageWidth, bellImageHeight, true);
+    		l.recycle();
+    		g.recycle();
+    		n.recycle();
+    	}
+
     	// Need to re-draw.
     	invalidate();
     }
@@ -163,50 +171,51 @@ public class BellWidget
 		
 		// What watch are we in?
 		TimeModel.Watch watchNum = timeModel.getWatch();
-		
-		// Draw in the progress bar for the minutes of the watch.
-		if (drawBar) {
-			float bl = watchNum == TimeModel.Watch.DOG2 ? winWidth / 2f : 0f;
-			float minutes = timeModel.get(TimeModel.Field.WATCHMIN);
-			float br = bl + winWidth * minutes / 240f;
-			bellPaint.setColor(BAR_COLOR);
-			bellPaint.setStyle(Paint.Style.FILL);
-			canvas.drawRect(bl, 0f, br, winHeight, bellPaint);
-		}
 
 		// Calculate the bells to display.  This complicated by the fact
 		// that we show the last watch's 8 bells for a minute into the new
 		// watch, and of course the dog watches.
 		int numBells = timeModel.get(TimeModel.Field.CHIMING);
 		int totalBells = watchNum == TimeModel.Watch.DOG1 ? 4 : 8;
-		boolean ghostBells = false;
+		int ghostBells = 0;
     	if (watchNum == TimeModel.Watch.DOG2) {
     		if (numBells == 8)
     			totalBells -= 4;
     		else
-    			ghostBells = true;
+    			ghostBells = 4;
     		numBells -= 4;
     	}
-    	int grayBells = totalBells - (ghostBells ? 4 : 0) - numBells;
+    	int grayBells = totalBells - ghostBells - numBells;
 
-		float x = 0;
-		float y = 0;
-
-		// Skip the ghost bells.  These are bells from the first
-		// dog watch, if we're in the last dog watch.
-		if (ghostBells)
-			x += winWidth / 2f;
+		float x = BELL_PAD_X;
+		float y = BELL_PAD_Y;
+		float px = (bellBoxWidth - bellImageWidth) / 2.0f;
+		float py = (bellBoxHeight - bellImageHeight) / 2.0f;
+		
+		// Draw the left-side ghost bells, if any.  These are bells from
+		// the first dog watch, if we're in the last dog watch.
+		for (int i = 0; i < ghostBells; ++i) {
+			canvas.drawBitmap(bellGhost, x + px, y + py, null);
+			x += bellBoxWidth;
+		}
 
 		// Draw in all the full bells.
 		for (int i = 0; i < numBells; ++i) {
-			canvas.drawBitmap(bellLight, x + BELL_PAD_X, y + BELL_PAD_Y, null);
-			x += winWidth / 8f;
+			canvas.drawBitmap(bellLight, x + px, y + py, null);
+			x += bellBoxWidth;
 		}
 
 		// Draw in the remaining bells as gray.
 		for (int i = 0; i < grayBells; ++i) {
-			canvas.drawBitmap(bellGray, x + BELL_PAD_X, y + BELL_PAD_Y, null);
-			x += winWidth / 8f;
+			canvas.drawBitmap(bellGray, x + px, y + py, null);
+			x += bellBoxWidth;
+		}
+		
+		// Draw the right-side ghost bells, if any.  These are bells for
+		// the last dog watch, if we're in the first dog watch.
+		for (int i = totalBells; i < 8; ++i) {
+			canvas.drawBitmap(bellGhost, x + px, y + py, null);
+			x += bellBoxWidth;
 		}
 	}
 
@@ -219,8 +228,8 @@ public class BellWidget
 	@SuppressWarnings("unused")
 	private static final String TAG = "onwatch";
 
-	// Colour to draw the watch progress bar.
-	private static final int BAR_COLOR = 0xff008000;
+	// Maximum size of the bell images.
+	private static final int BELL_SIZE = 32;
 
 	// Padding to leave on either side of the bell images.
 	private static final int BELL_PAD_X = 0;
@@ -236,24 +245,19 @@ public class BellWidget
 	
 	// Watch calendar, which does all our date/time calculations.
 	private TimeModel timeModel;
-	
-	// Do we draw a progress bar?
-	private boolean drawBar = false;
-	
-	// Our window width and height.
-	private int winWidth = 0;
-	private int winHeight = 0;
+
+	// Size of the bell image assets.
+	private int bellImageWidth = 0;
+	private int bellImageHeight = 0;
 
 	// Size of the bell image on screen.
-	private int bellWidth = 0;
-	private int bellHeight = 0;
+	private int bellBoxWidth = 0;
+	private int bellBoxHeight = 0;
 	
 	// The bitmaps for the bell states.
 	private Bitmap bellGray;
 	private Bitmap bellLight;
-
-	// Paint used for graphics.
-	private Paint bellPaint;
+	private Bitmap bellGhost;
 
 }
 

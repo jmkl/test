@@ -85,7 +85,6 @@ public class CrewEditor
         
         // Get or create the crew model.
         crewModel = CrewModel.getInstance(this);
-        crewModel.open();
         crewCursor = crewModel.getCrewCursor();
 
         // Set a list adapter which maps on to the crew names list.
@@ -213,7 +212,6 @@ public class CrewEditor
         super.onDestroy();
         
         crewCursor.close();
-        crewModel.close();
     }
     
 

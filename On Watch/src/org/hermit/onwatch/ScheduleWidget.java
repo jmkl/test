@@ -86,7 +86,6 @@ public class ScheduleWidget
 
         // Get or create the crew model.  Monitor it for changes.
         crewModel = CrewModel.getInstance(context);
-        crewModel.open();
 		
 		// Register for watch crew changes.
 		crewModel.listen(new CrewModel.Listener() {

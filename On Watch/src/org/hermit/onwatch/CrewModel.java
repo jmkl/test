@@ -122,6 +122,8 @@ public class CrewModel
 
 		// Open the database.
 		databaseHelper = new DbHelper(appContext);
+		
+		open();
 	}
 
 	
@@ -158,7 +160,7 @@ public class CrewModel
 	/**
 	 * Open the database.
 	 */
-	void open() {
+	private void open() {
 		// Calling getWritableDatabase() gets the helper to open (and maybe
 		// create / update) the DB.
 		database = databaseHelper.getWritableDatabase();
@@ -189,15 +191,6 @@ public class CrewModel
 		updateWatch();
 	}
 	
-
-	/**
-	 * Close the database.
-	 */
-	void close() {
-		databaseHelper.close();
-		database = null;
-	}
-
 
 	// ******************************************************************** //
     // Crew List Management.
