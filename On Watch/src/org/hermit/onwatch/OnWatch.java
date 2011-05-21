@@ -20,24 +20,28 @@
 package org.hermit.onwatch;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.core.SplashActivity;
 import org.hermit.android.widgets.TimeZoneActivity;
+import org.hermit.onwatch.service.Chimer;
+import org.hermit.onwatch.service.OnWatchService;
+import org.hermit.onwatch.service.OnWatchService.OnWatchBinder;
 
-import android.app.ActionBar.Tab;
-import android.app.AlarmManager;
 import android.app.ActionBar;
+import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.ActionBar.Tab;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -52,32 +56,6 @@ import android.view.MenuItem;
 public class OnWatch
 	extends MainActivity
 {
-
-    // ******************************************************************** //
-    // Public Types and Constants.
-    // ******************************************************************** //
-
-    /**
-     * The sounds that we make.
-     */
-    static enum Sound {
-    	/** A single bell. */
-    	BELL1(R.raw.sad_bell),
-    	
-    	/** Two bells. */
-    	BELL2(R.raw.two_bells),
-    	
-    	/** An alert sound. */
-    	RINGRING(R.raw.ring_ring);
-    	
-    	private Sound(int res) {
-    		soundRes = res;
-    	}
-    	
-    	private int soundRes;           // Resource ID for the sound file.
-        private int soundId = 0;        // Sound ID for playing.
-    }
-
 
 	// ******************************************************************** //
     // Activity Lifecycle.
@@ -104,6 +82,10 @@ public class OnWatch
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+
+        // Kick off our service, if it's not running.
+        Intent intent = new Intent(this, OnWatchService.class);
+        startService(intent);
 
         // Create our EULA box.
         createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);       
@@ -148,22 +130,6 @@ public class OnWatch
         
         // We want the audio controls to control our sound volume.
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        
-        // Load the sounds.
-        soundPool = createSoundPool();
-
-		// Create the sound queue and a handler to launch sounds.
-		soundQueue = new LinkedList<Sound>();
-		soundHandler = new Handler() {
-			@Override
-			public void handleMessage(Message m) {
-				playQueuedSound();
-			}
-		};
-		soundPlaying = false;
-
-		// Get the chimer.
-		bellChime = Chimer.getInstance(this);
 
         // Restore our preferences.
         updatePreferences();
@@ -222,7 +188,11 @@ public class OnWatch
         Log.i(TAG, "onStart()");
         
         super.onStart();
-        
+
+        // Bind to the OnWatch service.
+        Intent intent = new Intent(this, OnWatchService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
         // FIXME: do we need this?
 //		for (ViewFragment v : childViews)
 //			v.start();
@@ -328,11 +298,42 @@ public class OnWatch
         Log.i(TAG, "onStop()");
         
         super.onStop();
-		
+        
+        // Unbind from the OnWatch service.
+        if (mService != null) {
+            unbindService(mConnection);
+            mService = null;
+        }
+
         // FIXME: do we need this?
 //		for (ViewFragment v : childViews)
 //			stop();
     }
+
+
+    // ******************************************************************** //
+    // Service Communications.
+    // ******************************************************************** //
+
+    /**
+     * Defines callbacks for service binding, passed to bindService().
+     */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // We've bound to OnWatchService; cast the IBinder to
+        	// the right type.
+            OnWatchBinder binder = (OnWatchBinder) service;
+            mService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mService = null;
+        }
+        
+    };
 
 
     // ******************************************************************** //
@@ -404,9 +405,13 @@ public class OnWatch
         
         // Get the menu items we need to control.
         chimeMenuItem = menu.findItem(R.id.menu_chimes);
+        boolean chimeWatch = mService.getChimeEnable();
+		chimeMenuItem.setIcon(chimeWatch ? R.drawable.ic_menu_chimes_on :
+	               						   R.drawable.ic_menu_chimes_off);
+		
         alertsMenuItem = menu.findItem(R.id.menu_alerts);
-
-        updatePreferences();
+        Chimer.AlertMode alertMode = mService.getRepeatAlert();
+    	alertsMenuItem.setIcon(alertMode.icon);
         
         return true;
     }
@@ -428,10 +433,10 @@ public class OnWatch
     		// FIXME: do something.
     		break;
     	case R.id.menu_chimes:
-    		setChimes(!bellChime.getChimeEnable());
+    		setChimes(!mService.getChimeEnable());
     		break;
     	case R.id.menu_alerts:
-    		setAlarms(bellChime.getRepeatAlert().next());
+    		setAlarms(mService.getRepeatAlert().next());
     		break;
         case R.id.menu_prefs:
         	// Launch the preferences activity as a subactivity, so we
@@ -475,30 +480,6 @@ public class OnWatch
     	SharedPreferences prefs =
     					PreferenceManager.getDefaultSharedPreferences(this);
 
-    	boolean chimeWatch = true;
-    	try {
-    		chimeWatch = prefs.getBoolean("chimeWatch", true);
-    	} catch (Exception e) {
-    		Log.i(TAG, "Pref: bad chimeWatch");
-    	}
-    	Log.i(TAG, "Prefs: chimeWatch " + chimeWatch);
-    	bellChime.setChimeEnable(chimeWatch);
-    	if (chimeMenuItem != null)
-    		chimeMenuItem.setIcon(chimeWatch ? R.drawable.ic_menu_chimes_on :
-			  		 		  	               R.drawable.ic_menu_chimes_off);
-
-    	Chimer.AlertMode alertMode = Chimer.AlertMode.OFF;
-    	try {
-    		String mval = prefs.getString("alertMode", "OFF");
-    		alertMode = Chimer.AlertMode.valueOf(mval);
-    	} catch (Exception e) {
-    		Log.i(TAG, "Pref: bad alertMode");
-    	}
-    	Log.i(TAG, "Prefs: alertMode " + alertMode);
-        bellChime.setRepeatAlert(alertMode);
-        if (alertsMenuItem != null)
-        	alertsMenuItem.setIcon(alertMode.icon);
-
     	boolean nautTime = false;
     	try {
     		nautTime = prefs.getBoolean("nautTime", false);
@@ -539,13 +520,7 @@ public class OnWatch
      * @param	enable				Requested state.
      */
     private void setChimes(boolean enable) {
-    	SharedPreferences prefs =
-			PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("chimeWatch", enable);
-        editor.commit();
-        
-        bellChime.setChimeEnable(enable);
+        mService.setChimeEnable(enable);
         chimeMenuItem.setIcon(enable ? R.drawable.ic_menu_chimes_on :
         					  		   R.drawable.ic_menu_chimes_off);
     }
@@ -557,13 +532,7 @@ public class OnWatch
      * @param	mode				Requested alert mode.
      */
     private void setAlarms(Chimer.AlertMode mode) {
-    	SharedPreferences prefs =
-			PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("alertMode", mode.toString());
-        editor.commit();
-        
-        bellChime.setRepeatAlert(mode);
+        mService.setRepeatAlert(mode);
         alertsMenuItem.setIcon(mode.icon);
     }
 
@@ -620,103 +589,6 @@ public class OnWatch
     	}
     }
     
-
-	// ******************************************************************** //
-	// Sound.
-	// ******************************************************************** //
-    
-    /**
-     * Create a SoundPool containing the app's sound effects.
-     */
-    private SoundPool createSoundPool() {
-        SoundPool pool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        for (Sound sound : Sound.values())
-            sound.soundId = pool.load(this, sound.soundRes, 1);
-        
-        return pool;
-    }
-
-
-    /**
-     * Sound watch bells.
-     * 
-     * @param	count			How many bells to sound.
-     */
-    void soundBells(int count) {
-    	while (count > 0) {
-    		if (count >= 2) {
-    	    	queueSound(Sound.BELL2);
-    			count -= 2;
-    		} else {
-    	    	queueSound(Sound.BELL1);
-    			count -= 1;
-    		}
-    	}
-    }
-    
-
-    /**
-     * Add a sound to the queue of sounds to be played.  Play at once
-     * if the queue is empty.
-     * 
-     * @param	which			ID of the sound to queue for play.
-     */
-    void queueSound(Sound which) {
-		synchronized (soundQueue) {
-			soundQueue.add(which);
-			soundHandler.sendEmptyMessage(0);
-		}
-    }
-
-    
-    /**
-     * Play a sound from the queue.
-     */
-    private void playQueuedSound() {
-    	synchronized (soundQueue) {
-    		try {
-    			// If we're already playing, wait.
-    			if (soundPlaying)
-    				return;
-    			
-    			// See if there's a queued sound to play.
-    			Sound which = soundQueue.poll();
-    			if (which == null)
-    				return;
-    			soundPlaying = true;
-
-    			MediaPlayer mp = MediaPlayer.create(this, which.soundRes);
-    			mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-    				public void onPrepared(MediaPlayer mp) { mp.start(); }
-    			});
-    			mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-    				public void onCompletion(MediaPlayer mp) {
-    					mp.release();
-    					synchronized (soundQueue) {
-    						soundPlaying = false;
-        					playQueuedSound();
-    					}
-    				}
-    			});
-
-    			mp.prepareAsync();
-    		} catch (Exception e) {
-    			Log.d(TAG, "Sound queue play error: " + e.getMessage());
-    		}
-    	}
-    }
-
-
-    /**
-     * Make a sound.  Play it immediately.  Don't touch the queue.
-     * 
-     * @param	which			ID of the sound to play.
-     */
-    void makeSound(Sound which) {
-        float vol = 1.0f;
-        soundPool.play(which.soundId, vol, vol, 1, 0, 1f);
-	}
-	
 
     // ******************************************************************** //
     // Private Types.
@@ -776,7 +648,10 @@ public class OnWatch
   
 	// The views we display in our tabs.
 	private ArrayList<ViewFragment> childViews;
-	
+    
+    // Our OnWatch service.  null if we haven't bound to it yet.
+    private OnWatchService mService = null;
+
 	// The time model we use for all our timekeeping.
 	private TimeModel timeModel;
 
@@ -789,24 +664,9 @@ public class OnWatch
 	// Handler for updates.  We need this to get back onto
 	// our thread so we can update the GUI.
 	private Handler tickHandler;
-	
-	// Chimer.
-	private Chimer bellChime;
-
-	// Handler for sounds.  We need this to get back onto the main thread.
-	private Handler soundHandler;
-	
-	// Queue of sounds to be played.
-	private LinkedList<Sound> soundQueue;
-    
-    // Sound pool used for sound effects.
-    private SoundPool soundPool;
 
     // Log whether we showed the splash screen yet this run.
     private boolean shownSplash = false;
-
-	// True if a queued sound is currently playing.
-	private boolean soundPlaying;
 
 }
 

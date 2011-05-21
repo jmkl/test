@@ -45,6 +45,9 @@ for more details.\n</string>
     <string name="help_title">On Watch User\'s Manual</string>
 
 
+    <!-- Service strings. -->
+    <string name="service_notif">OnWatch service running</string>
+
     <!-- Menu strings. -->
     <string name="menu_chimes">Chimes</string>
     <string name="menu_alerts">Alerts</string>

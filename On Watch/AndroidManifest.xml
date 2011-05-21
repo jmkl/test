@@ -10,6 +10,8 @@
         <provider android:name=".provider.PassageProvider"
             android:authorities="org.hermit.provider.PassageData" />
 
+        <service android:name=".service.OnWatchService" android:enabled="true" android:exported="false"/>
+
 		<activity android:name=".OnWatch" android:label="@string/app_name"
 			android:launchMode="singleTop">
 			<intent-filter>

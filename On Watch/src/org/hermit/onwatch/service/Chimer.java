@@ -14,9 +14,11 @@
  */
 
 
-package org.hermit.onwatch;
+package org.hermit.onwatch.service;
 
 
+import org.hermit.onwatch.R;
+import org.hermit.onwatch.TimeModel;
 import org.hermit.onwatch.TimeModel.Field;
 
 import android.widget.LinearLayout;
@@ -36,7 +38,7 @@ public class Chimer
     /**
      * Enum defining the alert modes.
      */
-    enum AlertMode {
+    public enum AlertMode {
     	OFF(0, R.drawable.ic_menu_alert_off),
     	EVERY_05(5, R.drawable.ic_menu_alert_5),
     	EVERY_10(10, R.drawable.ic_menu_alert_10),
@@ -47,7 +49,7 @@ public class Chimer
     		this.icon = icon;
     	}
     	
-    	AlertMode next() {
+    	public AlertMode next() {
     		if (this == EVERY_15)
     			return OFF;
     		else
@@ -56,7 +58,7 @@ public class Chimer
     	
     	private static final AlertMode[] VALUES = values();
     	final int minutes;
-    	final int icon;
+    	public final int icon;
     }
     
 
@@ -69,7 +71,7 @@ public class Chimer
 	 * 
 	 * @param	context			Parent application.
 	 */
-	private Chimer(OnWatch context) {
+	private Chimer(OnWatchService context) {
 		super(context);
 		
 		appContext = context;
@@ -98,7 +100,7 @@ public class Chimer
 				int interval = alertMode.minutes;
 				boolean bells = timeModel.changed(TimeModel.Field.BELLS);
 		    	if (interval > 0 && !bells && min % interval == 0)
-		    		appContext.makeSound(OnWatch.Sound.RINGRING);
+		    		appContext.makeSound(OnWatchService.Sound.RINGRING);
 			}
 		});
 	}
@@ -110,7 +112,7 @@ public class Chimer
 	 * @param	context        Parent application.
 	 * @return                 The chimer instance.
 	 */
-	public static Chimer getInstance(OnWatch context) {
+	public static Chimer getInstance(OnWatchService context) {
 		if (chimerInstance == null)
 			chimerInstance = new Chimer(context);
 		
@@ -179,7 +181,7 @@ public class Chimer
 	// ******************************************************************** //
 
 	// Parent app we're running in.
-	private OnWatch appContext;
+	private OnWatchService appContext;
 	
 	// Watch calendar, which does all our date/time calculations.
 	private TimeModel timeModel;
