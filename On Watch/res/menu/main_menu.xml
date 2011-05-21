@@ -19,11 +19,6 @@
           android:title="@string/menu_prefs"
           android:icon="@drawable/ic_menu_preferences" />
 
-    <!-- "Preferences". -->
-    <item android:id="@+id/menu_prefs"
-          android:title="@string/menu_prefs"
-          android:icon="@drawable/ic_menu_preferences" />
-
     <!-- "Help". -->
 	<item android:id="@+id/menu_help"
           android:title="@string/menu_help"
@@ -42,7 +37,7 @@
     <!-- "Exit". -->
 	<item android:id="@+id/menu_exit"
           android:title="@string/menu_exit"
-    	  android:icon="@drawable/ic_menu_close_clear_cancel" />
+    	  android:icon="@drawable/ic_menu_close" />
 	
 </menu>
 
