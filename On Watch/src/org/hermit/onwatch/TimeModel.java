@@ -321,7 +321,7 @@ public class TimeModel
 	 * 
 	 * @param	time			Current system time in millis.
 	 */
-	void tick(long time) {
+	public void tick(long time) {
     	getTime(time + timeOffset);
 	}
 

@@ -24,6 +24,7 @@ import java.util.LinkedList;
 
 import org.hermit.onwatch.OnWatch;
 import org.hermit.onwatch.R;
+import org.hermit.onwatch.TimeModel;
 import org.hermit.onwatch.service.Chimer.AlertMode;
 
 import android.app.Notification;
@@ -110,6 +111,17 @@ public class OnWatchService
         					 getText(R.string.service_notif), pi);
         startForeground(1, n);
         
+        final TimeModel timeModel = TimeModel.getInstance(this);
+
+		// Create a handler for tick events.
+		tickHandler = new Handler() {
+			@Override
+			public void handleMessage(Message m) {
+				long time = System.currentTimeMillis();
+				timeModel.tick(time);
+			}
+		};
+
         // Load the sounds.
         soundPool = createSoundPool();
 
@@ -128,6 +140,9 @@ public class OnWatchService
 
         // Restore our preferences.
         updatePreferences();
+
+        // Start the 1-second tick events.
+		ticker = new Ticker();
     }
 
 
@@ -192,7 +207,15 @@ public class OnWatchService
      * and it is effectively dead.
      */
     public void onDestroy() {
-    	
+        Log.i(TAG, "onDestroy()");
+        
+        super.onDestroy();
+
+		// Stop the tick events.
+		if (ticker != null) {
+			ticker.kill();
+			ticker = null;
+		}
     }
 
 
@@ -381,6 +404,43 @@ public class OnWatchService
 	}
 	
 
+    // ******************************************************************** //
+    // Private Types.
+    // ******************************************************************** //
+    
+	/**
+	 * Class which generates our ticks.
+	 */
+	private class Ticker extends Thread {
+		public Ticker() {
+			enable = true;
+			start();
+		}
+
+		public void kill() {
+			enable = false;
+		}
+
+		@Override
+		public void run() {
+			while (enable) {
+		    	tickHandler.sendEmptyMessage(1);
+				
+				// Try to sleep up to the next 1-second boundary, so we
+				// tick just about on the second.
+				try {
+					long time = System.currentTimeMillis();
+					sleep(1000 - time % 1000);
+				} catch (InterruptedException e) {
+					enable = false;
+				}
+			}
+		}
+		
+		private boolean enable;
+	}
+
+
 	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
@@ -398,6 +458,13 @@ public class OnWatchService
 	
 	// Chimer.
 	private Chimer bellChime;
+
+    // Timer we use to generate tick events.
+    private Ticker ticker = null;
+
+	// Handler for updates.  We need this to get back onto
+	// our thread so we can update the GUI.
+	private Handler tickHandler;
 
 	// Handler for sounds.  We need this to get back onto the main thread.
 	private Handler soundHandler;
