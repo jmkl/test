@@ -36,7 +36,7 @@ public final class PassageSchema
     
     // Database name and version.
     private static final String DB_NAME = "passages.db";
-    private static final int DB_VERSION = 5;
+    private static final int DB_VERSION = 1;
     
     // Provider authority name.
     private static final String AUTHORITY = "org.hermit.provider.PassageData";
@@ -57,7 +57,7 @@ public final class PassageSchema
         private static final String TABLE_NAME = "passages";
         
         // Basic type for this table.
-        private static final String TABLE_TYPE = "vnd.org.hermit.passage.passage";
+        private static final String TABLE_TYPE = "vnd.org.hermit.sailing.passage";
         
         /**
          * The content URI for this table.
@@ -188,7 +188,7 @@ public final class PassageSchema
         private static final String TABLE_NAME = "points";
         
         // Base MIME type for this table.
-        private static final String TABLE_TYPE = "vnd.org.hermit.passage.point";
+        private static final String TABLE_TYPE = "vnd.org.hermit.sailing.point";
         
         /**
          * The content URI for this table.
