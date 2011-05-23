@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/clock_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical" >
-
-    <!-- The clock. -->
-    <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
                 
         <Button
                 android:id="@+id/clock_set_zone"
@@ -19,16 +14,15 @@
                 android:layout_height="wrap_content" />
 
         <TextView
+                style="@style/ClockDateline"
                 android:id="@+id/clock_date"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="24dp"
-                android:singleLine="true" />
+                android:layout_height="wrap_content" />
                 
         <AnalogClock
-        	    android:layout_width="350dp"
-        	    android:layout_height="350dp"
+        	    android:layout_width="fill_parent"
+        	    android:layout_height="wrap_content"
+                android:layout_weight="1"
         	    android:dial="@drawable/clock_dial"
                 android:hand_hour="@drawable/clock_hand_hour"
                 android:hand_minute="@drawable/clock_hand_minute" />
@@ -38,14 +32,6 @@
 				android:id="@+id/clock_time"
         		android:layout_width="fill_parent"
         		android:layout_height="wrap_content" />
-
-    </LinearLayout>
-
-    <!-- The watch info. -->
-    <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
 
         <TextView
                 style="@style/ClockWatch"
@@ -59,21 +45,17 @@
                 android:layout_height="wrap_content" />
 
         <TextView
-                style="@style/ClockWatch"
-                android:background="@drawable/scale_bar_bg"
+                style="@style/ClockCrew"
+                android:background="@drawable/crew_bar_bg"
                 android:id="@+id/clock_watchcrew"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true" />
+                android:layout_height="wrap_content" />
 
         <TextView
-                style="@style/ClockWatch"
+                style="@style/ClockCrew"
                 android:id="@+id/clock_nextcrew"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true" />
-
-    </LinearLayout>
+                android:layout_height="wrap_content" />
 
 </LinearLayout>
 

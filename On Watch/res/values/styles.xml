@@ -9,19 +9,30 @@
     </style>
 
     <style name="ClockDateline">
-        <item name="android:textSize">24dp</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textSize">36dp</item>
         <item name="android:singleLine">true</item>
     </style>
 
     <style name="ClockTime">
+        <item name="android:gravity">center_horizontal</item>
         <item name="android:typeface">monospace</item>
-        <item name="android:textSize">34dp</item>
+        <item name="android:textSize">56dp</item>
         <item name="android:singleLine">true</item>
     </style>
 
     <style name="ClockWatch">
-        <item name="android:textSize">20dp</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textSize">30dp</item>
         <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="ClockCrew">
+        <item name="android:gravity">left</item>
+        <item name="android:textSize">30dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
     </style>
 
     <style name="LocationStatus">

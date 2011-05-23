@@ -247,11 +247,19 @@ public class HomeFragment
      */
     private void updateWatch() {
     	watchField.setText(timeModel.getWatchName());
-    	crewField.setText(crewModel.getWatchCrewNames());
-    	if (crewModel.getTimeToNext() < 15)
-    		nextCrewField.setText(crewModel.getNextCrewNames());
-    	else
-    		nextCrewField.setText("");
+    	
+    	CharSequence w = crewModel.getWatchCrewNames();
+    	if (w == null || w.length() == 0)
+    		w = " ";
+    	CharSequence n;
+    	if (crewModel.getTimeToNext() < 15) {
+    		n = crewModel.getNextCrewNames();
+    		if (n == null || n.length() == 0)
+    			n = " ";
+    	} else
+    		n = " ";
+    	crewField.setText(w);
+    	nextCrewField.setText(n);
     }
 
 
