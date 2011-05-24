@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="64dip"
+	android:gravity="center_vertical" android:ignoreGravity="@+id/icon">
+
+	<ImageView android:id="@+id/list_grabber"
+		android:layout_alignParentLeft="true"
+		android:layout_alignParentTop="true"
+		android:layout_alignParentBottom="true"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:src="@drawable/list_handle" />
+		
+	<TextView android:id="@+id/list_text1"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
+		android:layout_height="wrap_content"
+        android:paddingLeft="9dip"
+		android:layout_toRightOf="@id/list_grabber"
+        android:layout_alignWithParentIfMissing="true"
+		android:ellipsize="marquee"
+		android:singleLine="true" android:layout_alignParentTop="true" android:text="List1" android:layout_width="fill_parent" android:layout_centerVertical="false"/>
+        
+    <TextView android:id="@+id/list_text2"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="fill_parent"
+        android:paddingLeft="9dip"
+        android:layout_height="wrap_content"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_toRightOf="@id/list_grabber"
+        android:layout_below="@id/list_text1"
+        android:ellipsize="marquee"
+        android:singleLine="true" android:text="List2" android:layout_centerVertical="false"/>
+
+</RelativeLayout>
+

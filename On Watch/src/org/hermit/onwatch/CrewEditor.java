@@ -37,6 +37,8 @@ import android.widget.Spinner;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemSelectedListener;
 
+import com.commonsware.cwac.tlv.TouchListView;
+
 
 /**
  * This class is the activity for the crew editor.
@@ -89,11 +91,16 @@ public class CrewEditor
 
         // Set a list adapter which maps on to the crew names list.
         dataAdapter = new SimpleCursorAdapter(this,
-        							android.R.layout.simple_list_item_2,
+        							R.layout.draggable_list_item,
         							crewCursor,
         							new String[] { "name", "colour" },
-        							new int[] { android.R.id.text1, android.R.id.text2 });
+        							new int[] { R.id.list_text1, R.id.list_text2 });
         setListAdapter(dataAdapter);
+        
+        // Se tup the list drag handlers.
+		TouchListView listView = (TouchListView) getListView();
+		listView.setDropListener(onDrop);
+		listView.setRemoveListener(onRemove);
 
         // Create an array of the names of the available watch plans.
         WatchPlan[] plans = WatchPlan.values();
@@ -237,8 +244,6 @@ public class CrewEditor
     							    ContextMenuInfo menuInfo)
     {
     	super.onCreateContextMenu(menu, v, menuInfo);
-    	menu.add(0, MENU_MOVE_UP, 0, R.string.menu_move_up);
-    	menu.add(0, MENU_MOVE_DN, 0, R.string.menu_move_down);
     	menu.add(0, MENU_DELETE, 0, R.string.menu_delete);
     }
     
@@ -256,17 +261,9 @@ public class CrewEditor
 	public boolean onContextItemSelected(MenuItem item) {
     	AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
     	switch (item.getItemId()) {
-    	case MENU_MOVE_UP:
-    		Log.i(TAG, "Menu: Move up " + info.id);
-    		moveCrew(info.id, -1);
-    		return true;
-    	case MENU_MOVE_DN:
-    		Log.i(TAG, "Menu: Move down " + info.id);
-    		moveCrew(info.id, 1);
-    		return true;
     	case MENU_DELETE:
     		Log.i(TAG, "Menu: Delete " + info.id);
-    		deleteCrew(info.id);
+    		deleteCrew(info.position);
     		return true;
     	default:
     		return super.onContextItemSelected(item);
@@ -311,28 +308,47 @@ public class CrewEditor
 
 
     /**
-     * Move a specified crew member within the crew list.
+     * Delete a specified crew member from the crew list.
      * 
-     * @param	id			The database ID of the person to move.
-     * @param	offset		The number of places to move the person down
-     * 						the list.  Negative to move up.
+     * @param	pos			The position of the person to delete.
      */
-    private void moveCrew(long id, int offset) {
-    	crewModel.moveCrew(id, offset);
+    private void deleteCrew(int pos) {
+    	crewModel.deleteCrew(pos);
     	crewCursor.requery();
     }
 
 
+	// ******************************************************************** //
+	// Drag-And-Drop Handling.
+	// ******************************************************************** //
+
     /**
-     * Delete a specified crew member from the crew list.
+     * Handle a crew member being moved in the crew list.
      * 
      * @param	id			The database ID of the person to delete.
      */
-    private void deleteCrew(long id) {
-    	crewModel.deleteCrew(id);
-    	crewCursor.requery();
-    }
-
+	private TouchListView.DropListener onDrop = new TouchListView.DropListener() {
+		@Override
+		public void drop(int from, int to) {
+	    	crewModel.moveCrew(from, to);
+	    	crewCursor.requery();
+		}
+	};
+	
+	
+    /**
+     * Handle a crew member being dragged off from the crew list.
+     * 
+     * @param	id			The database ID of the person to delete.
+     */
+	private TouchListView.RemoveListener onRemove = new TouchListView.RemoveListener() {
+		@Override
+		public void remove(int which) {
+	    	crewModel.deleteCrew(which);
+	    	crewCursor.requery();
+		}
+	};
+	
 
 	// ******************************************************************** //
 	// Class Data.
@@ -340,12 +356,10 @@ public class CrewEditor
 
     // Debugging tag.
 	private static final String TAG = "onwatch";
-    
+
 	// Menu item IDs for the context menu.
-	private static final int MENU_MOVE_UP = 1;
-	private static final int MENU_MOVE_DN = 2;
-	private static final int MENU_DELETE = 3;
-	
+	private static final int MENU_DELETE = 1;
+
 
 	// ******************************************************************** //
 	// Private Data.

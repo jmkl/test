@@ -243,66 +243,68 @@ public class CrewModel
 
     /**
      * Move a specified crew member within the crew list.
-     * 
-     * @param	id			The database ID of the person to move.
-     * @param	offset		The number of places to move the person down
-     * 						the list.  Negative to move up.  Currently must
-     * 						be -1 or 1.
+     *
+     * @param	from		Position of the person to move.
+     * @param	to			Position to move them to.
      */
-	public void moveCrew(long id, int offset) {
-		if (offset == 0)
-			return;
-		if (offset < -1 || offset > 1)
-			throw new IllegalArgumentException("CrewModel.moveCrew can only move by 1");
+	public void moveCrew(int from, int to) {
+		Log.i(TAG, "move " + from + " -> " + to);
 		
-		// Find the person we're moving.
-		String[] fields = new String[] { CREW_ID, CREW_POS };
-		Cursor c = database.query(CREW_TABLE, fields, CREW_ID + "=" + id, null,
-								  null, null, CREW_POS + " ASC");
-		if (!c.moveToFirst())
-			throw new IllegalArgumentException("Crew id " + id + " is not in database.");
-		
-		// Get that person's position in the watch order.
-		int pind = c.getColumnIndexOrThrow(CREW_POS);
-		int cpos = c.getInt(pind);
-		c.close();
-		
-		// Now get the position we want to move to.  If it's off the end
-		// of the list, forget it.
-		int npos = cpos + offset;
-		if (npos < 0 || npos >= nextFreeSlot)
+		if (from == to)
 			return;
 		
-		// Since we're only moving by 1, it's a straight swap.  First
-		// move the other person to this position.
-		ContentValues values = new ContentValues();
-		values.put(CREW_POS, cpos);
-		database.update(CREW_TABLE, values, CREW_POS + "=" + npos, null);
-		
-		// Now move the first person to that position.
-		values.put(CREW_POS, npos);
-		database.update(CREW_TABLE, values, CREW_ID + "=" + id, null);
+		if (from < 0 || to < 0 || from >= nextFreeSlot || to >= nextFreeSlot)
+			throw new IllegalArgumentException("Invalid offset in move: " +
+											   from + " -> " + to +
+											   "; num=" + nextFreeSlot);
+
+		try {
+			ContentValues values = new ContentValues();
+			String[] wargs = new String[] { "" };
+			
+			// First set the from person to an invalid position, so we
+			// can move the others around with no overlap.
+			wargs[0] = "" + from;
+			values.put(CREW_POS, -10);
+			database.update(CREW_TABLE, values, CREW_POS + "=?", wargs);
+			
+			if (to > from) {
+				for (int p = from + 1; p <= to; ++p) {
+					wargs[0] = "" + p;
+					values.put(CREW_POS, p - 1);
+					database.update(CREW_TABLE, values, CREW_POS + "=?", wargs);
+				}
+			} else {
+				for (int p = from - 1; p >= to; --p) {
+					wargs[0] = "" + p;
+					values.put(CREW_POS, p + 1);
+					database.update(CREW_TABLE, values, CREW_POS + "=?", wargs);
+				}
+			}
+			
+			// Now move the from person to to.
+			wargs[0] = "" + -10;
+			values.put(CREW_POS, to);
+			database.update(CREW_TABLE, values, CREW_POS + "=?", wargs);
+		} catch (Exception e) {
+		}
 		
 		// Adjust the cache too.
-		Crew crew = crewList.remove(cpos);
-		crew.position = npos;
-		crewList.add(npos, crew);
-		crew = crewList.get(cpos);
-		crew.position = cpos;
-		
+		reOrderCrew();
+
 		// Notify the observers that we changed.
 		crewChanged();
-    }
+	}
 
 
     /**
      * Delete a specified crew member from the model.
      * 
-     * @param	id			The database ID of the person to delete.
+     * @param	pos			The position the person to delete.
      * @return				The number of rows affected.
      */
-	public int deleteCrew(long id) {
-    	int stat = database.delete(CREW_TABLE, CREW_ID + "=" + id, null);
+	public int deleteCrew(int pos) {
+    	int stat = database.delete(CREW_TABLE, CREW_POS + "=" + pos, null);
     	
     	// Move the remaining crew up in the watch order.  Re-set the
     	// cached crew list.

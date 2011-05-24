@@ -18,11 +18,17 @@
 				android:layout_height="wrap_content" />
 				
 	</LinearLayout>
-
-	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
-		android:layout_height="0dip" android:layout_weight="1"
-		android:transcriptMode="normal" />
 	
+	<com.commonsware.cwac.tlv.TouchListView
+        android:id="@android:id/list"
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:drawSelectorOnTop="false"
+        android:transcriptMode="normal"
+        normal_height="64dip"
+        remove_mode="slideRight" />
+
 	<LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
