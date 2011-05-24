@@ -149,32 +149,35 @@ public class OnWatch
     private void addChild(ActionBar bar, ViewFragment frag, int label) {
     	ActionBar.Tab tab = bar.newTab();
     	tab.setText(label);
-    	tab.setTabListener(new MyTabListener(frag));
+    	tab.setTabListener(new WatchTabListener(frag, label));
         bar.addTab(tab);
         childViews.add(frag);
     }
 
 
-    private class MyTabListener implements ActionBar.TabListener {
-        private Fragment mFragment;
-
+    private class WatchTabListener implements ActionBar.TabListener {
         // Called to create an instance of the listener when adding a new tab
-        public MyTabListener(Fragment fragment) {
-            mFragment = fragment;
+        public WatchTabListener(Fragment fragment, int label) {
+            theFragment = fragment;
+            tabName = getString(label);
         }
 
         public void onTabSelected(Tab tab, FragmentTransaction ft) {
-            ft.add(R.id.main_view, mFragment, null);
+            Log.i(TAG, "TabOpened(" + tabName + ")");
+            ft.add(R.id.main_view, theFragment, null);
         }
 
         public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-            ft.remove(mFragment);
+            Log.i(TAG, "TabClosed(" + tabName + ")");
+            ft.remove(theFragment);
         }
 
         public void onTabReselected(Tab tab, FragmentTransaction ft) {
             // do nothing
         }
 
+        private Fragment theFragment;
+        private String tabName;
     }
     
     
@@ -463,7 +466,7 @@ public class OnWatch
     	    showEula();
      		break;
         case R.id.menu_exit:
-        	finish();
+        	shutdown();
         	break;
     	default:
     		return super.onOptionsItemSelected(item);
@@ -510,6 +513,19 @@ public class OnWatch
    }
 
 
+	// ******************************************************************** //
+	// Shutdown.
+	// ******************************************************************** //
+
+    /**
+     * Shut down the app, including the background service.
+     */
+    private void shutdown() {
+        mService.shutdown();
+    	finish();
+    }
+    
+    
 	// ******************************************************************** //
 	// Alert Controls Handling.
 	// ******************************************************************** //

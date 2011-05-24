@@ -67,7 +67,7 @@ public class BellWidget
 		// Get the time model.  Get a callback every minute to update
 		// the display.
 		timeModel = TimeModel.getInstance(context);
-		timeModel.listen(TimeModel.Field.WATCH, new TimeModel.Listener() {
+		timeModel.listen(TimeModel.Field.CHIMING, new TimeModel.Listener() {
 			@Override
 			public void change(Field field, int value, long time) {
 				invalidate();
