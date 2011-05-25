@@ -14,7 +14,7 @@
  */
 
 
-package org.hermit.onwatch;
+package org.hermit.onwatch.service;
 
 
 import org.hermit.geo.Distance;
@@ -34,7 +34,7 @@ import android.util.Log;
  * all the data on a passage, and provides methods to convert
  * to and from database records.
  */
-class PassageRecord {
+public class PassageRecord {
 
     // ******************************************************************** //
     // Constructors.
@@ -74,7 +74,7 @@ class PassageRecord {
 	 * @param	pointCursor	The cursor to load the points data from; null
 	 * 						if we have no points data for this passage.
 	 */
-    PassageRecord(Cursor passCursor, Cursor pointCursor) {
+    public PassageRecord(Cursor passCursor, Cursor pointCursor) {
         rowValues = new ContentValues();
         DatabaseUtils.cursorRowToContentValues(passCursor, rowValues);
     	
@@ -159,7 +159,7 @@ class PassageRecord {
      * @param   cr      	ContentResolver to save to.
      * @param   curir      	URI specifying the key to save.
      */
-    void saveData(ContentResolver cr, Uri uri) {
+    public void saveData(ContentResolver cr, Uri uri) {
     	Log.i(TAG, "save " + uri);
     	cr.update(uri, rowValues, null, null);
     }
@@ -174,7 +174,7 @@ class PassageRecord {
 	 *
 	 * @return			The id of this passage.
 	 */
-	long getId() {
+	public long getId() {
 		return id;
 	}
 
@@ -205,7 +205,7 @@ class PassageRecord {
 	 *
 	 * @return			The name of the start location.
 	 */
-	String getStart() {
+	public String getStart() {
 		return start;
 	}
 
@@ -226,7 +226,7 @@ class PassageRecord {
 	 *
 	 * @return			The destination name.
 	 */
-	String getDest() {
+	public String getDest() {
 		return dest;
 	}
 
@@ -271,7 +271,7 @@ class PassageRecord {
      * @return			true if this passage has started.  Note
      * 					that it may also have finished.
      */
-    boolean isStarted() {
+    public boolean isStarted() {
         return startTime != 0;
     }
     
@@ -282,7 +282,7 @@ class PassageRecord {
      * @return				true if this passage has started and not
      * 						yet finished.
      */
-    boolean isRunning() {
+    public boolean isRunning() {
         return startTime != 0 && finishTime == 0;
     }
     
@@ -326,7 +326,7 @@ class PassageRecord {
 	 * 					not started yet.  If the passage is finished,
 	 * 					this is the total distance.
 	 */
-	Distance getDistance() {
+	public Distance getDistance() {
 		return distance;
 	}
 
@@ -336,7 +336,7 @@ class PassageRecord {
 	 *
 	 * @return			The number of points logged in this passage.
 	 */
-	int getNumPoints() {
+	public int getNumPoints() {
 		return numPoints;
 	}
 
@@ -373,7 +373,7 @@ class PassageRecord {
 	 * @param	time		The time we got under way.
 	 * @param	pos			The position we sailed from.
 	 */
-	void startPassage(long time, Position pos) {
+	public void startPassage(long time, Position pos) {
 		startTime = time;
 		startPos = pos;
 		distance = Distance.ZERO;
@@ -393,7 +393,7 @@ class PassageRecord {
 	 * 						logged point; Distance.ZERO if this is the first
 	 * 						point.
 	 */
-	Distance logPoint(Position pos) {
+	public Distance logPoint(Position pos) {
         Distance dist = Distance.ZERO;
         if (lastPos != null) {
             dist = pos.distance(lastPos);
@@ -414,7 +414,7 @@ class PassageRecord {
 	 * @param	time		The time at which we finished.
 	 * @param	pos			The position we fetched up at.
 	 */
-	void finishPassage(long time, Position pos) {
+	public void finishPassage(long time, Position pos) {
 		finishTime = time;
 		finishPos = pos;
 		

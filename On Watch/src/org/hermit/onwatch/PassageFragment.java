@@ -22,6 +22,7 @@ import org.hermit.geo.Position;
 import org.hermit.onwatch.LocationModel.GpsState;
 import org.hermit.onwatch.TimeModel.Field;
 import org.hermit.onwatch.provider.PassageSchema;
+import org.hermit.onwatch.service.PassageRecord;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;

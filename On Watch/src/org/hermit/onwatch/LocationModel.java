@@ -203,7 +203,7 @@ public class LocationModel
 	 * Register a Handler to be called when the location or location state
 	 * changes.
 	 */
-	void listen(Listener handler) {
+	public void listen(Listener handler) {
 		locationListeners.add(handler);
 	}
 	
