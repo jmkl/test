@@ -260,8 +260,7 @@ public class PassageService
         if (passageData != null && passageData.isRunning())
             throw new IllegalStateException("a passage is already running");
 
-        loadPassage(uri);
-        if (passageData == null)
+        if (!loadPassage(uri))
             throw new IllegalArgumentException("no passage with the given ID");
         
         Position pos = locationModel.getCurrentPos();

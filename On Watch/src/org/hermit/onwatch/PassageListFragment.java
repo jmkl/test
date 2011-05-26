@@ -29,6 +29,7 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -44,8 +45,10 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 
 /**
@@ -143,12 +146,52 @@ public class PassageListFragment
         // We have a context menu to show in the list.
         registerForContextMenu(getListView());
         
+        ListView lv = getListView();
+        lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        lv.setCacheColorHint(Color.TRANSPARENT);
+        
         // Create an empty adapter we will use to display the loaded data.
         passAdapter = new SimpleCursorAdapter(getActivity(),
-                android.R.layout.simple_list_item_2, null,
-                new String[] { PassageSchema.Passages.NAME, PassageSchema.Passages.DEST_NAME },
-                new int[] { android.R.id.text1, android.R.id.text2 }, 0);
+                R.layout.passage_list_item, null,
+                new String[] { PassageSchema.Passages.NAME,
+        					   PassageSchema.Passages.DEST_NAME,
+        					   PassageSchema.Passages.UNDER_WAY },
+                new int[] { R.id.name, R.id.description, R.id.icon }, 0);
         setListAdapter(passAdapter);
+        
+        // Set a custom view binder, so we can set the indicator icon
+        // appropriately.
+        passAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+    		@Override
+    		public boolean setViewValue(View v, Cursor c, int cindex) {
+    			if (cindex == COLUMN_NAME && v instanceof TextView) {
+    				String name = c.getString(cindex);
+    				if (name != null)
+    					name = name.trim();
+    				if (name == null || name.length() == 0)
+    					name = "<unnamed>";
+    				((TextView) v).setText(name);
+    				return true;
+    			} else if (cindex == COLUMN_UNDER_WAY && v instanceof ImageView) {
+    				ImageView iv = (ImageView) v;
+    				int valid = c.getInt(cindex);
+    				int icon;
+    				switch (valid) {
+    				case 0:
+    					icon = R.drawable.indicator_error;
+    					break;
+    				default:
+    					icon = R.drawable.indicator_ok;
+    					break;
+    				}
+    				iv.setImageResource(icon);
+    				return true;
+    			}
+    			
+    			// Leave to the base class.
+    			return false;
+    		}
+        });
 
         // Prepare the loaders.  Either re-connect with an existing one,
         // or start a new one.
@@ -290,6 +333,7 @@ public class PassageListFragment
     		// Swap the new cursor in.  (The framework will take care
     		// of closing the old cursor once we return.)
     		passAdapter.swapCursor(data);
+    		selectPosition(0);
     	}
 
     	public void onLoaderReset(Loader<Cursor> loader) {
@@ -350,13 +394,27 @@ public class PassageListFragment
      */
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        // Set the URI for the current item, and re-load it.
-        passageUri = ContentUris.withAppendedId(
-        					PassageSchema.Passages.CONTENT_URI, id);
-        getLoaderManager().restartLoader(LOADER_ITEM, null, itemLoaderCallbacks);
+        updateImage(position);
+    }
+
+    
+    private void selectPosition(int position) {
+        ListView lv = getListView();
+        lv.setItemChecked(position, true);
+        updateImage(position);
     }
 
 
+    private void updateImage(int position) {
+        // Set the URI for the current item, and re-load it.
+    	long id = passAdapter.getItemId(position);
+        passageUri = ContentUris.withAppendedId(
+        					PassageSchema.Passages.CONTENT_URI, id);
+        getLoaderManager().restartLoader(LOADER_ITEM, null, itemLoaderCallbacks);
+        mCurPosition = position;
+    }
+
+    
     // ******************************************************************** //
     // Passage Data Editing.
     // ******************************************************************** //
@@ -445,12 +503,14 @@ public class PassageListFragment
         PassageSchema.Passages.NAME,
         PassageSchema.Passages.START_NAME,
         PassageSchema.Passages.DEST_NAME,
+        PassageSchema.Passages.UNDER_WAY,
     };
     
     // The indices of the columns in the projection.
     private static final int COLUMN_NAME = 1;
     private static final int COLUMN_START_NAME = 2;
     private static final int COLUMN_DEST_NAME = 3;
+    private static final int COLUMN_UNDER_WAY = 4;
 
     // Menu item IDs.
     private static final int MENU_ITEM_EDIT = 1;
@@ -473,6 +533,9 @@ public class PassageListFragment
     // This is the Adapter being used to display the list's data.
     private SimpleCursorAdapter passAdapter;
     
+    // Position of the passage we're currently editing.
+    private int mCurPosition = 0;
+
     // URI of the passage we're currently editing.
     private Uri passageUri;
 

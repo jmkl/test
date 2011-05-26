@@ -308,9 +308,9 @@ public class OnWatch
             onWatchService = null;
         }
 
-        // FIXME: do we need this?
-//		for (ViewFragment v : childViews)
-//			stop();
+        // Stop all the views.
+		for (ViewFragment v : childViews)
+			v.stop();
     }
 
 
@@ -330,11 +330,19 @@ public class OnWatch
             OnWatchBinder binder = (OnWatchBinder) service;
             onWatchService = binder.getService();
         	updateMenus();
+        	
+            // Start all the views and give them the service.
+    		for (ViewFragment v : childViews)
+    			v.start(onWatchService);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             onWatchService = null;
+            
+            // Stop all the views.
+    		for (ViewFragment v : childViews)
+    			v.stop();
         }
         
     };
