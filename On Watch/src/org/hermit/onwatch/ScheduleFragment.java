@@ -16,6 +16,9 @@
 
 package org.hermit.onwatch;
 
+import org.hermit.onwatch.service.OnWatchService;
+
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,7 +34,8 @@ import android.widget.Button;
  * be created and edited.
  */
 public class ScheduleFragment
-	extends ViewFragment
+	extends Fragment
+	implements ViewFragment
 {
 
 	// ******************************************************************** //
@@ -52,6 +56,7 @@ public class ScheduleFragment
 	 * @param	icicle		If the fragment is being re-created from a
 	 * 						previous saved state, this is the state.
 	 */
+	@Override
 	public void onCreate(Bundle icicle) {
 		Log.i(TAG, "onCreate(" + (icicle != null ? "icicle" : "null") + ")");
 		
@@ -79,6 +84,7 @@ public class ScheduleFragment
 	 * 						from a previous saved state as given here.
 	 * @return				The View for the fragment's UI, or null.
 	 */
+	@Override
 	public View onCreateView(LayoutInflater inflater,
 							 ViewGroup container,
 							 Bundle icicle)
@@ -109,6 +115,7 @@ public class ScheduleFragment
 	 * This is generally tied to Activity.onResume() of the containing
 	 * Activity's lifecycle.
 	 */
+	@Override
 	public void onResume () {
 		Log.i(TAG, "onResume()");
 		
@@ -120,10 +127,44 @@ public class ScheduleFragment
 	 * Called when the Fragment is no longer resumed.  This is generally
 	 * tied to Activity.onPause of the containing Activity's lifecycle.
 	 */
+	@Override
 	public void onPause() {
 		Log.i(TAG, "onPause()");
 		
 		super.onPause();
+	}
+
+
+	// ******************************************************************** //
+    // App Lifecycle.
+    // ******************************************************************** //
+
+	/**
+	 * Start this view.
+	 * 
+	 * @param	time			Our serivce, which is now available.
+	 */
+	public void start(OnWatchService service) {
+		
+	}
+
+	
+	/**
+	 * Regular tick event, for housekeeping.  Occurs every second, as
+	 * close as possible to the 1-second boundary.
+	 * 
+	 * @param	time			Current system time in millis.
+	 */
+	@Override
+	public void tick(long time) {
+	}
+
+
+	/**
+	 * Stop this view.  The OnWatchService is no longer usable.
+	 */
+	public void stop() {
+		
 	}
 
 

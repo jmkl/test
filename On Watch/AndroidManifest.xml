@@ -13,6 +13,9 @@
         <provider android:name=".provider.VesselProvider"
             android:authorities="org.hermit.provider.VesselData" />
 
+        <provider android:name=".provider.WeatherProvider"
+            android:authorities="org.hermit.provider.WeatherData" />
+
         <service android:name=".service.OnWatchService" android:enabled="true" android:exported="false"/>
 
 		<activity android:name=".OnWatch" android:label="@string/app_name"
@@ -25,30 +28,6 @@
 		
 		<activity android:launchMode="singleTop" android:name="CrewEditor"
 			android:label="@string/crew_edit_title">
-		</activity>
-		
-        <!-- Passage editor activity. -->
-		<activity android:name="PassageEditor"
-					android:launchMode="singleTop"
-            		android:configChanges="keyboardHidden|orientation"
-					android:label="@string/passage_edit_title" >
-					
-            <!-- View or edit the data of a single passage. -->
-            <intent-filter android:label="@string/passage_edit_title">
-                <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.EDIT" />
-                <action android:name="com.android.notepad.action.EDIT_NOTE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.android.cursor.item/vnd.org.hermit.sailing.passage" />
-            </intent-filter>
-
-            <!-- Create a new note inside of a directory of passages. -->
-            <intent-filter android:label="@string/passage_new_title">
-                <action android:name="android.intent.action.INSERT" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.android.cursor.dir/vnd.org.hermit.sailing.passage" />
-            </intent-filter>
-
 		</activity>
 
 		<activity android:name="org.hermit.android.widgets.TimeZoneActivity"

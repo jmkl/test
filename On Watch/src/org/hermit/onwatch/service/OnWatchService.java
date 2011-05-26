@@ -36,6 +36,7 @@ import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -129,6 +130,9 @@ public class OnWatchService
 		
 		// Create the chimer.
 		bellChime = Chimer.getInstance(this);
+		
+		// Get the passage service.
+		passageService = PassageService.getInstance(this);
 
         // Restore our preferences.
         updatePreferences();
@@ -170,7 +174,8 @@ public class OnWatchService
      * 						indicates what semantics the system should use
      * 						for the service's current started state.
      */
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    @Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
     	return START_STICKY;
     }
 
@@ -191,7 +196,8 @@ public class OnWatchService
      * @return				An IBinder through which clients can call the
      * 						service.
      */
-    public IBinder onBind(Intent intent) {
+    @Override
+	public IBinder onBind(Intent intent) {
         serviceBinder = new OnWatchBinder();
         
     	return serviceBinder;
@@ -206,7 +212,8 @@ public class OnWatchService
      * Upon return, there will be no more calls in to this Service object
      * and it is effectively dead.
      */
-    public void onDestroy() {
+    @Override
+	public void onDestroy() {
         Log.i(TAG, "onDestroy()");
         
         super.onDestroy();
@@ -305,8 +312,40 @@ public class OnWatchService
         
         bellChime.setRepeatAlert(mode);
     }
-    
 
+    
+	// ******************************************************************** //
+	// Passage Service.
+	// ******************************************************************** //
+
+    /**
+     * Determine whether a passage is currently running.
+     */
+    public boolean isPassageRunning() {
+        return passageService.isRunning();
+    }
+
+
+    /**
+     * Start (or restart) the specified passage.  Does nothing if there
+     * is no current passage, or if it is already started.
+     * 
+     * @param   uri         Database URI of the passage to start.
+     */
+    public void startPassage(Uri uri) {
+    	passageService.startPassage(uri);
+    }
+
+
+    /**
+     * Finish the current passage.  Does nothing if there is no current
+     * passage, or if it is not started or already finished.
+     */
+    public void finishPassage() {
+    	passageService.finishPassage();
+    }
+
+    
 	// ******************************************************************** //
 	// Shutdown.
 	// ******************************************************************** //
@@ -433,6 +472,9 @@ public class OnWatchService
 	
 	// Chimer.
 	private Chimer bellChime;
+	
+	// Passage service.
+	private PassageService passageService;
 
     // Timer we use to generate tick events.
     private Ticker ticker = null;

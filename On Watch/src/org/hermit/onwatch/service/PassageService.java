@@ -29,10 +29,8 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -47,12 +45,26 @@ public class PassageService
     // ******************************************************************** //
 
 	/**
-	 * Create a PassageService.
+	 * Create a PassageService.  As a singleton we have a private
+	 * constructor.
 	 */
-	public PassageService(Context context)
-	{
+	private PassageService(Context context) {
         appContext = context;
 		contentResolver = appContext.getContentResolver();
+	}
+	
+	
+	/**
+	 * Get the passage service instance, creating it if it doesn't exist.
+	 * 
+	 * @param	context        Parent application.
+	 * @return                 The passage service instance.
+	 */
+	public static PassageService getInstance(Context context) {
+		if (serviceInstance == null)
+			serviceInstance = new PassageService(context);
+		
+		return serviceInstance;
 	}
 	
 
@@ -83,6 +95,9 @@ public class PassageService
                 }
             }
         });
+        
+        // If there's an open passage, get it now.
+        loadOpenPassage();
 	}
 
 
@@ -97,31 +112,16 @@ public class PassageService
 	// ******************************************************************** //
 
     /**
-     * Create a new passage.
-	 * 
-	 * @param	name		The name for this passage.
-	 * @param	from		The name of the starting location.
-	 * @param	to			The name of the destination.
-	 * @param	dest		The position of the destination; null if not known.
-	 * @return				The URI of the new record.
+     * Find an active -- i.e. under-way -- passage in the database.  If it
+     * exists, copy its data into passageData.
+     * 
+     * @return              True if we found an open passage and copied it
+     *                      into passageData.  False if we didn't, and
+     *                      passageData is unchanged.
      */
-    Uri newPassage(String name, String from, String to, Position dest) {
-	    // Create an initial title for it, if there isn't one.
-	    if (TextUtils.isEmpty(name)) {
-	        if (!TextUtils.isEmpty(from) && !TextUtils.isEmpty(to))
-	            name = from + " to " + to;
-	    }
-
-	    // Write the passage back into the provider.
-	    ContentValues values = new ContentValues();
-	    values.put(PassageSchema.Passages.NAME, name);
-	    values.put(PassageSchema.Passages.START_NAME, from);
-	    values.put(PassageSchema.Passages.DEST_NAME, to);
-
-	    // Commit all of our changes to persistent storage.  When the
-	    // update completes the content provider will notify the
-	    // cursor of the change, which will cause the UI to be updated.
-	    return contentResolver.insert(passageUri, values);
+	private boolean loadOpenPassage() {
+        return loadPassage(PassageSchema.Passages.CONTENT_URI,
+				   		   PassageSchema.Passages.UNDER_WAY + "!=0", null);
     }
 
 
@@ -133,30 +133,63 @@ public class PassageService
      *                      into passageData.  False if we didn't, and
      *                      passageData is unchanged.
      */
-    boolean loadPassage(long id) {
+    private boolean loadPassage(long id) {
+        String[] idParam = new String[] { "" + id };
+        return loadPassage(PassageSchema.Passages.CONTENT_URI,
+        				   PassageSchema.Passages._ID + "=?", idParam);
+    }
+
+
+    /**
+     * Find the specified passage and load it into passageData.
+     * 
+     * @param   uri         Database URI of the passage to load.
+     * @return              True if we found the given passage and copied it
+     *                      into passageData.  False if we didn't, and
+     *                      passageData is unchanged.
+     */
+    private boolean loadPassage(Uri uri) {
+        return loadPassage(uri, null, null);
+    }
+
+
+    /**
+     * Find the specified passage and load it into passageData.
+     * 
+     * @param   uri         Base database URI to load from.
+     * @param   where       Where clause specifying the passage to load.
+     * @param   wargs       Parameters for the where clause.
+     * @return              True if we found the given passage and copied it
+     *                      into passageData.  False if we didn't, and
+     *                      passageData is unchanged.
+     */
+    private boolean loadPassage(Uri uri, String where, String[] wargs) {
         Cursor c = null;
         Cursor c2 = null;
         boolean found = false;
-        String[] idParam = new String[] { "" + id };
 
         try {
-            Uri uri = ContentUris.withAppendedId(PassageSchema.Passages.CONTENT_URI, id);
-            c = contentResolver.query(uri, PassageSchema.Passages.PROJECTION,
-                                      null, null, null);
+            c = contentResolver.query(uri,
+            						  PassageSchema.Passages.PROJECTION,
+            						  where, wargs,
+            						  PassageSchema.Passages.SORT_ORDER);
             if (c != null && c.moveToFirst()) {
                 // Query for the number of points, and load the latest point.
+                int ii = c.getColumnIndexOrThrow(PassageSchema.Passages._ID);
+                long id = c.getLong(ii);
                 c2 = contentResolver.query(PassageSchema.Points.CONTENT_URI,
                                            PassageSchema.Points.PROJECTION,
                                            PassageSchema.Points.PASSAGE + "=?",
-                                           idParam,
+                                           new String[] { "" + id },
                                            PassageSchema.Points.TIME + " DESC");
                 
                 passageData = new PassageRecord(c, c2);
-                passageUri = uri;
+                passageUri = ContentUris.withAppendedId(PassageSchema.Passages.CONTENT_URI, id);
                 found = true;
             }
         } finally {
-            c.close();
+            if (c != null)
+            	c.close();
             if (c2 != null)
             	c2.close();
         }
@@ -165,58 +198,72 @@ public class PassageService
     }
 
 
+//    /**
+//     * Update the current passage with the given information.
+//	 * 
+//	 * @param	name		The name for this passage.
+//	 * @param	from		The name of the starting location.
+//	 * @param	to			The name of the destination.
+//	 * @param	dest		The position of the destination; null if not known.
+//     */
+//    void updatePassage(String name, String from, String to, Position dest) {
+//        if (passageData == null)
+//            throw new IllegalStateException("must load a passage" +
+//            								" to call updatePassage");
+//        
+//        passageData.setName(name);
+//        passageData.setStart(from);
+//        passageData.setDest(to);
+//        passageData.setDestPos(dest);
+//        
+//        passageData.saveData(contentResolver, passageUri);
+//    }
+//
+//
+//    /**
+//     * Delete the current passage.
+//     */
+//    public void deletePassage() {
+//        if (passageData == null)
+//            throw new IllegalStateException("must load a passage" +
+//											" to call deletePassage");
+//
+//        // Delete all points belonging to the passage.
+//    	long id = passageData.getId();
+//        contentResolver.delete(PassageSchema.Points.CONTENT_URI,
+//                               PassageSchema.Points.PASSAGE + "=" + id,
+//                               null);
+//
+//        // Delete the passage record.
+//        contentResolver.delete(passageUri, null, null);
+//
+//        passageData = null;
+//        passageUri = null;
+    //}
+
+
     /**
-     * Update the current passage with the given information.
-	 * 
-	 * @param	name		The name for this passage.
-	 * @param	from		The name of the starting location.
-	 * @param	to			The name of the destination.
-	 * @param	dest		The position of the destination; null if not known.
+     * Determine whether a passage is currently running.
      */
-    void updatePassage(String name, String from, String to, Position dest) {
-        if (passageData == null)
-            throw new IllegalStateException("must load a passage" +
-            								" to call updatePassage");
-        
-        passageData.setName(name);
-        passageData.setStart(from);
-        passageData.setDest(to);
-        passageData.setDestPos(dest);
-        
-        passageData.saveData(contentResolver, passageUri);
+    public boolean isRunning() {
+        return passageData != null && passageData.isRunning();
     }
 
 
     /**
-     * Delete the current passage.
-     */
-    private void deletePassage() {
-        if (passageData == null)
-            throw new IllegalStateException("must load a passage" +
-											" to call deletePassage");
-
-        // Delete all points belonging to the passage.
-    	long id = passageData.getId();
-        int count1 = contentResolver.delete(PassageSchema.Points.CONTENT_URI,
-                                            PassageSchema.Points.PASSAGE + "=" + id,
-                                            null);
-
-        // Delete the passage record.
-        int count2 = contentResolver.delete(passageUri, null, null);
-
-        passageData = null;
-        passageUri = null;
-    }
-
-
-    /**
-     * Start (or restart) the current passage.  Does nothing if there
+     * Start (or restart) the specified passage.  Does nothing if there
      * is no current passage, or if it is already started.
+     * 
+     * @param   uri         Database URI of the passage to start.
      */
-    public void startPassage() {
-        if (passageData == null)
-            return;
+    public void startPassage(Uri uri) {
+        if (passageData != null && passageData.isRunning())
+            throw new IllegalStateException("a passage is already running");
 
+        loadPassage(uri);
+        if (passageData == null)
+            throw new IllegalArgumentException("no passage with the given ID");
+        
         Position pos = locationModel.getCurrentPos();
         long time = System.currentTimeMillis();
 
@@ -236,8 +283,11 @@ public class PassageService
      * passage, or if it is not started or already finished.
      */
     public void finishPassage() {
-        if (passageData == null || !passageData.isRunning())
-            return;
+        if (passageData == null)
+            throw new IllegalStateException("must load a passage" +
+											" to call finishPassage");
+        if (!passageData.isRunning())
+            throw new IllegalStateException("passage is not running");
 
         Position pos = locationModel.getCurrentPos();
         long time = System.currentTimeMillis();
@@ -290,7 +340,10 @@ public class PassageService
 
     // Debugging tag.
 	private static final String TAG = "onwatchsvc";
-    
+
+	// The instance of the passage service; null if not created yet.
+	private static PassageService serviceInstance = null;
+
 
 	// ******************************************************************** //
 	// Private Data.

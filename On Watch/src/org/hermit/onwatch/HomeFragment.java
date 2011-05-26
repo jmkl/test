@@ -17,12 +17,21 @@
 package org.hermit.onwatch;
 
 
+import org.hermit.geo.Distance;
 import org.hermit.onwatch.CrewModel.Crew;
+import org.hermit.onwatch.provider.PassageSchema;
+import org.hermit.onwatch.service.OnWatchService;
 import org.hermit.utils.Angle;
 import org.hermit.utils.TimeUtils;
 
+import android.app.Fragment;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,7 +47,8 @@ import android.widget.TextView;
  * current location info and GPS state, as well as the watch clock.
  */
 public class HomeFragment
-	extends ViewFragment
+	extends Fragment
+	implements ViewFragment
 {
 
 	// ******************************************************************** //
@@ -59,6 +69,7 @@ public class HomeFragment
 	 * @param	icicle		If the fragment is being re-created from a
 	 * 						previous saved state, this is the state.
 	 */
+	@Override
 	public void onCreate(Bundle icicle) {
 		Log.i(TAG, "onCreate(" + (icicle != null ? "icicle" : "null") + ")");
 		
@@ -86,6 +97,7 @@ public class HomeFragment
 	 * 						from a previous saved state as given here.
 	 * @return				The View for the fragment's UI, or null.
 	 */
+	@Override
 	public View onCreateView(LayoutInflater inflater,
 							 ViewGroup container,
 							 Bundle icicle)
@@ -163,6 +175,17 @@ public class HomeFragment
 		longitudeText = new StringBuilder(12);
 
     	
+		// Passage
+		
+		// Get the relevant widgets.  Set a handlers on the buttons.
+        startPlaceField = (TextView) view.findViewById(R.id.pass_start_place);
+        startTimeField = (TextView) view.findViewById(R.id.pass_start_time);
+        endPlaceField = (TextView) view.findViewById(R.id.pass_end_place);
+        endTimeField = (TextView) view.findViewById(R.id.pass_end_time);
+		statusDescField = (TextView) view.findViewById(R.id.pass_stat_desc);
+		statusAuxField = (TextView) view.findViewById(R.id.pass_stat_aux);
+		
+		
 		updateClock();
 		updateWatch();
 		
@@ -171,10 +194,33 @@ public class HomeFragment
 
 	
 	/**
+	 * Called when the fragment's activity has been created and this
+	 * fragment's view hierarchy instantiated.  It can be used to do final
+	 * initialization once these pieces are in place, such as retrieving
+	 * views or restoring state.  It is also useful for fragments that
+	 * use setRetainInstance(boolean) to retain their instance, as this
+	 * callback tells the fragment when it is fully associated with the
+	 * new activity instance.
+	 * 
+	 * @param	icicle		If the fragment is being re-created from a
+	 * 						previous saved state, this is the state.
+	 */
+	@Override
+	public void onActivityCreated(Bundle icicle) {
+		super.onActivityCreated(icicle);
+		
+		// Prepare the loader.  Either re-connect with an existing one,
+		// or start a new one.
+		getLoaderManager().initLoader(0, null, loaderCallbacks);
+	}
+
+
+	/**
 	 * Called when the fragment is visible to the user and actively running.
 	 * This is generally tied to Activity.onResume() of the containing
 	 * Activity's lifecycle.
 	 */
+	@Override
 	public void onResume () {
 		Log.i(TAG, "onResume()");
 		
@@ -186,10 +232,32 @@ public class HomeFragment
 	 * Called when the Fragment is no longer resumed.  This is generally
 	 * tied to Activity.onPause of the containing Activity's lifecycle.
 	 */
+	@Override
 	public void onPause() {
 		Log.i(TAG, "onPause()");
 		
 		super.onPause();
+	}
+
+
+	// ******************************************************************** //
+    // App Lifecycle.
+    // ******************************************************************** //
+
+	/**
+	 * Start this view.
+	 * 
+	 * @param	time			Our serivce, which is now available.
+	 */
+	public void start(OnWatchService service) {
+		
+	}
+
+	/**
+	 * Stop this view.  The OnWatchService is no longer usable.
+	 */
+	public void stop() {
+		
 	}
 
 
@@ -203,6 +271,7 @@ public class HomeFragment
 	 * 
 	 * @param	time			Current system time in millis.
 	 */
+	@Override
 	public void tick(long time) {
 		updateClock();
 	}
@@ -301,6 +370,75 @@ public class HomeFragment
 		}
 	}
 
+	
+	// ******************************************************************** //
+	// Data Monitoring.
+	// ******************************************************************** //
+
+	/**
+	 * Loader callbacks, to monitor changes in our watched data.
+	 */
+	private final LoaderManager.LoaderCallbacks<Cursor> loaderCallbacks =
+								new LoaderManager.LoaderCallbacks<Cursor>() {
+
+		@Override
+		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		    // Create a loader that watches the current passage state.
+		    Uri baseUri = PassageSchema.Passages.CONTENT_URI;
+		    String where = PassageSchema.Passages.UNDER_WAY + "!=0";
+		    return new CursorLoader(getActivity(), baseUri,
+		    						PassageSchema.Passages.PROJECTION,
+		    						where, null,
+		    						PassageSchema.Passages.SORT_ORDER);
+		}
+
+		@Override
+		public void onLoadFinished(Loader<Cursor> l, Cursor cursor) {
+			if (cursor.moveToFirst())
+				displayPassage(cursor);
+			else
+				clearPassage();
+		}
+
+		@Override
+		public void onLoaderReset(Loader<Cursor> l) {
+			clearPassage();
+		}
+		
+	};
+	
+	
+	private void displayPassage(Cursor c) {
+		int ni = c.getColumnIndexOrThrow(PassageSchema.Passages.NAME);
+        String name = c.getString(ni);
+		int si = c.getColumnIndexOrThrow(PassageSchema.Passages.START_NAME);
+		String start = c.getString(si);
+		int di = c.getColumnIndexOrThrow(PassageSchema.Passages.DEST_NAME);
+		String dest = c.getString(di);
+
+		int dxi = c.getColumnIndexOrThrow(PassageSchema.Passages.DISTANCE);
+		Double dist = c.getDouble(dxi);
+		Distance distance;
+        if (dist == null || dist == 0)
+            distance = Distance.ZERO;
+        else
+        	distance = new Distance(dist);
+		String distStr = distance.describeNautical();
+
+        startPlaceField.setText(start);
+        endPlaceField.setText(dest);
+        statusDescField.setText(R.string.lab_passage_under_way);
+		statusAuxField.setText(distStr);
+	}
+	
+	
+	private void clearPassage() {
+		startPlaceField.setText("--");
+		endPlaceField.setText("--");
+        statusDescField.setText(R.string.lab_no_passage);
+    	statusAuxField.setText("");
+	}
+	
 	
 	// ******************************************************************** //
 	// Debug Control.
@@ -434,6 +572,17 @@ public class HomeFragment
 
     // Field for displaying a location description.
 	private TextView descriptionField;
+	
+	
+	// Passage
 
+    // Fields for displaying the passage start and end, and current status.
+	private TextView startPlaceField;
+    private TextView startTimeField;
+    private TextView endPlaceField;
+    private TextView endTimeField;
+	private TextView statusDescField;
+    private TextView statusAuxField;
+    
 }
 

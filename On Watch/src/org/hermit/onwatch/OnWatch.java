@@ -112,7 +112,7 @@ public class OnWatch
         // Add the view fragments to the tab bar.
         childViews = new ArrayList<ViewFragment>();
         addChild(actionBar, new HomeFragment(), R.string.tab_location);
-        addChild(actionBar, new PassageFragment(), R.string.tab_passage);
+        addChild(actionBar, new PassageListFragment(), R.string.tab_passage);
         addChild(actionBar, new ScheduleFragment(), R.string.tab_watch);
         addChild(actionBar, new AstroFragment(), R.string.tab_astro);
 
@@ -149,7 +149,7 @@ public class OnWatch
     private void addChild(ActionBar bar, ViewFragment frag, int label) {
     	ActionBar.Tab tab = bar.newTab();
     	tab.setText(label);
-    	tab.setTabListener(new WatchTabListener(frag, label));
+    	tab.setTabListener(new WatchTabListener((Fragment) frag, label));
         bar.addTab(tab);
         childViews.add(frag);
     }
@@ -303,9 +303,9 @@ public class OnWatch
         super.onStop();
         
         // Unbind from the OnWatch service.
-        if (mService != null) {
+        if (onWatchService != null) {
             unbindService(mConnection);
-            mService = null;
+            onWatchService = null;
         }
 
         // FIXME: do we need this?
@@ -328,12 +328,13 @@ public class OnWatch
             // We've bound to OnWatchService; cast the IBinder to
         	// the right type.
             OnWatchBinder binder = (OnWatchBinder) service;
-            mService = binder.getService();
+            onWatchService = binder.getService();
+        	updateMenus();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mService = null;
+            onWatchService = null;
         }
         
     };
@@ -408,14 +409,10 @@ public class OnWatch
         
         // Get the menu items we need to control.
         chimeMenuItem = menu.findItem(R.id.menu_chimes);
-        boolean chimeWatch = mService.getChimeEnable();
-		chimeMenuItem.setIcon(chimeWatch ? R.drawable.ic_menu_chimes_on :
-	               						   R.drawable.ic_menu_chimes_off);
-		
         alertsMenuItem = menu.findItem(R.id.menu_alerts);
-        Chimer.AlertMode alertMode = mService.getRepeatAlert();
-    	alertsMenuItem.setIcon(alertMode.icon);
-        
+    	
+    	updateMenus();
+    	
         return true;
     }
 
@@ -436,10 +433,12 @@ public class OnWatch
     		// FIXME: do something.
     		break;
     	case R.id.menu_chimes:
-    		setChimes(!mService.getChimeEnable());
+    		if (onWatchService != null)
+    			setChimes(!onWatchService.getChimeEnable());
     		break;
     	case R.id.menu_alerts:
-    		setAlarms(mService.getRepeatAlert().next());
+    		if (onWatchService != null)
+    			setAlarms(onWatchService.getRepeatAlert().next());
     		break;
         case R.id.menu_prefs:
         	// Launch the preferences activity as a subactivity, so we
@@ -512,7 +511,21 @@ public class OnWatch
 //    	viewController.setDebug(debugSpace, debugTime);
    }
 
+    
+    
+    private void updateMenus() {
+    	if (chimeMenuItem == null || alertsMenuItem == null || onWatchService == null)
+    		return;
+    	
+        boolean chimeWatch = onWatchService.getChimeEnable();
+		chimeMenuItem.setIcon(chimeWatch ? R.drawable.ic_menu_chimes_on :
+	               						   R.drawable.ic_menu_chimes_off);
+		
+        Chimer.AlertMode alertMode = onWatchService.getRepeatAlert();
+    	alertsMenuItem.setIcon(alertMode.icon);
+    }
 
+    
 	// ******************************************************************** //
 	// Shutdown.
 	// ******************************************************************** //
@@ -521,7 +534,7 @@ public class OnWatch
      * Shut down the app, including the background service.
      */
     private void shutdown() {
-        mService.shutdown();
+        onWatchService.shutdown();
     	finish();
     }
     
@@ -536,9 +549,8 @@ public class OnWatch
      * @param	enable				Requested state.
      */
     private void setChimes(boolean enable) {
-        mService.setChimeEnable(enable);
-        chimeMenuItem.setIcon(enable ? R.drawable.ic_menu_chimes_on :
-        					  		   R.drawable.ic_menu_chimes_off);
+        onWatchService.setChimeEnable(enable);
+        updateMenus();
     }
     
 
@@ -548,8 +560,8 @@ public class OnWatch
      * @param	mode				Requested alert mode.
      */
     private void setAlarms(Chimer.AlertMode mode) {
-        mService.setRepeatAlert(mode);
-        alertsMenuItem.setIcon(mode.icon);
+        onWatchService.setRepeatAlert(mode);
+        updateMenus();
     }
 
 
@@ -666,7 +678,7 @@ public class OnWatch
 	private ArrayList<ViewFragment> childViews;
     
     // Our OnWatch service.  null if we haven't bound to it yet.
-    private OnWatchService mService = null;
+    private OnWatchService onWatchService = null;
 
 	// The time model we use for all our timekeeping.
 	private TimeModel timeModel;

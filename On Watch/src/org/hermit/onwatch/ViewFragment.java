@@ -16,7 +16,7 @@
 
 package org.hermit.onwatch;
 
-import android.app.Fragment;
+import org.hermit.onwatch.service.OnWatchService;
 
 
 /**
@@ -24,8 +24,7 @@ import android.app.Fragment;
  * of our app.  These views all have certain features in common, and those
  * are defined here.
  */
-public abstract class ViewFragment
-	extends Fragment
+public interface ViewFragment
 {
 
 	/**
@@ -34,8 +33,19 @@ public abstract class ViewFragment
 	 * 
 	 * @param	time			Current system time in millis.
 	 */
-	void tick(long time) {
-	}
+	void tick(long time);
+
+	/**
+	 * Start this view.
+	 * 
+	 * @param	time			Our serivce, which is now available.
+	 */
+	public void start(OnWatchService service);
+
+	/**
+	 * Stop this view.  The OnWatchService is no longer usable.
+	 */
+	public void stop();
 
 }
 

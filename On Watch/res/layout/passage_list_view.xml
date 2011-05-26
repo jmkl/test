@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+         android:orientation="horizontal"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent">
+
+    <LinearLayout
+         android:orientation="vertical"
+         android:layout_width="0dp"
+         android:layout_height="match_parent"
+         android:layout_weight="25"
+         android:paddingLeft="8dp"
+         android:paddingRight="8dp">
+
+        <ListView android:id="@id/android:list"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:layout_weight="1"
+               android:drawSelectorOnTop="false" />
+
+        <TextView android:id="@id/android:empty"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:text="No data" />
+	
+	   <Button android:id="@+id/passage_new_button"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:text="@string/passage_new"
+			android:textSize="24dip" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="75" >
+
+        <TableLayout android:stretchColumns="*"
+            android:paddingLeft="6dp" android:paddingRight="6dp"
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+
+        <TableRow>
+            <TextView style="@style/LocationAuxText" android:text="@string/lab_passage_name" />
+            <EditText style="@style/LocationAuxText" android:id="@+id/passage_name_field"
+                android:capitalize="words" />
+        </TableRow>
+
+        <TableRow>
+            <TextView style="@style/LocationAuxText" android:text="@string/lab_passage_from" />
+            <EditText style="@style/LocationAuxText" android:id="@+id/passage_from_field"
+                android:capitalize="words" />
+        </TableRow>
+
+        <TableRow>
+            <TextView style="@style/LocationAuxText" android:text="@string/lab_passage_to" />
+            <EditText style="@style/LocationAuxText" android:id="@+id/passage_to_field"
+                android:capitalize="words" />
+        </TableRow>
+
+        </TableLayout>
+    
+        <View
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1" />
+    
+        <LinearLayout android:id="@+id/bottom_layout"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+            <Button android:id="@+id/passage_save_button"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/passage_save" />
+
+            <Button android:id="@+id/passage_start_button"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/passage_start" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
+
