@@ -137,39 +137,62 @@ public final class Distance
     // ******************************************************************** //
 
     /**
-     * Format this position for user display in metres.
+     * Format a distance for user display in metres.
      *
+     * @param	m			Distance in metres to format.
      * @return              The formatted distance.
      */
-    public String formatM() {
+    public static final String formatM(double m) {
 		floatFormat.setMaximumFractionDigits(1);
-		return floatFormat.format(getMetres()) + " m";
+		return floatFormat.format(m) + " m";
     }
 
 
     /**
-     * Format this position for user display in nautical miles.
+     * Format this distance for user display in metres.
      *
      * @return              The formatted distance.
      */
-    public String formatNm() {
+    public final String formatM() {
+		return formatM(distanceM);
+    }
+
+
+    /**
+     * Format a specified distance for user display in nautical miles.
+     *
+     * @param	m			Distance in metres to format.
+     * @return              The formatted distance.
+     */
+    public static final String formatNm(double m) {
 		floatFormat.setMaximumFractionDigits(1);
-		return floatFormat.format(getNm()) + " nm";
+		return floatFormat.format(m / NAUTICAL_MILE) + " nm";
+    }
+
+
+    /**
+     * Format this distance for user display in nautical miles.
+     *
+     * @return              The formatted distance.
+     */
+    public final String formatNm() {
+		return formatNm(distanceM);
     }
 
 
 	/**
-	 * Convert this distance into a descriptive string, using
+	 * Convert a specified distance into a descriptive string, using
 	 * nautical measures.
 	 * 
+     * @param	m			Distance in metres to format.
 	 * @return				Description of this distance.  Examples:
 	 * 						"625 feet", "4.9 naut. miles", "252 naut. miles".
 	 */
-    public String describeNautical() {
-		double feet = getFeet();
-		double nm = getNm();
+    public static final String describeNautical(double m) {
+    	final double feet = m / FOOT;
 		if (feet < 1000)
 			return "" + (int) Math.round(feet) + " feet";
+		final double nm = m / NAUTICAL_MILE;
 		if (nm < 10) {
 			floatFormat.setMaximumFractionDigits(1);
 			return floatFormat.format(nm) + " nm";
@@ -178,10 +201,22 @@ public final class Distance
 	}
 	
 
+	/**
+	 * Convert this distance into a descriptive string, using
+	 * nautical measures.
+	 * 
+	 * @return				Description of this distance.  Examples:
+	 * 						"625 feet", "4.9 naut. miles", "252 naut. miles".
+	 */
+    public final String describeNautical() {
+		return describeNautical(distanceM);
+	}
+	
+
     /**
-     * Format this position as a String.
+     * Format this distance as a String.
      * 
-     * @return          This position as a string, in nautical miles.
+     * @return          This distance as a string, in nautical miles.
      */
     @Override
     public String toString() {
