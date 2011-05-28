@@ -17,7 +17,6 @@
 package org.hermit.onwatch.service;
 
 
-import org.hermit.android.utils.Ticker;
 import org.hermit.onwatch.R;
 
 import android.util.Log;
@@ -36,7 +35,7 @@ public class Chimer
     /**
      * Enum defining the alert modes.
      */
-    public enum AlertMode {
+	public enum AlertMode {
     	OFF(0, R.drawable.ic_menu_alert_off),
     	EVERY_05(5, R.drawable.ic_menu_alert_5),
     	EVERY_10(10, R.drawable.ic_menu_alert_10),
@@ -68,14 +67,9 @@ public class Chimer
 	 * Create a chimer.  As a singleton we have a private constructor.
 	 * 
 	 * @param	context			Parent application.
-	 * @param	ticker          Ticker instance to use for time management.
 	 */
-	private Chimer(OnWatchService context, Ticker ticker) {
+	private Chimer(OnWatchService context) {
 		appContext = context;
-        timeTicker = ticker;
-
-    	// Ask the ticker to ping us on the 5 minutes for the bells.
-    	timeTicker.listen(5 * 60, tickHandler);
 	}
 
 	
@@ -83,12 +77,11 @@ public class Chimer
 	 * Get the chimer instance, creating it if it doesn't exist.
 	 * 
 	 * @param	context        Parent application.
-	 * @param	ticker         Ticker instance to use for time management.
 	 * @return                 The chimer instance.
 	 */
-	public static Chimer getInstance(OnWatchService context, Ticker ticker) {
+	static Chimer getInstance(OnWatchService context) {
 		if (chimerInstance == null)
-			chimerInstance = new Chimer(context, ticker);
+			chimerInstance = new Chimer(context);
 		
 		return chimerInstance;
 	}
@@ -103,7 +96,7 @@ public class Chimer
 	 * 
 	 * @return					true iff the chimes are enabled.
 	 */
-	public boolean getChimeEnable() {
+	boolean getChimeEnable() {
     	return chimeWatch;
     }
 
@@ -113,7 +106,7 @@ public class Chimer
 	 * 
 	 * @param	enable			true to enable chimes, false to disable.
 	 */
-	public void setChimeEnable(boolean enable) {
+	void setChimeEnable(boolean enable) {
     	chimeWatch = enable;
     }
 
@@ -123,7 +116,7 @@ public class Chimer
      * 
      * @return					The current mode.
      */
-    public AlertMode getRepeatAlert() {
+    AlertMode getRepeatAlert() {
     	return alertMode;
     }
     
@@ -133,7 +126,7 @@ public class Chimer
      * 
      * @param	interval		Desired alert mode.
      */
-    public void setRepeatAlert(AlertMode mode) {
+    void setRepeatAlert(AlertMode mode) {
     	alertMode = mode;
     }
     
@@ -142,41 +135,46 @@ public class Chimer
 	// Event Handling.
 	// ******************************************************************** //
 
-    private Ticker.Listener tickHandler = new Ticker.Listener() {
-		@Override
-		public void tick(long time, int daySecs) {
-			int dayMins = daySecs / 60;
-			int hour = dayMins / 60;
-			
-			// Chime the bells on the half hours.  Otherwise, look for
-			// an alert -- we only alert if we're not chiming the half-hour.
-			if (dayMins % 30 == 0) {
-				// We calculate the bells at the *start* of this half hour -
-				// 1 to 8.  Special for the dog watches -- first dog watch
-				// has 8 bells at the end, second goes 5, 6, 7, 8.
-				int bell = (dayMins / 30) % 8;
-				if (bell == 0 || (hour == 18 && bell == 4))
-					bell = 8;
-		        Log.i(TAG, "SC tick " + dayMins + " = " + bell + " bells");
-				appContext.soundBells(bell);
-			} else {
-				int interval = alertMode.minutes;
-				if (interval > 0 && dayMins % interval == 0) {
-			        Log.i(TAG, "SC tick " + dayMins + " = alert " + interval);
-					appContext.makeSound(OnWatchService.Sound.RINGRING);
-				} else
-			        Log.i(TAG, "SC tick " + dayMins + " = nuffin");
-			}
-		}
-	};
-	
+    /**
+     * Handle a wakeup alarm.
+     * 
+     * @param	time		The actual time in ms of the alarm, which may
+     * 						be slightly before or after the boundary it
+     * 						was scheduled for.
+     * @param	daySecs		The number of seconds elapsed in the local day,
+     * 						adjusted to align to the nearest second boundary.
+     */
+    void alarm(long time, int daySecs) {
+    	int dayMins = daySecs / 60;
+    	int hour = dayMins / 60;
+
+    	// Chime the bells on the half hours.  Otherwise, look for
+    	// an alert -- we only alert if we're not chiming the half-hour.
+    	if (dayMins % 30 == 0) {
+    		// We calculate the bells at the *start* of this half hour -
+    		// 1 to 8.  Special for the dog watches -- first dog watch
+    		// has 8 bells at the end, second goes 5, 6, 7, 8.
+    		int bell = (dayMins / 30) % 8;
+    		if (bell == 0 || (hour == 18 && bell == 4))
+    			bell = 8;
+    		Log.i(TAG, "SC tick " + dayMins + " = " + bell + " bells");
+    		appContext.soundBells(bell);
+    	} else {
+    		int interval = alertMode.minutes;
+    		if (interval > 0 && dayMins % interval == 0) {
+    			Log.i(TAG, "SC tick " + dayMins + " = alert " + interval);
+    			appContext.makeSound(OnWatchService.Sound.RINGRING);
+    		} else
+    			Log.i(TAG, "SC tick " + dayMins + " = nuffin");
+    	}
+    }
+
 
 	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
 	private static final String TAG = "onwatch";
  
 	// The instance of the chimer; null if not created yet.
@@ -189,9 +187,6 @@ public class Chimer
 
 	// Parent app we're running in.
 	private OnWatchService appContext;
-	
-    // The ticker we use for timing.
-	private Ticker timeTicker;
 
 	// True if the half-hour watch chimes are enabled.
 	private boolean chimeWatch = false;

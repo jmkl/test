@@ -20,12 +20,13 @@
 package org.hermit.onwatch.service;
 
 
+import java.util.Calendar;
 import java.util.LinkedList;
 
-import org.hermit.android.utils.Ticker;
 import org.hermit.onwatch.OnWatch;
 import org.hermit.onwatch.R;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -123,26 +124,28 @@ public class OnWatchService
 			}
 		};
 		soundPlaying = false;
-		
-        // Create a Ticker to control all timing.
-		ticker = new Ticker();
 
+		// Get the alarm manager.
+		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+		
 		// Create the chimer.
-		bellChime = Chimer.getInstance(this, ticker);
+		bellChime = Chimer.getInstance(this);
 		
 		// Get the passage and weather services.
 		passageService = PassageService.getInstance(this);
-		weatherService = WeatherService.getInstance(this, ticker);
+		weatherService = WeatherService.getInstance(this);
 		
         // Restore our preferences.
         updatePreferences();
 
         // Start everything up.
-		ticker.start();
 		passageService.open();
 		weatherService.open();
+		
+		// Start our regular alarms.
+		setupAlarms();
     }
-
+    
 
     /**
      * Called by the system every time a client explicitly starts the service
@@ -170,6 +173,13 @@ public class OnWatchService
      */
     @Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+    	String action = intent == null ? null : intent.getAction();
+    	Log.e(TAG, "onStartCommand: " + action);
+    	
+    	// If we got an alarm, handle it now.
+    	if (action != null && action.equals(ACTION_ALARM))
+    		handleAlarm();
+    	
     	return START_STICKY;
     }
 
@@ -211,12 +221,8 @@ public class OnWatchService
         Log.i(TAG, "S onDestroy()");
         
         super.onDestroy();
-
-		// Stop the tick events.
-		if (ticker != null) {
-			ticker.stop();
-			ticker = null;
-		}
+        
+        cancelAlarms();
 		
 		if (passageService != null) {
 			passageService.close();
@@ -358,8 +364,82 @@ public class OnWatchService
     public void finishPassage() {
     	passageService.finishPassage();
     }
-
     
+    
+	// ******************************************************************** //
+	// Event Handling.
+	// ******************************************************************** //
+    
+    /**
+     * Schedule our regular wakeup alarms.  We use AlarmManager to schedule
+     * a regular alarm, which we handle to set off all the background
+     * processing (chimes, weather logging, etc).  AlarmManager alarms
+     * are delivered even when the device is asleep, unlike scheduled
+     * Handler messages etc., so this technique ensures that we can keep
+     * working permanently.  It is also a lot more efficient than holding
+     * a wake lock.
+     */
+    private void setupAlarms() {
+		long time = System.currentTimeMillis();
+
+		// Create the PendingIntent that the alarm manager will fire
+		// every ALARM_INTERVAL.
+		Intent intent = new Intent(this, OnWatchService.class);
+		intent.setAction(ACTION_ALARM);
+		alarmSignal = PendingIntent.getService(this, 0, intent, 0);
+		
+		// Get the time in milliseconds of the start of the local day.
+		// This is used for aligning to the configured interval.
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(time);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		dayStart = cal.getTimeInMillis();
+		long dayTime = time - dayStart;
+
+		// Try to sleep up to the next interval boundary, so we
+		// tick just about on the interval boundary.
+		long offset = dayTime % ALARM_INTERVAL;
+		long next = time + (ALARM_INTERVAL - offset);
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+								  next, ALARM_INTERVAL, alarmSignal);
+    }
+
+
+    /**
+     * Handle the regular wakeup alarms.
+     * 
+     * This alarm will be delivered even if the device was asleep.
+     * The snag is that the device will go back to sleep when we finish
+     * here.  So, if we need to do any asynchronous processing, we must
+     * take a wake lock for the duration of that work.
+     */
+	private void handleAlarm() {
+		long time = System.currentTimeMillis();
+		long dayTime = time - dayStart;
+		int daySec = (int) ((dayTime + 200) / 1000) % DAY_SECS;
+
+		// Pass the alarm to our clients.
+		if (bellChime != null)
+			bellChime.alarm(time, daySec);
+		if (weatherService != null)
+			weatherService.alarm(time, daySec);
+	}
+	
+	
+    /**
+     * Cancel the regular wakeup alarms.
+     */
+    private void cancelAlarms() {
+		if (alarmSignal != null) {
+	        alarmManager.cancel(alarmSignal);
+	        alarmSignal = null;
+		}
+    }
+
+	
 	// ******************************************************************** //
 	// Shutdown.
 	// ******************************************************************** //
@@ -476,37 +556,55 @@ public class OnWatchService
     // Debugging tag.
 	private static final String TAG = "onwatchsvc";
 
+	// Seconds in a day.
+	private static final int DAY_SECS = 24 * 3600;
 
+	// The interval between wakeup alarms, in ms.
+	private static final long ALARM_INTERVAL = 5 * 60 * 1000;
+
+	// Intent action: wakeup alarm.
+	private static final String ACTION_ALARM = "org.hermit.onwatch.ACTION_ALARM";
+
+	
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
 	
     // The Binder given to clients.
     private IBinder serviceBinder = null;
-	
+    
+    // Time in ms at the start of a local day -- note not necessarily the
+    // current day, but some day.  This is used to align time intervals
+    // to times of the day.
+    private long dayStart = 0;
+
+    // Our alarm manager.
+    private AlarmManager alarmManager = null;
+    
+    // The PendingIntent fired by the AlarmManager to do our regular updates.
+    // null if not scheduled.
+    private PendingIntent alarmSignal = null;
+
 	// Chimer.
-	private Chimer bellChime;
+	private Chimer bellChime = null;
 	
 	// Passage service.
-	private PassageService passageService;
+	private PassageService passageService = null;
 
 	// Weather service.
-	private WeatherService weatherService;
-
-    // Timer we use to generate tick events.
-    private Ticker ticker = null;
+	private WeatherService weatherService = null;
 
 	// Handler for sounds.  We need this to get back onto the main thread.
-	private Handler soundHandler;
+	private Handler soundHandler = null;
 	
 	// Queue of sounds to be played.
-	private LinkedList<Sound> soundQueue;
+	private LinkedList<Sound> soundQueue = null;
     
     // Sound pool used for sound effects.
-    private SoundPool soundPool;
+    private SoundPool soundPool = null;
 
 	// True if a queued sound is currently playing.
-	private boolean soundPlaying;
+	private boolean soundPlaying = false;
 
 }
 

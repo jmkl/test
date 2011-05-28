@@ -17,7 +17,6 @@
 package org.hermit.onwatch.service;
 
 
-import org.hermit.android.utils.Ticker;
 import org.hermit.onwatch.provider.WeatherSchema;
 
 import android.content.ContentResolver;
@@ -45,11 +44,9 @@ public class WeatherService
 	 * constructor.
 	 * 
 	 * @param	context        Parent application.
-	 * @param	ticker         Ticker instance to use for time management.
 	 */
-	private WeatherService(Context context, Ticker ticker) {
+	private WeatherService(Context context) {
         appContext = context;
-        timeTicker = ticker;
 		contentResolver = appContext.getContentResolver();
 	}
 	
@@ -58,12 +55,11 @@ public class WeatherService
 	 * Get the weather service instance, creating it if it doesn't exist.
 	 * 
 	 * @param	context        Parent application.
-	 * @param	ticker         Ticker instance to use for time management.
 	 * @return                 The weather service instance.
 	 */
-	public static WeatherService getInstance(Context context, Ticker ticker) {
+	public static WeatherService getInstance(Context context) {
 		if (serviceInstance == null)
-			serviceInstance = new WeatherService(context, ticker);
+			serviceInstance = new WeatherService(context);
 		
 		return serviceInstance;
 	}
@@ -81,9 +77,6 @@ public class WeatherService
         		   (baroSensor != null ? "got" : "no") + " barometer");
         
         if (baroSensor != null) {
-        	// Ask the ticker to ping us.
-        	timeTicker.listen(INTERVAL_SECS, tickHandler);
-
         	// Register for sensor updates.
         	sensorManager.registerListener(baroListener, baroSensor, BARO_SENSOR_DELAY);
 
@@ -91,25 +84,15 @@ public class WeatherService
         }
 	}
 
-	
-	private Ticker.Listener tickHandler = new Ticker.Listener() {
-		@Override
-		public void tick(long time, int daySecs) {
-			logWeather(time);
-		}
-	};
-	
 
 	void close() {
         if (baroSensor != null)
         	sensorManager.unregisterListener(baroListener);
-        
-        timeTicker.unlisten(tickHandler);
 	}
 
 
     // ******************************************************************** //
-    // Track Management.
+    // Sensor Handling.
     // ******************************************************************** //
 
 	/**
@@ -128,13 +111,21 @@ public class WeatherService
 		}
 	};
 	
-	
+
+	// ******************************************************************** //
+	// Event Handling.
+	// ******************************************************************** //
+
     /**
-     * Add the current weather to the log.
+     * Handle a wakeup alarm.
      * 
-     * @param   time        Current time in ms.
+     * @param	time		The actual time in ms of the alarm, which may
+     * 						be slightly before or after the boundary it
+     * 						was scheduled for.
+     * @param	daySecs		The number of seconds elapsed in the local day,
+     * 						adjusted to align to the nearest second boundary.
      */
-    private void logWeather(long time) {
+    void alarm(long time, int daySecs) {
     	// If we have a new reading, log it.
     	if (lastPressTime > lastLogTime) {
     		// Create an Observation record, and add it to the database.
@@ -145,7 +136,7 @@ public class WeatherService
     		lastLogTime = time;
     	}
     }
-    
+
 
 	// ******************************************************************** //
 	// Class Data.
@@ -173,9 +164,6 @@ public class WeatherService
 
 	// Our content resolver.
 	private ContentResolver contentResolver;
-
-    // The ticker we use for timing.
-	private Ticker timeTicker;
 
     // Our sensor manager, and barometer sensor.  The latter is null if
     // we don't have one.
