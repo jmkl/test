@@ -223,14 +223,14 @@ public class Ticker {
 	 * De-register a given handler.  All callbacks to this handler will
 	 * be removed.
 	 * 
-	 * @param	r			Runnable to unregister.
+	 * @param	l			Runnable to unregister.
 	 */
-	public void unlisten(Runnable r) {
+	public void unlisten(Listener l) {
 		synchronized (this) {
 			// Remove all listeners with this handler.
 			for (int i = 0; i < clients.size(); ) {
 				ClientData c = clients.get(i);
-				if (c.listener == r)
+				if (c.listener == l)
 					clients.remove(i);
 				else
 					++i;
