@@ -147,11 +147,15 @@ for more details.\n</string>
     <string name="lab_passage_not_started">Not started</string>
     <string name="lab_passage_under_way">Under way</string>
     <string name="lab_passage_finished">Finished</string>
+    <string name="lab_passage_started_at">Sailed</string>
+    <string name="lab_passage_finished_at">Arrived</string>
 
     <!-- Passage Editor. -->
     <string name="lab_passage_name">Name:</string>
     <string name="lab_passage_from">From:</string>
     <string name="lab_passage_to">To:</string>
+    <string name="lab_passage_stat">Status:</string>
+    <string name="lab_passage_dist">Distance Covered:</string>
 
     <!-- Crew Editor. -->
     <string name="msg_no_crew">No crew entered.</string>

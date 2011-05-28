@@ -25,8 +25,6 @@ import java.util.LinkedList;
 import org.hermit.android.utils.Ticker;
 import org.hermit.onwatch.OnWatch;
 import org.hermit.onwatch.R;
-import org.hermit.onwatch.TimeModel;
-import org.hermit.onwatch.service.Chimer.AlertMode;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -112,8 +110,6 @@ public class OnWatchService
         n.setLatestEventInfo(this, getText(R.string.service_notif),
         					 getText(R.string.service_notif), pi);
         startForeground(1, n);
-        
-        final TimeModel timeModel = TimeModel.getInstance(this);
 
         // Load the sounds.
         soundPool = createSoundPool();
@@ -128,25 +124,23 @@ public class OnWatchService
 		};
 		soundPlaying = false;
 		
-		// Create the chimer.
-		bellChime = Chimer.getInstance(this);
-		
-		// Get the passage service.
-		passageService = PassageService.getInstance(this);
+        // Create a Ticker to control all timing.
+		ticker = new Ticker();
 
+		// Create the chimer.
+		bellChime = Chimer.getInstance(this, ticker);
+		
+		// Get the passage and weather services.
+		passageService = PassageService.getInstance(this);
+		weatherService = WeatherService.getInstance(this, ticker);
+		
         // Restore our preferences.
         updatePreferences();
 
-        // Start the 1-minute tick events.
-		ticker = new Ticker();
-		ticker.listen(60, new Ticker.Listener() {
-			@Override
-			public void tick(long time, int daySecs) {
-				timeModel.tick(time);
-			}
-		}); 
-		
+        // Start everything up.
 		ticker.start();
+		passageService.open();
+		weatherService.open();
     }
 
 
@@ -223,6 +217,16 @@ public class OnWatchService
 			ticker.stop();
 			ticker = null;
 		}
+		
+		if (passageService != null) {
+			passageService.close();
+			passageService = null;
+		}
+		
+		if (weatherService != null) {
+			weatherService.close();
+			weatherService = null;
+		}
     }
 
 
@@ -293,7 +297,7 @@ public class OnWatchService
      * 
      * @return					The current mode.
      */
-    public AlertMode getRepeatAlert() {
+    public Chimer.AlertMode getRepeatAlert() {
     	return bellChime.getRepeatAlert();
     }
     
@@ -303,7 +307,7 @@ public class OnWatchService
      * 
      * @param	interval		Desired alert mode.
      */
-    public void setRepeatAlert(AlertMode mode) {
+    public void setRepeatAlert(Chimer.AlertMode mode) {
     	SharedPreferences prefs =
 			PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
@@ -319,10 +323,20 @@ public class OnWatchService
 	// ******************************************************************** //
 
     /**
-     * Determine whether a passage is currently running.
+     * Determine whether any passage is currently running.
      */
-    public boolean isPassageRunning() {
-        return passageService.isRunning();
+    public boolean isAnyPassageRunning() {
+        return passageService.isAnyPassageRunning();
+    }
+
+
+    /**
+     * Determine whether a specified passage is currently running.
+     * 
+     * @param   uri         Database URI of the passage to check.
+     */
+    public boolean isRunning(Uri uri) {
+        return passageService.isRunning(uri);
     }
 
 
@@ -475,6 +489,9 @@ public class OnWatchService
 	
 	// Passage service.
 	private PassageService passageService;
+
+	// Weather service.
+	private WeatherService weatherService;
 
     // Timer we use to generate tick events.
     private Ticker ticker = null;

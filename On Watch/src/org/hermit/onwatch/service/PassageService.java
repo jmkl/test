@@ -19,10 +19,6 @@ package org.hermit.onwatch.service;
 
 import org.hermit.geo.Distance;
 import org.hermit.geo.Position;
-import org.hermit.onwatch.LocationModel;
-import org.hermit.onwatch.TimeModel;
-import org.hermit.onwatch.LocationModel.GpsState;
-import org.hermit.onwatch.TimeModel.Field;
 import org.hermit.onwatch.provider.PassageSchema;
 
 import android.content.ContentResolver;
@@ -30,7 +26,11 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 
 
@@ -73,39 +73,49 @@ public class PassageService
 	// ******************************************************************** //
 
 	void open() {
-        // Get the time model.  Ask it to ping us each bell.
-        timeModel = TimeModel.getInstance(appContext);
-        timeModel.listen(TimeModel.Field.MINUTE, new TimeModel.Listener() {
-            @Override
-            public void change(Field field, int value, long time) {
-                // FIXME: do we need this?
-            }
-        });
-
-        // Get our location model.  Ask it to keep us up to date.
-        locationModel = LocationModel.getInstance(appContext);
-        locationModel.listen(new LocationModel.Listener() {
-            @Override
-            public void posChange(GpsState state, String stateMsg,
-                                  Position pos, String locMsg) {
-                // Add the point to the points log, if we're in a passage.
-                if (passageData != null && passageData.isRunning()) {
-                    long time = System.currentTimeMillis();
-                    logPoint(pos, "", time);
-                }
-            }
-        });
+		locationManager =
+			(LocationManager) appContext.getSystemService(Context.LOCATION_SERVICE);
         
-        // If there's an open passage, get it now.
-        loadOpenPassage();
+        // If there's an open passage, get it now, and start logging
+        // position updates to it.
+        if (loadOpenPassage()) {
+        	locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+        										   LOC_INTERVAL, LOC_DIST,
+        										   locationListener);
+        }
 	}
 
 
 	void close() {
-		// FIXME: timeModel.unlisten();
-		// FIXME: locationModel();
+		locationManager.removeUpdates(locationListener);
 	}
 
+	
+	LocationListener locationListener = new LocationListener() {
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+		}
+		
+		@Override
+		public void onProviderEnabled(String provider) {
+		}
+		
+		@Override
+		public void onProviderDisabled(String provider) {
+		}
+		
+		@Override
+		public void onLocationChanged(Location loc) {
+            // Add the point to the points log, if we're in a passage.
+            if (passageData != null && passageData.isRunning()) {
+                long time = System.currentTimeMillis();
+                Position pos = Position.fromDegrees(loc.getLatitude(),
+                		 							loc.getLongitude());
+                logPoint(pos, "", time);
+            }
+		}
+	};
+	
 
 	// ******************************************************************** //
 	// Passage Data Management.
@@ -122,21 +132,6 @@ public class PassageService
 	private boolean loadOpenPassage() {
         return loadPassage(PassageSchema.Passages.CONTENT_URI,
 				   		   PassageSchema.Passages.UNDER_WAY + "!=0", null);
-    }
-
-
-    /**
-     * Find the specified passage and load it into passageData.
-     * 
-     * @param   id          ID of the passage to load.
-     * @return              True if we found the given passage and copied it
-     *                      into passageData.  False if we didn't, and
-     *                      passageData is unchanged.
-     */
-    private boolean loadPassage(long id) {
-        String[] idParam = new String[] { "" + id };
-        return loadPassage(PassageSchema.Passages.CONTENT_URI,
-        				   PassageSchema.Passages._ID + "=?", idParam);
     }
 
 
@@ -198,55 +193,21 @@ public class PassageService
     }
 
 
-//    /**
-//     * Update the current passage with the given information.
-//	 * 
-//	 * @param	name		The name for this passage.
-//	 * @param	from		The name of the starting location.
-//	 * @param	to			The name of the destination.
-//	 * @param	dest		The position of the destination; null if not known.
-//     */
-//    void updatePassage(String name, String from, String to, Position dest) {
-//        if (passageData == null)
-//            throw new IllegalStateException("must load a passage" +
-//            								" to call updatePassage");
-//        
-//        passageData.setName(name);
-//        passageData.setStart(from);
-//        passageData.setDest(to);
-//        passageData.setDestPos(dest);
-//        
-//        passageData.saveData(contentResolver, passageUri);
-//    }
-//
-//
-//    /**
-//     * Delete the current passage.
-//     */
-//    public void deletePassage() {
-//        if (passageData == null)
-//            throw new IllegalStateException("must load a passage" +
-//											" to call deletePassage");
-//
-//        // Delete all points belonging to the passage.
-//    	long id = passageData.getId();
-//        contentResolver.delete(PassageSchema.Points.CONTENT_URI,
-//                               PassageSchema.Points.PASSAGE + "=" + id,
-//                               null);
-//
-//        // Delete the passage record.
-//        contentResolver.delete(passageUri, null, null);
-//
-//        passageData = null;
-//        passageUri = null;
-    //}
+    /**
+     * Determine whether any passage is currently running.
+     */
+    public boolean isAnyPassageRunning() {
+        return passageData != null && passageData.isRunning();
+    }
 
 
     /**
-     * Determine whether a passage is currently running.
+     * Determine whether a specified passage is currently running.
+     * 
+     * @param   uri         Database URI of the passage to check.
      */
-    public boolean isRunning() {
-        return passageData != null && passageData.isRunning();
+    public boolean isRunning(Uri uri) {
+        return passageData != null && passageUri.equals(uri);
     }
 
 
@@ -257,23 +218,20 @@ public class PassageService
      * @param   uri         Database URI of the passage to start.
      */
     public void startPassage(Uri uri) {
+    	// We will need location updates.
+    	locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				   							   LOC_INTERVAL, LOC_DIST,
+				   							   locationListener);
+
         if (passageData != null && passageData.isRunning())
             throw new IllegalStateException("a passage is already running");
 
         if (!loadPassage(uri))
             throw new IllegalArgumentException("no passage with the given ID");
         
-        Position pos = locationModel.getCurrentPos();
-        long time = System.currentTimeMillis();
-
-        passageData.startPassage(time, pos);
-
-        // Add the starting point to the points log.  This will update
-        // the database record for this passage.
-        logPoint(pos, passageData.getStart(), time);
-
-        // Notify the observers that we changed.
-        // crewChanged();
+        // Start the passage and save the update.
+        passageData.startPassage();
+        passageData.saveData(contentResolver, passageUri);
     }
 
 
@@ -282,19 +240,28 @@ public class PassageService
      * passage, or if it is not started or already finished.
      */
     public void finishPassage() {
-        if (passageData == null)
+        // No more location updates.
+		locationManager.removeUpdates(locationListener);
+
+		if (passageData == null)
             throw new IllegalStateException("must load a passage" +
 											" to call finishPassage");
         if (!passageData.isRunning())
             throw new IllegalStateException("passage is not running");
 
-        Position pos = locationModel.getCurrentPos();
+        Location loc =
+        	locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Position pos = Position.fromDegrees(loc.getLatitude(),
+											loc.getLongitude());
         long time = System.currentTimeMillis();
 
         // Add the ending point to the points log.
         logPoint(pos, passageData.getDest(), time);
         passageData.finishPassage(time, pos);
         passageData.saveData(contentResolver, passageUri);
+        
+        // We're done with this passage.
+        passageData = null;
     }
 
 
@@ -339,6 +306,12 @@ public class PassageService
 
     // Debugging tag.
 	private static final String TAG = "onwatchsvc";
+	
+	// Minimum time in ms between required location updates.
+	private static final long LOC_INTERVAL = 60 * 1000;
+	
+	// Minimum distance in metres between required location updates.
+	private static final int LOC_DIST = 20;
 
 	// The instance of the passage service; null if not created yet.
 	private static PassageService serviceInstance = null;
@@ -353,10 +326,9 @@ public class PassageService
 	
 	// Our content resolver.
 	private ContentResolver contentResolver;
-
-    // The time and location models.
-    private TimeModel timeModel;
-    private LocationModel locationModel;
+	
+	// Our location manager.
+	private LocationManager locationManager;
 
     // URI of the currently selected passage.  null if no passage.
     private Uri passageUri = null;

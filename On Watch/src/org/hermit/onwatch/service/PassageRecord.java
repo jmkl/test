@@ -145,7 +145,7 @@ public class PassageRecord {
         if (flat == null || flon == null)
             finishPos = null;
         else
-        	finishPos = Position.fromDegrees(dlat, dlon);
+        	finishPos = Position.fromDegrees(flat, flon);
     }
 
     
@@ -161,6 +161,11 @@ public class PassageRecord {
      */
     public void saveData(ContentResolver cr, Uri uri) {
     	Log.i(TAG, "save " + uri);
+    	
+    	// Add derived fields.
+		rowValues.put(PassageSchema.Passages.UNDER_WAY, isRunning() ? 1 : 0);
+
+		// Save the data.
     	cr.update(uri, rowValues, null, null);
     }
 
@@ -369,19 +374,26 @@ public class PassageRecord {
 	
 	/**
 	 * Set the start time of the passage.
-	 *
-	 * @param	time		The time we got under way.
-	 * @param	pos			The position we sailed from.
 	 */
-	public void startPassage(long time, Position pos) {
+	public void startPassage() {
+        long time = System.currentTimeMillis();
+        
+        // We don't have a starting pos because the GPS is just starting
+        // up.  We will fill this in when we get a location.
+        
+		finishTime = 0;
+		finishPos = null;
 		startTime = time;
-		startPos = pos;
+		startPos = null;
 		distance = Distance.ZERO;
 		
+		rowValues.putNull(PassageSchema.Passages.FINISH_TIME);
+		rowValues.putNull(PassageSchema.Passages.FINISH_LAT);
+		rowValues.putNull(PassageSchema.Passages.FINISH_LON);
 		rowValues.put(PassageSchema.Passages.START_TIME, time);
 		rowValues.put(PassageSchema.Passages.DISTANCE, 0l);
-		rowValues.put(PassageSchema.Passages.START_LAT, pos.getLatDegs());
-		rowValues.put(PassageSchema.Passages.START_LON, pos.getLonDegs());
+		rowValues.putNull(PassageSchema.Passages.START_LAT);
+		rowValues.putNull(PassageSchema.Passages.START_LON);
 	}
 
 
@@ -394,6 +406,13 @@ public class PassageRecord {
 	 * 						point.
 	 */
 	public Distance logPoint(Position pos) {
+		// If this is our first position, log it as the start.
+		if (startPos == null) {
+			startPos = pos;
+			rowValues.put(PassageSchema.Passages.START_LAT, pos.getLatDegs());
+			rowValues.put(PassageSchema.Passages.START_LON, pos.getLonDegs());
+		}
+		
         Distance dist = Distance.ZERO;
         if (lastPos != null) {
             dist = pos.distance(lastPos);

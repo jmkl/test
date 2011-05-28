@@ -43,21 +43,46 @@
             android:layout_width="fill_parent" android:layout_height="wrap_content">
 
         <TableRow>
-            <TextView style="@style/LocationAuxText" android:text="@string/lab_passage_name" />
-            <EditText style="@style/LocationAuxText" android:id="@+id/passage_name_field"
-                android:capitalize="words" />
+            <TextView
+                    style="@style/LocationAuxText"
+                    android:text="@string/lab_passage_name" />
+            <EditText android:id="@+id/passage_name_field"
+                    style="@style/LocationAuxText"
+                    android:capitalize="words" />
         </TableRow>
 
         <TableRow>
-            <TextView style="@style/LocationAuxText" android:text="@string/lab_passage_from" />
-            <EditText style="@style/LocationAuxText" android:id="@+id/passage_from_field"
-                android:capitalize="words" />
+            <TextView
+                    style="@style/LocationAuxText"
+                    android:text="@string/lab_passage_from" />
+            <EditText android:id="@+id/passage_from_field"
+                    style="@style/LocationAuxText"
+                    android:capitalize="words" />
         </TableRow>
 
         <TableRow>
-            <TextView style="@style/LocationAuxText" android:text="@string/lab_passage_to" />
-            <EditText style="@style/LocationAuxText" android:id="@+id/passage_to_field"
-                android:capitalize="words" />
+            <TextView
+                    style="@style/LocationAuxText"
+                    android:text="@string/lab_passage_to" />
+            <EditText android:id="@+id/passage_to_field"
+                    style="@style/LocationAuxText"
+                    android:capitalize="words" />
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                    style="@style/LocationAuxText"
+                    android:text="@string/lab_passage_stat" />
+            <TextView android:id="@+id/passage_stat_field"
+                    style="@style/LocationAuxText" />
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                    style="@style/LocationAuxText"
+                    android:text="@string/lab_passage_dist" />
+            <TextView android:id="@+id/passage_dist_field"
+                    style="@style/LocationAuxText" />
         </TableRow>
 
         </TableLayout>

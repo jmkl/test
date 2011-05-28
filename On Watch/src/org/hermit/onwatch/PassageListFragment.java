@@ -17,6 +17,7 @@
 package org.hermit.onwatch;
 
 
+import org.hermit.geo.Distance;
 import org.hermit.onwatch.provider.PassageSchema;
 import org.hermit.onwatch.service.OnWatchService;
 
@@ -26,23 +27,16 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -88,6 +82,8 @@ public class PassageListFragment
 							 ViewGroup container,
 							 Bundle icicle)
 	{
+		Log.i(TAG, "PLF onCreateView()");
+		
 		appContext = inflater.getContext();
 
 		// Inflate the layout for this fragment.
@@ -97,6 +93,8 @@ public class PassageListFragment
         nameField = (EditText) view.findViewById(R.id.passage_name_field);
         fromField = (EditText) view.findViewById(R.id.passage_from_field);
         toField = (EditText) view.findViewById(R.id.passage_to_field);
+        statField = (TextView) view.findViewById(R.id.passage_stat_field);
+        distField = (TextView) view.findViewById(R.id.passage_dist_field);
 
         // Set up the handlers for the control buttons.
         Button newButton = (Button) view.findViewById(R.id.passage_new_button);
@@ -115,8 +113,8 @@ public class PassageListFragment
             }
         });
 
-        Button start = (Button) view.findViewById(R.id.passage_start_button);
-        start.setOnClickListener(new OnClickListener() {
+        startButton = (Button) view.findViewById(R.id.passage_start_button);
+        startButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
             	startPassage();
@@ -141,10 +139,15 @@ public class PassageListFragment
 	 */
     @Override
     public void onActivityCreated(Bundle icicle) {
+		Log.i(TAG, "PLF onActivityCreated()");
+		
         super.onActivityCreated(icicle);
 
-        // We have a context menu to show in the list.
-        registerForContextMenu(getListView());
+        // Restore the current position, if we have a saved state.
+        if (icicle != null)
+            mCurPosition = icicle.getInt("listPosition");
+        else
+        	mCurPosition = 0;
         
         ListView lv = getListView();
         lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -172,6 +175,20 @@ public class PassageListFragment
     					name = "<unnamed>";
     				((TextView) v).setText(name);
     				return true;
+    			} else if (cindex == COLUMN_DEST_NAME && v instanceof TextView) {
+    				String start = c.getString(COLUMN_START_NAME);
+    				String dest = c.getString(COLUMN_DEST_NAME);
+    				if (start != null)
+        				if (dest != null)
+            				((TextView) v).setText(start + " to " + dest);
+        				else
+            				((TextView) v).setText("from " + start);
+    				else
+        				if (dest != null)
+            				((TextView) v).setText("to " + dest);
+        				else
+            				((TextView) v).setText("");
+    				return true;
     			} else if (cindex == COLUMN_UNDER_WAY && v instanceof ImageView) {
     				ImageView iv = (ImageView) v;
     				int valid = c.getInt(cindex);
@@ -192,11 +209,80 @@ public class PassageListFragment
     			return false;
     		}
         });
-
+    	
         // Prepare the loaders.  Either re-connect with an existing one,
         // or start a new one.
         getLoaderManager().initLoader(LOADER_LIST, null, listLoaderCallbacks);
         getLoaderManager().initLoader(LOADER_ITEM, null, itemLoaderCallbacks);
+    }
+
+    
+    /**
+     * Called when the Fragment is visible to the user.  This is generally
+     * tied to Activity.onStart() of the containing Activity's lifecycle.
+     */
+    @Override
+	public void onStart() {
+		Log.i(TAG, "PLF onStart()");
+		
+    	super.onStart();
+    	
+        getLoaderManager().restartLoader(LOADER_LIST, null, listLoaderCallbacks);
+    }
+
+
+	/**
+	 * Called when the fragment is visible to the user and actively running.
+	 * This is generally tied to Activity.onResume() of the containing
+	 * Activity's lifecycle.
+	 */
+	@Override
+	public void onResume () {
+		Log.i(TAG, "PLF onResume()");
+		
+		super.onResume();
+	}
+
+
+	/**
+	 * Called to ask the fragment to save its current dynamic state,
+	 * so it can later be reconstructed in a new instance of its process
+	 * is restarted.  If a new instance of the fragment later needs to be
+	 * created, the data you place in the Bundle here will be available
+	 * in the Bundle given to onCreate(), onCreateView(), and
+	 * onActivityCreated().
+	 * 
+	 * @param	outState	Bundle in which to place the saved state.
+	 */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        
+        outState.putInt("listPosition", mCurPosition);
+    }
+
+    
+	/**
+	 * Called when the Fragment is no longer resumed.  This is generally
+	 * tied to Activity.onPause of the containing Activity's lifecycle.
+	 */
+	@Override
+	public void onPause() {
+		Log.i(TAG, "PLF onPause()");
+		
+		super.onPause();
+	}
+
+
+    /**
+     * Called when the Fragment is no longer started.  This is generally
+     * tied to Activity.onStop() of the containing Activity's lifecycle.
+     */
+    @Override
+    public void onStop() {
+		Log.i(TAG, "PLF onStop()");
+		
+    	super.onStop();
     }
 
 
@@ -232,64 +318,6 @@ public class PassageListFragment
 		onWatchService = null;
 	}
 
-	
-	// ******************************************************************** //
-    // Menu Handling.
-    // ******************************************************************** //
-    
-    /**
-     * Called when a context menu for the view is about to be shown.
-     * Unlike onCreateOptionsMenu(Menu), this will be called every time
-     * the context menu is about to be shown and should be populated
-     * for the view (or item inside the view for AdapterView subclasses,
-     * this can be found in the menuInfo)).
-     * 
-     * Use onContextItemSelected(android.view.MenuItem) to know when an
-     * item has been selected.
-     * 
-     * It is not safe to hold onto the context menu after this method
-     * returns.  Called when the context menu for this view is being built.
-     * It is not safe to hold onto the menu after this method returns.
-     * 
-     * @param	menu		The context menu that is being built.
-     * @param	v			The view for which the context menu is being built.
-     * @param	menuInfo	Extra information about the item for which the
-     * 						context menu should be shown.  This information
-     * 						will vary depending on the class of v.
-     */
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v,
-    								ContextMenuInfo menuInfo)
-    {
-    	super.onCreateContextMenu(menu, v, menuInfo);
-    	MenuItem item = menu.add(Menu.NONE, MENU_ITEM_EDIT, Menu.NONE, "Edit");
-    	item.setIcon(android.R.drawable.ic_menu_edit);
-    }
-    
-    
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info;
-        try {
-             info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        } catch (ClassCastException e) {
-            Log.e(TAG, "bad menuInfo", e);
-            return false;
-        }
-
-        switch (item.getItemId()) {
-        case MENU_ITEM_EDIT:
-        	// Edit the passage that the context menu is for.
-        	Uri uri = ContentUris.withAppendedId(
-        						PassageSchema.Passages.CONTENT_URI, info.id);
-        	Intent intent = new Intent(Intent.ACTION_EDIT, uri);
-        	appContext.startActivity(intent);
-        	return true;
-        }
-        
-        return false;
-    }
-
 
 	// ******************************************************************** //
 	// Data Management.
@@ -317,6 +345,8 @@ public class PassageListFragment
     	new LoaderManager.LoaderCallbacks<Cursor>() {
 
     	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    		Log.i(TAG, "PLF list onCreateLoader()");
+    		
     		// First, pick the base URI to use depending on whether we are
     		// currently filtering.
     		Uri baseUri = PassageSchema.Passages.CONTENT_URI;
@@ -326,17 +356,23 @@ public class PassageListFragment
     		return new CursorLoader(getActivity(), baseUri,
     								PASSAGE_SUMMARY_PROJ,
     								null, null,
-    								PassageSchema.Passages.SORT_ORDER);
+    								PassageSchema.Passages.START_TIME + " desc");
     	}
 
     	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    		Log.i(TAG, "PLF list onLoadFinished()");
+    		
     		// Swap the new cursor in.  (The framework will take care
     		// of closing the old cursor once we return.)
     		passAdapter.swapCursor(data);
-    		selectPosition(0);
+    		
+    		// Re-display the current iteṁ.
+    		selectPosition(mCurPosition);
     	}
 
     	public void onLoaderReset(Loader<Cursor> loader) {
+    		Log.i(TAG, "PLF list onLoaderReset()");
+    		
     		// This is called when the last Cursor provided to onLoadFinished()
     		// above is about to be closed.  We need to make sure we are no
     		// longer using it.
@@ -353,6 +389,8 @@ public class PassageListFragment
     	new LoaderManager.LoaderCallbacks<Cursor>() {
 
     	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    		Log.i(TAG, "PLF item onCreateLoader(); passageUri=" + passageUri);
+    		
     		passageCursor = null;
 
     		// Get the URI of the item we're editing.
@@ -368,12 +406,16 @@ public class PassageListFragment
     	}
 
     	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    		Log.i(TAG, "PLF item onLoadFinished(); passageUri=" + passageUri);
+    		
     		// Swap the new cursor in and display the passage.
     		passageCursor = data;
     		showPassage();
     	}
 
     	public void onLoaderReset(Loader<Cursor> loader) {
+    		Log.i(TAG, "PLF item onLoaderReset(); passageUri=" + passageUri);
+    		
     		// This is called when the last Cursor provided to onLoadFinished()
     		// above is about to be closed.  We need to make sure we are no
     		// longer using it.
@@ -438,7 +480,28 @@ public class PassageListFragment
             fromField.setText(from);
             String dest = passageCursor.getString(COLUMN_DEST_NAME);
             toField.setText(dest);
+
+            // Set up the info display fields.
+            Long stime = passageCursor.getLong(COLUMN_START_TIME);
+            Long ftime = passageCursor.getLong(COLUMN_FINISH_TIME);
+            String stat;
+            if (stime == null || stime == 0)
+            	stat = getString(R.string.lab_passage_not_started);
+            else if (ftime == null || ftime == 0) {
+            	stat = getString(R.string.lab_passage_started_at) + " " + stime;
+            } else {
+            	stat = getString(R.string.lab_passage_finished_at) + " " + ftime;
+            }
+            statField.setText(stat);
+
+            Double dist = passageCursor.getDouble(COLUMN_DISTANCE);
+            if (stime != null && dist != null)
+            	distField.setText(Distance.describeNautical(dist));
+            else
+            	distField.setText("");
         }
+        
+        updateEditorControls();
     }
 
 
@@ -450,27 +513,43 @@ public class PassageListFragment
         // changes are safely saved away in the provider.  We don't need
         // to do this if only editing.
     	if (passageUri != null) {
-            String name = nameField.getText().toString();
-            String from = fromField.getText().toString();
-            String to = toField.getText().toString();
+            String name = nameField.getText().toString().trim();
+            String from = fromField.getText().toString().trim();
+            String to = toField.getText().toString().trim();
 
     	    // If we are creating a new passage, then we want to also create
     	    // an initial title for it, if there isn't one.
-    	    if (TextUtils.isEmpty(name)) {
-    	        if (!TextUtils.isEmpty(from) && !TextUtils.isEmpty(to))
-    	            name = from + " to " + to;
-    	    }
+    	    if (name.length() == 0)
+    	    	name = "<new passage>";
 
     	    // Write the passage back into the provider.
     	    ContentValues values = new ContentValues();
-    	    values.put(PassageSchema.Passages.NAME, name);
-    	    values.put(PassageSchema.Passages.START_NAME, from);
-    	    values.put(PassageSchema.Passages.DEST_NAME, to);
+    	    if (name.length() > 0)
+    	    	values.put(PassageSchema.Passages.NAME, name);
+    	    if (from.length() > 0)
+    	    	values.put(PassageSchema.Passages.START_NAME, from);
+    	    if (to.length() > 0)
+    	    	values.put(PassageSchema.Passages.DEST_NAME, to);
 
     	    // Commit all of our changes to persistent storage.  When the
     	    // update completes the content provider will notify the
     	    // cursor of the change, which will cause the UI to be updated.
     	    appContext.getContentResolver().update(passageUri, values, null, null);
+    	}
+    }
+    
+    
+    private void updateEditorControls() {
+    	// Set the "Passage Start" button appropriately.
+    	if (!onWatchService.isAnyPassageRunning()) {
+    		startButton.setVisibility(View.VISIBLE);
+    		startButton.setText(R.string.passage_start);
+    	} else if (passageUri != null && onWatchService.isRunning(passageUri)) {
+    		startButton.setVisibility(View.VISIBLE);
+    		startButton.setText(R.string.passage_stop);
+    	} else {
+    		startButton.setVisibility(View.INVISIBLE);
+    		startButton.setText(R.string.passage_stop);
     	}
     }
 
@@ -481,10 +560,12 @@ public class PassageListFragment
 
     private void startPassage() {
     	if (passageUri != null && onWatchService != null) {
-    		if (onWatchService.isPassageRunning())
+    		if (!onWatchService.isAnyPassageRunning())
     			onWatchService.startPassage(passageUri);
-    		else
+    		else if (passageUri != null && onWatchService.isRunning(passageUri))
     			onWatchService.finishPassage();
+    		
+    		updateEditorControls();
     	}
     }
 
@@ -498,12 +579,15 @@ public class PassageListFragment
 
 
     // These are the passages columns that we will display.
-    static final String[] PASSAGE_SUMMARY_PROJ = new String[] {
+	private static final String[] PASSAGE_SUMMARY_PROJ = new String[] {
     	PassageSchema.Passages._ID,
         PassageSchema.Passages.NAME,
         PassageSchema.Passages.START_NAME,
         PassageSchema.Passages.DEST_NAME,
         PassageSchema.Passages.UNDER_WAY,
+        PassageSchema.Passages.START_TIME,
+        PassageSchema.Passages.FINISH_TIME,
+        PassageSchema.Passages.DISTANCE,
     };
     
     // The indices of the columns in the projection.
@@ -511,9 +595,9 @@ public class PassageListFragment
     private static final int COLUMN_START_NAME = 2;
     private static final int COLUMN_DEST_NAME = 3;
     private static final int COLUMN_UNDER_WAY = 4;
-
-    // Menu item IDs.
-    private static final int MENU_ITEM_EDIT = 1;
+    private static final int COLUMN_START_TIME = 5;
+    private static final int COLUMN_FINISH_TIME = 6;
+    private static final int COLUMN_DISTANCE = 7;
 
     // Loader IDs.
     private static final int LOADER_LIST = 1;
@@ -546,6 +630,11 @@ public class PassageListFragment
     private EditText nameField;
     private EditText fromField;
     private EditText toField;
+    private TextView statField;
+    private TextView distField;
+    
+    // Control buttons.
+    private Button startButton;
 
 }
 

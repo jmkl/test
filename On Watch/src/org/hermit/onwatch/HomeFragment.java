@@ -20,6 +20,7 @@ package org.hermit.onwatch;
 import org.hermit.geo.Distance;
 import org.hermit.onwatch.CrewModel.Crew;
 import org.hermit.onwatch.provider.PassageSchema;
+import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
 import org.hermit.utils.Angle;
 import org.hermit.utils.TimeUtils;
@@ -71,7 +72,7 @@ public class HomeFragment
 	 */
 	@Override
 	public void onCreate(Bundle icicle) {
-		Log.i(TAG, "onCreate(" + (icicle != null ? "icicle" : "null") + ")");
+		Log.i(TAG, "HF onCreate(" + (icicle != null ? "icicle" : "null") + ")");
 		
 		super.onCreate(icicle);
 	}
@@ -102,7 +103,7 @@ public class HomeFragment
 							 ViewGroup container,
 							 Bundle icicle)
 	{
-		Log.i(TAG, "onCreateView(" + (icicle != null ? "icicle" : "null") + ")");
+		Log.i(TAG, "HF onCreateView(" + (icicle != null ? "icicle" : "null") + ")");
 		
         // Inflate the layout for this fragment
         appContext = (OnWatch) container.getContext();
@@ -178,14 +179,17 @@ public class HomeFragment
 		// Passage
 		
 		// Get the relevant widgets.  Set a handlers on the buttons.
-        startPlaceField = (TextView) view.findViewById(R.id.pass_start_place);
-        startTimeField = (TextView) view.findViewById(R.id.pass_start_time);
-        endPlaceField = (TextView) view.findViewById(R.id.pass_end_place);
-        endTimeField = (TextView) view.findViewById(R.id.pass_end_time);
-		statusDescField = (TextView) view.findViewById(R.id.pass_stat_desc);
-		statusAuxField = (TextView) view.findViewById(R.id.pass_stat_aux);
-		
-		
+		passNameField = (TextView) view.findViewById(R.id.pass_name);
+        passDescField = (TextView) view.findViewById(R.id.pass_desc);
+        passStatField = (TextView) view.findViewById(R.id.pass_status);
+        passDistField = (TextView) view.findViewById(R.id.pass_dist);
+
+        
+        // Weather
+        
+        weatherWidget = (WeatherWidget) view.findViewById(R.id.weather_chart);
+        
+        
 		updateClock();
 		updateWatch();
 		
@@ -207,12 +211,30 @@ public class HomeFragment
 	 */
 	@Override
 	public void onActivityCreated(Bundle icicle) {
+		Log.i(TAG, "HF onActivityCreated()");
+		
 		super.onActivityCreated(icicle);
 		
 		// Prepare the loader.  Either re-connect with an existing one,
 		// or start a new one.
-		getLoaderManager().initLoader(0, null, loaderCallbacks);
+		getLoaderManager().initLoader(LOADER_PASSAGE, null, passLoadCb);
+		getLoaderManager().initLoader(LOADER_WEATHER, null, weatherLoadCb);
 	}
+
+    
+    /**
+     * Called when the Fragment is visible to the user.  This is generally
+     * tied to Activity.onStart() of the containing Activity's lifecycle.
+     */
+    @Override
+	public void onStart() {
+		Log.i(TAG, "HF onStart()");
+		
+    	super.onStart();
+    	
+        getLoaderManager().restartLoader(LOADER_PASSAGE, null, passLoadCb);
+        getLoaderManager().restartLoader(LOADER_WEATHER, null, weatherLoadCb);
+    }
 
 
 	/**
@@ -222,7 +244,7 @@ public class HomeFragment
 	 */
 	@Override
 	public void onResume () {
-		Log.i(TAG, "onResume()");
+		Log.i(TAG, "HF onResume()");
 		
 		super.onResume();
 	}
@@ -234,10 +256,22 @@ public class HomeFragment
 	 */
 	@Override
 	public void onPause() {
-		Log.i(TAG, "onPause()");
+		Log.i(TAG, "HF onPause()");
 		
 		super.onPause();
 	}
+
+
+    /**
+     * Called when the Fragment is no longer started.  This is generally
+     * tied to Activity.onStop() of the containing Activity's lifecycle.
+     */
+    @Override
+    public void onStop() {
+		Log.i(TAG, "HF onStop()");
+		
+    	super.onStop();
+    }
 
 
 	// ******************************************************************** //
@@ -376,9 +410,9 @@ public class HomeFragment
 	// ******************************************************************** //
 
 	/**
-	 * Loader callbacks, to monitor changes in our watched data.
+	 * Loader callbacks to monitor changes in passage data.
 	 */
-	private final LoaderManager.LoaderCallbacks<Cursor> loaderCallbacks =
+	private final LoaderManager.LoaderCallbacks<Cursor> passLoadCb =
 								new LoaderManager.LoaderCallbacks<Cursor>() {
 
 		@Override
@@ -387,7 +421,7 @@ public class HomeFragment
 		    Uri baseUri = PassageSchema.Passages.CONTENT_URI;
 		    String where = PassageSchema.Passages.UNDER_WAY + "!=0";
 		    return new CursorLoader(getActivity(), baseUri,
-		    						PassageSchema.Passages.PROJECTION,
+		    						PASSAGE_SUMMARY_PROJ,
 		    						where, null,
 		    						PassageSchema.Passages.SORT_ORDER);
 		}
@@ -407,36 +441,79 @@ public class HomeFragment
 		
 	};
 	
+
+	/**
+	 * Loader callbacks to monitor changes in weather data.
+	 */
+	private final LoaderManager.LoaderCallbacks<Cursor> weatherLoadCb =
+								new LoaderManager.LoaderCallbacks<Cursor>() {
+
+		@Override
+		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		    // Create a loader that watches the current passage state.
+			// Look for only 5 days of observations.
+			long now = System.currentTimeMillis();
+			long start = now - WeatherWidget.DISPLAY_HOURS * 3600L * 1000L;
+		    Uri baseUri = WeatherSchema.Observations.CONTENT_URI;
+		    String where = WeatherSchema.Observations.TIME + ">?";
+		    String[] wargs = new String[] { "" + start };
+		    return new CursorLoader(getActivity(), baseUri,
+		    						WeatherSchema.Observations.PROJECTION,
+		    						where, wargs,
+		    						WeatherSchema.Observations.TIME + " asc");
+		}
+
+		@Override
+		public void onLoadFinished(Loader<Cursor> l, Cursor cursor) {
+			displayWeather(cursor);
+		}
+
+		@Override
+		public void onLoaderReset(Loader<Cursor> l) {
+			// No point in clearing it.
+		}
+		
+	};
 	
+
 	private void displayPassage(Cursor c) {
-		int ni = c.getColumnIndexOrThrow(PassageSchema.Passages.NAME);
-        String name = c.getString(ni);
-		int si = c.getColumnIndexOrThrow(PassageSchema.Passages.START_NAME);
-		String start = c.getString(si);
-		int di = c.getColumnIndexOrThrow(PassageSchema.Passages.DEST_NAME);
-		String dest = c.getString(di);
+        String name = c.getString(COLUMN_NAME);
+        passNameField.setText(name);
+		String start = c.getString(COLUMN_START_NAME);
+		String dest = c.getString(COLUMN_DEST_NAME);
+        passDescField.setText(start + " to " + dest);
 
-		int dxi = c.getColumnIndexOrThrow(PassageSchema.Passages.DISTANCE);
-		Double dist = c.getDouble(dxi);
-		Distance distance;
-        if (dist == null || dist == 0)
-            distance = Distance.ZERO;
+        // Set up the info display fields.
+        Long stime = c.getLong(COLUMN_START_TIME);
+        Long ftime = c.getLong(COLUMN_FINISH_TIME);
+        String stat;
+        if (stime == null || stime == 0)
+        	stat = getString(R.string.lab_passage_not_started);
+        else if (ftime == null || ftime == 0) {
+        	stat = getString(R.string.lab_passage_started_at) + " " + stime;
+        } else {
+        	stat = getString(R.string.lab_passage_finished_at) + " " + ftime;
+        }
+        passStatField.setText(stat);
+
+        Double dist = c.getDouble(COLUMN_DISTANCE);
+        if (stime != null && dist != null)
+        	passDistField.setText(Distance.describeNautical(dist));
         else
-        	distance = new Distance(dist);
-		String distStr = distance.describeNautical();
-
-        startPlaceField.setText(start);
-        endPlaceField.setText(dest);
-        statusDescField.setText(R.string.lab_passage_under_way);
-		statusAuxField.setText(distStr);
+        	passDistField.setText("");
 	}
 	
 	
 	private void clearPassage() {
-		startPlaceField.setText("--");
-		endPlaceField.setText("--");
-        statusDescField.setText(R.string.lab_no_passage);
-    	statusAuxField.setText("");
+		passNameField.setText("--");
+		passDescField.setText("--");
+		passStatField.setText(R.string.lab_no_passage);
+        passDistField.setText("");
+	}
+	
+
+	private void displayWeather(Cursor c) {
+		weatherWidget.setData(c);
 	}
 	
 	
@@ -515,6 +592,29 @@ public class HomeFragment
     // Debugging tag.
 	private static final String TAG = "onwatch";
 
+    // These are the passages columns that we will display.
+	private static final String[] PASSAGE_SUMMARY_PROJ = new String[] {
+    	PassageSchema.Passages._ID,
+        PassageSchema.Passages.NAME,
+        PassageSchema.Passages.START_NAME,
+        PassageSchema.Passages.DEST_NAME,
+        PassageSchema.Passages.START_TIME,
+        PassageSchema.Passages.FINISH_TIME,
+        PassageSchema.Passages.DISTANCE,
+    };
+    
+    // The indices of the columns in the projection.
+    private static final int COLUMN_NAME = 1;
+    private static final int COLUMN_START_NAME = 2;
+    private static final int COLUMN_DEST_NAME = 3;
+    private static final int COLUMN_START_TIME = 4;
+    private static final int COLUMN_FINISH_TIME = 5;
+    private static final int COLUMN_DISTANCE = 6;
+
+    // Loader IDs.
+    private static final int LOADER_PASSAGE = 1;
+    private static final int LOADER_WEATHER = 2;
+
     
 	// ******************************************************************** //
 	// Private Data.
@@ -577,12 +677,15 @@ public class HomeFragment
 	// Passage
 
     // Fields for displaying the passage start and end, and current status.
-	private TextView startPlaceField;
-    private TextView startTimeField;
-    private TextView endPlaceField;
-    private TextView endTimeField;
-	private TextView statusDescField;
-    private TextView statusAuxField;
+	private TextView passNameField;
+	private TextView passDescField;
+    private TextView passStatField;
+    private TextView passDistField;
+	
+	
+	// Weather
     
+    private WeatherWidget weatherWidget;
+
 }
 

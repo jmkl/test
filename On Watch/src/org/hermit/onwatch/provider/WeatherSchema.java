@@ -36,7 +36,7 @@ public final class WeatherSchema
     
     // Database name and version.
     private static final String DB_NAME = "weather.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
     
     // Provider authority name.
     private static final String AUTHORITY = "org.hermit.provider.WeatherData";
@@ -68,23 +68,13 @@ public final class WeatherSchema
         /**
          * The default sort order for this table.
          */
-        public static final String SORT_ORDER = "time DESC";
+        public static final String SORT_ORDER = "time ASC";
 
 
         /**
          * Passages table field: the timestamp for this observation.
          */
         public static final String TIME = "time";
-
-        /**
-         * Passages table field: the latitude in degrees of this observation.
-         */
-        public static final String LAT = "latitude";
-
-        /**
-         * Passages table field: the longitude in degrees of this observation.
-         */
-        public static final String LON = "longitude";
 
         /**
          * Passages table field: the barometric pressure, in mb.
@@ -95,8 +85,6 @@ public final class WeatherSchema
         // Definitions of the fields.
         private static final String[][] FIELDS = {
             { TIME, "INTEGER" },
-            { LAT, "REAL" },
-            { LON, "REAL" },
             { PRESS, "REAL" },
         };
         
