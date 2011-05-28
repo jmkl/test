@@ -98,7 +98,7 @@ public class OnWatchService
 	 */
     @Override
     public void onCreate() {
-    	Log.i(TAG, "onCreate()");
+    	Log.i(TAG, "S onCreate()");
         super.onCreate();
 
         // Set myself up as a foreground service.
@@ -208,7 +208,7 @@ public class OnWatchService
      */
     @Override
 	public void onDestroy() {
-        Log.i(TAG, "onDestroy()");
+        Log.i(TAG, "S onDestroy()");
         
         super.onDestroy();
 

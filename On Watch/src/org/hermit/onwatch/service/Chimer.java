@@ -20,6 +20,8 @@ package org.hermit.onwatch.service;
 import org.hermit.android.utils.Ticker;
 import org.hermit.onwatch.R;
 
+import android.util.Log;
+
 
 /**
  * This class implements a chimer.  It sounds various audible alerts.
@@ -155,11 +157,15 @@ public class Chimer
 				int bell = (dayMins / 30) % 8;
 				if (bell == 0 || (hour == 18 && bell == 4))
 					bell = 8;
+		        Log.i(TAG, "SC tick " + dayMins + " = " + bell + " bells");
 				appContext.soundBells(bell);
 			} else {
 				int interval = alertMode.minutes;
-				if (interval > 0 && dayMins % interval == 0)
+				if (interval > 0 && dayMins % interval == 0) {
+			        Log.i(TAG, "SC tick " + dayMins + " = alert " + interval);
 					appContext.makeSound(OnWatchService.Sound.RINGRING);
+				} else
+			        Log.i(TAG, "SC tick " + dayMins + " = nuffin");
 			}
 		}
 	};
