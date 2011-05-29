@@ -130,7 +130,7 @@ public class OnWatchService
     @Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
     	String action = intent == null ? null : intent.getAction();
-    	Log.e(TAG, "onStartCommand: " + action);
+    	Log.i(TAG, "onStartCommand: " + action);
     	
     	// If we got an alarm, handle it now.
     	if (action != null && action.equals(ACTION_ALARM))

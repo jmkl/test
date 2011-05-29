@@ -18,6 +18,7 @@ package org.hermit.onwatch;
 
 import java.util.Calendar;
 
+import org.hermit.astro.Body;
 import org.hermit.onwatch.provider.WeatherSchema;
 
 import android.content.Context;
@@ -26,7 +27,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewParent;
 
 
 /**
@@ -123,6 +126,11 @@ public class WeatherWidget
 
     	if (width <= 0 || height <= 0)
     		return;
+        
+        // Get our parent window, which is likely a scroll view.
+        ViewParent par = getParent();
+        if (par instanceof View)
+            parentScroller = (View) par;
 
         // Label text size, for regular and small labels.
         labelSize = (int) 20f;
@@ -134,8 +142,7 @@ public class WeatherWidget
     	dispWidth = width;
     	dispHeight = height - marginBot;
     	
-    	mbHeight = (float) dispHeight / PRESS_RANGE;
-    	mbStdHeight = (PRESS_STD - PRESS_MIN) * mbHeight;
+    	mbHeight = (float) dispHeight / pressRange;
 
     	backingBitmap = Bitmap.createBitmap(width, height,
     	                                    Bitmap.Config.RGB_565);  // FIXME: config
@@ -167,13 +174,27 @@ public class WeatherWidget
 		
 		final int ti = c.getColumnIndexOrThrow(WeatherSchema.Observations.TIME);
 		final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
+	    pressMin = 980;
+	    pressMax = 1040;
 		int i = 0;
 		while (!c.isAfterLast()) {
+			final float p = (float) c.getDouble(pi);
 			pointTimes[i] = c.getLong(ti);
-			pointPress[i] = (float) c.getDouble(pi);
+			pointPress[i] = p;
+			
+			if (p < pressMin)
+				pressMin = (int) p;
+			if (p > pressMax)
+				pressMax = (int) p;
 			++i;
 			c.moveToNext();
 		}
+		
+		// Round the pressure limits to the pressure grid.
+	    pressMin -= pressMin % PRESS_GRID;
+	    pressMax = pressMax + PRESS_GRID - 1;
+	    pressMax -= pressMax % PRESS_GRID;
+	    pressRange = pressMax - pressMin;
 
 		// Calculate the last time to display as the last hour for which
 		// we have data.
@@ -208,6 +229,19 @@ public class WeatherWidget
         // Just re-draw from our cached bitmap.
         synchronized (backingBitmap) {
             canvas.drawBitmap(backingBitmap, 0, 0, null);
+        }
+        
+        // Draw in the pressure labels.  We do this at the current scroll
+        // X position, so they stay in the same place on screen.
+        graphPaint.setStyle(Paint.Style.FILL);
+        graphPaint.setTextSize(labelSize);
+        graphPaint.setColor(MAIN_LABEL_COL);
+        float x = parentScroller != null ? parentScroller.getScrollX() : 0;
+        for (int p = pressMin; p <= pressMax; p += PRESS_GRID) {
+            float textOff = p == pressMin ? 0 : p == pressMax ? labelSize : labelSize / 2;
+            graphPaint.setStrokeWidth(p % 100 == 0 ? 2 : 1);
+        	final float y = dispHeight - (p - pressMin) * mbHeight;
+            canvas.drawText("" + p, x, y + textOff - 4, graphPaint);
         }
     }
     
@@ -281,16 +315,18 @@ public class WeatherWidget
         // Draw in the baselines.
         graphPaint.setStyle(Paint.Style.STROKE);
         graphPaint.setColor(GRID_COL);
-        graphPaint.setStrokeWidth(1);
-        for (float p = PRESS_MIN; p <= PRESS_MAX; p += 20) {
-        	final float y = (p - PRESS_MIN) * mbHeight;
+        for (int p = pressMin; p <= pressMax; p += PRESS_GRID) {
+            graphPaint.setStrokeWidth(p % 100 == 0 ? 2 : 1);
+        	final float y = dispHeight - (p - pressMin) * mbHeight;
             canvas.drawLine(0, y, dispWidth, y, graphPaint);
         }
 
         // Draw in the standard pressure line.
-        graphPaint.setStrokeWidth(2);
-        float curY = dispHeight - mbStdHeight;
-        canvas.drawLine(0, curY, dispWidth, curY, graphPaint);
+        graphPaint.setStyle(Paint.Style.STROKE);
+        graphPaint.setColor(GRID_HL_COL);
+        graphPaint.setStrokeWidth(1);
+    	final float y = dispHeight - (PRESS_STD - pressMin) * mbHeight;
+        canvas.drawLine(0, y, dispWidth, y, graphPaint);
     }
     
     
@@ -309,7 +345,7 @@ public class WeatherWidget
         	final float x = (float) (t - firstTimeVal) / 1000f / 3600f * HOUR_WIDTH;
         	
         	final float p = pointPress[i];
-        	final float y = dispHeight - (p - PRESS_MIN) * mbHeight;
+        	final float y = dispHeight - (p - pressMin) * mbHeight;
         	
         	if (i > 0) {
                 graphPaint.setColor(CURVE_COL);
@@ -349,27 +385,29 @@ public class WeatherWidget
 	private static final int HOUR_WIDTH = 24;
 
     // Colour to draw the grid.
-    private static final int GRID_COL = 0xff407040;
-
+    private static final int GRID_COL = 0xff40a040;
+    private static final int GRID_HL_COL = 0xffa0d000;
+    
     // Colour to draw the object bars.
 	private static final int CURVE_COL = 0xff9060d0;
 	private static final int POINT_COL = 0xffc0c000;
 
     // Colour to draw the labels.
 	private static final int MAIN_LABEL_COL = 0xffffffff;
-    
-    // Min and max pressures to display.
-    private static final float PRESS_MIN = 880;
-    private static final float PRESS_MAX = 1080;
-    private static final float PRESS_RANGE = PRESS_MAX - PRESS_MIN;
   
     // Standard pressure.
     private static final float PRESS_STD = 1013.25f;
+    
+    // Spacing of the pressure grid in mb.
+    private static final int PRESS_GRID = 20;
 
 
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
+
+	// The scrolling window we're in.  Null if not provided by the app.
+	private View parentScroller = null;
 
 	// Size of the graph part of the display.  The time labels are
 	// separately accounted for.
@@ -385,9 +423,6 @@ public class WeatherWidget
 	
 	// Height of one mb and 10 mb on the display.
 	private float mbHeight;
-	
-	// Height of the standard pressure reference line on the display.
-	private float mbStdHeight;
 
     // Bitmap we draw the widget into, and the Canvas we draw with.
     private Bitmap backingBitmap;
@@ -397,6 +432,11 @@ public class WeatherWidget
 	private int numPoints;
 	private long[] pointTimes;
 	private float[] pointPress;
+    
+    // Min and max pressures we need to display, rounded to grid lines.
+    private int pressMin = 980;
+    private int pressMax = 1040;
+    private int pressRange = pressMax - pressMin;
 
 	// The time shown at the left and right edges of the display.
 	private long firstTimeVal = 0;

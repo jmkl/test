@@ -126,11 +126,6 @@ public class AstroCalendarWidget
         // Create an astro observation for later use.
         astroObservation = new Observation();
         
-        // Get our parent window, which is likely a scroll view.
-        ViewParent par = getParent();
-        if (par instanceof View)
-            parentScroller = (View) par;
-        
         // Get our initial data set up.
         update();
 	}
@@ -166,6 +161,11 @@ public class AstroCalendarWidget
 	@Override
 	protected void onSizeChanged(int width, int height, int oldw, int oldh) {
     	super.onSizeChanged(width, height, oldw, oldh);
+        
+        // Get our parent window, which is likely a scroll view.
+        ViewParent par = getParent();
+        if (par instanceof View)
+            parentScroller = (View) par;
 
     	if (width <= 0 || height <= 0)
     		return;
