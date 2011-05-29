@@ -469,10 +469,7 @@ public class PassageListFragment
     private void showPassage() {
         // If we didn't have any trouble retrieving the data, it is now
         // time to get at the stuff.
-        if (passageCursor != null) {
-            // Make sure we are at the one and only row in the cursor.
-            passageCursor.moveToFirst();
-
+        if (passageCursor != null && passageCursor.moveToFirst()) {
             // Set up the editing fields.
             String name = passageCursor.getString(COLUMN_NAME);
             nameField.setText(name);

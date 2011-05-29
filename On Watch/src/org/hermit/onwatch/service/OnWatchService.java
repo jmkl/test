@@ -20,26 +20,17 @@
 package org.hermit.onwatch.service;
 
 
-import java.util.Calendar;
-import java.util.LinkedList;
-
 import org.hermit.onwatch.OnWatch;
 import org.hermit.onwatch.R;
 
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -68,28 +59,6 @@ public class OnWatchService
     }
 
 
-    /**
-     * The sounds that we make.
-     */
-    static enum Sound {
-    	/** A single bell. */
-    	BELL1(R.raw.sad_bell),
-    	
-    	/** Two bells. */
-    	BELL2(R.raw.two_bells),
-    	
-    	/** An alert sound. */
-    	RINGRING(R.raw.ring_ring);
-    	
-    	private Sound(int res) {
-    		soundRes = res;
-    	}
-    	
-    	private int soundRes;           // Resource ID for the sound file.
-        private int soundId = 0;        // Sound ID for playing.
-    }
-
-
 	// ******************************************************************** //
     // Service Lifecycle.
     // ******************************************************************** //
@@ -112,21 +81,8 @@ public class OnWatchService
         					 getText(R.string.service_notif), pi);
         startForeground(1, n);
 
-        // Load the sounds.
-        soundPool = createSoundPool();
-
-		// Create the sound queue and a handler to launch sounds.
-		soundQueue = new LinkedList<Sound>();
-		soundHandler = new Handler() {
-			@Override
-			public void handleMessage(Message m) {
-				playQueuedSound();
-			}
-		};
-		soundPlaying = false;
-
-		// Get the alarm manager.
-		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+		// Get the wakeup manager for handling async processing.
+		wakeupManager = WakeupManager.getInstance(this);
 		
 		// Create the chimer.
 		bellChime = Chimer.getInstance(this);
@@ -380,34 +336,17 @@ public class OnWatchService
      * a wake lock.
      */
     private void setupAlarms() {
-		long time = System.currentTimeMillis();
-
 		// Create the PendingIntent that the alarm manager will fire
 		// every ALARM_INTERVAL.
 		Intent intent = new Intent(this, OnWatchService.class);
 		intent.setAction(ACTION_ALARM);
 		alarmSignal = PendingIntent.getService(this, 0, intent, 0);
 		
-		// Get the time in milliseconds of the start of the local day.
-		// This is used for aligning to the configured interval.
-		Calendar cal = Calendar.getInstance();
-		cal.setTimeInMillis(time);
-		cal.set(Calendar.MILLISECOND, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		dayStart = cal.getTimeInMillis();
-		long dayTime = time - dayStart;
-
-		// Try to sleep up to the next interval boundary, so we
-		// tick just about on the interval boundary.
-		long offset = dayTime % ALARM_INTERVAL;
-		long next = time + (ALARM_INTERVAL - offset);
-		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-								  next, ALARM_INTERVAL, alarmSignal);
+		// Set up the repeating alarms.
+		wakeupManager.setupAlarms(alarmSignal, ALARM_INTERVAL);
     }
 
-
+    
     /**
      * Handle the regular wakeup alarms.
      * 
@@ -417,15 +356,7 @@ public class OnWatchService
      * take a wake lock for the duration of that work.
      */
 	private void handleAlarm() {
-		long time = System.currentTimeMillis();
-		long dayTime = time - dayStart;
-		int daySec = (int) ((dayTime + 200) / 1000) % DAY_SECS;
-
-		// Pass the alarm to our clients.
-		if (bellChime != null)
-			bellChime.alarm(time, daySec);
-		if (weatherService != null)
-			weatherService.alarm(time, daySec);
+    	wakeupManager.handleAlarm();
 	}
 	
 	
@@ -433,13 +364,10 @@ public class OnWatchService
      * Cancel the regular wakeup alarms.
      */
     private void cancelAlarms() {
-		if (alarmSignal != null) {
-	        alarmManager.cancel(alarmSignal);
-	        alarmSignal = null;
-		}
+    	wakeupManager.cancelAlarms();
     }
 
-	
+
 	// ******************************************************************** //
 	// Shutdown.
 	// ******************************************************************** //
@@ -453,111 +381,11 @@ public class OnWatchService
     
 
 	// ******************************************************************** //
-	// Sound.
-	// ******************************************************************** //
-    
-    /**
-     * Create a SoundPool containing the app's sound effects.
-     */
-    private SoundPool createSoundPool() {
-        SoundPool pool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        for (Sound sound : Sound.values())
-            sound.soundId = pool.load(this, sound.soundRes, 1);
-        
-        return pool;
-    }
-
-
-    /**
-     * Sound watch bells.
-     * 
-     * @param	count			How many bells to sound.
-     */
-    void soundBells(int count) {
-    	while (count > 0) {
-    		if (count >= 2) {
-    	    	queueSound(Sound.BELL2);
-    			count -= 2;
-    		} else {
-    	    	queueSound(Sound.BELL1);
-    			count -= 1;
-    		}
-    	}
-    }
-    
-
-    /**
-     * Add a sound to the queue of sounds to be played.  Play at once
-     * if the queue is empty.
-     * 
-     * @param	which			ID of the sound to queue for play.
-     */
-    void queueSound(Sound which) {
-		synchronized (soundQueue) {
-			soundQueue.add(which);
-			soundHandler.sendEmptyMessage(0);
-		}
-    }
-
-    
-    /**
-     * Play a sound from the queue.
-     */
-    private void playQueuedSound() {
-    	synchronized (soundQueue) {
-    		try {
-    			// If we're already playing, wait.
-    			if (soundPlaying)
-    				return;
-    			
-    			// See if there's a queued sound to play.
-    			Sound which = soundQueue.poll();
-    			if (which == null)
-    				return;
-    			soundPlaying = true;
-
-    			MediaPlayer mp = MediaPlayer.create(this, which.soundRes);
-    			mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-    				public void onPrepared(MediaPlayer mp) { mp.start(); }
-    			});
-    			mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-    				public void onCompletion(MediaPlayer mp) {
-    					mp.release();
-    					synchronized (soundQueue) {
-    						soundPlaying = false;
-        					playQueuedSound();
-    					}
-    				}
-    			});
-
-    			mp.prepareAsync();
-    		} catch (Exception e) {
-    			Log.d(TAG, "Sound queue play error: " + e.getMessage());
-    		}
-    	}
-    }
-
-
-    /**
-     * Make a sound.  Play it immediately.  Don't touch the queue.
-     * 
-     * @param	which			ID of the sound to play.
-     */
-    void makeSound(Sound which) {
-        float vol = 1.0f;
-        soundPool.play(which.soundId, vol, vol, 1, 0, 1f);
-	}
-	
-
-	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
 
     // Debugging tag.
-	private static final String TAG = "onwatchsvc";
-
-	// Seconds in a day.
-	private static final int DAY_SECS = 24 * 3600;
+	private static final String TAG = "onwatch";
 
 	// The interval between wakeup alarms, in ms.
 	private static final long ALARM_INTERVAL = 5 * 60 * 1000;
@@ -573,13 +401,8 @@ public class OnWatchService
     // The Binder given to clients.
     private IBinder serviceBinder = null;
     
-    // Time in ms at the start of a local day -- note not necessarily the
-    // current day, but some day.  This is used to align time intervals
-    // to times of the day.
-    private long dayStart = 0;
-
-    // Our alarm manager.
-    private AlarmManager alarmManager = null;
+    // Our wakeup manager, used for alarm processing.
+    private WakeupManager wakeupManager = null;
     
     // The PendingIntent fired by the AlarmManager to do our regular updates.
     // null if not scheduled.
@@ -593,18 +416,6 @@ public class OnWatchService
 
 	// Weather service.
 	private WeatherService weatherService = null;
-
-	// Handler for sounds.  We need this to get back onto the main thread.
-	private Handler soundHandler = null;
-	
-	// Queue of sounds to be played.
-	private LinkedList<Sound> soundQueue = null;
-    
-    // Sound pool used for sound effects.
-    private SoundPool soundPool = null;
-
-	// True if a queued sound is currently playing.
-	private boolean soundPlaying = false;
 
 }
 

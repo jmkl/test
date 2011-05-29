@@ -305,7 +305,7 @@ public class PassageService
 	// ******************************************************************** //
 
     // Debugging tag.
-	private static final String TAG = "onwatchsvc";
+	private static final String TAG = "onwatch";
 	
 	// Minimum time in ms between required location updates.
 	private static final long LOC_INTERVAL = 60 * 1000;

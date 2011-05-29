@@ -14,21 +14,16 @@
          android:paddingRight="8dp">
 
         <ListView android:id="@id/android:list"
-               android:layout_width="match_parent"
-               android:layout_height="match_parent"
-               android:layout_weight="1"
-               android:drawSelectorOnTop="false" />
-
-        <TextView android:id="@id/android:empty"
-               android:layout_width="match_parent"
-               android:layout_height="match_parent"
-               android:text="No data" />
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:drawSelectorOnTop="false" />
 	
-	   <Button android:id="@+id/passage_new_button"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:text="@string/passage_new"
-			android:textSize="24dip" />
+        <Button android:id="@+id/passage_new_button"
+                android:layout_width="fill_parent"
+			    android:layout_height="wrap_content"
+			    android:text="@string/passage_new"
+			    android:textSize="24dip" />
 
     </LinearLayout>
 

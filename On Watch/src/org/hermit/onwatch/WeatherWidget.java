@@ -299,7 +299,7 @@ public class WeatherWidget
      */
     private void drawPressure(Canvas canvas) {
         graphPaint.setStyle(Paint.Style.STROKE);
-        graphPaint.setColor(PRESSURE_COL);
+        graphPaint.setColor(CURVE_COL);
         graphPaint.setStrokeWidth(2);
         
         float px = 0;
@@ -309,11 +309,14 @@ public class WeatherWidget
         	final float x = (float) (t - firstTimeVal) / 1000f / 3600f * HOUR_WIDTH;
         	
         	final float p = pointPress[i];
-        	final float y = (p - PRESS_MIN) * mbHeight;
+        	final float y = dispHeight - (p - PRESS_MIN) * mbHeight;
         	
-        	if (i > 0)
-                canvas.drawLine(px, dispHeight - py,
-                				x, dispHeight - y, graphPaint);
+        	if (i > 0) {
+                graphPaint.setColor(CURVE_COL);
+                canvas.drawLine(px, py, x, y, graphPaint);
+        	}
+        	graphPaint.setColor(POINT_COL);
+        	canvas.drawPoint(x, y, graphPaint);
             px = x;
             py = y;
         }
@@ -349,7 +352,8 @@ public class WeatherWidget
     private static final int GRID_COL = 0xff407040;
 
     // Colour to draw the object bars.
-	private static final int PRESSURE_COL = 0xff9060d0;
+	private static final int CURVE_COL = 0xff9060d0;
+	private static final int POINT_COL = 0xffc0c000;
 
     // Colour to draw the labels.
 	private static final int MAIN_LABEL_COL = 0xffffffff;

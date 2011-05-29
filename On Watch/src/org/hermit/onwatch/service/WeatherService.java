@@ -26,6 +26,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
 import android.util.Log;
 
 
@@ -48,6 +49,13 @@ public class WeatherService
 	private WeatherService(Context context) {
         appContext = context;
 		contentResolver = appContext.getContentResolver();
+		
+		// Get a handler for messages.
+		msgHandler = new Handler();
+
+		// Get the wakeup manager for handling async processing.
+		wakeupManager = WakeupManager.getInstance(appContext);
+		wakeupManager.register(alarmHandler);
 	}
 	
 	
@@ -71,21 +79,16 @@ public class WeatherService
 
 	void open() {
         // Open the barometer, if we have one.
-        sensorManager = (SensorManager) appContext.getSystemService(Context.SENSOR_SERVICE);
+        sensorManager = (SensorManager)
+        				appContext.getSystemService(Context.SENSOR_SERVICE);
         baroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-        Log.i(TAG, "Weather service open: " +
-        		   (baroSensor != null ? "got" : "no") + " barometer");
-        
-        if (baroSensor != null) {
-        	// Register for sensor updates.
-        	sensorManager.registerListener(baroListener, baroSensor, BARO_SENSOR_DELAY);
 
-        	obsValues = new ContentValues();
-        }
+    	obsValues = new ContentValues();
 	}
 
 
 	void close() {
+        Log.i(TAG, "Weather service close");
         if (baroSensor != null)
         	sensorManager.unregisterListener(baroListener);
 	}
@@ -98,7 +101,7 @@ public class WeatherService
 	/**
 	 * Listener for barometer events.
 	 */
-	SensorEventListener baroListener = new SensorEventListener() {
+	private SensorEventListener baroListener = new SensorEventListener() {
 		@Override
 		public void onAccuracyChanged(Sensor s, int accuracy) {
 			// Nothing much to do here.
@@ -106,8 +109,11 @@ public class WeatherService
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
-			lastPressTime = event.timestamp;
-			lastPressValue = event.values[0];
+	        Log.i(TAG, "Weather " + event.values[0]);
+			synchronized (WeatherService.this) {
+				if (wantObservation)
+					recordObservation(event.timestamp, event.values[0]);
+			}
 		}
 	};
 	
@@ -116,26 +122,68 @@ public class WeatherService
 	// Event Handling.
 	// ******************************************************************** //
 
-    /**
-     * Handle a wakeup alarm.
-     * 
-     * @param	time		The actual time in ms of the alarm, which may
-     * 						be slightly before or after the boundary it
-     * 						was scheduled for.
-     * @param	daySecs		The number of seconds elapsed in the local day,
-     * 						adjusted to align to the nearest second boundary.
-     */
-    void alarm(long time, int daySecs) {
-    	// If we have a new reading, log it.
-    	if (lastPressTime > lastLogTime) {
-    		// Create an Observation record, and add it to the database.
-    		obsValues.put(WeatherSchema.Observations.TIME, time);
-    		obsValues.put(WeatherSchema.Observations.PRESS, lastPressValue);
-    		contentResolver.insert(WeatherSchema.Observations.CONTENT_URI, obsValues);
-    		
-    		lastLogTime = time;
-    	}
-    }
+	private WakeupManager.WakeupClient alarmHandler =
+										new WakeupManager.WakeupClient() {
+		/**
+		 * Handle a wakeup alarm.  A wake lock will be held while we are
+		 * processing the alarm, allowing us to do asynchronous processing
+		 * without letting the device sleep.  However, it's essential that we
+		 * notify the caller by calling {@link #done()} when we're done.
+		 * 
+		 * @param	time		The actual time in ms of the alarm, which may
+		 * 						be slightly before or after the boundary it
+		 * 						was scheduled for.
+		 * @param	daySecs		The number of seconds elapsed in the local day,
+		 * 						adjusted to align to the nearest second boundary.
+		 */
+		public void alarm(long time, int daySecs) {
+			// If there's no barometer, there's nothing we can do.
+			if (baroSensor == null){
+				done();
+				return;
+			}
+			
+			// Register for barometer updates.
+        	sensorManager.registerListener(baroListener,
+					   					   baroSensor,
+					   					   SensorManager.SENSOR_DELAY_NORMAL);
+        	
+			synchronized (WeatherService.this) {
+				wantObservation = true;
+				
+				// In 15 seconds, give up.
+				msgHandler.postDelayed(cancelObservation, 15 * 1000);
+			}
+		}
+	};
+	
+	private void recordObservation(long time, double value) {
+		// The timestamp in the event is garage; replace it.
+        time = System.currentTimeMillis();
+        
+		// Create an Observation record, and add it to the database.
+		obsValues.put(WeatherSchema.Observations.TIME, time);
+		obsValues.put(WeatherSchema.Observations.PRESS, value);
+		contentResolver.insert(WeatherSchema.Observations.CONTENT_URI, obsValues);
+
+		alarmHandler.done();
+		wantObservation = false;
+		msgHandler.removeCallbacks(cancelObservation);
+		
+    	sensorManager.unregisterListener(baroListener);
+	}
+
+	private Runnable cancelObservation = new Runnable() {
+		public void run() {
+			synchronized (WeatherService.this) {
+		        Log.i(TAG, "Weather CANCEL");
+				alarmHandler.done();
+				wantObservation = false;
+				
+		    	sensorManager.unregisterListener(baroListener);
+			}
+		}
+	};
 
 
 	// ******************************************************************** //
@@ -143,16 +191,10 @@ public class WeatherService
 	// ******************************************************************** //
 
     // Debugging tag.
-	private static final String TAG = "onwatchsvc";
+	private static final String TAG = "onwatch";
 
 	// The instance of the weather service; null if not created yet.
 	private static WeatherService serviceInstance = null;
-	
-	// Time in seconds desired between service ticks.
-	private static final int INTERVAL_SECS = 600;
-	
-	// Time in usec desired between sensor updates.
-	private static final int BARO_SENSOR_DELAY = INTERVAL_SECS / 2 * 1000000;
 
 
 	// ******************************************************************** //
@@ -164,21 +206,24 @@ public class WeatherService
 
 	// Our content resolver.
 	private ContentResolver contentResolver;
+    
+    // Our wakeup manager, used for alarm processing.
+    private WakeupManager wakeupManager = null;
 
     // Our sensor manager, and barometer sensor.  The latter is null if
     // we don't have one.
     private SensorManager sensorManager;
     private Sensor baroSensor;
 
-	// The time and value of the last pressure reading.
-	private long lastPressTime = 0;
-	private float lastPressValue = 0;
-
-	// The time of the last log entry.
-	private long lastLogTime = 0;
-
     // Values record used for logging observations.
     private ContentValues obsValues;
+
+    // Flag true if an observation is wanted; if so, we need to call
+    // done() on our alarm handler.
+	private boolean wantObservation = false;
 	
+	// Handler for messages.
+	private Handler msgHandler = null;
+
 }
 
