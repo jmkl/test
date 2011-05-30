@@ -18,7 +18,6 @@ package org.hermit.onwatch;
 
 import java.util.Calendar;
 
-import org.hermit.astro.Body;
 import org.hermit.onwatch.provider.WeatherSchema;
 
 import android.content.Context;
@@ -27,7 +26,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewParent;
 
@@ -141,8 +139,9 @@ public class WeatherWidget
 
     	dispWidth = width;
     	dispHeight = height - marginBot;
-    	
-    	mbHeight = (float) dispHeight / pressRange;
+
+	    // Calculate the grid spacing.
+	    calculateGrid();
 
     	backingBitmap = Bitmap.createBitmap(width, height,
     	                                    Bitmap.Config.RGB_565);  // FIXME: config
@@ -175,7 +174,7 @@ public class WeatherWidget
 		final int ti = c.getColumnIndexOrThrow(WeatherSchema.Observations.TIME);
 		final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
 	    pressMin = 980;
-	    pressMax = 1040;
+	    pressMax = 1020;
 		int i = 0;
 		while (!c.isAfterLast()) {
 			final float p = (float) c.getDouble(pi);
@@ -189,13 +188,20 @@ public class WeatherWidget
 			++i;
 			c.moveToNext();
 		}
-		
-		// Round the pressure limits to the pressure grid.
-	    pressMin -= pressMin % PRESS_GRID;
-	    pressMax = pressMax + PRESS_GRID - 1;
-	    pressMax -= pressMax % PRESS_GRID;
 	    pressRange = pressMax - pressMin;
+		
+		// Round the displayed pressure limits to the pressure grid.
+	    dispMin = pressMin - pressMin % PRESS_GRID_MAJ;
+	    dispMax = pressMax + PRESS_GRID_MAJ - 1;
+	    dispMax -= dispMax % PRESS_GRID_MAJ;
+	    dispRange = dispMax - dispMin;
+	    
+    	// Now work out the actual height of a millibar on the plot.
+    	mbHeight = (float) dispHeight / dispRange;
 
+	    // Calculate the grid spacing.
+	    calculateGrid();
+	    
 		// Calculate the last time to display as the last hour for which
 		// we have data.
 		Calendar baseTime = Calendar.getInstance();
@@ -210,6 +216,41 @@ public class WeatherWidget
     	reDrawContent();
 	}
 
+	
+	/**
+	 * Re-configure the grid spacing and label spacing based on the
+	 * range of displayed pressures and the display size.
+	 * 
+	 * Note that the major grid lines are always spaced at PRESS_GRID_MAJ,
+	 * to provide a constant reference.
+	 */
+	private void calculateGrid() {
+		if (dispHeight == 0 || pressRange == 0)
+			return;
+    	
+		// Figure out the minor grid spacing.  We pick a spacing that
+		// comes to at least 10 pixels.  We leave it at 0 to indicate no
+		// grid.
+		pressGridMinor = 0;
+		for (int i = 0; i < PRESS_GRID_MIN.length; ++i) {
+			int g = PRESS_GRID_MIN[i];
+			if (g * mbHeight >= 6) {
+				pressGridMinor = g;
+				break;
+			}
+		}
+    	
+		// Figure out the label spacing.
+		pressLabels = 0;
+		for (int i = 0; i < PRESS_LABEL_HIEGHTS.length; ++i) {
+			int g = PRESS_LABEL_HIEGHTS[i];
+			if (g * mbHeight >= labelSize) {
+				pressLabels = g;
+				break;
+			}
+		}
+	}
+	
 
 	// ******************************************************************** //
 	// Cell Drawing.
@@ -233,17 +274,19 @@ public class WeatherWidget
         
         // Draw in the pressure labels.  We do this at the current scroll
         // X position, so they stay in the same place on screen.
-        graphPaint.setStyle(Paint.Style.FILL);
-        graphPaint.setTextSize(labelSize);
-        graphPaint.setColor(MAIN_LABEL_COL);
-        float x = parentScroller != null ? parentScroller.getScrollX() : 0;
-        for (int p = pressMin; p <= pressMax; p += PRESS_GRID) {
-            float textOff = p == pressMin ? 0 : p == pressMax ? labelSize : labelSize / 2;
-            graphPaint.setStrokeWidth(p % 100 == 0 ? 2 : 1);
-        	final float y = dispHeight - (p - pressMin) * mbHeight;
-            canvas.drawText("" + p, x, y + textOff - 4, graphPaint);
+        if (pressLabels != 0) {
+        	graphPaint.setStyle(Paint.Style.FILL);
+        	graphPaint.setTextSize(labelSize);
+        	graphPaint.setColor(MAIN_LABEL_COL);
+        	float x = parentScroller != null ? parentScroller.getScrollX() : 0;
+        	for (int p = dispMin; p <= dispMax; p += pressLabels) {
+        		float textOff = p == dispMin ? 0 : p == dispMax ? labelSize : labelSize / 2;
+        		graphPaint.setStrokeWidth(p % 100 == 0 ? 2 : 1);
+        		final float y = dispHeight - (p - dispMin) * mbHeight;
+        		canvas.drawText("" + p, x, y + textOff - 4, graphPaint);
+        	}
         }
-    }
+	}
     
     
     /**
@@ -287,7 +330,7 @@ public class WeatherWidget
 
             // Verticals, with a heavy line every 4.
             graphPaint.setStrokeWidth(h % 4 == 0 ? 2 : 1);
-            graphPaint.setColor(GRID_COL);
+            graphPaint.setColor(GRID_MAJ_COL);
             canvas.drawLine(x, 0, x, dispHeight, graphPaint);
 
             // Hour labels every 4 hours.
@@ -312,20 +355,31 @@ public class WeatherWidget
             time.add(Calendar.HOUR_OF_DAY, 1);
         }
 
-        // Draw in the baselines.
-        graphPaint.setStyle(Paint.Style.STROKE);
-        graphPaint.setColor(GRID_COL);
-        for (int p = pressMin; p <= pressMax; p += PRESS_GRID) {
-            graphPaint.setStrokeWidth(p % 100 == 0 ? 2 : 1);
-        	final float y = dispHeight - (p - pressMin) * mbHeight;
-            canvas.drawLine(0, y, dispWidth, y, graphPaint);
+        // Draw in the minor grid, if required.
+        if (pressGridMinor > 0) {
+            graphPaint.setStyle(Paint.Style.STROKE);
+            graphPaint.setColor(GRID_MIN_COL);
+            graphPaint.setStrokeWidth(1);
+            for (int p = dispMin; p <= dispMax; p += pressGridMinor) {
+            	final float y = dispHeight - (p - dispMin) * mbHeight;
+                canvas.drawLine(0, y, dispWidth, y, graphPaint);
+            }
         }
 
+        // Draw in the major grid lines.
+        graphPaint.setStyle(Paint.Style.STROKE);
+        graphPaint.setColor(GRID_MAJ_COL);
+        for (int p = dispMin; p <= dispMax; p += PRESS_GRID_MAJ) {
+            graphPaint.setStrokeWidth(p % 100 == 0 ? 2 : 1);
+        	final float y = dispHeight - (p - dispMin) * mbHeight;
+            canvas.drawLine(0, y, dispWidth, y, graphPaint);
+        }
+        
         // Draw in the standard pressure line.
         graphPaint.setStyle(Paint.Style.STROKE);
         graphPaint.setColor(GRID_HL_COL);
         graphPaint.setStrokeWidth(1);
-    	final float y = dispHeight - (PRESS_STD - pressMin) * mbHeight;
+    	final float y = dispHeight - (PRESS_STD - dispMin) * mbHeight;
         canvas.drawLine(0, y, dispWidth, y, graphPaint);
     }
     
@@ -345,7 +399,7 @@ public class WeatherWidget
         	final float x = (float) (t - firstTimeVal) / 1000f / 3600f * HOUR_WIDTH;
         	
         	final float p = pointPress[i];
-        	final float y = dispHeight - (p - pressMin) * mbHeight;
+        	final float y = dispHeight - (p - dispMin) * mbHeight;
         	
         	if (i > 0) {
                 graphPaint.setColor(CURVE_COL);
@@ -379,14 +433,15 @@ public class WeatherWidget
 	private static final String TAG = "onwatch";
 
 	// Minimum display width, in pixels.
-	private static final int MIN_WIDTH = 640;
+	private static final int MIN_WIDTH = 400;
 
 	// Width of an hour on the display, in pixels.
-	private static final int HOUR_WIDTH = 24;
+	private static final int HOUR_WIDTH = 16;
 
     // Colour to draw the grid.
-    private static final int GRID_COL = 0xff40a040;
-    private static final int GRID_HL_COL = 0xffa0d000;
+    private static final int GRID_MIN_COL = 0xff4040a0;
+    private static final int GRID_MAJ_COL = 0xff60d060;
+    private static final int GRID_HL_COL = 0xffe0d000;
     
     // Colour to draw the object bars.
 	private static final int CURVE_COL = 0xff9060d0;
@@ -397,9 +452,23 @@ public class WeatherWidget
   
     // Standard pressure.
     private static final float PRESS_STD = 1013.25f;
-    
-    // Spacing of the pressure grid in mb.
-    private static final int PRESS_GRID = 20;
+
+    // Main pressure grid spacing, in millibar.  We keep this constant
+    // so the user has a constant reference.
+	private static final int PRESS_GRID_MAJ = 20;
+
+	// Possible pressure grid minor division spacings.  We adjust these
+	// to provide a useful grid.
+	private static final int[] PRESS_GRID_MIN = {
+		1, 5, 10
+	};
+
+	// Possible pressure grid label spacings.  We adjust the label spacing
+	// for readability.  Note that the labels must always align with
+	// PRESS_GRID_MIN.
+	private static final int[] PRESS_LABEL_HIEGHTS = {
+		5, 10, 20, 40, 100, 200, 400, 500, 1000
+	};
 
 
 	// ******************************************************************** //
@@ -423,6 +492,9 @@ public class WeatherWidget
 	
 	// Height of one mb and 10 mb on the display.
 	private float mbHeight;
+    
+    // Spacing of the pressure grid labels in mb.
+    private int pressLabels = 20;
 
     // Bitmap we draw the widget into, and the Canvas we draw with.
     private Bitmap backingBitmap;
@@ -433,10 +505,18 @@ public class WeatherWidget
 	private long[] pointTimes;
 	private float[] pointPress;
     
+    // Min and max pressures in the actual data.
+    private int pressMin = 0;
+    private int pressMax = 0;
+    private int pressRange = 0;
+    
     // Min and max pressures we need to display, rounded to grid lines.
-    private int pressMin = 980;
-    private int pressMax = 1040;
-    private int pressRange = pressMax - pressMin;
+    private int dispMin = 980;
+    private int dispMax = 1020;
+    private int dispRange = dispMin - dispMax;
+    
+    // Sacing of the minor pressure grid; 0 means no minor grid.
+    private int pressGridMinor = 0;
 
 	// The time shown at the left and right edges of the display.
 	private long firstTimeVal = 0;
