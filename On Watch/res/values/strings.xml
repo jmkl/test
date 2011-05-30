@@ -166,6 +166,28 @@ for more details.\n</string>
     <string name="lab_add">Add</string>
     <string name="lab_save">Done</string>
 
+    <!-- Weather. -->
+    <string name="weather_nodata">insufficient observations</string>
+    <string name="weather_steady">barometer steady</string>
+    <string name="weather_rising">barometer rising</string>
+    <string name="weather_turn_rising">barometer started rising</string>
+    <string name="weather_falling">barometer falling</string>
+    <string name="weather_turn_falling">barometer started falling</string>
+    <string name="weather_quick_1">quite quickly</string>
+    <string name="weather_quick_2">quickly</string>
+    <string name="weather_quick_3">very quickly</string>
+    <string name="weather_quick_4">extremely fast</string>
+    <string name="weather_quick_5">incredibly fast</string>
+    <string name="weather_low_1">pressure low</string>
+    <string name="weather_low_2">pressure very low</string>
+    <string name="weather_low_3">pressure extremely low</string>
+    <string name="weather_low_4">pressure tornadic</string>
+    <string name="weather_low_5">we\'re in space</string>
+    <string name="weather_high_1">pressure high</string>
+    <string name="weather_high_2">pressure very high</string>
+    <string name="weather_high_3">pressure extremely high</string>
+    <string name="weather_high_4">we\'re underwater</string>
+
     <!-- Various. -->
     <string name="timezone_naut">Nautical</string>
     <string name="timezone_naut_off">By longitude</string>

@@ -17,11 +17,13 @@
 package org.hermit.onwatch.service;
 
 
+import org.hermit.onwatch.R;
 import org.hermit.onwatch.provider.WeatherSchema;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -84,6 +86,36 @@ public class WeatherService
         baroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
 
     	obsValues = new ContentValues();
+    	
+    	// Set up the stored recent observations.
+    	recentTimes = new long[NUM_RECENT_OBS];
+    	recentPress = new double[NUM_RECENT_OBS];
+    	recentCount = 0;
+    	recentIndex = 0;
+    	
+		// Query the database for recent observations.
+    	long baseTime = System.currentTimeMillis() - RECENT_OBS_TIME;
+    	Cursor c = contentResolver.query(WeatherSchema.Observations.CONTENT_URI,
+    									 WeatherSchema.Observations.PROJECTION,
+    									 WeatherSchema.Observations.TIME + ">=" + baseTime,
+    									 new String[] { "" + baseTime },
+    									 WeatherSchema.Observations.TIME + " asc");
+    	if (c.moveToFirst()) {
+    		final int ti = c.getColumnIndexOrThrow(WeatherSchema.Observations.TIME);
+    		final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
+
+    		// Copy the data down for later use.
+    		while (!c.isAfterLast() && recentCount < NUM_RECENT_OBS) {
+    			final float p = (float) c.getDouble(pi);
+    			recentTimes[recentCount] = c.getLong(ti);
+    			recentPress[recentCount] = p;
+    			++recentCount;
+    			if (++recentIndex >= NUM_RECENT_OBS)
+    				recentIndex = 0;
+    			c.moveToNext();
+    		}
+    	}
+
 	}
 
 
@@ -94,6 +126,20 @@ public class WeatherService
 	}
 
 
+	// ******************************************************************** //
+	// Weather Data Access.
+	// ******************************************************************** //
+
+	/**
+	 * Get the current weather message text, if any.
+	 * 
+	 * @return				Current weather message; null if none.
+	 */
+	String getWeatherMessage() {
+		return weatherMessage;
+	}
+	
+	
     // ******************************************************************** //
     // Sensor Handling.
     // ******************************************************************** //
@@ -136,6 +182,7 @@ public class WeatherService
 		 * @param	daySecs		The number of seconds elapsed in the local day,
 		 * 						adjusted to align to the nearest second boundary.
 		 */
+		@Override
 		public void alarm(long time, int daySecs) {
 			// If there's no barometer, there's nothing we can do.
 			if (baroSensor == null){
@@ -166,6 +213,17 @@ public class WeatherService
 		obsValues.put(WeatherSchema.Observations.PRESS, value);
 		contentResolver.insert(WeatherSchema.Observations.CONTENT_URI, obsValues);
 
+		// Store for trend analysis.
+		recentTimes[recentIndex] = time;
+		recentPress[recentIndex] = value;
+		if (recentCount < NUM_RECENT_OBS)
+			++recentCount;
+		if (++recentIndex >= NUM_RECENT_OBS)
+			recentIndex = 0;
+
+		// And do the analysis.
+		checkTrends(time);
+		
 		alarmHandler.done();
 		wantObservation = false;
 		msgHandler.removeCallbacks(cancelObservation);
@@ -187,6 +245,142 @@ public class WeatherService
 
 
 	// ******************************************************************** //
+	// Trend Analysis.
+	// ******************************************************************** //
+
+	/**
+	 * Check for interesting trends in our recently logged data.  Raise
+	 * alarms as appropriate.
+	 * 
+	 * @param	time		Current time.
+	 */
+	private void checkTrends(long time) {
+    	long baseTime = time - RECENT_OBS_TIME;
+    	long lateBaseTime = time - CURRENT_OBS_TIME;
+    	
+		long prevTime = 0;
+		double prevPress = 0;
+		int upCount = 0;
+		int downCount = 0;
+		int turn = 0;
+		long startTime = 0;
+		double startPress = 0;
+		long turnTime = 0;
+		double turnPress = 0;
+		long lateTime = 0;
+		double latePress = 0;
+		for (int i = 0; i < recentCount; ++i) {
+			int ix = recentIndex - recentCount + i;
+			if (ix < 0)
+				ix += NUM_RECENT_OBS;
+			
+			// Get the values.  If too old, ignore.
+			long t = recentTimes[ix];
+			double p = recentPress[ix];
+			if (t < baseTime)
+				continue;
+			
+			if (t > lateBaseTime && lateTime == 0) {
+				lateTime = t;
+				latePress = p;
+			}
+			
+			if (prevTime == 0) {
+				turnTime = startTime = t;
+				turnPress = startPress = p;
+			} else {
+				if (p > prevPress) {
+					++upCount;
+					if (upCount > 1) {
+						downCount = 0;
+						if (turn == -1) {
+							turn = 1;
+							turnTime = prevTime;
+							turnPress = prevPress;
+						}
+					}
+				} else if (p < prevPress) {
+					++downCount;
+					if (downCount > 1) {
+						upCount = 0;
+						if (turn == 1) {
+							turn = -1;
+							turnTime = prevTime;
+							turnPress = prevPress;
+						}
+					}
+				}
+			}
+			
+			prevTime = t;
+			prevPress = p;
+		}
+		
+		// Derive some results.
+		double change = prevPress - turnPress;
+		double rate = change / (prevTime - turnTime) * 1000d * 3600d;
+		
+		int stateMsg;
+		if (recentCount < 3)
+			stateMsg = R.string.weather_nodata;
+		else if (turn == 1)
+			stateMsg = R.string.weather_turn_rising;
+		else if (turn == -1)
+			stateMsg = R.string.weather_turn_falling;
+		else if (upCount > 2 || rate > 0.2)
+			stateMsg = R.string.weather_rising;
+		else if (downCount > 2 || rate < -0.2)
+			stateMsg = R.string.weather_falling;
+		else
+			stateMsg = R.string.weather_steady;
+
+		int rateMsg = 0;
+		if (lateTime > 0) {
+			double lateChange = prevPress - latePress;
+			double lateRate = lateChange / (prevTime - lateTime) * 1000d * 3600d;
+			double absRate = Math.abs(lateRate);
+			if (absRate > 10)
+				rateMsg = R.string.weather_quick_5;
+			else if (absRate > 5)
+				rateMsg = R.string.weather_quick_4;
+			else if (absRate > 2)
+				rateMsg = R.string.weather_quick_3;
+			else if (absRate > 1)
+				rateMsg = R.string.weather_quick_2;
+			else if (absRate > 0.5)
+				rateMsg = R.string.weather_quick_1;
+		}
+
+		int pressMsg = 0;
+		if (prevPress < 850)
+			pressMsg = R.string.weather_low_5;
+		else if (prevPress < 870)
+			pressMsg = R.string.weather_low_4;
+		else if (prevPress < 900)
+			pressMsg = R.string.weather_low_3;
+		else if (prevPress < 940)
+			pressMsg = R.string.weather_low_2;
+		else if (prevPress < 980)
+			pressMsg = R.string.weather_low_1;
+		else if (prevPress > 1080)
+			pressMsg = R.string.weather_high_4;
+		else if (prevPress > 1060)
+			pressMsg = R.string.weather_high_3;
+		else if (prevPress > 1040)
+			pressMsg = R.string.weather_high_2;
+		else if (prevPress > 1020)
+			pressMsg = R.string.weather_high_1;
+		
+		String msg = appContext.getString(stateMsg);
+		if (rateMsg != 0)
+			msg += " " + appContext.getString(rateMsg);
+		if (pressMsg != 0)
+			msg += "; " + appContext.getString(pressMsg);
+		weatherMessage = msg;
+	}
+	
+	
+	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
 
@@ -195,6 +389,15 @@ public class WeatherService
 
 	// The instance of the weather service; null if not created yet.
 	private static WeatherService serviceInstance = null;
+	
+	// Maximum number of recent observations to use for trend analysis.
+	private static final int NUM_RECENT_OBS = 60;
+	
+	// Time in ms over which we analyse recent observations.
+	private static final int RECENT_OBS_TIME = NUM_RECENT_OBS * 60 * 1000;
+	
+	// Time in ms which is considered very recent, for rate analysis.
+	private static final int CURRENT_OBS_TIME = 20 * 60 * 1000;
 
 
 	// ******************************************************************** //
@@ -224,6 +427,19 @@ public class WeatherService
 	
 	// Handler for messages.
 	private Handler msgHandler = null;
-
+	
+	// Times and values of our last half hours' worth of readings,
+	// for trend analysis.  These arrays operate as a cyclic buffer,
+	// with recentCount being the number of valid entries, and recentIndex
+	// being the index where the next entry will be written (the oldest entry
+	// if we have wrapped).
+	private long[] recentTimes = null;
+	private double[] recentPress = null;
+	private int recentCount = 0;
+	private int recentIndex = 0;
+	
+	// Current weather status message.
+	private String weatherMessage = null;
+	
 }
 

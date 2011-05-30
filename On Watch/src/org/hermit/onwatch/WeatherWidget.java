@@ -158,8 +158,9 @@ public class WeatherWidget
 	 * Update the displayed data.
 	 * 
 	 * @param	c		Cursor containing the weather observations to display.
+	 * @param	msg		Current weather message; null if none.
 	 */
-	void setData(Cursor c) {
+	void setData(Cursor c, String msg) {
 		// If there's no data, do nothing -- keep the old data.
 		if (!c.moveToFirst())
 			return;
@@ -213,10 +214,12 @@ public class WeatherWidget
 		lastTimeVal = baseTime.getTimeInMillis();
 		firstTimeVal = lastTimeVal - (DISPLAY_HOURS * 3600 * 1000);
 		
+		weatherMessage = msg;
+		
     	reDrawContent();
 	}
 
-	
+
 	/**
 	 * Re-configure the grid spacing and label spacing based on the
 	 * range of displayed pressures and the display size.
@@ -504,7 +507,10 @@ public class WeatherWidget
 	private int numPoints;
 	private long[] pointTimes;
 	private float[] pointPress;
-    
+	
+	// Current weather status message.
+	private String weatherMessage = null;
+
     // Min and max pressures in the actual data.
     private int pressMin = 0;
     private int pressMax = 0;

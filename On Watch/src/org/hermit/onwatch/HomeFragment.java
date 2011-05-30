@@ -513,7 +513,7 @@ public class HomeFragment
 	
 
 	private void displayWeather(Cursor c) {
-		weatherWidget.setData(c);
+		weatherWidget.setData(c, appContext.getWeatherMessage());
 	}
 	
 	

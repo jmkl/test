@@ -321,7 +321,21 @@ public class OnWatchService
     	passageService.finishPassage();
     }
     
-    
+
+	// ******************************************************************** //
+	// Weather Data Access.
+	// ******************************************************************** //
+
+	/**
+	 * Get the current weather message text, if any.
+	 * 
+	 * @return				Current weather message; null if none.
+	 */
+    public String getWeatherMessage() {
+		return weatherService.getWeatherMessage();
+	}
+	
+
 	// ******************************************************************** //
 	// Event Handling.
 	// ******************************************************************** //

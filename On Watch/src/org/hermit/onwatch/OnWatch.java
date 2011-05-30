@@ -627,6 +627,20 @@ public class OnWatch
     
 
     // ******************************************************************** //
+    // Service Access.
+    // ******************************************************************** //
+
+	/**
+	 * Get the current weather message text, if any.
+	 * 
+	 * @return				Current weather message; null if none.
+	 */
+    public String getWeatherMessage() {
+		return onWatchService != null ? onWatchService.getWeatherMessage() : null;
+	}
+	
+
+    // ******************************************************************** //
     // Private Types.
     // ******************************************************************** //
     
