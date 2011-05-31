@@ -94,10 +94,11 @@ public class WeatherService
     	recentIndex = 0;
     	
 		// Query the database for recent observations.
-    	long baseTime = System.currentTimeMillis() - RECENT_OBS_TIME;
+    	long time = System.currentTimeMillis();
+    	long baseTime = time - RECENT_OBS_TIME;
     	Cursor c = contentResolver.query(WeatherSchema.Observations.CONTENT_URI,
     									 WeatherSchema.Observations.PROJECTION,
-    									 WeatherSchema.Observations.TIME + ">=" + baseTime,
+    									 WeatherSchema.Observations.TIME + ">=?",
     									 new String[] { "" + baseTime },
     									 WeatherSchema.Observations.TIME + " asc");
     	if (c.moveToFirst()) {
@@ -115,7 +116,8 @@ public class WeatherService
     			c.moveToNext();
     		}
     	}
-
+    	
+		checkTrends(time);
 	}
 
 
