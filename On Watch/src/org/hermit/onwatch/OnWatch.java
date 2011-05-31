@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.core.SplashActivity;
 import org.hermit.android.widgets.TimeZoneActivity;
-import org.hermit.onwatch.service.Chimer;
+import org.hermit.onwatch.service.SoundService;
 import org.hermit.onwatch.service.OnWatchService;
 import org.hermit.onwatch.service.OnWatchService.OnWatchBinder;
 
@@ -529,7 +529,7 @@ public class OnWatch
 		chimeMenuItem.setIcon(chimeWatch ? R.drawable.ic_menu_chimes_on :
 	               						   R.drawable.ic_menu_chimes_off);
 		
-        Chimer.AlertMode alertMode = onWatchService.getRepeatAlert();
+        SoundService.AlertMode alertMode = onWatchService.getRepeatAlert();
     	alertsMenuItem.setIcon(alertMode.icon);
     }
 
@@ -567,7 +567,7 @@ public class OnWatch
      * 
      * @param	mode				Requested alert mode.
      */
-    private void setAlarms(Chimer.AlertMode mode) {
+    private void setAlarms(SoundService.AlertMode mode) {
         onWatchService.setRepeatAlert(mode);
         updateMenus();
     }

@@ -17,17 +17,24 @@
 package org.hermit.onwatch.service;
 
 
+import java.util.Locale;
+
 import org.hermit.onwatch.R;
 
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
 
 /**
- * This class implements a chimer.  It sounds various audible alerts.
+ * A sound service which can be used to sound various regular alarms
+ * and audible alerts.  It manages alerts from both sound clips and
+ * 
+ * text to speech.
  */
-public class Chimer
+public class SoundService
 {
 
 	// ******************************************************************** //
@@ -70,13 +77,17 @@ public class Chimer
 	 * 
 	 * @param	context			Parent application.
 	 */
-	private Chimer(OnWatchService context) {
+	private SoundService(Context context) {
 		appContext = context;
 
 		// Get the wakeup manager for handling async processing.
 		wakeupManager = WakeupManager.getInstance(appContext);
-		wakeupManager.register(alarmHandler);
-
+		wakeupManager.register(alarmHandler); // FIXME: shutdown()
+		
+		// Get a text-to-speech instance.
+        textToSpeech = new TextToSpeech(appContext, null);
+        textToSpeech.setLanguage(Locale.US);
+        
         // Load the sounds.
         soundPool = createSoundPool();
 	}
@@ -88,9 +99,9 @@ public class Chimer
 	 * @param	context        Parent application.
 	 * @return                 The chimer instance.
 	 */
-	static Chimer getInstance(OnWatchService context) {
+	static SoundService getInstance(Context context) {
 		if (chimerInstance == null)
-			chimerInstance = new Chimer(context);
+			chimerInstance = new SoundService(context);
 		
 		return chimerInstance;
 	}
@@ -141,6 +152,16 @@ public class Chimer
     
 
 	// ******************************************************************** //
+	// Sound Control.
+	// ******************************************************************** //
+    
+    void textAlert(String text) {
+    	bellRinger = new BellRinger(0, 0, new String[] { text });
+    	bellRinger.start();
+    }
+    
+
+	// ******************************************************************** //
 	// Event Handling.
 	// ******************************************************************** //
 
@@ -172,13 +193,13 @@ public class Chimer
     			if (bell == 0 || (hour == 18 && bell == 4))
     				bell = 8;
     			Log.i(TAG, "Chime " + dayMins + " = " + bell + " bells");
-    	    	bellRinger = new BellRinger(bell, 0);
+    	    	bellRinger = new BellRinger(bell, 0, null);
     	    	bellRinger.start();
     		} else {
     			int interval = alertMode.minutes;
     			if (interval > 0 && dayMins % interval == 0) {
     				Log.i(TAG, "Chime " + dayMins + " = alert " + interval);
-        	    	bellRinger = new BellRinger(0, 1);
+        	    	bellRinger = new BellRinger(0, 1, null);
         	    	bellRinger.start();
     			} else {
     				Log.i(TAG, "Chime " + dayMins + " = nuffin");
@@ -221,9 +242,10 @@ public class Chimer
 	// ******************************************************************** //
 
     private class BellRinger extends Thread {
-    	BellRinger(int bells, int alerts) {
+    	BellRinger(int bells, int alerts, String[] texts) {
     		numBells = bells;
     		numAlerts = alerts;
+    		textAlerts = texts;
     	}
 
     	public void run() {
@@ -244,6 +266,11 @@ public class Chimer
     			} catch (InterruptedException e) { }
     		}
     		
+    		if (textAlerts != null) {
+    			for (String t : textAlerts)
+    				textToSpeech.speak(t, TextToSpeech.QUEUE_ADD, null);
+    		}
+    		
     		try {
     			sleep(3000);
     		} catch (InterruptedException e) { }
@@ -257,6 +284,9 @@ public class Chimer
     	
     	// Number of alerts left to sound.
     	private int numAlerts;
+    	
+    	// Text alerts to play.
+    	private String[] textAlerts;
     }
     
 
@@ -268,7 +298,7 @@ public class Chimer
 	private static final String TAG = "onwatch";
  
 	// The instance of the chimer; null if not created yet.
-	private static Chimer chimerInstance = null;
+	private static SoundService chimerInstance = null;
 
     /**
      * The sounds that we make.
@@ -281,7 +311,13 @@ public class Chimer
     	BELL2(R.raw.bells_2),
     	
     	/** An alert sound. */
-    	RINGRING(R.raw.ring_ring);
+    	RINGRING(R.raw.ring_ring),
+    	
+    	/** A serious alert sound. */
+    	BUZZER(R.raw.alert_buzzer),
+    	
+    	/** A major alert sound. */
+    	DEFCON(R.raw.defcon);
     	
     	private Sound(int res) {
     		soundRes = res;
@@ -297,7 +333,7 @@ public class Chimer
 	// ******************************************************************** //
 
 	// Parent app we're running in.
-	private OnWatchService appContext;
+	private Context appContext;
     
     // Our wakeup manager, used for alarm processing.
     private WakeupManager wakeupManager = null;
@@ -313,6 +349,9 @@ public class Chimer
 	
 	// Ringer thread currently playing bells; null if not playing.
 	private BellRinger bellRinger = null;
+	
+	// Our text-to-speech instance.
+	private TextToSpeech textToSpeech;
 
 }
 

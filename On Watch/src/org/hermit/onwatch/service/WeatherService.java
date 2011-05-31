@@ -58,6 +58,9 @@ public class WeatherService
 		// Get the wakeup manager for handling async processing.
 		wakeupManager = WakeupManager.getInstance(appContext);
 		wakeupManager.register(alarmHandler);
+		
+		// Create the chimer.
+		bellChime = SoundService.getInstance(appContext);
 	}
 	
 	
@@ -226,6 +229,8 @@ public class WeatherService
 		// And do the analysis.
 		checkTrends(time);
 		
+//		bellChime.textAlert("Are we up a fucking mountain or what?");
+		
 		alarmHandler.done();
 		wantObservation = false;
 		msgHandler.removeCallbacks(cancelObservation);
@@ -265,8 +270,6 @@ public class WeatherService
 		int upCount = 0;
 		int downCount = 0;
 		int turn = 0;
-		long startTime = 0;
-		double startPress = 0;
 		long turnTime = 0;
 		double turnPress = 0;
 		long lateTime = 0;
@@ -288,8 +291,8 @@ public class WeatherService
 			}
 			
 			if (prevTime == 0) {
-				turnTime = startTime = t;
-				turnPress = startPress = p;
+				turnTime = t;
+				turnPress = p;
 			} else {
 				if (p > prevPress) {
 					++upCount;
@@ -419,6 +422,9 @@ public class WeatherService
     // we don't have one.
     private SensorManager sensorManager;
     private Sensor baroSensor;
+
+	// Chimer.
+	private SoundService bellChime = null;
 
     // Values record used for logging observations.
     private ContentValues obsValues;

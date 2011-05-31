@@ -85,7 +85,7 @@ public class OnWatchService
 		wakeupManager = WakeupManager.getInstance(this);
 		
 		// Create the chimer.
-		bellChime = Chimer.getInstance(this);
+		bellChime = SoundService.getInstance(this);
 		
 		// Get the passage and weather services.
 		passageService = PassageService.getInstance(this);
@@ -212,10 +212,10 @@ public class OnWatchService
     	Log.i(TAG, "Prefs: chimeWatch " + chimeWatch);
     	setChimeEnable(chimeWatch);
 
-    	Chimer.AlertMode alertMode = Chimer.AlertMode.OFF;
+    	SoundService.AlertMode alertMode = SoundService.AlertMode.OFF;
     	try {
     		String mval = prefs.getString("alertMode", "OFF");
-    		alertMode = Chimer.AlertMode.valueOf(mval);
+    		alertMode = SoundService.AlertMode.valueOf(mval);
     	} catch (Exception e) {
     		Log.i(TAG, "Pref: bad alertMode");
     	}
@@ -259,7 +259,7 @@ public class OnWatchService
      * 
      * @return					The current mode.
      */
-    public Chimer.AlertMode getRepeatAlert() {
+    public SoundService.AlertMode getRepeatAlert() {
     	return bellChime.getRepeatAlert();
     }
     
@@ -269,7 +269,7 @@ public class OnWatchService
      * 
      * @param	interval		Desired alert mode.
      */
-    public void setRepeatAlert(Chimer.AlertMode mode) {
+    public void setRepeatAlert(SoundService.AlertMode mode) {
     	SharedPreferences prefs =
 			PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
@@ -423,7 +423,7 @@ public class OnWatchService
     private PendingIntent alarmSignal = null;
 
 	// Chimer.
-	private Chimer bellChime = null;
+	private SoundService bellChime = null;
 	
 	// Passage service.
 	private PassageService passageService = null;
