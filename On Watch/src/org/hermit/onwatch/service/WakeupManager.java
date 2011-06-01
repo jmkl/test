@@ -266,6 +266,7 @@ public class WakeupManager
 	// Handler which we use to let alarm handlers tell us when all
 	// asynchronous alarm processing is complete.
 	private Handler alarmCompleteHandler = new Handler() {
+		@Override
 		public void handleMessage(Message msg) {
 			int id = msg.what;
 			clientsNotified &= ~id;

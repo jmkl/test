@@ -181,7 +181,7 @@ public class WeatherWidget
 		final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
 		pressTime = 0;
 		pressNow = 0;
-	    pressMin = 980;
+	    pressMin = 1000;
 	    pressMax = 1020;
 		int i = 0;
 		while (!c.isAfterLast()) {
@@ -409,8 +409,8 @@ public class WeatherWidget
         if (pressGridMinor > 0) {
             graphPaint.setStyle(Paint.Style.STROKE);
             graphPaint.setColor(GRID_MIN_COL);
-            graphPaint.setStrokeWidth(1);
             for (int p = dispMin; p <= dispMax; p += pressGridMinor) {
+            	graphPaint.setStrokeWidth(p % pressLabels == 0 ? 2 : 1);
             	final float y = dispBot - (p - dispMin) * mbHeight;
                 canvas.drawLine(0, y, dispWidth, y, graphPaint);
             }
@@ -577,7 +577,7 @@ public class WeatherWidget
     private float pressNow = 0;
 
     // Min and max pressures we need to display, rounded to grid lines.
-    private int dispMin = 980;
+    private int dispMin = 1000;
     private int dispMax = 1020;
     private int dispRange = dispMin - dispMax;
     

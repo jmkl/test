@@ -446,7 +446,7 @@ public class OnWatch
     		break;
     	case R.id.menu_alerts:
     		if (onWatchService != null)
-    			setAlarms(onWatchService.getRepeatAlert().next());
+    			setAlarms(onWatchService.getRepeatAlarm().next());
     		break;
         case R.id.menu_prefs:
         	// Launch the preferences activity as a subactivity, so we
@@ -529,8 +529,8 @@ public class OnWatch
 		chimeMenuItem.setIcon(chimeWatch ? R.drawable.ic_menu_chimes_on :
 	               						   R.drawable.ic_menu_chimes_off);
 		
-        SoundService.AlertMode alertMode = onWatchService.getRepeatAlert();
-    	alertsMenuItem.setIcon(alertMode.icon);
+        SoundService.RepeatAlarmMode alarmMode = onWatchService.getRepeatAlarm();
+    	alertsMenuItem.setIcon(alarmMode.icon);
     }
 
     
@@ -565,10 +565,10 @@ public class OnWatch
     /**
      * Set the repeating alarm on or off.
      * 
-     * @param	mode				Requested alert mode.
+     * @param	mode				Requested repeating alarm mode.
      */
-    private void setAlarms(SoundService.AlertMode mode) {
-        onWatchService.setRepeatAlert(mode);
+    private void setAlarms(SoundService.RepeatAlarmMode mode) {
+        onWatchService.setRepeatAlarm(mode);
         updateMenus();
     }
 

@@ -84,8 +84,8 @@ public class OnWatchService
 		// Get the wakeup manager for handling async processing.
 		wakeupManager = WakeupManager.getInstance(this);
 		
-		// Create the chimer.
-		bellChime = SoundService.getInstance(this);
+		// Create the sound service.
+		soundService = SoundService.getInstance(this);
 		
 		// Get the passage and weather services.
 		passageService = PassageService.getInstance(this);
@@ -212,15 +212,15 @@ public class OnWatchService
     	Log.i(TAG, "Prefs: chimeWatch " + chimeWatch);
     	setChimeEnable(chimeWatch);
 
-    	SoundService.AlertMode alertMode = SoundService.AlertMode.OFF;
+    	SoundService.RepeatAlarmMode alertMode = SoundService.RepeatAlarmMode.OFF;
     	try {
     		String mval = prefs.getString("alertMode", "OFF");
-    		alertMode = SoundService.AlertMode.valueOf(mval);
+    		alertMode = SoundService.RepeatAlarmMode.valueOf(mval);
     	} catch (Exception e) {
     		Log.i(TAG, "Pref: bad alertMode");
     	}
     	Log.i(TAG, "Prefs: alertMode " + alertMode);
-    	setRepeatAlert(alertMode);
+    	setRepeatAlarm(alertMode);
    }
 
 
@@ -234,7 +234,7 @@ public class OnWatchService
 	 * @return					true iff the chimes are enabled.
 	 */
 	public boolean getChimeEnable() {
-    	return bellChime.getChimeEnable();
+    	return soundService.getChimeEnable();
     }
 
 
@@ -250,33 +250,33 @@ public class OnWatchService
         editor.putBoolean("chimeWatch", enable);
         editor.commit();
 
-        bellChime.setChimeEnable(enable);
+        soundService.setChimeEnable(enable);
     }
 
     
     /**
-     * Get the current repeating alert mode.
+     * Get the current repeating alarm mode.
      * 
      * @return					The current mode.
      */
-    public SoundService.AlertMode getRepeatAlert() {
-    	return bellChime.getRepeatAlert();
+    public SoundService.RepeatAlarmMode getRepeatAlarm() {
+    	return soundService.getRepeatAlarm();
     }
     
 
     /**
-     * Set up a repeating alert.
+     * Set the repeating alarm.
      * 
-     * @param	interval		Desired alert mode.
+     * @param	interval		Desired alarm mode.
      */
-    public void setRepeatAlert(SoundService.AlertMode mode) {
+    public void setRepeatAlarm(SoundService.RepeatAlarmMode mode) {
     	SharedPreferences prefs =
 			PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("alertMode", mode.toString());
         editor.commit();
         
-        bellChime.setRepeatAlert(mode);
+        soundService.setRepeatAlarm(mode);
     }
 
     
@@ -422,8 +422,8 @@ public class OnWatchService
     // null if not scheduled.
     private PendingIntent alarmSignal = null;
 
-	// Chimer.
-	private SoundService bellChime = null;
+	// The sound service.
+	private SoundService soundService = null;
 	
 	// Passage service.
 	private PassageService passageService = null;

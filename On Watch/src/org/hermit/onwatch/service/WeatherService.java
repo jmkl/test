@@ -60,7 +60,7 @@ public class WeatherService
 		wakeupManager.register(alarmHandler);
 		
 		// Create the chimer.
-		bellChime = SoundService.getInstance(appContext);
+		soundService = SoundService.getInstance(appContext);
 	}
 	
 	
@@ -82,7 +82,7 @@ public class WeatherService
 	// Run Control.
 	// ******************************************************************** //
 
-	void open() {
+	synchronized void open() {
         // Open the barometer, if we have one.
         sensorManager = (SensorManager)
         				appContext.getSystemService(Context.SENSOR_SERVICE);
@@ -119,6 +119,7 @@ public class WeatherService
     			c.moveToNext();
     		}
     	}
+        Log.i(TAG, "Weather service opened: history " + recentCount);
     	
 		checkTrends(time);
 	}
@@ -160,10 +161,11 @@ public class WeatherService
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
-	        Log.i(TAG, "Weather " + event.values[0]);
 			synchronized (WeatherService.this) {
-				if (wantObservation)
+				if (wantObservation) {
 					recordObservation(event.timestamp, event.values[0]);
+					wantObservation = false;
+				}
 			}
 		}
 	};
@@ -204,21 +206,23 @@ public class WeatherService
 				wantObservation = true;
 				
 				// In 15 seconds, give up.
-				msgHandler.postDelayed(cancelObservation, 15 * 1000);
+				msgHandler.postDelayed(finishObservation, 15 * 1000);
 			}
 		}
 	};
 	
 	private void recordObservation(long time, double value) {
-		// The timestamp in the event is garage; replace it.
+		// The timestamp in the event is garbage; replace it.
         time = System.currentTimeMillis();
-        
+
+        Log.i(TAG, "Weather record " + value);
 		// Create an Observation record, and add it to the database.
 		obsValues.put(WeatherSchema.Observations.TIME, time);
 		obsValues.put(WeatherSchema.Observations.PRESS, value);
 		contentResolver.insert(WeatherSchema.Observations.CONTENT_URI, obsValues);
 
 		// Store for trend analysis.
+        Log.i(TAG, "Weather record trend #" + recentCount);
 		recentTimes[recentIndex] = time;
 		recentPress[recentIndex] = value;
 		if (recentCount < NUM_RECENT_OBS)
@@ -229,22 +233,19 @@ public class WeatherService
 		// And do the analysis.
 		checkTrends(time);
 		
-//		bellChime.textAlert("Are we up a fucking mountain or what?");
-		
-		alarmHandler.done();
-		wantObservation = false;
-		msgHandler.removeCallbacks(cancelObservation);
-		
-    	sensorManager.unregisterListener(baroListener);
+		if (value < 900)
+			soundService.textAlert("Are we up a mountain or what?",
+								   finishObservation);
+		else
+			finishObservation.run();
 	}
 
-	private Runnable cancelObservation = new Runnable() {
+	private Runnable finishObservation = new Runnable() {
 		public void run() {
 			synchronized (WeatherService.this) {
-		        Log.i(TAG, "Weather CANCEL");
+				msgHandler.removeCallbacks(this);
+
 				alarmHandler.done();
-				wantObservation = false;
-				
 		    	sensorManager.unregisterListener(baroListener);
 			}
 		}
@@ -272,8 +273,6 @@ public class WeatherService
 		int turn = 0;
 		long turnTime = 0;
 		double turnPress = 0;
-		long lateTime = 0;
-		double latePress = 0;
 		for (int i = 0; i < recentCount; ++i) {
 			int ix = recentIndex - recentCount + i;
 			if (ix < 0)
@@ -284,11 +283,6 @@ public class WeatherService
 			double p = recentPress[ix];
 			if (t < baseTime)
 				continue;
-			
-			if (t > lateBaseTime && lateTime == 0) {
-				lateTime = t;
-				latePress = p;
-			}
 			
 			if (prevTime == 0) {
 				turnTime = t;
@@ -325,12 +319,17 @@ public class WeatherService
 		double change = prevPress - turnPress;
 		double rate = change / (prevTime - turnTime) * 1000d * 3600d;
 		
+        Log.i(TAG, "Weather analysis: " + recentCount + " records; turn=" +
+        		   turn + "@" + turnPress);
+        Log.i(TAG, "==> press=" + prevPress + "; up=" + upCount +
+        		   "; dn=" + downCount + "; ch=" + change + "; rate=" + rate);
+
 		int stateMsg;
 		if (recentCount < 3)
 			stateMsg = R.string.weather_nodata;
-		else if (turn == 1)
+		else if (turn == 1 && upCount > 2)
 			stateMsg = R.string.weather_turn_rising;
-		else if (turn == -1)
+		else if (turn == -1 && downCount > 2)
 			stateMsg = R.string.weather_turn_falling;
 		else if (upCount > 2 || rate > 0.2)
 			stateMsg = R.string.weather_rising;
@@ -339,11 +338,10 @@ public class WeatherService
 		else
 			stateMsg = R.string.weather_steady;
 
+		// Give a rate message, if there has been a sustained trend.
 		int rateMsg = 0;
-		if (lateTime > 0) {
-			double lateChange = prevPress - latePress;
-			double lateRate = lateChange / (prevTime - lateTime) * 1000d * 3600d;
-			double absRate = Math.abs(lateRate);
+		if (turnTime < lateBaseTime) {
+			double absRate = Math.abs(rate);
 			if (absRate > 10)
 				rateMsg = R.string.weather_quick_5;
 			else if (absRate > 5)
@@ -356,6 +354,7 @@ public class WeatherService
 				rateMsg = R.string.weather_quick_1;
 		}
 
+		// Make a pressure message.
 		int pressMsg = 0;
 		if (prevPress < 850)
 			pressMsg = R.string.weather_low_5;
@@ -376,6 +375,7 @@ public class WeatherService
 		else if (prevPress > 1020)
 			pressMsg = R.string.weather_high_1;
 		
+		// Produce the combined weather message.
 		String msg = appContext.getString(stateMsg);
 		if (rateMsg != 0)
 			msg += " " + appContext.getString(rateMsg);
@@ -402,7 +402,7 @@ public class WeatherService
 	private static final int RECENT_OBS_TIME = NUM_RECENT_OBS * 60 * 1000;
 	
 	// Time in ms which is considered very recent, for rate analysis.
-	private static final int CURRENT_OBS_TIME = 20 * 60 * 1000;
+	private static final int CURRENT_OBS_TIME = 30 * 60 * 1000;
 
 
 	// ******************************************************************** //
@@ -423,8 +423,8 @@ public class WeatherService
     private SensorManager sensorManager;
     private Sensor baroSensor;
 
-	// Chimer.
-	private SoundService bellChime = null;
+	// Our sound service.
+	private SoundService soundService = null;
 
     // Values record used for logging observations.
     private ContentValues obsValues;
