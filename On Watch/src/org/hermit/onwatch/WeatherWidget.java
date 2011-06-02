@@ -181,8 +181,8 @@ public class WeatherWidget
 		final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
 		pressTime = 0;
 		pressNow = 0;
-	    pressMin = 1000;
-	    pressMax = 1020;
+	    pressMin = 1000f;
+	    pressMax = 1020f;
 		int i = 0;
 		while (!c.isAfterLast()) {
 			final long t = c.getLong(ti);
@@ -193,18 +193,17 @@ public class WeatherWidget
 			pressTime = t;
 			pressNow = p;
 			if (p < pressMin)
-				pressMin = (int) p;
+				pressMin = p;
 			if (p > pressMax)
-				pressMax = (int) p;
+				pressMax = p;
 			++i;
 			c.moveToNext();
 		}
 	    pressRange = pressMax - pressMin;
 		
 		// Round the displayed pressure limits to the pressure grid.
-	    dispMin = pressMin - pressMin % PRESS_GRID_MAJ;
-	    dispMax = pressMax + PRESS_GRID_MAJ - 1;
-	    dispMax -= dispMax % PRESS_GRID_MAJ;
+	    dispMin = (int) Math.floor(pressMin / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
+	    dispMax = (int) Math.ceil(pressMax / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
 	    dispRange = dispMax - dispMin;
 	    
 	    // Calculate the grid spacing.
@@ -568,9 +567,9 @@ public class WeatherWidget
 	private String weatherMessage = null;
 
     // Min and max pressures in the actual data.
-    private int pressMin = 0;
-    private int pressMax = 0;
-    private int pressRange = 0;
+    private float pressMin = 0;
+    private float pressMax = 0;
+    private float pressRange = 0;
     
     // Latest pressure time and value; 0 if not known.
 	private long pressTime = 0;
