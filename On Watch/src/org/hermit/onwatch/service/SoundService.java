@@ -251,7 +251,7 @@ public class SoundService
 
     		// Chime the bells on the half hours.  Otherwise, look for
     		// an alert -- we only alert if we're not chiming the half-hour.
-    		if (dayMins % 30 == 0) {
+    		if (chimeWatch && dayMins % 30 == 0) {
     			// We calculate the bells at the *start* of this half hour -
     			// 1 to 8.  Special for the dog watches -- first dog watch
     			// has 8 bells at the end, second goes 5, 6, 7, 8.
@@ -259,11 +259,9 @@ public class SoundService
     			if (bell == 0 || (hour == 18 && bell == 4))
     				bell = 8;
     			sound = bellSounds[bell - 1];
-    		} else {
-    			int interval = alarmMode.minutes;
-    			if (interval > 0 && dayMins % interval == 0)
-    				sound = alertSound;
-    		}
+    		} else if (alarmMode != RepeatAlarmMode.OFF &&
+    										dayMins % alarmMode.minutes == 0)
+    			sound = alertSound;
     		
     		// If there's a sound to play, play it; else we're done.
 			Log.i(TAG, "Chime " + dayMins + " = " +
