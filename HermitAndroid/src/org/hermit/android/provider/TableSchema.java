@@ -4,7 +4,7 @@
  * 
  * These classes are designed to help build content providers in Android.
  *
- * <br>Copyright 2010 Ian Cameron Smith
+ * <br>Copyright 2010-2011 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -50,7 +50,63 @@ import android.provider.BaseColumns;
 public abstract class TableSchema
     implements BaseColumns
 {
+	
+    // ******************************************************************** //
+    // Public Classes.
+    // ******************************************************************** //
 
+	/**
+	 * Enum defining the type of a field.
+	 * 
+	 * <p>Note: these enum names are also the SQL type names, and are
+	 * used directly in building the SQL statements to create the tables.
+	 */
+	public enum FieldType {
+		/**
+		 * Field type: 64-bit integer value.
+		 */
+		BIGINT,
+		/**
+		 * Field type: 32-bit integer value.
+		 */
+		INT,
+		/**
+		 * Field type: 32-bit float value.
+		 */
+		REAL,
+		/**
+		 * Field type: 64-bit float value.
+		 */
+		FLOAT,
+		/**
+		 * Field type: 64-bit float value.
+		 */
+		DOUBLE,
+		/**
+		 * Field type: boolean value.
+		 */
+		BOOLEAN,
+		/**
+		 * Field type: text string.
+		 */
+		TEXT;
+	}
+	
+	
+	/**
+	 * Descriptor for a field in the database.
+	 */
+	public static final class FieldDesc {
+		public FieldDesc(String name, FieldType type) {
+			this.name = name;
+			this.type = type;
+		}
+		
+		public final String name;
+		public final FieldType type;
+	}
+	
+	
     // ******************************************************************** //
     // Constructor.
     // ******************************************************************** //
@@ -65,46 +121,19 @@ public abstract class TableSchema
      * @param   uri         Content URI for this table.
      * @param   sort        Default sort order for this table; e.g.
      *                      "time ASC".
-     * @param   fields      List of field definitions.  Each one is two
-     *                      strings, being the field name and type.  E.g.
-     *                      { { "name", "TEXT" }, { "time", "INTEGER" }}.
-     *                      The standard ID field "_id" will be prepended
-     *                      automatically.
+     * @param   fields      List of field definitions.  The standard ID
+     *                      field "_id" will be prepended automatically.
      */
     protected TableSchema(String name, String type,
                           Uri uri, String sort,
-                          String[][] fields)
-    {
-        this(name, type, uri, sort, fields, makeProjection(fields));
-    }
-
-
-    /**
-     * Create a table schema instance.
-     * 
-     * @param   name        Name for the table; e.g. "points".
-     * @param   type        Base MIME type identifying the content of this
-     *                      table; e.g. "vnd.org.hermit.passage.point".
-     * @param   uri         Content URI for this table.
-     * @param   sort        Default sort order for this table; e.g.
-     *                      "time ASC".
-     * @param   fields      List of field definitions.  Each one is two
-     *                      strings, being the field name and type.  E.g.
-     *                      { { "name", "TEXT" }, { "time", "INTEGER" }}.
-     *                      The standard ID field "_id" will be prepended
-     *                      automatically.
-     * @param   projection  Default projection for this table.
-     */
-    protected TableSchema(String name, String type,
-                          Uri uri, String sort,
-                          String[][] fields, String[] projection)
+                          FieldDesc[] fields)
     {
         tableName = name;
         itemType = type;
         contentUri = uri;
         sortOrder = sort;
         fieldDefs = fields;
-        defProjection = projection;
+        defProjection = makeProjection(fields);
     }
 
 
@@ -124,8 +153,8 @@ public abstract class TableSchema
         // Add the implicit ID field.
         projectionMap.put(BaseColumns._ID, BaseColumns._ID);
 
-        for (String[] field : fieldDefs)
-            projectionMap.put(field[0], field[0]);
+        for (FieldDesc field : fieldDefs)
+            projectionMap.put(field.name, field.name);
     }
 
 
@@ -139,21 +168,18 @@ public abstract class TableSchema
      * returned projection includes all fields, including the implicit
      * "_id" field, which should <b>not</b> be in the supplied field list.
      * 
-     * @param   fields      List of field definitions.  Each one is two
-     *                      strings, being the field name and type.  E.g.
-     *                      { { "name", "TEXT" }, { "time", "INTEGER" }}.
-     *                      The standard ID field "_id" will be prepended
-     *                      automatically.
+     * @param   fields      List of field definitions.  The standard ID
+     *                      field "_id" will be prepended automatically.
      * @return              An all-fields projection for the given fields
      *                      list.
      */
-    protected static String[] makeProjection(String[][] fields) {
+    protected static String[] makeProjection(FieldDesc[] fields) {
         String[] projection = new String[fields.length + 1];
         int np = 0;
         
         projection[np++] = BaseColumns._ID;
-        for (String[] field : fields)
-            projection[np++] = field[0];
+        for (FieldDesc field : fields)
+            projection[np++] = field.name;
         
         return projection;
     }
@@ -234,9 +260,11 @@ public abstract class TableSchema
     // ******************************************************************** //
 
     /**
-     * @return the tableFields
+     * Get the specifications of the fields of this table.
+     * 
+     * @return			The field specs, not including the "_id" field.
      */
-    String[][] getTableFields() {
+    FieldDesc[] getTableFields() {
         return fieldDefs;
     }
 
@@ -258,7 +286,7 @@ public abstract class TableSchema
      *                   fields at all are present.
      */
     String getNullHack() {
-        return getTableFields()[0][0];
+        return getTableFields()[0].name;
     }
 
 
@@ -270,7 +298,7 @@ public abstract class TableSchema
     HashMap<String, String> getProjectionMap() {
         return projectionMap;
     }
-
+    
 
     // ******************************************************************** //
     // Private Data.
@@ -285,7 +313,7 @@ public abstract class TableSchema
     private final Uri contentUri;
 
     // Definitions of the fields.
-    private final String[][] fieldDefs;
+    private final FieldDesc[] fieldDefs;
 
     // The default projection for this table.
     private final String[] defProjection;

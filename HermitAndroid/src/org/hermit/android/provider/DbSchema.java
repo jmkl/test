@@ -4,7 +4,7 @@
  * 
  * These classes are designed to help build content providers in Android.
  *
- * <br>Copyright 2010 Ian Cameron Smith
+ * <br>Copyright 2010-2011 Ian Cameron Smith
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -18,6 +18,20 @@
 
 
 package org.hermit.android.provider;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import org.hermit.android.provider.TableSchema.FieldDesc;
+
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
 
 
 /**
@@ -125,6 +139,141 @@ public abstract class DbSchema {
         throw new IllegalArgumentException("No such table: " + name);
     }
 
+    
+	// ******************************************************************** //
+	// Backup and Restore.
+    // ******************************************************************** //
+
+    public void backupDb(Context c, File where)
+    	throws FileNotFoundException, IOException
+    {
+    	File bak = new File(where, dbName + ".bak");
+
+    	FileOutputStream fos = null;
+    	DataOutputStream dos = null;
+    	try {
+    		fos = new FileOutputStream(bak);
+    		dos = new DataOutputStream(fos);
+    		
+    		ContentResolver cr = c.getContentResolver();
+    		TableSchema[] tables = getDbTables();
+    		for (TableSchema t : tables)
+    			backupTable(cr, t, dos);
+    	} finally {
+    		if (dos != null) try {
+    			dos.close();
+    		} catch (IOException e) { }
+    		if (fos != null) try {
+    			fos.close();
+    		} catch (IOException e) { }
+    	}
+    }
+
+
+    private void backupTable(ContentResolver cr,
+    						 TableSchema ts, DataOutputStream dos)
+    	throws IOException
+    {
+		// Create a where clause based on the backup mode.
+		String where = null;
+		String[] wargs = null;
+
+		// Query for the records to back up.
+		Cursor c = null;
+		try {
+			c = cr.query(ts.getContentUri(), ts.getDefaultProjection(),
+						 where, wargs, ts.getSortOrder());
+			
+			// If there's no data, do nothing.
+			if (!c.moveToFirst())
+				return;
+			
+			// Get the column indices for all the columns.
+			FieldDesc[] fields = ts.getTableFields();
+			int[] cols = new int[fields.length];
+			for (int i = 0; i < fields.length; ++i)
+				cols[i] = c.getColumnIndex(fields[i].name);
+			
+			// Save all the rows.
+			while (!c.isAfterLast()) {
+				for (int i = 0; i < fields.length; ++i) {
+					TableSchema.FieldType t = fields[i].type;
+					switch (t) {
+					case BIGINT:
+						long lv = c.getLong(cols[i]);
+						dos.writeLong(lv);
+						break;
+					case INT:
+						int iv = c.getInt(cols[i]);
+						dos.writeInt(iv);
+						break;
+					case DOUBLE:
+					case FLOAT:
+						double dv = c.getDouble(cols[i]);
+						dos.writeDouble(dv);
+						break;
+					case REAL:
+						float fv = c.getFloat(cols[i]);
+						dos.writeFloat(fv);
+						break;
+					case BOOLEAN:
+						boolean bv = c.getInt(cols[i]) != 0;
+						dos.writeBoolean(bv);
+						break;
+					case TEXT:
+						String sv = c.getString(cols[i]);
+						dos.writeUTF(sv);
+						break;
+					}
+				}
+				
+				c.moveToNext();
+			}
+		} finally {
+			c.close();
+		}
+	}
+	
+
+    private void restoreTable(ContentResolver cr,
+    						 TableSchema ts, DataInputStream dis)
+    	throws IOException
+    {
+    	// Get the column indices for all the columns.
+    	FieldDesc[] fields = ts.getTableFields();
+
+    	// Save all the rows.
+    	ContentValues values = new ContentValues();
+    	while (!false) { // FIXME
+    		for (int i = 0; i < fields.length; ++i) {
+    			TableSchema.FieldType t = fields[i].type;
+    			switch (t) {
+    			case BIGINT:
+    				values.put(fields[i].name, dis.readLong());
+    				break;
+    			case INT:
+    				values.put(fields[i].name, dis.readInt());
+    				break;
+    			case DOUBLE:
+    			case FLOAT:
+    				values.put(fields[i].name, dis.readDouble());
+    				break;
+    			case REAL:
+    				values.put(fields[i].name, dis.readFloat());
+    				break;
+    			case BOOLEAN:
+    				values.put(fields[i].name, dis.readBoolean());
+    				break;
+    			case TEXT:
+    				values.put(fields[i].name, dis.readUTF());
+    				break;
+    			}
+    		}
+
+    		cr.insert(ts.getContentUri(), values);
+    	}
+	}
+	
 
     // ******************************************************************** //
     // Private Data.
