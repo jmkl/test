@@ -35,7 +35,7 @@ public class WeatherProvider
      * Create an instance of this content provider.
      */
     public WeatherProvider() {
-        super(new WeatherSchema());
+        super(WeatherSchema.DB_SCHEMA);
     }
     
 }

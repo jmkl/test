@@ -35,7 +35,7 @@ public class PassageProvider
      * Create an instance of this content provider.
      */
     public PassageProvider() {
-        super(new PassageSchema());
+        super(PassageSchema.DB_SCHEMA);
     }
     
 }

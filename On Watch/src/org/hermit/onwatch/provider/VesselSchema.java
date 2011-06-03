@@ -31,6 +31,16 @@ public final class VesselSchema
 {
 
     // ******************************************************************** //
+    // Public Data.
+    // ******************************************************************** //
+
+    /**
+     * The canonical schema instance for this provider.
+     */
+    public static final VesselSchema DB_SCHEMA = new VesselSchema();
+
+
+    // ******************************************************************** //
     // Constant Definitions.
     // ******************************************************************** //
     
@@ -78,8 +88,8 @@ public final class VesselSchema
         
         
         // Definitions of the fields.
-        private static final String[][] FIELDS = {
-            { NAME, "TEXT" },
+        private static final FieldDesc[] FIELDS = {
+        	new FieldDesc(NAME, FieldType.TEXT),
         };
         
         /**
@@ -92,7 +102,7 @@ public final class VesselSchema
          * Create a vessels table schema instance.
          */
         protected Vessels() {
-            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS, PROJECTION);
+            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS);
         }
         
     }
@@ -150,11 +160,11 @@ public final class VesselSchema
 
         
         // Definitions of the fields.
-        private static final String[][] FIELDS = {
-            { NAME, "TEXT" },
-            { VESSEL, "INTEGER" },
-            { COLOUR, "INTEGER" },
-            { POSITION, "INTEGER" },
+        private static final FieldDesc[] FIELDS = {
+        	new FieldDesc(NAME, FieldType.TEXT),
+        	new FieldDesc(VESSEL, FieldType.BIGINT),
+        	new FieldDesc(COLOUR, FieldType.INT),
+        	new FieldDesc(POSITION, FieldType.INT),
         };
         
         /**
@@ -167,7 +177,7 @@ public final class VesselSchema
          * Create a vessels table schema instance.
          */
         protected Crew() {
-            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS, PROJECTION);
+            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS);
         }
         
     }
@@ -180,7 +190,7 @@ public final class VesselSchema
     /**
      * Create a vessel database schema instance.
      */
-    public VesselSchema() {
+    private VesselSchema() {
         super(DB_NAME, DB_VERSION, AUTHORITY, TABLE_SCHEMAS);
     }
 

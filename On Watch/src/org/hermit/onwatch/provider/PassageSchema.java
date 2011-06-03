@@ -31,6 +31,16 @@ public final class PassageSchema
 {
 
     // ******************************************************************** //
+    // Public Data.
+    // ******************************************************************** //
+
+    /**
+     * The canonical schema instance for this provider.
+     */
+    public static final PassageSchema DB_SCHEMA = new PassageSchema();
+
+
+    // ******************************************************************** //
     // Constant Definitions.
     // ******************************************************************** //
     
@@ -141,20 +151,20 @@ public final class PassageSchema
         public static final String DISTANCE = "distance";
         
         // Definitions of the fields.
-        private static final String[][] FIELDS = {
-            { NAME, "TEXT" },
-            { START_NAME, "TEXT" },
-            { DEST_NAME, "TEXT" },
-            { DEST_LAT, "REAL" },
-            { DEST_LON, "REAL" },
-            { START_TIME, "INTEGER" },
-            { START_LAT, "REAL" },
-            { START_LON, "REAL" },
-            { FINISH_TIME, "INTEGER" },
-            { FINISH_LAT, "REAL" },
-            { FINISH_LON, "REAL" },
-            { UNDER_WAY, "INTEGER" },
-            { DISTANCE, "REAL" },
+        private static final FieldDesc[] FIELDS = {
+            new FieldDesc(NAME, FieldType.TEXT),
+            new FieldDesc(START_NAME, FieldType.TEXT),
+            new FieldDesc(DEST_NAME, FieldType.TEXT),
+            new FieldDesc(DEST_LAT, FieldType.DOUBLE),
+            new FieldDesc(DEST_LON, FieldType.DOUBLE),
+            new FieldDesc(START_TIME, FieldType.BIGINT),
+            new FieldDesc(START_LAT, FieldType.DOUBLE),
+            new FieldDesc(START_LON, FieldType.DOUBLE),
+            new FieldDesc(FINISH_TIME, FieldType.BIGINT),
+            new FieldDesc(FINISH_LAT, FieldType.DOUBLE),
+            new FieldDesc(FINISH_LON, FieldType.DOUBLE),
+            new FieldDesc(UNDER_WAY, FieldType.BOOLEAN),
+            new FieldDesc(DISTANCE, FieldType.DOUBLE),
         };
         
         /**
@@ -167,7 +177,7 @@ public final class PassageSchema
          * Create a passages table schema instance.
          */
         protected Passages() {
-            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS, PROJECTION);
+            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS);
         }
         
     }
@@ -240,14 +250,14 @@ public final class PassageSchema
         public static final String TOT_DIST = "tot_dist";
         
         // Definitions of the fields.
-        private static final String[][] FIELDS = {
-            { NAME, "TEXT" },
-            { PASSAGE, "INTEGER" },
-            { TIME, "INTEGER" },
-            { LAT, "REAL" },
-            { LON, "REAL" },
-            { DIST, "REAL" },
-            { TOT_DIST, "REAL" },
+        private static final FieldDesc[] FIELDS = {
+        	new FieldDesc(NAME, FieldType.TEXT),
+        	new FieldDesc(PASSAGE, FieldType.BIGINT),
+        	new FieldDesc(TIME, FieldType.BIGINT),
+        	new FieldDesc(LAT, FieldType.DOUBLE),
+        	new FieldDesc(LON, FieldType.DOUBLE),
+        	new FieldDesc(DIST, FieldType.DOUBLE),
+        	new FieldDesc(TOT_DIST, FieldType.DOUBLE),
         };
         
         /**
@@ -260,7 +270,7 @@ public final class PassageSchema
          * Create a points table schema instance.
          */
         protected Points() {
-            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS, PROJECTION);
+            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS);
         }
         
     }
@@ -273,7 +283,7 @@ public final class PassageSchema
     /**
      * Create a passage database schema instance.
      */
-    public PassageSchema() {
+    private PassageSchema() {
         super(DB_NAME, DB_VERSION, AUTHORITY, TABLE_SCHEMAS);
     }
 

@@ -35,7 +35,7 @@ public class VesselProvider
      * Create an instance of this content provider.
      */
     public VesselProvider() {
-        super(new VesselSchema());
+        super(VesselSchema.DB_SCHEMA);
     }
     
 }

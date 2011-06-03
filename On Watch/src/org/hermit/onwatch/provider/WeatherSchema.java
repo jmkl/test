@@ -31,6 +31,16 @@ public final class WeatherSchema
 {
 
     // ******************************************************************** //
+    // Public Data.
+    // ******************************************************************** //
+
+    /**
+     * The canonical schema instance for this provider.
+     */
+    public static final WeatherSchema DB_SCHEMA = new WeatherSchema();
+
+    
+    // ******************************************************************** //
     // Constant Definitions.
     // ******************************************************************** //
     
@@ -83,9 +93,9 @@ public final class WeatherSchema
         public static final String PRESS = "pressure";
         
         // Definitions of the fields.
-        private static final String[][] FIELDS = {
-            { TIME, "INTEGER" },
-            { PRESS, "REAL" },
+        private static final FieldDesc[] FIELDS = {
+        	new FieldDesc(TIME, FieldType.BIGINT),
+        	new FieldDesc(PRESS, FieldType.DOUBLE),
         };
         
         /**
@@ -93,12 +103,12 @@ public final class WeatherSchema
          * (including the implicit "_id" field).
          */
         public static final String[] PROJECTION = makeProjection(FIELDS);
-        
+
         /**
-         * Create a points table schema instance.
+         * Create a table schema instance.
          */
         protected Observations() {
-            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS, PROJECTION);
+            super(TABLE_NAME, TABLE_TYPE, CONTENT_URI, SORT_ORDER, FIELDS);
         }
         
     }
@@ -109,12 +119,12 @@ public final class WeatherSchema
     // ******************************************************************** //
 
     /**
-     * Create a passage database schema instance.
+     * Create a weather database schema instance.
      */
-    public WeatherSchema() {
+    private WeatherSchema() {
         super(DB_NAME, DB_VERSION, AUTHORITY, TABLE_SCHEMAS);
     }
-
+    
     
     // ******************************************************************** //
     // Class Data.

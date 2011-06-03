@@ -24,8 +24,11 @@ import java.util.ArrayList;
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.core.SplashActivity;
 import org.hermit.android.widgets.TimeZoneActivity;
-import org.hermit.onwatch.service.SoundService;
+import org.hermit.onwatch.provider.PassageSchema;
+import org.hermit.onwatch.provider.VesselSchema;
+import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
+import org.hermit.onwatch.service.SoundService;
 import org.hermit.onwatch.service.OnWatchService.OnWatchBinder;
 
 import android.app.ActionBar;
@@ -460,6 +463,12 @@ public class OnWatch
 				}
         	});
         	break;
+    	case R.id.menu_backup:
+    		backupData();
+        	break;
+    	case R.id.menu_restore:
+    		restoreData();
+        	break;
     	case R.id.menu_help:
             // Launch the help activity as a subactivity.
             Intent hIntent = new Intent();
@@ -517,23 +526,43 @@ public class OnWatch
 
     	// FIXME:
 //    	viewController.setDebug(debugSpace, debugTime);
-   }
-
+    }
     
     
     private void updateMenus() {
     	if (chimeMenuItem == null || alertsMenuItem == null || onWatchService == null)
     		return;
-    	
+
         boolean chimeWatch = onWatchService.getChimeEnable();
 		chimeMenuItem.setIcon(chimeWatch ? R.drawable.ic_menu_chimes_on :
 	               						   R.drawable.ic_menu_chimes_off);
-		
+
         SoundService.RepeatAlarmMode alarmMode = onWatchService.getRepeatAlarm();
     	alertsMenuItem.setIcon(alarmMode.icon);
     }
 
     
+	// ******************************************************************** //
+	// Backup and Restore.
+	// ******************************************************************** //
+
+    /**
+     * Backup the app data to SD card.
+     */
+    private void backupData() {
+//    	VesselSchema.DB_SCHEMA.backupDb(this);
+//    	PassageSchema.DB_SCHEMA.backupDb(this);
+//    	WeatherSchema.DB_SCHEMA.backupDb(this);
+    }
+    
+
+    /**
+     * Restore the app data from SD card.
+     */
+    private void restoreData() {
+    }
+ 
+	
 	// ******************************************************************** //
 	// Shutdown.
 	// ******************************************************************** //
