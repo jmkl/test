@@ -34,6 +34,13 @@ public final class PassageSchema
     // Public Data.
     // ******************************************************************** //
 
+    // Schemas of the tables in this provider.
+    private static final TableSchema[] TABLE_SCHEMAS = {
+        new Passages(),
+        new Points(),
+    };
+
+
     /**
      * The canonical schema instance for this provider.
      */
@@ -274,7 +281,7 @@ public final class PassageSchema
         }
         
     }
-    
+
     
     // ******************************************************************** //
     // Constructor.
@@ -286,17 +293,6 @@ public final class PassageSchema
     private PassageSchema() {
         super(DB_NAME, DB_VERSION, AUTHORITY, TABLE_SCHEMAS);
     }
-
-    
-    // ******************************************************************** //
-    // Class Data.
-    // ******************************************************************** //
-
-    // Schemas of the tables in this provider.
-    private static final TableSchema[] TABLE_SCHEMAS = {
-        new Passages(),
-        new Points(),
-    };
 
 }
 

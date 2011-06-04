@@ -19,8 +19,12 @@
 
 package org.hermit.onwatch;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import org.hermit.android.core.Errors;
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.core.SplashActivity;
 import org.hermit.android.widgets.TimeZoneActivity;
@@ -85,7 +89,7 @@ public class OnWatch
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-
+        
         // Kick off our service, if it's not running.
         Intent intent = new Intent(this, OnWatchService.class);
         startService(intent);
@@ -550,9 +554,15 @@ public class OnWatch
      * Backup the app data to SD card.
      */
     private void backupData() {
-//    	VesselSchema.DB_SCHEMA.backupDb(this);
-//    	PassageSchema.DB_SCHEMA.backupDb(this);
-//    	WeatherSchema.DB_SCHEMA.backupDb(this);
+    	try {
+    		VesselSchema.DB_SCHEMA.backupDb(this, BACKUP_DIR);
+    		PassageSchema.DB_SCHEMA.backupDb(this, BACKUP_DIR);
+    		WeatherSchema.DB_SCHEMA.backupDb(this, BACKUP_DIR);
+    	} catch (FileNotFoundException e) {
+    		Errors.reportException(this, e);
+		} catch (IOException e) {
+			Errors.reportException(this, e);
+		}
     }
     
 
@@ -560,6 +570,15 @@ public class OnWatch
      * Restore the app data from SD card.
      */
     private void restoreData() {
+    	try {
+    		VesselSchema.DB_SCHEMA.restoreDb(this, BACKUP_DIR);
+    		PassageSchema.DB_SCHEMA.restoreDb(this, BACKUP_DIR);
+    		WeatherSchema.DB_SCHEMA.restoreDb(this, BACKUP_DIR);
+    	} catch (FileNotFoundException e) {
+    		Errors.reportException(this, e);
+		} catch (IOException e) {
+			Errors.reportException(this, e);
+		}
     }
  
 	
@@ -713,6 +732,8 @@ public class OnWatch
     // Debugging tag.
 	private static final String TAG = "onwatch";
 	
+	private static final File BACKUP_DIR = new File("/sdcard/OnWatch/backups");
+	
 	// Time in ms for which the splash screen is displayed.
 	private static final long SPLASH_TIME = 5000;
 
@@ -720,7 +741,7 @@ public class OnWatch
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
-    
+
     // Menu items for the chimes and alerts controls.
     private MenuItem chimeMenuItem = null;
     private MenuItem alertsMenuItem = null;

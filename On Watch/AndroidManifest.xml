@@ -4,15 +4,15 @@
 	package="org.hermit.onwatch" android:versionName="1.0"
 	android:versionCode="1">
     <uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 	
 	<application android:label="@string/app_name"
             android:icon="@drawable/android"
             android:description="@string/description"
-            android:debuggable="true"
-            android:backupAgent="OnWatchBackupAgent">
+            android:debuggable="true">
 		
-		<meta-data android:name="com.google.android.backup.api_key"
-            android:value="AEdPqrEAAAAIt9wx5APc50aPUDW8nro-WB04nhpMGyu2ydLzGQ" />
+		<!-- <meta-data android:name="com.google.android.backup.api_key"
+            android:value="AEdPqrEAAAAIt9wx5APc50aPUDW8nro-WB04nhpMGyu2ydLzGQ" /> -->
 
         <provider android:name=".provider.PassageProvider"
             android:authorities="org.hermit.provider.PassageData" />

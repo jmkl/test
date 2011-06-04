@@ -34,6 +34,12 @@ public final class WeatherSchema
     // Public Data.
     // ******************************************************************** //
 
+    // Schemas of the tables in this provider.
+    private static final TableSchema[] TABLE_SCHEMAS = {
+        new Observations(),
+    };
+
+
     /**
      * The canonical schema instance for this provider.
      */
@@ -125,15 +131,5 @@ public final class WeatherSchema
         super(DB_NAME, DB_VERSION, AUTHORITY, TABLE_SCHEMAS);
     }
     
-    
-    // ******************************************************************** //
-    // Class Data.
-    // ******************************************************************** //
-
-    // Schemas of the tables in this provider.
-    private static final TableSchema[] TABLE_SCHEMAS = {
-        new Observations(),
-    };
-
 }
 

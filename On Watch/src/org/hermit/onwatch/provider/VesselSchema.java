@@ -34,6 +34,13 @@ public final class VesselSchema
     // Public Data.
     // ******************************************************************** //
 
+    // Schemas of the tables in this provider.
+    private static final TableSchema[] TABLE_SCHEMAS = {
+        new Vessels(),
+        new Crew(),
+    };
+
+
     /**
      * The canonical schema instance for this provider.
      */
@@ -193,17 +200,6 @@ public final class VesselSchema
     private VesselSchema() {
         super(DB_NAME, DB_VERSION, AUTHORITY, TABLE_SCHEMAS);
     }
-
-    
-    // ******************************************************************** //
-    // Class Data.
-    // ******************************************************************** //
-
-    // Schemas of the tables in this provider.
-    private static final TableSchema[] TABLE_SCHEMAS = {
-        new Vessels(),
-        new Crew(),
-    };
 
 }
 

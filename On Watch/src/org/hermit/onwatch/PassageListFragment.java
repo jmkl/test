@@ -84,7 +84,7 @@ public class PassageListFragment
 	{
 		Log.i(TAG, "PLF onCreateView()");
 		
-		appContext = inflater.getContext();
+		appContext = getActivity();
 
 		// Inflate the layout for this fragment.
         View view = inflater.inflate(R.layout.passage_list_view, container, false);
