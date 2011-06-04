@@ -22,6 +22,7 @@ package org.hermit.android.provider;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,6 +33,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Log;
 
 
 /**
@@ -70,7 +72,7 @@ public abstract class DbSchema {
         dbAuth = auth;
         dbTables = tables;
         
-        for (TableSchema t : getDbTables())
+        for (TableSchema t : dbTables)
             t.init(this);
     }
     
@@ -141,31 +143,42 @@ public abstract class DbSchema {
 
     
 	// ******************************************************************** //
-	// Backup and Restore.
+	// Backup.
     // ******************************************************************** //
 
     public void backupDb(Context c, File where)
     	throws FileNotFoundException, IOException
     {
-    	File bak = new File(where, dbName + ".bak");
+    	File bakDir = new File(where, dbName + ".bak");
+    	if (!bakDir.isDirectory() && !bakDir.mkdirs())
+    		throw new IOException("can't create backup dir " + bakDir);
 
-    	FileOutputStream fos = null;
-    	DataOutputStream dos = null;
-    	try {
-    		fos = new FileOutputStream(bak);
-    		dos = new DataOutputStream(fos);
-    		
-    		ContentResolver cr = c.getContentResolver();
-    		TableSchema[] tables = getDbTables();
-    		for (TableSchema t : tables)
+		// Back up all the tables in the database.
+    	ContentResolver cr = c.getContentResolver();
+    	TableSchema[] tables = getDbTables();
+    	for (TableSchema t : tables) {
+    		FileOutputStream fos = null;
+    		DataOutputStream dos = null;
+    		try {
+    	    	File bakFile = new File(bakDir, t.getTableName() + ".tb");
+    			fos = new FileOutputStream(bakFile);
+    			dos = new DataOutputStream(fos);
+
+    			// Write a header containing a magic number, the backup format
+    			// version, and the database schema version.
+    			dos.writeInt(BACKUP_MAGIC);
+    			dos.writeInt(BACKUP_VERSION);
+    			dos.writeInt(dbVersion);
+
     			backupTable(cr, t, dos);
-    	} finally {
-    		if (dos != null) try {
-    			dos.close();
-    		} catch (IOException e) { }
-    		if (fos != null) try {
-    			fos.close();
-    		} catch (IOException e) { }
+    		} finally {
+    			if (dos != null) try {
+    				dos.close();
+    			} catch (IOException e) { }
+    			if (fos != null) try {
+    				fos.close();
+    			} catch (IOException e) { }
+    		}
     	}
     }
 
@@ -174,6 +187,8 @@ public abstract class DbSchema {
     						 TableSchema ts, DataOutputStream dos)
     	throws IOException
     {
+    	Log.v(TAG, "BACKUP " + ts.getTableName());
+    	
 		// Create a where clause based on the backup mode.
 		String where = null;
 		String[] wargs = null;
@@ -183,7 +198,8 @@ public abstract class DbSchema {
 		try {
 			c = cr.query(ts.getContentUri(), ts.getDefaultProjection(),
 						 where, wargs, ts.getSortOrder());
-			
+	    	Log.v(TAG, "==> " + c.getCount());
+		
 			// If there's no data, do nothing.
 			if (!c.moveToFirst())
 				return;
@@ -196,7 +212,16 @@ public abstract class DbSchema {
 			
 			// Save all the rows.
 			while (!c.isAfterLast()) {
+				dos.writeInt(ROW_MAGIC);
+				
+				// Save all the fields in this row, each preceded by
+				// its column number.
 				for (int i = 0; i < fields.length; ++i) {
+					// Skip absent fields.
+					if (c.isNull(i))
+						continue;
+					
+					dos.writeInt(i);
 					TableSchema.FieldType t = fields[i].type;
 					switch (t) {
 					case BIGINT:
@@ -227,6 +252,8 @@ public abstract class DbSchema {
 					}
 				}
 				
+				dos.writeInt(ROW_END);
+
 				c.moveToNext();
 			}
 		} finally {
@@ -234,18 +261,70 @@ public abstract class DbSchema {
 		}
 	}
 	
+    
+	// ******************************************************************** //
+	// Restore.
+    // ******************************************************************** //
+
+    public void restoreDb(Context c, File where)
+    	throws FileNotFoundException, IOException
+    {
+    	File bakDir = new File(where, dbName + ".bak");
+    	if (!bakDir.isDirectory())
+    		throw new IOException("can't find backup dir " + bakDir);
+
+		// Back up all the tables in the database.
+    	ContentResolver cr = c.getContentResolver();
+    	TableSchema[] tables = getDbTables();
+    	for (TableSchema t : tables) {
+    		FileInputStream fis = null;
+    		DataInputStream dis = null;
+    		try {
+    	    	File bakFile = new File(bakDir, t.getTableName() + ".tb");
+    	    	if (!bakFile.isFile())
+    	    		throw new IOException("can't find backup file " + bakFile);
+    			fis = new FileInputStream(bakFile);
+    			dis = new DataInputStream(fis);
+
+    			// Write a header containing a magic number, the backup format
+    			// version, and the database schema version.
+    			checkInt(dis, BACKUP_MAGIC, "magic number", bakFile);
+    			checkInt(dis, BACKUP_VERSION, "backup format version", bakFile);
+    			checkInt(dis, dbVersion, "database schema version", bakFile);
+
+    			restoreTable(cr, t, dis, bakFile);
+    		} finally {
+    			if (dis != null) try {
+    				dis.close();
+    			} catch (IOException e) { }
+    			if (fis != null) try {
+    				fis.close();
+    			} catch (IOException e) { }
+    		}
+    	}
+    }
+
 
     private void restoreTable(ContentResolver cr,
-    						 TableSchema ts, DataInputStream dis)
+    						  TableSchema ts, DataInputStream dis, File bakFile)
     	throws IOException
     {
+    	Log.v(TAG, "RESTORE " + ts.getTableName());
+    	
     	// Get the column indices for all the columns.
     	FieldDesc[] fields = ts.getTableFields();
 
     	// Save all the rows.
     	ContentValues values = new ContentValues();
-    	while (!false) { // FIXME
-    		for (int i = 0; i < fields.length; ++i) {
+    	while (dis.available() > 0) {
+			checkInt(dis, ROW_MAGIC, "row header", bakFile);
+			
+			values.clear();
+	    	int i;
+	    	while ((i = dis.readInt()) != ROW_END) {
+	    		if (i < 0 || i >= fields.length)
+    	    		throw new IOException("bad column number " + i +
+    	    											" in " + bakFile);
     			TableSchema.FieldType t = fields[i].type;
     			switch (t) {
     			case BIGINT:
@@ -270,10 +349,61 @@ public abstract class DbSchema {
     			}
     		}
 
-    		cr.insert(ts.getContentUri(), values);
+//    		cr.insert(ts.getContentUri(), values);
+    		dontInsert(values, fields);
     	}
 	}
 	
+
+    private void checkInt(DataInputStream dis, int expect, String desc, File file)
+    	throws IOException
+    {
+    	int actual = dis.readInt();
+    	if (actual != expect)
+    		throw new IOException("bad " + desc + " in " + file.getName() +
+    							  ": expected 0x" + Integer.toHexString(expect) +
+    							  "; got 0x" + Integer.toHexString(actual));
+    }
+    
+    
+    private void dontInsert(ContentValues values, FieldDesc[] fields) {
+    	StringBuilder sb1 = new StringBuilder(12);
+    	StringBuilder sb2 = new StringBuilder(120);
+    	for (FieldDesc fd : fields) {
+    		if (values.containsKey(fd.name)) {
+    			sb1.append('x');
+    			sb2.append(" | " + values.getAsString(fd.name));
+    		}
+    	}
+    	Log.v(TAG, ">> " + sb1 + sb2);
+    }
+    
+
+    // ******************************************************************** //
+    // Class Data.
+    // ******************************************************************** //
+
+    // Debugging tag.
+    static final String TAG = "DbSchema";
+    
+
+    // ******************************************************************** //
+    // Private Data.
+    // ******************************************************************** //
+
+    // Magic number to identify backup files.
+    private static final int BACKUP_MAGIC = 0x4d7e870a;
+
+    // Version number of the backup file format.
+    private static final int BACKUP_VERSION = 0x00010000;
+
+    // Magic number to identify a row in a backup file.  This must be
+    // distinct from any column number.
+    private static final int ROW_MAGIC = 0xf5e782c3;
+
+    // Magic number to identify the end of a row in a backup file.
+    private static final int ROW_END = 0x82c3f5e7;
+
 
     // ******************************************************************** //
     // Private Data.
