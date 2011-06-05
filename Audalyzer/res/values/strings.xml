@@ -66,6 +66,9 @@ for more details.\n</string>
     <string name="prefs_average">Histogram averaging</string>
     <string name="prefs_average_summary">Determine amount of smoothing in the histogram</string>
     <string name="prefs_average_title">Histogram Averaging</string>
+    <string name="prefs_instruments">Instruments visualization</string>
+    <string name="prefs_instruments_summary">Choose which instruments are display</string>
+    <string name="prefs_instruments_title">Instruments visualization</string>
     <string name="prefs_cat_display">Display Settings</string>
     <string name="prefs_orient">Screen orientation</string>
     <string name="prefs_orient_summary">Set your desired screen rotation behaviour</string>

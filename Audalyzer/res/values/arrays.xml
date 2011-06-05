@@ -72,12 +72,26 @@
         <item>Fast</item>
         <item>Slow</item>  
     </string-array>
-
+    
     <!-- Values for the histogram averaging menu. -->
     <string-array name="prefs_average_values">
         <item>1</item>
         <item>4</item>  
         <item>12</item>
+    </string-array>
+
+    <!-- Entry names for the histogram averaging menu. -->
+    <string-array name="prefs_instruments_entries">
+        <item>Spectrum+Wave+Power</item>
+        <item>Sonagram+Wave+Power</item>
+        <item>Spectrum+Sonagram</item>
+    </string-array>
+
+    <!-- Values for the histogram averaging menu. -->
+    <string-array name="prefs_instruments_values">
+        <item>SPECTRUM_P_W</item>
+        <item>SONAGRAM_P_W</item>
+        <item>SPECTRUM_SONAGRAM</item>  
     </string-array>
     
     <!-- Entry names for the screen orientation menu. -->
@@ -125,24 +139,42 @@ level readings with this app; so all data should be taken
 with a pinch of salt.  Still, it may be interesting when used
 to compare sound readings at different locations.</item>
 			  
-<item>The display shows an analysis of the local acoustic environment.  The
-first section shows a waveform display of the sound picked up by the
-microphone; this display auto-scales to handle a wide range of sound levels.\n\
+<item>The display displays an analysis of the local acoustic environment
+using a number of different instrument configurations.  You can swipe
+the screen left or right, or use the settings menu, to switch
+between different configurations.\n\
 \n\
-Below this a frequency spectrum is displayed.  The horizontal scale shows the
-frequencies displayed; the maximum frequency will depend on the selected
-sampling rate (see \"Settings\").  The vertical scale is logarithmic, with
-a range from -60dB to 0dB.  Scale lines are drawn every 10dB.\n\
+The instruments available are:\n\
 \n\
-The third section displays the absolute power level of the sound as received
-by the device\'s microphone.  This is displayed as decibels (dB) relative
-to the maximum possible input from the microphone; so 0dB is the maximum
-the device can register, -10dB is 1/10th of this, -20dB is 1/100th of the
-max, etc.  Each 10 dB multiplies or divides the level by 10.\n\
+• The <b>waveform display</b> shows a waveform of the sound picked up by the
+microphone; this display auto-scales to handle a wide range of sound
+levels.\n\
 \n\
-The power meter also shows peak markers, and
+• The <b>spectrum display</b> shows a spectrum analysis.  The horizontal
+scale shows the frequencies displayed; the maximum frequency will depend
+on the selected sampling rate (see \"Settings\").  The vertical scale is
+logarithmic, with a range from -60dB to 0dB.  Scale lines are drawn every
+10dB.\n\
+\n\
+• The <b>sonagram</b> displays the frequencies as a scrolling horizontal
+plot.  The vertical axis represents frequency, and again the maximum
+frequency depends on the sampling rate.  The horizontal axis represents
+time; and the strength of the colour at any point represents how much of
+that frequency was present.\n\
+\n\
+• The <b>power gauge</b> displays the absolute power level of the sound
+as received by the device\'s microphone.  This is displayed as decibels
+(dB) relative to the maximum possible input from the microphone; so 0dB
+is the maximum the device can register, -10dB is 1/10th of this, -20dB
+is 1/100th of the max, etc.  Each 10 dB multiplies or divides the level
+by 10.  The power meter also shows peak markers, and
 a background bar displays a rolling average.  The rolling average is also
-displayed numerically.</item>
+displayed numerically.\n\
+\n\
+As mentioned above, swiping the display horizontally will display
+different configurations of these instruments.  Also, the spectrum and
+sonagram displays can be zooned to full-screen by long-pressing the
+screen on them.  Long-press again to zoom out.</item>
 			  
 <item>The dB Meter shows the noise level, as received by the audio input
 device, on a logarithmic scale, relative to the maximum audio level the

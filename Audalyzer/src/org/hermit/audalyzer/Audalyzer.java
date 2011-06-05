@@ -94,11 +94,6 @@ public class Audalyzer
         
         // Restore our preferences.
         updatePreferences();
-        
-        // Restore our app state, if this is a restart.
-        if (icicle != null)
-            ;
-//            restoreState(icicle);
     }
     
 
@@ -345,6 +340,19 @@ public class Audalyzer
         Log.i(TAG, "Prefs: averageLen " + averageLen);
         audioInstrument.setAverageLen(averageLen);
 
+        // Get the desired Spectrum visualization.
+        InstrumentPanel.Instruments visibleInstruments =
+                            InstrumentPanel.Instruments.SPECTRUM_P_W;
+        try {
+            String func = prefs.getString("instruments", null);
+            if (func != null)
+            	visibleInstruments = InstrumentPanel.Instruments.valueOf(func);
+        } catch (Exception e) {
+            Log.e(TAG, "Pref: bad instruments");
+        }
+        Log.i(TAG, "Prefs: instruments " + visibleInstruments);
+        audioInstrument.setInstruments(visibleInstruments);
+        
         // Get the desired orientation.
         int orientMode = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         try {
@@ -391,7 +399,6 @@ public class Audalyzer
     // ******************************************************************** //
 
     // Debugging tag.
-    @SuppressWarnings("unused")
     private static final String TAG = "Audalyzer";
    
     

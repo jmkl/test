@@ -49,6 +49,14 @@
                 android:dialogTitle="@string/prefs_average_title"
                 android:defaultValue="4" />
 
+        <ListPreference
+                android:key="instruments"
+                android:title="@string/prefs_instruments"
+                android:summary="@string/prefs_instruments_summary"
+                android:entries="@array/prefs_instruments_entries"
+                android:entryValues="@array/prefs_instruments_values"
+                android:dialogTitle="@string/prefs_instruments_title"
+                android:defaultValue="SPECTRUM_P_W" />
     </PreferenceCategory>
   
     <PreferenceCategory android:title="@string/prefs_cat_display">
