@@ -153,7 +153,7 @@ public class WeatherService
 	/**
 	 * Listener for barometer events.
 	 */
-	private SensorEventListener baroListener = new SensorEventListener() {
+	private final class BaroListener implements SensorEventListener {
 		@Override
 		public void onAccuracyChanged(Sensor s, int accuracy) {
 			// Nothing much to do here.
@@ -162,14 +162,42 @@ public class WeatherService
 		@Override
 		public void onSensorChanged(SensorEvent event) {
 			synchronized (WeatherService.this) {
-				if (wantObservation) {
-					recordObservation(event.timestamp, event.values[0]);
-					wantObservation = false;
+				if (obsRequest > 0) {
+					obsTotal += event.values[0];
+					if (++obsCount >= obsRequest) {
+						float val = obsTotal / obsCount;
+						obsRequest = 0;
+						obsCount = 0;
+						obsTotal = 0f;
+						recordObservation(event.timestamp, val);
+					}
 				}
 			}
 		}
-	};
+		
+		/**
+		 * Request an observation.
+		 * 
+		 * @param	req			Number of values (> 0) to average together
+		 * 						to make the observation.
+		 */
+		void requestObservation(int req) {
+			obsRequest = req;
+			obsCount = 0;
+			obsTotal = 0f;
+		}
+
+	    // If an observation is wanted, this is the number of readings we want
+	    // to take and average together.  Zero if no observation is required.
+		private int obsRequest = 0;
+		
+		// Count and total of readings taken.
+		private int obsCount = 0;
+		private float obsTotal = 0f;
+	}
 	
+	private BaroListener baroListener = new BaroListener();
+
 
 	// ******************************************************************** //
 	// Event Handling.
@@ -203,7 +231,7 @@ public class WeatherService
 					   					   SensorManager.SENSOR_DELAY_NORMAL);
         	
 			synchronized (WeatherService.this) {
-				wantObservation = true;
+				baroListener.requestObservation(5);
 				
 				// In 15 seconds, give up.
 				msgHandler.postDelayed(finishObservation, 15 * 1000);
@@ -211,20 +239,29 @@ public class WeatherService
 		}
 	};
 	
-	private void recordObservation(long time, double value) {
+	
+	/**
+	 * Record the given observation.  When we're done, the alarm manager
+	 * must be notified; we will do this by invoking
+	 * {@link #finishObservation}.
+	 * 
+	 * @param	time		Time in ms of the sensor input.
+	 * @param	press		Pressure value in millibars.
+	 */
+	private void recordObservation(long time, double press) {
 		// The timestamp in the event is garbage; replace it.
         time = System.currentTimeMillis();
 
-        Log.i(TAG, "Weather record " + value);
+        Log.i(TAG, "Weather record " + press);
 		// Create an Observation record, and add it to the database.
 		obsValues.put(WeatherSchema.Observations.TIME, time);
-		obsValues.put(WeatherSchema.Observations.PRESS, value);
+		obsValues.put(WeatherSchema.Observations.PRESS, press);
 		contentResolver.insert(WeatherSchema.Observations.CONTENT_URI, obsValues);
 
 		// Store for trend analysis.
         Log.i(TAG, "Weather record trend #" + recentCount);
 		recentTimes[recentIndex] = time;
-		recentPress[recentIndex] = value;
+		recentPress[recentIndex] = press;
 		if (recentCount < NUM_RECENT_OBS)
 			++recentCount;
 		if (++recentIndex >= NUM_RECENT_OBS)
@@ -233,13 +270,19 @@ public class WeatherService
 		// And do the analysis.
 		checkTrends(time);
 		
-		if (value < 900)
+		if (press < 900)
 			soundService.textAlert("Are we up a mountain or what?",
 								   finishObservation);
 		else
 			finishObservation.run();
 	}
 
+	
+	/**
+	 * Runnable used to close out an observation.  Main thing is to
+	 * tell the alarm manager we're finished, so it can release its
+	 * wake lock.
+	 */
 	private Runnable finishObservation = new Runnable() {
 		@Override
 		public void run() {
@@ -429,10 +472,6 @@ public class WeatherService
 
     // Values record used for logging observations.
     private ContentValues obsValues;
-
-    // Flag true if an observation is wanted; if so, we need to call
-    // done() on our alarm handler.
-	private boolean wantObservation = false;
 	
 	// Handler for messages.
 	private Handler msgHandler = null;
