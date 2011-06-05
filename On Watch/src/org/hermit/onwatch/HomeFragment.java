@@ -18,7 +18,7 @@ package org.hermit.onwatch;
 
 
 import org.hermit.geo.Distance;
-import org.hermit.onwatch.CrewModel.Crew;
+import org.hermit.onwatch.WatchModel.Crew;
 import org.hermit.onwatch.provider.PassageSchema;
 import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
@@ -106,7 +106,7 @@ public class HomeFragment
 		Log.i(TAG, "HF onCreateView(" + (icicle != null ? "icicle" : "null") + ")");
 		
         // Inflate the layout for this fragment
-        appContext = (OnWatch) container.getContext();
+        appContext = (OnWatch) getActivity();
         View view = inflater.inflate(R.layout.home_view, container, false);
  		
 		
@@ -116,10 +116,10 @@ public class HomeFragment
 		timeText.append("00:00:00");
 
 		timeModel = TimeModel.getInstance(appContext);
-		crewModel = CrewModel.getInstance(appContext);
+		crewModel = WatchModel.getInstance(appContext);
 
 		// Register for watch crew changes.
-		crewModel.listen(new CrewModel.Listener() {
+		crewModel.listen(new WatchModel.Listener() {
 			@Override
 			public void watchPlanChanged() {
 				updateWatch();
@@ -631,7 +631,7 @@ public class HomeFragment
 	private TimeModel timeModel;
 	
 	// The crew list and watch plan model.
-	private CrewModel crewModel;
+	private WatchModel crewModel;
 	
 	// Buffer we create the time display in.
 	private StringBuilder timeText;

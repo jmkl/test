@@ -41,10 +41,13 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ActionBar.Tab;
 import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -101,6 +104,9 @@ public class OnWatch
         setAboutInfo(R.string.about_text);
         setHomeInfo(R.string.url_homepage);
         setLicenseInfo(R.string.url_license);
+        
+        // Make sure we have a vessel.
+        createDefaultVessel();
 
         // Create the time and location models.
         locationModel = LocationModel.getInstance(this);
@@ -594,7 +600,40 @@ public class OnWatch
     	finish();
     }
     
+
+	// ******************************************************************** //
+	// Vessel Management.
+	// ******************************************************************** //
+
+    /**
+     * If there are no vessels in the database, create a default one.
+     * 
+     * <p>TODO: This is a hack until we get real vessel management.
+     */
+    private void createDefaultVessel() {
+    	ContentResolver contentResolver = getContentResolver();
+        Cursor c = null;
+        try {
+            c = contentResolver.query(VesselSchema.Vessels.CONTENT_URI,
+            						  VesselSchema.Vessels.PROJECTION,
+            						  null, null,
+            						  VesselSchema.Vessels.SORT_ORDER);
+            if (c == null || !c.moveToFirst()) {
+            	// There's no vessel record.  Create one, with a default
+            	// watch plan.
+            	WatchPlan plan = WatchPlan.valueOf(0);
+            	ContentValues values = new ContentValues();
+            	values.put(VesselSchema.Vessels.WATCHES, plan.toString());
+            	contentResolver.insert(VesselSchema.Vessels.CONTENT_URI,
+            						   values);
+            }
+        } finally {
+            if (c != null)
+            	c.close();
+        }
+    }
     
+
 	// ******************************************************************** //
 	// Alert Controls Handling.
 	// ******************************************************************** //

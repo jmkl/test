@@ -162,7 +162,7 @@ for more details.\n</string>
     <!-- Crew Editor. -->
     <string name="msg_no_crew">No crew entered.</string>
     <string name="crew_edit_title">Watch Order Editor</string>
-    <string name="lab_watch_type">Watch plan:</string>
+    <string name="lab_crew_name">Name:</string>
     <string name="lab_dog_watches">Dog Watches</string>
     <string name="lab_edit">Edit</string>
     <string name="lab_add">Add</string>

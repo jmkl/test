@@ -1,59 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent">
+         android:orientation="horizontal"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent">
 
-	<LinearLayout
-			android:layout_height="wrap_content"
-			android:layout_width="fill_parent">
-		
-		<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:textSize="20dip"
-				android:text="@string/lab_watch_type" />
-		<Spinner android:id="@+id/watch_type"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content" />
+    <LinearLayout
+         android:orientation="vertical"
+         android:layout_width="0dp"
+         android:layout_height="match_parent"
+         android:layout_weight="25"
+         android:paddingLeft="8dp"
+         android:paddingRight="8dp">
+         
+        <Spinner android:id="@+id/watch_type"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+
+        <com.commonsware.cwac.tlv.TouchListView
+                android:id="@android:id/list"
+                android:layout_width="fill_parent"
+                android:layout_height="0dip"
+                android:layout_weight="1"
+                android:drawSelectorOnTop="false"
+                android:transcriptMode="normal"
+                normal_height="64dip"
+                remove_mode="slideRight" />
+    
+        <Button android:id="@+id/crew_new_button"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/lab_add"
+                android:textSize="24dip" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="75" >
 				
-	</LinearLayout>
-	
-	<com.commonsware.cwac.tlv.TouchListView
-        android:id="@android:id/list"
-        android:layout_width="fill_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
-        android:drawSelectorOnTop="false"
-        android:transcriptMode="normal"
-        normal_height="64dip"
-        remove_mode="slideRight" />
+        <TableLayout android:stretchColumns="*"
+            android:paddingLeft="6dp" android:paddingRight="6dp"
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
 
-	<LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            style="@android:style/ButtonBar" >
-            
-		<EditText
-				android:id="@+id/crew_name_field"
-				android:capitalize="words"
-				android:textSize="14dip"
-				android:layout_width="0dip"
-				android:layout_height="wrap_content"
-				android:layout_weight="2" />
+        <TableRow>
+            <TextView
+                    style="@style/LocationAuxText"
+                    android:text="@string/lab_crew_name" />
+            <EditText android:id="@+id/crew_name_field"
+                    style="@style/LocationAuxText"
+                    android:capitalize="words" />
+        </TableRow>
 
-		<Button android:id="@+id/crew_add_button"
-                android:layout_width="0dip"
+        </TableLayout>
+    
+        <View
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1" />
+    
+        <LinearLayout android:id="@+id/bottom_layout"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-				android:text="@string/lab_add" />
+                android:orientation="horizontal" >
 
-		<Button android:id="@+id/crew_save_button"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-				android:text="@string/lab_save" />
+            <Button android:id="@+id/crew_save_button"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/lab_save" />
+
+        </LinearLayout>
 
 	</LinearLayout>
 

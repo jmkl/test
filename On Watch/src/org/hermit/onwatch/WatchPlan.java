@@ -71,6 +71,21 @@ public enum WatchPlan
 		return planTimes[1] - planTimes[0];
 	}
 	
+	/**
+	 * Get the watch plan with a given name.  This is the inverse
+	 * of {@link #ordinal()}.
+	 * 
+	 * @param	ordinal			Ordinal of the plan we want.
+	 * @return					The WatchPlan constant with the given
+	 * 							ordinal.
+	 * @throws	ArrayIndexOutOfBoundsException	If the given ordinal is invalid.
+	 */
+	public static WatchPlan valueOf(int ordinal)
+		throws ArrayIndexOutOfBoundsException 
+	{
+		return VALUES[ordinal];
+	}
+	
     // The resource ID of the name of this plan.
     public final int planNameId;
 
@@ -79,6 +94,9 @@ public enum WatchPlan
 
     // The number of crew on watch at once.
     public final int planPly;
+    
+    // Our values array.
+    private static final WatchPlan[] VALUES = values();
       
 }
 

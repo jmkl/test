@@ -23,6 +23,7 @@ import org.hermit.onwatch.service.OnWatchService;
 
 import android.app.ListFragment;
 import android.app.LoaderManager;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -85,6 +86,7 @@ public class PassageListFragment
 		Log.i(TAG, "PLF onCreateView()");
 		
 		appContext = getActivity();
+		contentResolver = appContext.getContentResolver();
 
 		// Inflate the layout for this fragment.
         View view = inflater.inflate(R.layout.passage_list_view, container, false);
@@ -149,9 +151,9 @@ public class PassageListFragment
         else
         	mCurPosition = 0;
         
-        ListView lv = getListView();
-        lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        lv.setCacheColorHint(Color.TRANSPARENT);
+        ListView listView = getListView();
+        listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        listView.setCacheColorHint(Color.TRANSPARENT);
         
         // Create an empty adapter we will use to display the loaded data.
         passAdapter = new SimpleCursorAdapter(getActivity(),
@@ -159,7 +161,7 @@ public class PassageListFragment
                 new String[] { PassageSchema.Passages.NAME,
         					   PassageSchema.Passages.DEST_NAME,
         					   PassageSchema.Passages.UNDER_WAY },
-                new int[] { R.id.name, R.id.description, R.id.icon }, 0);
+                new int[] { R.id.name, R.id.description, R.id.icon });
         setListAdapter(passAdapter);
         
         // Set a custom view binder, so we can set the indicator icon
@@ -258,6 +260,7 @@ public class PassageListFragment
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         
+        // Save our current position in the passages list.
         outState.putInt("listPosition", mCurPosition);
     }
 
@@ -330,7 +333,7 @@ public class PassageListFragment
 	    // Create a blank new passage, and add it to the provider.
 	    ContentValues values = new ContentValues();
 	    values.put(PassageSchema.Passages.NAME, "New Passage");
-	    passageUri = appContext.getContentResolver().insert(
+	    passageUri = contentResolver.insert(
 	    						PassageSchema.Passages.CONTENT_URI, values);
 
 	    // Show the new item.
@@ -347,13 +350,10 @@ public class PassageListFragment
     	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     		Log.i(TAG, "PLF list onCreateLoader()");
     		
-    		// First, pick the base URI to use depending on whether we are
-    		// currently filtering.
-    		Uri baseUri = PassageSchema.Passages.CONTENT_URI;
-
     		// Now create and return a CursorLoader that will take care of
     		// creating a Cursor for the data being displayed.
-    		return new CursorLoader(getActivity(), baseUri,
+    		return new CursorLoader(getActivity(),
+    								PassageSchema.Passages.CONTENT_URI,
     								PASSAGE_SUMMARY_PROJ,
     								null, null,
     								PassageSchema.Passages.START_TIME + " desc");
@@ -463,8 +463,6 @@ public class PassageListFragment
 
     /**
      * Edit the indicated passage.
-     * 
-     * @param	pd			The passage to edit.
      */
     private void showPassage() {
         // If we didn't have any trouble retrieving the data, it is now
@@ -531,7 +529,7 @@ public class PassageListFragment
     	    // Commit all of our changes to persistent storage.  When the
     	    // update completes the content provider will notify the
     	    // cursor of the change, which will cause the UI to be updated.
-    	    appContext.getContentResolver().update(passageUri, values, null, null);
+    	    contentResolver.update(passageUri, values, null, null);
     	}
     }
     
@@ -607,6 +605,9 @@ public class PassageListFragment
 
     // Our context.
     private Context appContext;
+    
+    // Our ContentResolver.
+    private ContentResolver contentResolver;
     
     // Our OnWatch service.  null if we haven't bound to it yet.
     private OnWatchService onWatchService = null;

@@ -111,7 +111,7 @@ public class PassageService
                 long time = System.currentTimeMillis();
                 Position pos = Position.fromDegrees(loc.getLatitude(),
                 		 							loc.getLongitude());
-                logPoint(pos, "", time);
+                logPoint(pos, null, time);
             }
 		}
 	};
@@ -285,7 +285,8 @@ public class PassageService
         // Create a Point record, and add it to the database.
         ContentValues values = new ContentValues();
         values.put(PassageSchema.Points.PASSAGE, passageData.getId());
-        values.put(PassageSchema.Points.NAME, name);
+        if (name != null)
+        	values.put(PassageSchema.Points.NAME, name);
         values.put(PassageSchema.Points.TIME, time);
         if (pos != null) {
             values.put(PassageSchema.Points.LAT, pos.getLatDegs());

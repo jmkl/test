@@ -17,7 +17,7 @@
 package org.hermit.onwatch;
 
 
-import org.hermit.onwatch.CrewModel.Crew;
+import org.hermit.onwatch.WatchModel.Crew;
 import org.hermit.onwatch.TimeModel.Field;
 import org.hermit.utils.TimeUtils;
 
@@ -48,7 +48,7 @@ public class ScheduleWidget
 	 */
 	public ScheduleWidget(Context context) {
 		super(context);
-		init(context);
+		init((OnWatch) context);
 	}
 
 
@@ -60,7 +60,7 @@ public class ScheduleWidget
 	 */
 	public ScheduleWidget(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		init(context);
+		init((OnWatch) context);
 	}
 
 	
@@ -69,7 +69,7 @@ public class ScheduleWidget
 	 * 
 	 * @param	context			Parent application.
 	 */
-	private void init(Context context) {
+	private void init(OnWatch context) {
 		appContext = context;
         
         setMinimumHeight(HOUR_HEIGHT * 24 * NUM_DAYS);
@@ -85,10 +85,10 @@ public class ScheduleWidget
 		});
 
         // Get or create the crew model.  Monitor it for changes.
-        crewModel = CrewModel.getInstance(context);
+        crewModel = WatchModel.getInstance(context);
 		
 		// Register for watch crew changes.
-		crewModel.listen(new CrewModel.Listener() {
+		crewModel.listen(new WatchModel.Listener() {
 			@Override
 			public void watchPlanChanged() {
 				reDrawContent();
@@ -183,7 +183,7 @@ public class ScheduleWidget
     	// day at the end.
 		WatchPlan plan = crewModel.getWatchPlan();
 		float[] watchTimes = plan.planTimes;
-		CrewModel.Crew[][] watchNames = crewModel.getWatchSchedule(NUM_DAYS + 1);
+		WatchModel.Crew[][] watchNames = crewModel.getWatchSchedule(NUM_DAYS + 1);
 
 		// Figure out what weekday and hour we're starting from.
 		// Round back to the previous watch boundary.
@@ -282,7 +282,7 @@ public class ScheduleWidget
 	 * @param	canvas		Canvas to draw into.
 	 */
 	private void drawWatches(Canvas canvas, WatchPlan plan,
-						     float[] times, CrewModel.Crew[][] watchNames,
+						     float[] times, WatchModel.Crew[][] watchNames,
 						     int firstDay, int firstHour)
 	{
 		// Get the watch data for NUM_DAYS + 1 days, so we have the partial
@@ -303,7 +303,7 @@ public class ScheduleWidget
 			for (int w1 = 0; w1 < nw; ++w1) {
 				int w2 = w1 + 1;
 				
-				CrewModel.Crew crew = watchNames[c][w1 % nw];
+				WatchModel.Crew crew = watchNames[c][w1 % nw];
 
 				// Figure the day and hour of this and the next watch.
 				int day1 = w1 / wpd;
@@ -387,7 +387,7 @@ public class ScheduleWidget
 	private TimeModel timeModel;
 
     // The crew data model.
-    private CrewModel crewModel = null;
+    private WatchModel crewModel = null;
 
 	// Size of the display.
 	private int dispWidth = 0;

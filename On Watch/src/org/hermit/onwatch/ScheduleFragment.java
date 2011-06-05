@@ -58,7 +58,7 @@ public class ScheduleFragment
 	 */
 	@Override
 	public void onCreate(Bundle icicle) {
-		Log.i(TAG, "onCreate(" + (icicle != null ? "icicle" : "null") + ")");
+		Log.i(TAG, "SF onCreate(" + (icicle != null ? "icicle" : "null") + ")");
 		
 		super.onCreate(icicle);
 	}
@@ -89,10 +89,10 @@ public class ScheduleFragment
 							 ViewGroup container,
 							 Bundle icicle)
 	{
-		Log.i(TAG, "onCreateView(" + (icicle != null ? "icicle" : "null") + ")");
+		Log.i(TAG, "SF onCreateView(" + (icicle != null ? "icicle" : "null") + ")");
 		
         // Inflate the layout for this fragment
-        appContext = (OnWatch) container.getContext();
+        appContext = (OnWatch) getActivity();
         View view = inflater.inflate(R.layout.schedule_view, container, false);
 		
 		// Add the handler to the edit button.
@@ -109,7 +109,7 @@ public class ScheduleFragment
         return view;
 	}
 
-	
+
 	/**
 	 * Called when the fragment is visible to the user and actively running.
 	 * This is generally tied to Activity.onResume() of the containing

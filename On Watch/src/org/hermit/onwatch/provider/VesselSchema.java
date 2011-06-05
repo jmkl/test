@@ -53,7 +53,7 @@ public final class VesselSchema
     
     // Database name and version.
     private static final String DB_NAME = "vessels.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
     
     // Provider authority name.
     private static final String AUTHORITY = "org.hermit.provider.VesselData";
@@ -93,10 +93,17 @@ public final class VesselSchema
          */
         public static final String NAME = "name";
         
+        /**
+         * Vessels table field: the watch plan in use on the vessel.
+         * This is the name of one of the WatchPlan enum constants.
+         */
+        public static final String WATCHES = "watches";
+        
         
         // Definitions of the fields.
         private static final FieldDesc[] FIELDS = {
         	new FieldDesc(NAME, FieldType.TEXT),
+        	new FieldDesc(WATCHES, FieldType.TEXT),
         };
         
         /**
