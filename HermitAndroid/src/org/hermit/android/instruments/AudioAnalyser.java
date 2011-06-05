@@ -75,10 +75,14 @@ public class AudioAnalyser
      */
     public void setSampleRate(int rate) {
         sampleRate = rate;
-        
+             
         // The spectrum gauge needs to know this.
         if (spectrumGauge != null)
             spectrumGauge.setSampleRate(sampleRate);
+        
+        // The sonagram gauge needs to know this.
+        if (sonagramGauge != null)
+            sonagramGauge.setSampleRate(sampleRate);
     }
     
 
@@ -226,6 +230,22 @@ public class AudioAnalyser
     
 
     /**
+     * Get a sonagram analyser gauge for this audio analyser.
+     * 
+     * @param   surface     The surface in which the gauge will be displayed.
+     * @return              A gauge which will display the audio waveform
+	 *						as a sonogram.
+     */
+    public SonagramGauge getSonagramGauge(SurfaceRunner surface) {
+        if (sonagramGauge != null)
+            throw new RuntimeException("Already have a SonagramGauge" +
+                                       " for this AudioAnalyser");
+        sonagramGauge = new SonagramGauge(surface, sampleRate, inputBlockSize);
+        return sonagramGauge;
+    }
+    
+    
+    /**
      * Get a signal power gauge for this audio analyser.
      * 
      * @param   surface     The surface in which the gauge will be displayed.
@@ -239,8 +259,21 @@ public class AudioAnalyser
         powerGauge = new PowerGauge(surface);
         return powerGauge;
     }
-    
 
+
+    /**
+     * Reset all Gauges before choosing new ones.
+     */
+    public void resetGauge() {
+        synchronized (this) {
+        	waveformGauge=null;
+        	spectrumGauge=null;
+        	sonagramGauge=null;
+        	powerGauge=null;        	
+        }
+    }   
+    
+    
     // ******************************************************************** //
     // Audio Processing.
     // ******************************************************************** //
@@ -337,16 +370,16 @@ public class AudioAnalyser
             if (powerGauge != null)
                 currentPower = SignalPower.calculatePowerDb(buffer, 0, len);
 
-            // If we have a spectrum analyser, set up the FFT input data.
-            if (spectrumGauge != null)
+            // If we have a spectrum or sonagram analyser, set up the FFT input data.
+            if (spectrumGauge != null || sonagramGauge != null)
                 spectrumAnalyser.setInput(buffer, len - inputBlockSize, inputBlockSize);
 
             // Tell the reader we're done with the buffer.
             buffer.notify();
         }
 
-        // If we have a spectrum analyser, perform the FFT.
-        if (spectrumGauge != null) {
+        // If we have a spectrum or sonagram analyser, perform the FFT.
+        if (spectrumGauge != null || sonagramGauge != null) {
             // Do the (expensive) transformation.
             // The transformer has its own state, no need to lock here.
             long specStart = System.currentTimeMillis();
@@ -354,15 +387,22 @@ public class AudioAnalyser
             long specEnd = System.currentTimeMillis();
             parentSurface.statsTime(0, (specEnd - specStart) * 1000);
 
-            // Get the FFT output and draw the spectrum.
+            // Get the FFT output.
             if (historyLen <= 1)
                 spectrumAnalyser.getResults(spectrumData);
             else
                 spectrumIndex = spectrumAnalyser.getResults(spectrumData,
                                                             spectrumHist,
                                                             spectrumIndex);
-            spectrumGauge.update(spectrumData);
         }
+        
+        // If we have a spectrum gauge, update data and draw.
+        if (spectrumGauge != null)
+            spectrumGauge.update(spectrumData);
+        	
+        // If we have a sonagram gauge, update data and draw.
+        if (sonagramGauge != null)
+            sonagramGauge.update(spectrumData);
 
         // If we have a power gauge, display the signal power.
         if (powerGauge != null)
@@ -381,6 +421,8 @@ public class AudioAnalyser
             waveformGauge.error(error);
         if (spectrumGauge != null)
             spectrumGauge.error(error);
+        if (sonagramGauge != null)
+            sonagramGauge.error(error);
         if (powerGauge != null)
             powerGauge.error(error);
     }
@@ -391,7 +433,7 @@ public class AudioAnalyser
     // ******************************************************************** //
 
     /**
-     * Save the state of the game in the provided Bundle.
+     * Save the state of the system in the provided Bundle.
      * 
      * @param   icicle      The Bundle in which we should save our state.
      */
@@ -402,7 +444,7 @@ public class AudioAnalyser
 
 
     /**
-     * Restore the game state from the given Bundle.
+     * Restore the system state from the given Bundle.
      * 
      * @param   icicle      The Bundle containing the saved state.
      */
@@ -448,13 +490,15 @@ public class AudioAnalyser
     // Our audio input device.
     private final AudioReader audioReader;
 
-    // Fourier Transform calculator we use for calculating the spectrum.
+    // Fourier Transform calculator we use for calculating the spectrum
+    // and sonagram.
     private FFTTransformer spectrumAnalyser;
     
     // The gauges associated with this instrument.  Any may be null if not
     // in use.
     private WaveformGauge waveformGauge = null;
     private SpectrumGauge spectrumGauge = null;
+    private SonagramGauge sonagramGauge = null;
     private PowerGauge powerGauge = null;
     
     // Buffered audio data, and sequence number of the latest block.

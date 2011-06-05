@@ -145,6 +145,14 @@ public abstract class InstrumentSurface
         gauges.add(i);
     }
 
+
+    /**
+     * Remove all gauges from this surface.
+     */
+    public void clearGauges() {
+        gauges.clear();
+    }
+    
     
     // ******************************************************************** //
     // Layout Processing.
