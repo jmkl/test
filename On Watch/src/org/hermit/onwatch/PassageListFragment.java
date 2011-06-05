@@ -18,7 +18,7 @@ package org.hermit.onwatch;
 
 
 import org.hermit.geo.Distance;
-import org.hermit.onwatch.provider.PassageSchema;
+import org.hermit.onwatch.provider.VesselSchema;
 import org.hermit.onwatch.service.OnWatchService;
 
 import android.app.ListFragment;
@@ -158,9 +158,9 @@ public class PassageListFragment
         // Create an empty adapter we will use to display the loaded data.
         passAdapter = new SimpleCursorAdapter(getActivity(),
                 R.layout.passage_list_item, null,
-                new String[] { PassageSchema.Passages.NAME,
-        					   PassageSchema.Passages.DEST_NAME,
-        					   PassageSchema.Passages.UNDER_WAY },
+                new String[] { VesselSchema.Passages.NAME,
+        					   VesselSchema.Passages.DEST_NAME,
+        					   VesselSchema.Passages.UNDER_WAY },
                 new int[] { R.id.name, R.id.description, R.id.icon });
         setListAdapter(passAdapter);
         
@@ -298,6 +298,7 @@ public class PassageListFragment
 	 * 
 	 * @param	time			Our serivce, which is now available.
 	 */
+	@Override
 	public void start(OnWatchService service) {
 		onWatchService = service;
 	}
@@ -317,6 +318,7 @@ public class PassageListFragment
 	/**
 	 * Stop this view.  The OnWatchService is no longer usable.
 	 */
+	@Override
 	public void stop() {
 		onWatchService = null;
 	}
@@ -332,9 +334,9 @@ public class PassageListFragment
     private void newPassage() {
 	    // Create a blank new passage, and add it to the provider.
 	    ContentValues values = new ContentValues();
-	    values.put(PassageSchema.Passages.NAME, "New Passage");
+	    values.put(VesselSchema.Passages.NAME, "New Passage");
 	    passageUri = contentResolver.insert(
-	    						PassageSchema.Passages.CONTENT_URI, values);
+	    						VesselSchema.Passages.CONTENT_URI, values);
 
 	    // Show the new item.
         getLoaderManager().restartLoader(LOADER_ITEM, null, itemLoaderCallbacks);
@@ -347,18 +349,20 @@ public class PassageListFragment
     private final LoaderManager.LoaderCallbacks<Cursor> listLoaderCallbacks =
     	new LoaderManager.LoaderCallbacks<Cursor>() {
 
+    	@Override
     	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     		Log.i(TAG, "PLF list onCreateLoader()");
     		
     		// Now create and return a CursorLoader that will take care of
     		// creating a Cursor for the data being displayed.
     		return new CursorLoader(getActivity(),
-    								PassageSchema.Passages.CONTENT_URI,
+    								VesselSchema.Passages.CONTENT_URI,
     								PASSAGE_SUMMARY_PROJ,
     								null, null,
-    								PassageSchema.Passages.START_TIME + " desc");
+    								VesselSchema.Passages.START_TIME + " desc");
     	}
 
+    	@Override
     	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
     		Log.i(TAG, "PLF list onLoadFinished()");
     		
@@ -370,6 +374,7 @@ public class PassageListFragment
     		selectPosition(mCurPosition);
     	}
 
+    	@Override
     	public void onLoaderReset(Loader<Cursor> loader) {
     		Log.i(TAG, "PLF list onLoaderReset()");
     		
@@ -388,6 +393,7 @@ public class PassageListFragment
     private final LoaderManager.LoaderCallbacks<Cursor> itemLoaderCallbacks =
     	new LoaderManager.LoaderCallbacks<Cursor>() {
 
+    	@Override
     	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     		Log.i(TAG, "PLF item onCreateLoader(); passageUri=" + passageUri);
     		
@@ -398,13 +404,14 @@ public class PassageListFragment
     		if (passageUri != null)
     			uri = passageUri;
     		else
-    			uri = PassageSchema.Passages.CONTENT_URI;
+    			uri = VesselSchema.Passages.CONTENT_URI;
     		return new CursorLoader(getActivity(), uri,
     								PASSAGE_SUMMARY_PROJ,
     								null, null,
-    								PassageSchema.Passages.SORT_ORDER);
+    								VesselSchema.Passages.SORT_ORDER);
     	}
 
+    	@Override
     	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
     		Log.i(TAG, "PLF item onLoadFinished(); passageUri=" + passageUri);
     		
@@ -413,6 +420,7 @@ public class PassageListFragment
     		showPassage();
     	}
 
+    	@Override
     	public void onLoaderReset(Loader<Cursor> loader) {
     		Log.i(TAG, "PLF item onLoaderReset(); passageUri=" + passageUri);
     		
@@ -451,7 +459,7 @@ public class PassageListFragment
         // Set the URI for the current item, and re-load it.
     	long id = passAdapter.getItemId(position);
         passageUri = ContentUris.withAppendedId(
-        					PassageSchema.Passages.CONTENT_URI, id);
+        					VesselSchema.Passages.CONTENT_URI, id);
         getLoaderManager().restartLoader(LOADER_ITEM, null, itemLoaderCallbacks);
         mCurPosition = position;
     }
@@ -520,11 +528,11 @@ public class PassageListFragment
     	    // Write the passage back into the provider.
     	    ContentValues values = new ContentValues();
     	    if (name.length() > 0)
-    	    	values.put(PassageSchema.Passages.NAME, name);
+    	    	values.put(VesselSchema.Passages.NAME, name);
     	    if (from.length() > 0)
-    	    	values.put(PassageSchema.Passages.START_NAME, from);
+    	    	values.put(VesselSchema.Passages.START_NAME, from);
     	    if (to.length() > 0)
-    	    	values.put(PassageSchema.Passages.DEST_NAME, to);
+    	    	values.put(VesselSchema.Passages.DEST_NAME, to);
 
     	    // Commit all of our changes to persistent storage.  When the
     	    // update completes the content provider will notify the
@@ -575,14 +583,14 @@ public class PassageListFragment
 
     // These are the passages columns that we will display.
 	private static final String[] PASSAGE_SUMMARY_PROJ = new String[] {
-    	PassageSchema.Passages._ID,
-        PassageSchema.Passages.NAME,
-        PassageSchema.Passages.START_NAME,
-        PassageSchema.Passages.DEST_NAME,
-        PassageSchema.Passages.UNDER_WAY,
-        PassageSchema.Passages.START_TIME,
-        PassageSchema.Passages.FINISH_TIME,
-        PassageSchema.Passages.DISTANCE,
+    	VesselSchema.Passages._ID,
+        VesselSchema.Passages.NAME,
+        VesselSchema.Passages.START_NAME,
+        VesselSchema.Passages.DEST_NAME,
+        VesselSchema.Passages.UNDER_WAY,
+        VesselSchema.Passages.START_TIME,
+        VesselSchema.Passages.FINISH_TIME,
+        VesselSchema.Passages.DISTANCE,
     };
     
     // The indices of the columns in the projection.

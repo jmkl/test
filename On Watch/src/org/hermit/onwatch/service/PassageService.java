@@ -19,7 +19,7 @@ package org.hermit.onwatch.service;
 
 import org.hermit.geo.Distance;
 import org.hermit.geo.Position;
-import org.hermit.onwatch.provider.PassageSchema;
+import org.hermit.onwatch.provider.VesselSchema;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -130,8 +130,8 @@ public class PassageService
      *                      passageData is unchanged.
      */
 	private boolean loadOpenPassage() {
-        return loadPassage(PassageSchema.Passages.CONTENT_URI,
-				   		   PassageSchema.Passages.UNDER_WAY + "!=0", null);
+        return loadPassage(VesselSchema.Passages.CONTENT_URI,
+        				   VesselSchema.Passages.UNDER_WAY + "!=0", null);
     }
 
 
@@ -165,21 +165,21 @@ public class PassageService
 
         try {
             c = contentResolver.query(uri,
-            						  PassageSchema.Passages.PROJECTION,
+            						  VesselSchema.Passages.PROJECTION,
             						  where, wargs,
-            						  PassageSchema.Passages.SORT_ORDER);
+            						  VesselSchema.Passages.SORT_ORDER);
             if (c != null && c.moveToFirst()) {
                 // Query for the number of points, and load the latest point.
-                int ii = c.getColumnIndexOrThrow(PassageSchema.Passages._ID);
+                int ii = c.getColumnIndexOrThrow(VesselSchema.Passages._ID);
                 long id = c.getLong(ii);
-                c2 = contentResolver.query(PassageSchema.Points.CONTENT_URI,
-                                           PassageSchema.Points.PROJECTION,
-                                           PassageSchema.Points.PASSAGE + "=?",
+                c2 = contentResolver.query(VesselSchema.Points.CONTENT_URI,
+                						   VesselSchema.Points.PROJECTION,
+                						   VesselSchema.Points.PASSAGE + "=?",
                                            new String[] { "" + id },
-                                           PassageSchema.Points.TIME + " DESC");
+                                           VesselSchema.Points.TIME + " DESC");
                 
                 passageData = new PassageRecord(c, c2);
-                passageUri = ContentUris.withAppendedId(PassageSchema.Passages.CONTENT_URI, id);
+                passageUri = ContentUris.withAppendedId(VesselSchema.Passages.CONTENT_URI, id);
                 found = true;
             }
         } finally {
@@ -284,17 +284,17 @@ public class PassageService
         
         // Create a Point record, and add it to the database.
         ContentValues values = new ContentValues();
-        values.put(PassageSchema.Points.PASSAGE, passageData.getId());
+        values.put(VesselSchema.Points.PASSAGE, passageData.getId());
         if (name != null)
-        	values.put(PassageSchema.Points.NAME, name);
-        values.put(PassageSchema.Points.TIME, time);
+        	values.put(VesselSchema.Points.NAME, name);
+        values.put(VesselSchema.Points.TIME, time);
         if (pos != null) {
-            values.put(PassageSchema.Points.LAT, pos.getLatDegs());
-            values.put(PassageSchema.Points.LON, pos.getLonDegs());
+            values.put(VesselSchema.Points.LAT, pos.getLatDegs());
+            values.put(VesselSchema.Points.LON, pos.getLonDegs());
         }
-        values.put(PassageSchema.Points.DIST, dist.getMetres());
-        values.put(PassageSchema.Points.TOT_DIST, passageData.getDistance().getMetres());
-        contentResolver.insert(PassageSchema.Points.CONTENT_URI, values);
+        values.put(VesselSchema.Points.DIST, dist.getMetres());
+        values.put(VesselSchema.Points.TOT_DIST, passageData.getDistance().getMetres());
+        contentResolver.insert(VesselSchema.Points.CONTENT_URI, values);
         
         // Update the database record for this passage.
         passageData.saveData(contentResolver, passageUri);

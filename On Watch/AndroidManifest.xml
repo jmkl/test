@@ -14,9 +14,6 @@
 		<!-- <meta-data android:name="com.google.android.backup.api_key"
             android:value="AEdPqrEAAAAIt9wx5APc50aPUDW8nro-WB04nhpMGyu2ydLzGQ" /> -->
 
-        <provider android:name=".provider.PassageProvider"
-            android:authorities="org.hermit.provider.PassageData" />
-
         <provider android:name=".provider.VesselProvider"
             android:authorities="org.hermit.provider.VesselData" />
 

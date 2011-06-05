@@ -19,7 +19,7 @@ package org.hermit.onwatch.service;
 
 import org.hermit.geo.Distance;
 import org.hermit.geo.Position;
-import org.hermit.onwatch.provider.PassageSchema;
+import org.hermit.onwatch.provider.VesselSchema;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -51,14 +51,14 @@ public class PassageRecord {
 	 */
     PassageRecord(String name, String from, String to, Position dest) {
         rowValues = new ContentValues();
-        rowValues.put(PassageSchema.Passages.NAME, name);
-        rowValues.put(PassageSchema.Passages.START_NAME, from);
-        rowValues.put(PassageSchema.Passages.DEST_NAME, to);
+        rowValues.put(VesselSchema.Passages.NAME, name);
+        rowValues.put(VesselSchema.Passages.START_NAME, from);
+        rowValues.put(VesselSchema.Passages.DEST_NAME, to);
         if (dest != null) {
-        	rowValues.put(PassageSchema.Passages.DEST_LAT, dest.getLatDegs());
-        	rowValues.put(PassageSchema.Passages.DEST_LON, dest.getLonDegs());
+        	rowValues.put(VesselSchema.Passages.DEST_LAT, dest.getLatDegs());
+        	rowValues.put(VesselSchema.Passages.DEST_LON, dest.getLonDegs());
         }
-        rowValues.put(PassageSchema.Passages.DISTANCE, 0.0);
+        rowValues.put(VesselSchema.Passages.DISTANCE, 0.0);
         
         numPoints = 0;
         lastPos = null;
@@ -83,8 +83,8 @@ public class PassageRecord {
         if (pointCursor != null) {
         	numPoints = pointCursor.getCount();
             if (pointCursor.moveToFirst()) {
-                int lati = pointCursor.getColumnIndexOrThrow(PassageSchema.Points.LAT);
-                int loni = pointCursor.getColumnIndexOrThrow(PassageSchema.Points.LON);
+                int lati = pointCursor.getColumnIndexOrThrow(VesselSchema.Points.LAT);
+                int loni = pointCursor.getColumnIndexOrThrow(VesselSchema.Points.LON);
                 double lat = pointCursor.getDouble(lati);
                 double lon = pointCursor.getDouble(loni);
                 lastPos = Position.fromDegrees(lat, lon);
@@ -99,49 +99,49 @@ public class PassageRecord {
      * Initialize this passage record from rowValues.
      */
     private void init() {
-        name = rowValues.getAsString(PassageSchema.Passages.NAME);
-        start = rowValues.getAsString(PassageSchema.Passages.START_NAME);
-        dest = rowValues.getAsString(PassageSchema.Passages.DEST_NAME);
+        name = rowValues.getAsString(VesselSchema.Passages.NAME);
+        start = rowValues.getAsString(VesselSchema.Passages.START_NAME);
+        dest = rowValues.getAsString(VesselSchema.Passages.DEST_NAME);
         
         // Get the destination pos if present.
-        Double dlat = rowValues.getAsDouble(PassageSchema.Passages.DEST_LAT);
-        Double dlon = rowValues.getAsDouble(PassageSchema.Passages.DEST_LON);
+        Double dlat = rowValues.getAsDouble(VesselSchema.Passages.DEST_LAT);
+        Double dlon = rowValues.getAsDouble(VesselSchema.Passages.DEST_LON);
         if (dlat == null || dlon == null)
             destPos = null;
         else
             destPos = Position.fromDegrees(dlat, dlon);
 
         // See if we have start data.
-        Long stime = rowValues.getAsLong(PassageSchema.Passages.START_TIME);
+        Long stime = rowValues.getAsLong(VesselSchema.Passages.START_TIME);
         if (stime == null || stime == 0)
             startTime = 0;
         else
             startTime = stime;
 
         // Get the start pos if present.
-        Double slat = rowValues.getAsDouble(PassageSchema.Passages.START_LAT);
-        Double slon = rowValues.getAsDouble(PassageSchema.Passages.START_LON);
+        Double slat = rowValues.getAsDouble(VesselSchema.Passages.START_LAT);
+        Double slon = rowValues.getAsDouble(VesselSchema.Passages.START_LON);
         if (slat == null || slon == null)
             startPos = null;
         else
             startPos = Position.fromDegrees(slat, slon);
 
-        Double dist = rowValues.getAsDouble(PassageSchema.Passages.DISTANCE);
+        Double dist = rowValues.getAsDouble(VesselSchema.Passages.DISTANCE);
         if (dist == null || dist == 0)
             distance = Distance.ZERO;
         else
         	distance = new Distance(dist);
         
         // See if we have end data.
-        Long etime = rowValues.getAsLong(PassageSchema.Passages.FINISH_TIME);
+        Long etime = rowValues.getAsLong(VesselSchema.Passages.FINISH_TIME);
         if (etime == null || etime == 0)
             finishTime = 0;
         else
             finishTime = etime;
         
         // Get the end pos if present.
-        Double flat = rowValues.getAsDouble(PassageSchema.Passages.FINISH_LAT);
-        Double flon = rowValues.getAsDouble(PassageSchema.Passages.FINISH_LON);
+        Double flat = rowValues.getAsDouble(VesselSchema.Passages.FINISH_LAT);
+        Double flon = rowValues.getAsDouble(VesselSchema.Passages.FINISH_LON);
         if (flat == null || flon == null)
             finishPos = null;
         else
@@ -163,7 +163,7 @@ public class PassageRecord {
     	Log.i(TAG, "save " + uri);
     	
     	// Add derived fields.
-		rowValues.put(PassageSchema.Passages.UNDER_WAY, isRunning() ? 1 : 0);
+		rowValues.put(VesselSchema.Passages.UNDER_WAY, isRunning() ? 1 : 0);
 
 		// Save the data.
     	cr.update(uri, rowValues, null, null);
@@ -201,7 +201,7 @@ public class PassageRecord {
 	 */
 	void setName(String name) {
 		this.name = name;
-		rowValues.put(PassageSchema.Passages.NAME, name);
+		rowValues.put(VesselSchema.Passages.NAME, name);
 	}
 
 
@@ -222,7 +222,7 @@ public class PassageRecord {
 	 */
 	void setStart(String start) {
 		this.start = start;
-		rowValues.put(PassageSchema.Passages.START_NAME, start);
+		rowValues.put(VesselSchema.Passages.START_NAME, start);
 	}
 
 
@@ -243,7 +243,7 @@ public class PassageRecord {
 	 */
 	void setDest(String dest) {
 		this.dest = dest;
-		rowValues.put(PassageSchema.Passages.DEST_NAME, dest);
+		rowValues.put(VesselSchema.Passages.DEST_NAME, dest);
 	}
 
 
@@ -265,8 +265,8 @@ public class PassageRecord {
 	 */
 	void setDestPos(Position pos) {
 		destPos = pos;
-		rowValues.put(PassageSchema.Passages.DEST_LAT, pos.getLatDegs());
-		rowValues.put(PassageSchema.Passages.DEST_LON, pos.getLonDegs());
+		rowValues.put(VesselSchema.Passages.DEST_LAT, pos.getLatDegs());
+		rowValues.put(VesselSchema.Passages.DEST_LON, pos.getLonDegs());
 	}
 
 
@@ -387,13 +387,13 @@ public class PassageRecord {
 		startPos = null;
 		distance = Distance.ZERO;
 		
-		rowValues.putNull(PassageSchema.Passages.FINISH_TIME);
-		rowValues.putNull(PassageSchema.Passages.FINISH_LAT);
-		rowValues.putNull(PassageSchema.Passages.FINISH_LON);
-		rowValues.put(PassageSchema.Passages.START_TIME, time);
-		rowValues.put(PassageSchema.Passages.DISTANCE, 0l);
-		rowValues.putNull(PassageSchema.Passages.START_LAT);
-		rowValues.putNull(PassageSchema.Passages.START_LON);
+		rowValues.putNull(VesselSchema.Passages.FINISH_TIME);
+		rowValues.putNull(VesselSchema.Passages.FINISH_LAT);
+		rowValues.putNull(VesselSchema.Passages.FINISH_LON);
+		rowValues.put(VesselSchema.Passages.START_TIME, time);
+		rowValues.put(VesselSchema.Passages.DISTANCE, 0l);
+		rowValues.putNull(VesselSchema.Passages.START_LAT);
+		rowValues.putNull(VesselSchema.Passages.START_LON);
 	}
 
 
@@ -409,8 +409,8 @@ public class PassageRecord {
 		// If this is our first position, log it as the start.
 		if (startPos == null) {
 			startPos = pos;
-			rowValues.put(PassageSchema.Passages.START_LAT, pos.getLatDegs());
-			rowValues.put(PassageSchema.Passages.START_LON, pos.getLonDegs());
+			rowValues.put(VesselSchema.Passages.START_LAT, pos.getLatDegs());
+			rowValues.put(VesselSchema.Passages.START_LON, pos.getLonDegs());
 		}
 		
         Distance dist = Distance.ZERO;
@@ -421,7 +421,7 @@ public class PassageRecord {
 		++numPoints;
 		lastPos = pos;
 		
-		rowValues.put(PassageSchema.Passages.DISTANCE, distance.getMetres());
+		rowValues.put(VesselSchema.Passages.DISTANCE, distance.getMetres());
 		
 		return dist;
 	}
@@ -437,9 +437,9 @@ public class PassageRecord {
 		finishTime = time;
 		finishPos = pos;
 		
-		rowValues.put(PassageSchema.Passages.FINISH_TIME, time);
-		rowValues.put(PassageSchema.Passages.FINISH_LAT, pos.getLatDegs());
-		rowValues.put(PassageSchema.Passages.FINISH_LON, pos.getLonDegs());
+		rowValues.put(VesselSchema.Passages.FINISH_TIME, time);
+		rowValues.put(VesselSchema.Passages.FINISH_LAT, pos.getLatDegs());
+		rowValues.put(VesselSchema.Passages.FINISH_LON, pos.getLonDegs());
 	}
 
 

@@ -135,6 +135,7 @@ public class AstroFragment
 	 * 
 	 * @param	time			Our serivce, which is now available.
 	 */
+	@Override
 	public void start(OnWatchService service) {
 		
 	}
@@ -154,6 +155,7 @@ public class AstroFragment
 	/**
 	 * Stop this view.  The OnWatchService is no longer usable.
 	 */
+	@Override
 	public void stop() {
 		
 	}

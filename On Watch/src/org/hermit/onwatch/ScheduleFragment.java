@@ -144,6 +144,7 @@ public class ScheduleFragment
 	 * 
 	 * @param	time			Our serivce, which is now available.
 	 */
+	@Override
 	public void start(OnWatchService service) {
 		
 	}
@@ -163,6 +164,7 @@ public class ScheduleFragment
 	/**
 	 * Stop this view.  The OnWatchService is no longer usable.
 	 */
+	@Override
 	public void stop() {
 		
 	}

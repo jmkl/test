@@ -28,18 +28,17 @@ import org.hermit.android.core.Errors;
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.core.SplashActivity;
 import org.hermit.android.widgets.TimeZoneActivity;
-import org.hermit.onwatch.provider.PassageSchema;
 import org.hermit.onwatch.provider.VesselSchema;
 import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
-import org.hermit.onwatch.service.SoundService;
 import org.hermit.onwatch.service.OnWatchService.OnWatchBinder;
+import org.hermit.onwatch.service.SoundService;
 
 import android.app.ActionBar;
+import android.app.ActionBar.Tab;
 import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.app.ActionBar.Tab;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -175,16 +174,19 @@ public class OnWatch
             tabName = getString(label);
         }
 
+    	@Override
         public void onTabSelected(Tab tab, FragmentTransaction ft) {
             Log.i(TAG, "TabOpened(" + tabName + ")");
             ft.add(R.id.main_view, theFragment, null);
         }
 
+    	@Override
         public void onTabUnselected(Tab tab, FragmentTransaction ft) {
             Log.i(TAG, "TabClosed(" + tabName + ")");
             ft.remove(theFragment);
         }
 
+    	@Override
         public void onTabReselected(Tab tab, FragmentTransaction ft) {
             // do nothing
         }
@@ -562,7 +564,6 @@ public class OnWatch
     private void backupData() {
     	try {
     		VesselSchema.DB_SCHEMA.backupDb(this, BACKUP_DIR);
-    		PassageSchema.DB_SCHEMA.backupDb(this, BACKUP_DIR);
     		WeatherSchema.DB_SCHEMA.backupDb(this, BACKUP_DIR);
     	} catch (FileNotFoundException e) {
     		Errors.reportException(this, e);
@@ -578,7 +579,6 @@ public class OnWatch
     private void restoreData() {
     	try {
     		VesselSchema.DB_SCHEMA.restoreDb(this, BACKUP_DIR);
-    		PassageSchema.DB_SCHEMA.restoreDb(this, BACKUP_DIR);
     		WeatherSchema.DB_SCHEMA.restoreDb(this, BACKUP_DIR);
     	} catch (FileNotFoundException e) {
     		Errors.reportException(this, e);

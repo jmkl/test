@@ -108,7 +108,7 @@ public class WatchModel
 	 * @param	context			Parent application.
 	 */
 	private WatchModel(OnWatch context) {
-		Log.i(TAG, "WM constructor");
+		Log.i(TAG, "WPM constructor");
 		
 		appContext = context;
 		
@@ -161,8 +161,9 @@ public class WatchModel
     private final LoaderManager.LoaderCallbacks<Cursor> planLoaderCallbacks =
     						new LoaderManager.LoaderCallbacks<Cursor>() {
 
-    	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-    		Log.i(TAG, "WM plan onCreateLoader()");
+    	@Override
+		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    		Log.i(TAG, "WPM plan onCreateLoader()");
     		
     		// Now create and return a CursorLoader that will take care of
     		// creating a Cursor for the data being displayed.
@@ -173,15 +174,16 @@ public class WatchModel
     								VesselSchema.Vessels.NAME + " asc");
     	}
 
-    	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-    		Log.i(TAG, "WM plan onLoadFinished(): " + data.getCount() + " records");
+    	@Override
+		public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    		Log.i(TAG, "WPM plan onLoadFinished(): " + data.getCount() + " records");
     		
     		if (data.moveToFirst()) {
     			// Get the vessel's configured watch plan.
     			String pname = data.getString(COL_V_WATCHES);
     			try {
     				watchPlan = WatchPlan.valueOf(pname);
-    			} catch (IllegalArgumentException e) {
+    			} catch (Exception e) {
     				watchPlan = WatchPlan.FOUR_HOUR_D;
     			}
     		}
@@ -189,8 +191,9 @@ public class WatchModel
     		crewChanged();
     	}
 
-    	public void onLoaderReset(Loader<Cursor> loader) {
-    		Log.i(TAG, "WM plan onLoaderReset()");
+    	@Override
+		public void onLoaderReset(Loader<Cursor> loader) {
+    		Log.i(TAG, "WPM plan onLoaderReset()");
     		
     		// Reset to default.
 			watchPlan = WatchPlan.FOUR_HOUR_D;
@@ -207,8 +210,9 @@ public class WatchModel
     private final LoaderManager.LoaderCallbacks<Cursor> listLoaderCallbacks =
     						new LoaderManager.LoaderCallbacks<Cursor>() {
 
-    	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-    		Log.i(TAG, "WM list onCreateLoader()");
+    	@Override
+		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    		Log.i(TAG, "WPM list onCreateLoader()");
     		
     		// Now create and return a CursorLoader that will take care of
     		// creating a Cursor for the data being displayed.
@@ -219,8 +223,9 @@ public class WatchModel
     								VesselSchema.Crew.POSITION + " asc");
     	}
 
-    	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-    		Log.i(TAG, "WM list onLoadFinished(): " + data.getCount() + " records");
+    	@Override
+		public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    		Log.i(TAG, "WPM list onLoadFinished(): " + data.getCount() + " records");
 
     		// Load a cached copy of the crew list.
     		crewList.clear();
@@ -236,8 +241,9 @@ public class WatchModel
     		crewChanged();
     	}
 
-    	public void onLoaderReset(Loader<Cursor> loader) {
-    		Log.i(TAG, "WM list onLoaderReset()");
+    	@Override
+		public void onLoaderReset(Loader<Cursor> loader) {
+    		Log.i(TAG, "WPM list onLoaderReset()");
     		
     		// Reset to default.
     		crewList.clear();
@@ -269,7 +275,7 @@ public class WatchModel
 	 * The crew list has changed; notify all who need to know.
 	 */
 	private void crewChanged() {
-		Log.i(TAG, "WM crewChanged()");
+		Log.i(TAG, "WPM crewChanged()");
 		
 		// Clear out the current watch info, as it's not valid now.
 		currentDay = -1;
@@ -295,11 +301,11 @@ public class WatchModel
 	 */
 	private void recalcWatch() {
 		if (watchPlan == null || crewList == null || crewList.isEmpty()) {
-			Log.i(TAG, "WM recalcWatch(): no data");
+			Log.i(TAG, "WPM recalcWatch(): no data");
 			return;
 		}
 		
-		Log.i(TAG, "WM recalcWatch()");
+		Log.i(TAG, "WPM recalcWatch()");
 		
 		// Get the passage day number.
 		int day = getPassageDay();
@@ -334,7 +340,7 @@ public class WatchModel
 		if (day == currentDay && watch == currentWatch)
 			return;
 		
-		Log.i(TAG, "WM recalcWatch(): watch changed");
+		Log.i(TAG, "WPM recalcWatch(): watch changed");
 		
 		currentDay = day;
 		currentWatch = watch;
@@ -419,7 +425,7 @@ public class WatchModel
 	 */
 	public Crew[][] getWatchSchedule(int numDays) {
 		if (watchPlan == null || crewList == null || crewList.isEmpty()) {
-			Log.i(TAG, "WM getWatchSchedule(): no data");
+			Log.i(TAG, "WPM getWatchSchedule(): no data");
 			return null;
 		}
 

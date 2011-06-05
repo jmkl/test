@@ -100,6 +100,7 @@ public final class WeatherSchema
         
         // Definitions of the fields.
         private static final FieldDesc[] FIELDS = {
+            new FieldDesc(FieldType._ID),
         	new FieldDesc(TIME, FieldType.BIGINT),
         	new FieldDesc(PRESS, FieldType.DOUBLE),
         };

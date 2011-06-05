@@ -338,6 +338,7 @@ public class LocationModel
 	 * 
 	 * @param	loc			The new location, as a Location object.
 	 */
+	@Override
 	public void onLocationChanged(Location loc) {
 		if (loc.getProvider().equals(LocationManager.GPS_PROVIDER)) {
 			synchronized (this) {
@@ -367,6 +368,7 @@ public class LocationModel
 	 * @param	provider			The name of the location provider
 	 * 								associated with this update.
 	 */
+	@Override
 	public void onProviderDisabled(String provider) {
 		Log.i(TAG, "Provider disabled: " + provider);
 		if (provider.equals(LocationManager.GPS_PROVIDER)) {
@@ -385,6 +387,7 @@ public class LocationModel
 	 * @param	provider			The name of the location provider
 	 * 								associated with this update.
 	 */
+	@Override
 	public void onProviderEnabled(String provider) {
 		Log.i(TAG, "Provider enabled: " + provider);
 		if (provider.equals(LocationManager.GPS_PROVIDER)) {
@@ -417,6 +420,7 @@ public class LocationModel
 	 * 								  satellites - the number of satellites
 	 * 											   used to derive the fix.
 	 */
+	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 		Log.i(TAG, "Provider status: " + provider + "=" + status);
 		if (provider.equals(LocationManager.GPS_PROVIDER)) {

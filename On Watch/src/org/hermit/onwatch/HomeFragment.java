@@ -19,7 +19,7 @@ package org.hermit.onwatch;
 
 import org.hermit.geo.Distance;
 import org.hermit.onwatch.WatchModel.Crew;
-import org.hermit.onwatch.provider.PassageSchema;
+import org.hermit.onwatch.provider.VesselSchema;
 import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
 import org.hermit.utils.Angle;
@@ -37,8 +37,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -283,6 +283,7 @@ public class HomeFragment
 	 * 
 	 * @param	time			Our serivce, which is now available.
 	 */
+	@Override
 	public void start(OnWatchService service) {
 		
 	}
@@ -290,6 +291,7 @@ public class HomeFragment
 	/**
 	 * Stop this view.  The OnWatchService is no longer usable.
 	 */
+	@Override
 	public void stop() {
 		
 	}
@@ -418,12 +420,12 @@ public class HomeFragment
 		@Override
 		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		    // Create a loader that watches the current passage state.
-		    Uri baseUri = PassageSchema.Passages.CONTENT_URI;
-		    String where = PassageSchema.Passages.UNDER_WAY + "!=0";
+		    Uri baseUri = VesselSchema.Passages.CONTENT_URI;
+		    String where = VesselSchema.Passages.UNDER_WAY + "!=0";
 		    return new CursorLoader(getActivity(), baseUri,
 		    						PASSAGE_SUMMARY_PROJ,
 		    						where, null,
-		    						PassageSchema.Passages.SORT_ORDER);
+		    						VesselSchema.Passages.SORT_ORDER);
 		}
 
 		@Override
@@ -594,13 +596,13 @@ public class HomeFragment
 
     // These are the passages columns that we will display.
 	private static final String[] PASSAGE_SUMMARY_PROJ = new String[] {
-    	PassageSchema.Passages._ID,
-        PassageSchema.Passages.NAME,
-        PassageSchema.Passages.START_NAME,
-        PassageSchema.Passages.DEST_NAME,
-        PassageSchema.Passages.START_TIME,
-        PassageSchema.Passages.FINISH_TIME,
-        PassageSchema.Passages.DISTANCE,
+    	VesselSchema.Passages._ID,
+        VesselSchema.Passages.NAME,
+        VesselSchema.Passages.START_NAME,
+        VesselSchema.Passages.DEST_NAME,
+        VesselSchema.Passages.START_TIME,
+        VesselSchema.Passages.FINISH_TIME,
+        VesselSchema.Passages.DISTANCE,
     };
     
     // The indices of the columns in the projection.

@@ -368,7 +368,8 @@ public class CrewEditor
     private final LoaderManager.LoaderCallbacks<Cursor> listLoaderCallbacks =
     	new LoaderManager.LoaderCallbacks<Cursor>() {
 
-    	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    	@Override
+		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     		Log.i(TAG, "CE list onCreateLoader()");
     		
     		// Now create and return a CursorLoader that will take care of
@@ -380,7 +381,8 @@ public class CrewEditor
     								VesselSchema.Crew.POSITION + " asc");
     	}
 
-    	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    	@Override
+		public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
     		Log.i(TAG, "CE list onLoadFinished()");
     		
     		// Swap the new cursor in.  (The framework will take care
@@ -391,7 +393,8 @@ public class CrewEditor
     		selectPosition(mCurPosition);
     	}
 
-    	public void onLoaderReset(Loader<Cursor> loader) {
+    	@Override
+		public void onLoaderReset(Loader<Cursor> loader) {
     		Log.i(TAG, "CE list onLoaderReset()");
     		
     		// This is called when the last Cursor provided to onLoadFinished()
@@ -409,7 +412,8 @@ public class CrewEditor
     private final LoaderManager.LoaderCallbacks<Cursor> itemLoaderCallbacks =
     	new LoaderManager.LoaderCallbacks<Cursor>() {
 
-    	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    	@Override
+		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     		Log.i(TAG, "CE item onCreateLoader(); passageUri=" + crewUri);
     		
     		crewCursor = null;
@@ -426,6 +430,7 @@ public class CrewEditor
     								VesselSchema.Crew.POSITION + " asc");
     	}
 
+    	@Override
     	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
     		Log.i(TAG, "CE item onLoadFinished(); passageUri=" + crewUri);
     		
@@ -434,6 +439,7 @@ public class CrewEditor
     		showCrew();
     	}
 
+    	@Override
     	public void onLoaderReset(Loader<Cursor> loader) {
     		Log.i(TAG, "CE item onLoaderReset(); passageUri=" + crewUri);
     		
@@ -523,7 +529,11 @@ public class CrewEditor
             	// Get the plan from the vessel record.
             	int pi = c.getColumnIndexOrThrow(VesselSchema.Vessels.WATCHES);
             	String wp = c.getString(pi);
-            	return WatchPlan.valueOf(wp);
+            	try {
+            		return WatchPlan.valueOf(wp);
+            	} catch (Exception e) {
+            		return WatchPlan.valueOf(0);
+            	}
             }
         } finally {
             if (c != null)

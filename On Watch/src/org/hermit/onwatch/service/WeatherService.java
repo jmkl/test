@@ -241,6 +241,7 @@ public class WeatherService
 	}
 
 	private Runnable finishObservation = new Runnable() {
+		@Override
 		public void run() {
 			synchronized (WeatherService.this) {
 				msgHandler.removeCallbacks(this);
