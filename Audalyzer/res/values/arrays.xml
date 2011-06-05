@@ -121,8 +121,6 @@
 		<item>Menu</item>
 		<item>Settings</item>  
 		<item>@array/help_prefs_titles</item>
-		<item>More Information</item>
-		<item>@array/help_info_titles</item>
     </string-array>
 
     <!-- Help section texts. -->
@@ -160,7 +158,7 @@ logarithmic, with a range from -60dB to 0dB.  Scale lines are drawn every
 plot.  The vertical axis represents frequency, and again the maximum
 frequency depends on the sampling rate.  The horizontal axis represents
 time; and the strength of the colour at any point represents how much of
-that frequency was present.\n\
+that frequency was present.  Thanks to Ozneb for creating this!\n\
 \n\
 • The <b>power gauge</b> displays the absolute power level of the sound
 as received by the device\'s microphone.  This is displayed as decibels
@@ -219,8 +217,6 @@ above.  The available settings are detailed in the following sections.</item>
 want to to report a bug, there are some on-line
 resources which may be of interest, as described in the following
 sections.</item>
-
-<item>@array/help_info_texts</item>
 
     </string-array>
         
@@ -283,53 +279,6 @@ performance statistics on-screen.  These stats are updated every 5
 seconds and include frames per second, computation time, drawing time, and
 the average time taken to perform frequency analysis (FFT) of a block of
 data.</item>
-
-    </string-array>
-          
-    <!-- Section titles for the more info help. -->
-    <string-array name="help_info_titles">
-
-<item>Discussion Groups</item>
-
-<item>Reporting Bugs</item>
-
-<item>Join In</item>
-
-    </string-array>
-
-    <!-- Section contents for the more info help. -->
-    <string-array name="help_info_texts">
-
-<item>There is a discussion board where you
-can suggest ideas for Audalyzer, share experiences and thoughts with
-other users, and generally waffle.  Please note that this group
-is shared with the other Moonblink projects, so mention
-Audalyzer when you post:\n\
-\n\
-• http://groups.google.com/group/moonblink</item>
-
-<item>If you want to report a bug, you can use the Moonblink Issue tracker.
-Before you post, <b>please</b> look through the existing issues -- including
-closed issues -- before raising a new one.  Your problem may already have been
-solved.\n\
-\n\
-If you do need to raise a new issue:\n\
-• The issue tracker is used by a number of projects.  Please click on the
-\"Product-\" label to set the product you are reporting against.  You can
-also set the other fields as appropriate.\n\
-• Please tell me what device, and what version of Android, you are using.\n\
-• If the bug is a crash, then please attach a log if you possibly can.
-If you don\'t know how, don\'t sweat it.\n\
-\n\
-So, the issue tracker is here:\n\
-\n\
-• http://code.google.com/p/moonblink/issues/list</item>
-
-<item>Audalyzer is an open project, so if you
-want to join in and make contributions, you can.  See the project page for
-information:\n\
-\n\
-• http://code.google.com/p/moonblink/wiki/Audalyzer</item>
 
     </string-array>
     
