@@ -217,12 +217,13 @@ public abstract class DbSchema {
 				// Save all the fields in this row, each preceded by
 				// its column number.
 				for (int i = 0; i < fields.length; ++i) {
+					TableSchema.FieldType t = fields[i].type;
+
 					// Skip absent fields.
-					if (c.isNull(i))
+					if (c.isNull(i) || (t == TableSchema.FieldType.TEXT && c.getString(cols[i]) == null))
 						continue;
 					
 					dos.writeInt(i);
-					TableSchema.FieldType t = fields[i].type;
 					switch (t) {
 					case BIGINT:
 						long lv = c.getLong(cols[i]);
@@ -373,6 +374,8 @@ public abstract class DbSchema {
     		if (values.containsKey(fd.name)) {
     			sb1.append('x');
     			sb2.append(" | " + values.getAsString(fd.name));
+    		} else {
+    			sb1.append('_');
     		}
     	}
     	Log.v(TAG, ">> " + sb1 + sb2);
