@@ -196,7 +196,8 @@ public abstract class SurfaceRunner
      * 
      * @param	holder		The SurfaceHolder whose surface is being created.
      */
-    public void surfaceCreated(SurfaceHolder holder) {
+    @Override
+	public void surfaceCreated(SurfaceHolder holder) {
         setEnable(ENABLE_SURFACE, "surfaceCreated");
     }
 
@@ -211,7 +212,8 @@ public abstract class SurfaceRunner
      * @param	width		The new width of the surface.
      * @param	height		The new height of the surface.
      */
-    public void surfaceChanged(SurfaceHolder holder,
+    @Override
+	public void surfaceChanged(SurfaceHolder holder,
     						   int format, int width, int height)
     {
         // On Droid (at least) this can get called after a rotation,
@@ -236,7 +238,8 @@ public abstract class SurfaceRunner
      * 
      * @param	holder		The SurfaceHolder whose surface is being destroyed.
      */
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    @Override
+	public void surfaceDestroyed(SurfaceHolder holder) {
         clearEnable(ENABLE_SURFACE, "surfaceDestroyed");
     }
 
@@ -942,7 +945,8 @@ public abstract class SurfaceRunner
 	    }
 
 	    // Stop this thread.  There will be no new calls to tick() after this.
-	    public void kill() {
+	    @Override
+		public void kill() {
 	        Log.v(TAG, "ThreadTicker: kill");
 	        
 	        enable = false;
@@ -953,7 +957,8 @@ public abstract class SurfaceRunner
 	    // 
 	    // Caution: if this is called from within tick(), deadlock is
 	    // guaranteed.
-	    public void killAndWait() {
+	    @Override
+		public void killAndWait() {
 	        Log.v(TAG, "ThreadTicker: killAndWait");
 	        
 	        if (Thread.currentThread() == this)
@@ -1026,7 +1031,8 @@ public abstract class SurfaceRunner
 	    }
 
 	    // Stop this thread.  There will be no new calls to tick() after this.
-	    public void kill() {
+	    @Override
+		public void kill() {
 	        Log.v(TAG, "LoopTicker: kill");
 
 	        synchronized (this) {
@@ -1046,7 +1052,8 @@ public abstract class SurfaceRunner
 	    // 
 	    // Caution: if this is called from within tick(), deadlock is
 	    // guaranteed.
-	    public void killAndWait() {
+	    @Override
+		public void killAndWait() {
 	        Log.v(TAG, "LoopTicker: killAndWait");
 	        
 	        if (Thread.currentThread() == this)

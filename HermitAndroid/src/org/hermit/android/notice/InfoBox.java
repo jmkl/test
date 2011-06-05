@@ -142,6 +142,7 @@ public class InfoBox
 		Button but = new Button(parentApp);
 		but.setText(buttonLabel);
 		but.setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View arg0) {
 				okButtonPressed();
 			}
@@ -174,7 +175,8 @@ public class InfoBox
     		Button but = new Button(parentApp);
         	but.setId(i);
         	but.setOnClickListener(new View.OnClickListener() {
-        		public void onClick(View b) {
+        		@Override
+				public void onClick(View b) {
         			linkButtonPressed(((Button) b).getId());
         		}
         	});

@@ -316,6 +316,7 @@ public class Ticker {
 	 * Run this Ticker.  Terminates when we're killed.
 	 */
 	private Runnable tickRunner = new Runnable() {
+		@Override
 		public void run() {
 			long dayTime;
 			while (isEnabled()) {
@@ -382,6 +383,7 @@ public class Ticker {
 
 			if (listener != null) {
 				poster = new Runnable() {
+					@Override
 					public void run() {
 						listener.tick(listener.time, listener.daySecs);
 					}

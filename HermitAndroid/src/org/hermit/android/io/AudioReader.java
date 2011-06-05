@@ -120,7 +120,8 @@ public class AudioReader
             inputListener = listener;
             running = true;
             readerThread = new Thread(new Runnable() {
-                public void run() { readerRun(); }
+                @Override
+				public void run() { readerRun(); }
             }, "Audio Reader");
             readerThread.start();
         }
