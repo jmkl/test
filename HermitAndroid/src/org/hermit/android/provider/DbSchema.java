@@ -216,15 +216,23 @@ public abstract class DbSchema {
 				
 				// Save all the fields in this row, each preceded by
 				// its column number.
+				StringBuilder sb1 = new StringBuilder(12);
+				StringBuilder sb2 = new StringBuilder(120);
 				for (int i = 0; i < fields.length; ++i) {
-					TableSchema.FieldType t = fields[i].type;
+					TableSchema.FieldDesc fd = fields[i];
+					TableSchema.FieldType ft = fd.type;
 
 					// Skip absent fields.
-					if (c.isNull(i) || (t == TableSchema.FieldType.TEXT && c.getString(cols[i]) == null))
+					if (c.isNull(i) || (ft == TableSchema.FieldType.TEXT && c.getString(cols[i]) == null)) {
+						sb1.append('_');
 						continue;
+					}
 					
+					sb1.append('x');
+					sb2.append(" | " + fd.name + "=" + c.getString(cols[i]));
 					dos.writeInt(i);
-					switch (t) {
+					switch (ft) {
+					case _ID:
 					case BIGINT:
 						long lv = c.getLong(cols[i]);
 						dos.writeLong(lv);
@@ -252,7 +260,8 @@ public abstract class DbSchema {
 						break;
 					}
 				}
-				
+				Log.v(TAG, ">> " + sb1 + sb2);
+
 				dos.writeInt(ROW_END);
 
 				c.moveToNext();
@@ -261,7 +270,7 @@ public abstract class DbSchema {
 			c.close();
 		}
 	}
-	
+
     
 	// ******************************************************************** //
 	// Restore.
@@ -293,6 +302,7 @@ public abstract class DbSchema {
     			checkInt(dis, BACKUP_VERSION, "backup format version", bakFile);
     			checkInt(dis, dbVersion, "database schema version", bakFile);
 
+    			wipeTable(cr, t);
     			restoreTable(cr, t, dis, bakFile);
     		} finally {
     			if (dis != null) try {
@@ -303,6 +313,12 @@ public abstract class DbSchema {
     			} catch (IOException e) { }
     		}
     	}
+    }
+    
+    
+    private void wipeTable(ContentResolver cr, TableSchema ts) {
+    	Log.v(TAG, "WIPE " + ts.getTableName());
+		cr.delete(ts.getContentUri(), null, null);
     }
 
 
@@ -328,6 +344,7 @@ public abstract class DbSchema {
     	    											" in " + bakFile);
     			TableSchema.FieldType t = fields[i].type;
     			switch (t) {
+    			case _ID:
     			case BIGINT:
     				values.put(fields[i].name, dis.readLong());
     				break;
@@ -350,7 +367,7 @@ public abstract class DbSchema {
     			}
     		}
 
-//    		cr.insert(ts.getContentUri(), values);
+    		cr.insert(ts.getContentUri(), values);
     		dontInsert(values, fields);
     	}
 	}
@@ -373,7 +390,7 @@ public abstract class DbSchema {
     	for (FieldDesc fd : fields) {
     		if (values.containsKey(fd.name)) {
     			sb1.append('x');
-    			sb2.append(" | " + values.getAsString(fd.name));
+    			sb2.append(" | " + fd.name + "=" + values.getAsString(fd.name));
     		} else {
     			sb1.append('_');
     		}

@@ -63,6 +63,11 @@ public abstract class TableSchema
 	 */
 	public enum FieldType {
 		/**
+		 * Field type: row ID, mandatory.
+		 */
+		_ID("INTEGER PRIMARY KEY"),
+
+		/**
 		 * Field type: 64-bit integer value.
 		 */
 		BIGINT,
@@ -90,6 +95,21 @@ public abstract class TableSchema
 		 * Field type: text string.
 		 */
 		TEXT;
+		
+		private FieldType(String t) {
+			textRep = t;
+		}
+		
+		private FieldType() {
+			textRep = name();
+		}
+		
+		@Override
+		public String toString() {
+			return textRep;
+		}
+		
+		private final String textRep;
 	}
 	
 	
@@ -97,6 +117,14 @@ public abstract class TableSchema
 	 * Descriptor for a field in the database.
 	 */
 	public static final class FieldDesc {
+		public FieldDesc(FieldType type) {
+			if (type != FieldType._ID)
+				throw new IllegalArgumentException("Can't use one-arg ctor" +
+												   " with a normal type");
+			this.name = BaseColumns._ID;
+			this.type = type;
+		}
+		
 		public FieldDesc(String name, FieldType type) {
 			this.name = name;
 			this.type = type;
@@ -150,9 +178,6 @@ public abstract class TableSchema
         // Create the projection map, and all-fields projection.
         projectionMap = new HashMap<String, String>();
 
-        // Add the implicit ID field.
-        projectionMap.put(BaseColumns._ID, BaseColumns._ID);
-
         for (FieldDesc field : fieldDefs)
             projectionMap.put(field.name, field.name);
     }
@@ -174,10 +199,9 @@ public abstract class TableSchema
      *                      list.
      */
     protected static String[] makeProjection(FieldDesc[] fields) {
-        String[] projection = new String[fields.length + 1];
+        String[] projection = new String[fields.length];
         int np = 0;
         
-        projection[np++] = BaseColumns._ID;
         for (FieldDesc field : fields)
             projection[np++] = field.name;
         

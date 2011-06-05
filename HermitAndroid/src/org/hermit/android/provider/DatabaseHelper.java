@@ -23,7 +23,6 @@ package org.hermit.android.provider;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.provider.BaseColumns;
 import android.util.Log;
 
 
@@ -76,14 +75,16 @@ public class DatabaseHelper
         for (TableSchema t : dbSchema.getDbTables()) {
             qb.setLength(0);
             qb.append("CREATE TABLE " + t.getTableName() + " ( ");
-            qb.append(BaseColumns._ID + " INTEGER PRIMARY KEY");
-            for (TableSchema.FieldDesc field : t.getTableFields()) {
-                qb.append(", ");
+            TableSchema.FieldDesc[] fields = t.getTableFields();
+            for (int i = 0; i < fields.length; ++i) {
+            	TableSchema.FieldDesc field = fields[i];
+            	if (i > 0)
+            		qb.append(", ");
                 qb.append(field.name);
                 qb.append(" ");
                 qb.append(field.type);
             }
-            qb.append(");");
+            qb.append(" );");
             db.execSQL(qb.toString());
         }
     }
@@ -113,8 +114,9 @@ public class DatabaseHelper
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.w(TableProvider.TAG, "Upgrading database from version " + oldVersion + " to "
-                + newVersion + ", which will destroy all old data");
+        Log.w(TableProvider.TAG, "Upgrading database from version " +
+        						 oldVersion + " to " + newVersion +
+        						 ", which will destroy all old data");
         for (TableSchema t : dbSchema.getDbTables())
             db.execSQL("DROP TABLE IF EXISTS " + t.getTableName());
         onCreate(db);
