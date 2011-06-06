@@ -270,8 +270,13 @@ public class WeatherService
 		// And do the analysis.
 		checkTrends(time);
 		
+		/**
+		 * If we have alerts to sound, run them, and pass finishObservation
+		 * as the completion handler.  Else just run finishObservation now.
+		 */
 		if (press < 900)
-			soundService.textAlert("Are we up a mountain or what?",
+			soundService.textAlert(SoundService.Alert.TYPHOON,
+								   "Are we up a mountain or what?",
 								   finishObservation);
 		else
 			finishObservation.run();

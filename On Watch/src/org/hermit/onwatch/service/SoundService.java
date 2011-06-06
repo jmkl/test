@@ -42,45 +42,24 @@ public class SoundService
     // ******************************************************************** //
 	
 	/**
-	 * Class describing a sound to be played.
+	 * Enum describing an alert level.
 	 */
-	public static final class Sound {
+	public enum Alert {
+		ROUTINE(SoundEffect.BINGBONG, 1),
+		WAKEUP(SoundEffect.RINGRING, 1),
+		WARNING(SoundEffect.BUZZER, 2),
+		ALARM(SoundEffect.DEFCON_LONG, 1),
+		DANGER(SoundEffect.DEFCON, 2),
+		TYPHOON(SoundEffect.DEFCON, 3),
+		SPACE(SoundEffect.DEFCON_SPACE, 1);
 		
-		/**
-		 * Create a sound which will play an alerting sound effect then
-		 * speak some text.
-		 * 
-		 * @param	effect		Sound effect to play as an alert.
-		 * @param	text		Text to speak.
-		 */
-		public Sound(SoundEffect effect, String text) {
+		Alert(SoundEffect effect, int count) {
 			soundEffect = effect;
-			effectCount = 1;
-			spokenText = text;
-		}
-		
-		/**
-		 * Create a sound which will play a given sound effect.
-		 * 
-		 * @param	effect		Sound effect to play.
-		 * @param	text		Number of times to repeat.
-		 */
-		public Sound(SoundEffect effect, int count) {
-			soundEffect = effect;
-			effectCount = count;
-			spokenText = null;
-		}
-		
-		@Override
-		public String toString() {
-			return soundEffect.toString() + "x" + effectCount;
+			soundCount = count;
 		}
 		
 		private final SoundEffect soundEffect;
-		private final int effectCount;
-		private final String spokenText;
-		
-		private Runnable playListener = null;
+		private final int soundCount;
 	}
 	
 	
@@ -216,12 +195,15 @@ public class SoundService
 	 * Play a text alert.  When it is played, the given handler
 	 * will be called, if not null.
 	 * 
+	 * @param	alert		Alert level of the alert; determines what
+	 * 						sound is used to introduce it.
 	 * @param	text		Text of the alert.
 	 * @param	handler		A Runnable to run when the alert is played;
 	 * 						or null.
 	 */
-    synchronized void textAlert(String text, Runnable handler) {
-    	queuePlayer.queue(new Sound(SoundEffect.BUZZER, text), null);
+    synchronized void textAlert(Alert alert, String text, Runnable handler) {
+    	Sound sound = new Sound(alert.soundEffect, alert.soundCount, text);
+    	queuePlayer.queue(sound, handler);
     }
     
 
@@ -439,21 +421,18 @@ public class SoundService
 	
 
 	// ******************************************************************** //
-	// Class Data.
+	// Private Classes.
 	// ******************************************************************** //
-
-    // Debugging tag.
-	private static final String TAG = "onwatch";
- 
-	// The instance of the chimer; null if not created yet.
-	private static SoundService chimerInstance = null;
 
     /**
      * The sounds that we make.
      */
 	private static enum SoundEffect {
+    	/** A simple routine announcement chime. */
+    	BINGBONG(R.raw.bing_bong, 1321, 500),
+    	
     	/** A single bell. */
-    	BELL1(R.raw.bells_1, 3000, 3000),
+    	BELL1(R.raw.bells_1, 1957, 3000),
     	
     	/** Two bells. */
     	BELL2(R.raw.bells_2, 3000, 3000),
@@ -462,11 +441,17 @@ public class SoundService
     	RINGRING(R.raw.ring_ring, 2000, 0),
     	
     	/** A serious alert sound. */
-    	BUZZER(R.raw.alert_buzzer, 2000, 0),
+    	BUZZER(R.raw.alert_buzzer, 1000, 1000),
     	
-    	/** A major alert sound. */
-    	DEFCON(R.raw.defcon, 2000, 0);
+    	/** A long major alert sound. */
+    	DEFCON_LONG(R.raw.defcon, 1600, 500),
     	
+    	/** A short major alert sound (good for repeating). */
+    	DEFCON(R.raw.defcon, 1000, 500),
+    	
+    	/** A long major alert sound in space. */
+    	DEFCON_SPACE(R.raw.defcon_space, 3000, 1000);
+	
     	private SoundEffect(int res, int inter, int post) {
     		soundRes = res;
     		interDelay = inter;
@@ -485,6 +470,61 @@ public class SoundService
     	// Sound ID for playing.
         private int soundId = 0;        
     }
+
+	
+	/**
+	 * Class describing a sound to be played.
+	 */
+	private static final class Sound {
+		
+		/**
+		 * Create a sound which will play a given sound effect.
+		 * 
+		 * @param	effect		Sound effect to play.
+		 * @param	text		Number of times to repeat.
+		 */
+		public Sound(SoundEffect effect, int count) {
+			soundEffect = effect;
+			effectCount = count;
+			spokenText = null;
+		}
+		
+		/**
+		 * Create a sound which will play a given sound effect then
+		 * speak some text.
+		 * 
+		 * @param	effect		Sound effect to play.
+		 * @param	count		Number of times to repeat.
+		 * @param	text		Text to speak.
+		 */
+		public Sound(SoundEffect effect, int count, String text) {
+			soundEffect = effect;
+			effectCount = count;
+			spokenText = text;
+		}
+		
+		@Override
+		public String toString() {
+			return soundEffect.toString() + "x" + effectCount;
+		}
+		
+		private final SoundEffect soundEffect;
+		private final int effectCount;
+		private final String spokenText;
+		
+		private Runnable playListener = null;
+	}
+	
+
+	// ******************************************************************** //
+	// Class Data.
+	// ******************************************************************** //
+
+    // Debugging tag.
+	private static final String TAG = "onwatch";
+ 
+	// The instance of the chimer; null if not created yet.
+	private static SoundService chimerInstance = null;
 
 
 	// ******************************************************************** //
