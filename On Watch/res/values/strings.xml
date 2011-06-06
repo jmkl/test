@@ -171,6 +171,7 @@ for more details.\n</string>
     <!-- Weather. -->
     <string name="weather_nodata">insufficient observations</string>
     <string name="weather_steady">barometer steady</string>
+    <string name="weather_changing">barometer changing</string>
     <string name="weather_rising">barometer rising</string>
     <string name="weather_turn_rising">barometer started rising</string>
     <string name="weather_falling">barometer falling</string>

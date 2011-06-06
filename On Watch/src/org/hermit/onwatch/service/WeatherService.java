@@ -313,15 +313,17 @@ public class WeatherService
 	 */
 	private void checkTrends(long time) {
     	long baseTime = time - RECENT_OBS_TIME;
-    	long lateBaseTime = time - CURRENT_OBS_TIME;
     	
+		int trend = 0;
+		int trendCount = 0;
 		long prevTime = 0;
 		double prevPress = 0;
-		int upCount = 0;
-		int downCount = 0;
-		int turn = 0;
 		long turnTime = 0;
 		double turnPress = 0;
+		int prevTrend = 0;
+		int prevCount = 0;
+		double rateTot = 0;
+		int rateCount = 0;
 		for (int i = 0; i < recentCount; ++i) {
 			int ix = recentIndex - recentCount + i;
 			if (ix < 0)
@@ -333,63 +335,87 @@ public class WeatherService
 			if (t < baseTime)
 				continue;
 			
-			if (prevTime == 0) {
-				turnTime = t;
-				turnPress = p;
-			} else {
-				if (p > prevPress) {
-					++upCount;
-					if (upCount > 1) {
-						downCount = 0;
-						if (turn == -1) {
-							turn = 1;
-							turnTime = prevTime;
-							turnPress = prevPress;
-						}
-					}
-				} else if (p < prevPress) {
-					++downCount;
-					if (downCount > 1) {
-						upCount = 0;
-						if (turn == 1) {
-							turn = -1;
-							turnTime = prevTime;
-							turnPress = prevPress;
-						}
-					}
-				}
+			if (i >= recentCount - 3 && prevTime != 0) {
+				double r = (p - prevPress) / (t - prevTime) * 1000d * 3600d;
+				rateTot += r;
+				++rateCount;
 			}
 			
+			if (turnTime == 0) {
+				turnTime = t;
+				turnPress = p;
+				trend = 0;
+				trendCount = 0;
+			} else {
+				int sampleTrend = (int) Math.signum(p - turnPress);
+				double sampleDelta = Math.abs(p - turnPress);
+
+				// If we've moved by more than TREND_TOLERANCE, that's
+				// a new trend.
+				boolean change;
+				int next;
+				if (trend == 0) {
+					change = sampleDelta > TREND_TOLERANCE;
+					next = sampleTrend;
+				} else {
+					change = sampleTrend != trend;
+					next = 0;
+				}
+				
+				if (change) {
+					if (trendCount >= 3 && trend != prevTrend) {
+						prevTrend = trend;
+						prevCount = trendCount;
+					}
+					turnTime = t;
+					turnPress = p;
+					trend = next;
+					trendCount = 0;
+				} else {
+					++trendCount;
+				}
+			}
+
 			prevTime = t;
 			prevPress = p;
 		}
 		
-		// Derive some results.
-		double change = prevPress - turnPress;
-		double rate = change / (prevTime - turnTime) * 1000d * 3600d;
+		double rate = rateTot / rateCount;
 		
-        Log.i(TAG, "Weather analysis: " + recentCount + " records; turn=" +
-        		   turn + "@" + turnPress);
-        Log.i(TAG, "==> press=" + prevPress + "; up=" + upCount +
-        		   "; dn=" + downCount + "; ch=" + change + "; rate=" + rate);
+        Log.i(TAG, "Weather analysis: " + recentCount + " records; trend=" +
+        		   trend + "(" + trendCount + ") from " +
+        		   prevTrend + "(" + prevCount + ")");
+        Log.i(TAG, "==> rate=" + rateTot + "(" + rateCount + ")");
 
 		int stateMsg;
 		if (recentCount < 3)
 			stateMsg = R.string.weather_nodata;
-		else if (turn == 1 && upCount > 2)
-			stateMsg = R.string.weather_turn_rising;
-		else if (turn == -1 && downCount > 2)
-			stateMsg = R.string.weather_turn_falling;
-		else if (upCount > 2 || rate > 0.2)
-			stateMsg = R.string.weather_rising;
-		else if (downCount > 2 || rate < -0.2)
-			stateMsg = R.string.weather_falling;
-		else
-			stateMsg = R.string.weather_steady;
+		else if (trendCount < 3) {
+			if (prevCount >= 3)
+				stateMsg = R.string.weather_changing;
+			else
+				stateMsg = R.string.weather_steady;
+		} else {
+			if (prevCount >= 3) {
+				if (trend == 1)
+					stateMsg = R.string.weather_turn_rising;
+				else if (trend == -1)
+					stateMsg = R.string.weather_turn_falling;
+				else
+					stateMsg = R.string.weather_steady;
+			} else {
+				if (trend == 1)
+					stateMsg = R.string.weather_rising;
+				else if (trend == -1)
+					stateMsg = R.string.weather_falling;
+				else
+					stateMsg = R.string.weather_steady;
+			}
+		}
 
 		// Give a rate message, if there has been a sustained trend.
 		int rateMsg = 0;
-		if (turnTime < lateBaseTime) {
+		if (rateCount >= 3) {
 			double absRate = Math.abs(rate);
 			if (absRate > 10)
 				rateMsg = R.string.weather_quick_5;
@@ -445,13 +471,16 @@ public class WeatherService
 	private static WeatherService serviceInstance = null;
 	
 	// Maximum number of recent observations to use for trend analysis.
-	private static final int NUM_RECENT_OBS = 60;
+	private static final int NUM_RECENT_OBS = 50;
 	
 	// Time in ms over which we analyse recent observations.
-	private static final int RECENT_OBS_TIME = NUM_RECENT_OBS * 60 * 1000;
+	private static final int RECENT_OBS_TIME = NUM_RECENT_OBS * 5 * 60 * 1000;
 	
 	// Time in ms which is considered very recent, for rate analysis.
 	private static final int CURRENT_OBS_TIME = 30 * 60 * 1000;
+	
+	// Amount in mb by which pressure has to move to start a new trend.
+	private static final float TREND_TOLERANCE = 1f;
 
 
 	// ******************************************************************** //
