@@ -63,6 +63,59 @@ public class SoundService
 	}
 	
 	
+	/**
+	 * Class describing a sound to be played.
+	 */
+	public static final class Sound {
+		
+		/**
+		 * Create a sound which will play a given alert.
+		 * 
+		 * @param	alert		Alert to play.
+		 */
+		public Sound(Alert alert) {
+			soundEffect = alert.soundEffect;
+			effectCount = alert.soundCount;
+			spokenText = 0;
+		}
+		
+		/**
+		 * Create a sound which will play a given voice alert.
+		 * 
+		 * @param	alert		Alert to play.
+		 * @param	textId		Resource ID of the text to speak.
+		 */
+		public Sound(Alert alert, int textId) {
+			soundEffect = alert.soundEffect;
+			effectCount = alert.soundCount;
+			spokenText = textId;
+		}
+
+		/**
+		 * Create a sound which will play a given sound effect.
+		 * 
+		 * @param	effect		Sound effect to play.
+		 * @param	count		Number of times to repeat.
+		 */
+		private Sound(SoundEffect effect, int count) {
+			soundEffect = effect;
+			effectCount = count;
+			spokenText = 0;
+		}
+		
+		@Override
+		public String toString() {
+			return soundEffect.toString() + "x" + effectCount;
+		}
+		
+		private final SoundEffect soundEffect;
+		private final int effectCount;
+		private final int spokenText;
+		
+		private Runnable playListener = null;
+	}
+	
+
     /**
      * Enum defining the repeating alarm modes.
      */
@@ -192,17 +245,14 @@ public class SoundService
 	// ******************************************************************** //
     
 	/**
-	 * Play a text alert.  When it is played, the given handler
+	 * Queue a sound to be played.  When it is played, the given handler
 	 * will be called, if not null.
 	 * 
-	 * @param	alert		Alert level of the alert; determines what
-	 * 						sound is used to introduce it.
-	 * @param	text		Text of the alert.
+	 * @param	sound		The sound to play.
 	 * @param	handler		A Runnable to run when the alert is played;
 	 * 						or null.
 	 */
-    synchronized void textAlert(Alert alert, String text, Runnable handler) {
-    	Sound sound = new Sound(alert.soundEffect, alert.soundCount, text);
+    synchronized void playSound(Sound sound, Runnable handler) {
     	queuePlayer.queue(sound, handler);
     }
     
@@ -361,10 +411,11 @@ public class SoundService
     		}
 
     		// Play any text there may be.
-			if (sound.spokenText != null) {
+			if (sound.spokenText != 0) {
     			synchronized (speechComplete) {
+    				String text = appContext.getString(sound.spokenText);
     				textToSpeech.setSpeechRate(0.8f);
-    				textToSpeech.speak(sound.spokenText, TextToSpeech.QUEUE_ADD, null);
+    				textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, null);
     				
     				// Block until the speech is done.
     				speechComplete.wait();
@@ -471,50 +522,6 @@ public class SoundService
         private int soundId = 0;        
     }
 
-	
-	/**
-	 * Class describing a sound to be played.
-	 */
-	private static final class Sound {
-		
-		/**
-		 * Create a sound which will play a given sound effect.
-		 * 
-		 * @param	effect		Sound effect to play.
-		 * @param	text		Number of times to repeat.
-		 */
-		public Sound(SoundEffect effect, int count) {
-			soundEffect = effect;
-			effectCount = count;
-			spokenText = null;
-		}
-		
-		/**
-		 * Create a sound which will play a given sound effect then
-		 * speak some text.
-		 * 
-		 * @param	effect		Sound effect to play.
-		 * @param	count		Number of times to repeat.
-		 * @param	text		Text to speak.
-		 */
-		public Sound(SoundEffect effect, int count, String text) {
-			soundEffect = effect;
-			effectCount = count;
-			spokenText = text;
-		}
-		
-		@Override
-		public String toString() {
-			return soundEffect.toString() + "x" + effectCount;
-		}
-		
-		private final SoundEffect soundEffect;
-		private final int effectCount;
-		private final String spokenText;
-		
-		private Runnable playListener = null;
-	}
-	
 
 	// ******************************************************************** //
 	// Class Data.

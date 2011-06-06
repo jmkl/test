@@ -176,11 +176,14 @@ for more details.\n</string>
     <string name="weather_turn_rising">barometer started rising</string>
     <string name="weather_falling">barometer falling</string>
     <string name="weather_turn_falling">barometer started falling</string>
-    <string name="weather_quick_1">quite quickly</string>
-    <string name="weather_quick_2">quickly</string>
-    <string name="weather_quick_3">very quickly</string>
-    <string name="weather_quick_4">extremely fast</string>
-    <string name="weather_quick_5">incredibly fast</string>
+    <string name="weather_rate_0">steady</string>
+    <string name="weather_rate_slow">slowly</string>
+    <string name="weather_rate_mod">quite quickly</string>
+    <string name="weather_rate_quick">quickly</string>
+    <string name="weather_rate_very">very quickly</string>
+    <string name="weather_rate_extreme">extremely fast</string>
+    <string name="weather_rate_insane">incredibly fast</string>
+    <string name="weather_low_0">pressure normal</string>
     <string name="weather_low_1">pressure low</string>
     <string name="weather_low_2">pressure very low</string>
     <string name="weather_low_3">pressure extremely low</string>
@@ -190,6 +193,20 @@ for more details.\n</string>
     <string name="weather_high_2">pressure very high</string>
     <string name="weather_high_3">pressure extremely high</string>
     <string name="weather_high_4">we\'re underwater</string>
+
+    <!-- Weather Voice Alerts. -->
+    <string name="weather_v_low_2">Barometric pressure is very low</string>
+    <string name="weather_v_low_3">Barometric pressure is extremely low</string>
+    <string name="weather_v_low_4">Are we up a mountain or what?</string>
+    <string name="weather_v_low_5">We\'re in space...   Space...
+We\'re in   space....</string>
+    <string name="weather_v_high_2">Barometric pressure is very high</string>
+    <string name="weather_v_high_3">Barometric pressure is extremely high</string>
+    <string name="weather_v_high_4">we\'re underwater</string>
+    <string name="weather_v_fall_quick">Pressure falling quickly</string>
+    <string name="weather_v_fall_very">Pressure falling very quickly</string>
+    <string name="weather_v_fall_extreme">Pressure falling extremely fast</string>
+    <string name="weather_v_fall_insane">Pressure falling incredibly fast</string>
 
     <!-- Various. -->
     <string name="timezone_naut">Nautical</string>

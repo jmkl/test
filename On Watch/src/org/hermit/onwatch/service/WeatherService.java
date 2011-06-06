@@ -19,6 +19,8 @@ package org.hermit.onwatch.service;
 
 import org.hermit.onwatch.R;
 import org.hermit.onwatch.provider.WeatherSchema;
+import org.hermit.onwatch.service.SoundService.Alert;
+import org.hermit.onwatch.service.SoundService.Sound;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -37,6 +39,106 @@ import android.util.Log;
  */
 public class WeatherService
 {
+
+	// ******************************************************************** //
+    // Public Types.
+    // ******************************************************************** //
+
+	/**
+	 * Enum representing the state of the barometer in terms of how
+	 * it's rising or falling.
+	 */
+	public enum ChangeState {
+		NO_DATA(R.string.weather_nodata),
+		STEADY(R.string.weather_steady),
+		CHANGING(R.string.weather_changing),
+		TURN_RISE(R.string.weather_turn_rising),
+		TURN_FALL(R.string.weather_turn_falling),
+		RISING(R.string.weather_rising),
+		FALLING(R.string.weather_falling);
+		
+		ChangeState(int msg) {
+			textId = msg;
+		}
+		
+		private final int textId;
+	}
+	
+
+	/**
+	 * Enum representing the rate of change of the barometer.
+	 */
+	public enum ChangeRate {
+		NO_DATA(R.string.weather_nodata),
+		NIL(R.string.weather_rate_0),
+		FALL_SLOW(R.string.weather_rate_slow),
+		FALL_MOD(R.string.weather_rate_mod),
+		FALL_FAST(R.string.weather_rate_quick,
+				   new Sound(Alert.WARNING, R.string.weather_v_fall_quick)),
+		FALL_VERY_FAST(R.string.weather_rate_very,
+				   new Sound(Alert.ALARM, R.string.weather_v_fall_very)),
+		FALL_EXTREME(R.string.weather_rate_extreme,
+				   new Sound(Alert.DANGER, R.string.weather_v_fall_extreme)),
+		FALL_INSANE(R.string.weather_rate_insane,
+				   new Sound(Alert.TYPHOON, R.string.weather_v_fall_insane)),
+		RISE_SLOW(R.string.weather_rate_slow),
+		RISE_MOD(R.string.weather_rate_mod),
+		RISE_FAST(R.string.weather_rate_quick),
+		RISE_VERY_FAST(R.string.weather_rate_very),
+		RISE_EXTREME(R.string.weather_rate_extreme),
+		RISE_INSANE(R.string.weather_rate_insane);
+	
+		ChangeRate(int msg) {
+			textId = msg;
+			alertSound = null;
+		}
+
+		ChangeRate(int msg, Sound alert) {
+			textId = msg;
+			alertSound = alert;
+		}
+
+		private final int textId;
+		private final Sound alertSound;
+	}
+	
+
+	/**
+	 * Enum representing the current barometric pressure state.
+	 */
+	public enum PressState {
+		LOW_INSANE(R.string.weather_low_5,
+				   new Sound(Alert.SPACE, R.string.weather_v_low_5)),
+		LOW_TORNADO(R.string.weather_low_4,
+				   new Sound(Alert.TYPHOON, R.string.weather_v_low_4)),
+		LOW_HURRICANE(R.string.weather_low_3,
+				   new Sound(Alert.DANGER, R.string.weather_v_low_3)),
+		LOW_STORM(R.string.weather_low_2,
+				   new Sound(Alert.ALARM, R.string.weather_v_low_2)),
+		LOW_DEPRESSION(R.string.weather_low_1),
+		NORMAL(R.string.weather_low_0),
+		HIGH_MILD(R.string.weather_high_1),
+		HIGH_VERY(R.string.weather_high_2,
+				   new Sound(Alert.ALARM, R.string.weather_v_high_2)),
+		HIGH_EXTREME(R.string.weather_high_3,
+				   new Sound(Alert.ALARM, R.string.weather_v_high_3)),
+		HIGH_INSANE(R.string.weather_high_4,
+				   new Sound(Alert.ALARM, R.string.weather_v_high_4));
+
+		PressState(int msg) {
+			textId = msg;
+			alertSound = null;
+		}
+
+		PressState(int msg, Sound alert) {
+			textId = msg;
+			alertSound = alert;
+		}
+		
+		private final int textId;
+		private final Sound alertSound;
+	}
+	
 
 	// ******************************************************************** //
     // Constructor.
@@ -169,7 +271,10 @@ public class WeatherService
 						obsRequest = 0;
 						obsCount = 0;
 						obsTotal = 0f;
-						recordObservation(event.timestamp, val);
+						
+						// The timestamp in the event is garbage; replace it.
+				        long time = System.currentTimeMillis();
+						recordObservation(time, val);
 					}
 				}
 			}
@@ -198,6 +303,70 @@ public class WeatherService
 	
 	private BaroListener baroListener = new BaroListener();
 
+	
+    // ******************************************************************** //
+    // Sensor Simulation.
+    // ******************************************************************** //
+
+	/**
+	 * Simulator for barometer events.
+	 */
+	private final class SimuListener {
+		/**
+		 * Request an observation.
+		 * 
+		 * @param	req			Number of values (> 0) to average together
+		 * 						to make the observation.
+		 */
+		void requestObservation(int req) {
+			long time = System.currentTimeMillis();
+			float target = SIMU_PROGRAM[simStep][0];
+			float rate = SIMU_PROGRAM[simStep][1];
+			
+			if (startTime == 0) {
+				startTime = time;
+				simPress = target;
+				++simStep;
+			} else {
+				// Make time go 10x speed.
+				time = startTime + (time - startTime) * 10;
+				
+				float hours = (time - prevTime) / 1000f / 3600f;
+				float step = rate * hours;
+				if (step > Math.abs(target - simPress)) {
+					simPress = target;
+					++simStep;
+				} else {
+					simPress += step * Math.signum(target - simPress);
+				}
+			}
+			
+			if (simStep >= SIMU_PROGRAM.length)
+				simStep = 0;
+			prevTime = time;
+			
+			synchronized (WeatherService.this) {
+				recordObservation(time, simPress);
+			}
+		}
+		
+		private int simStep = 0;
+		private float simPress = 1013.0f;
+		private long startTime = 0;
+		private long prevTime = 0;
+	}
+	
+	// List of { target pressure, rate }.
+	private static final float[][] SIMU_PROGRAM = {
+		{ 1013.0f, 1.0f	},
+		{ 1000.0f, 0.4f	},
+		{ 980.0f, 0.6f	},
+		{ 950.0f, 2.1f	},
+		{ 910.0f, 8.1f	},
+	};
+
+	private SimuListener simuListener = new SimuListener();
+
 
 	// ******************************************************************** //
 	// Event Handling.
@@ -220,25 +389,30 @@ public class WeatherService
 		@Override
 		public void alarm(long time, int daySecs) {
 			// If there's no barometer, there's nothing we can do.
-			if (baroSensor == null){
-				done();
-				return;
-			}
+//			if (baroSensor == null) {
+//				done();
+//				return;
+//			}
 			
-			// Register for barometer updates.
-        	sensorManager.registerListener(baroListener,
-					   					   baroSensor,
-					   					   SensorManager.SENSOR_DELAY_NORMAL);
-        	
-			synchronized (WeatherService.this) {
-				baroListener.requestObservation(5);
-				
-				// In 15 seconds, give up.
-				msgHandler.postDelayed(finishObservation, 15 * 1000);
+			// Register for barometer updates.  If we don't have a
+			// barometer, fake it.
+			if (baroSensor != null) {
+				sensorManager.registerListener(baroListener,
+						baroSensor,
+						SensorManager.SENSOR_DELAY_NORMAL);
+
+				synchronized (WeatherService.this) {
+					// In 15 seconds, give up.
+					msgHandler.postDelayed(finishObservation, 15 * 1000);
+
+					baroListener.requestObservation(5);
+				}
+			} else {
+				simuListener.requestObservation(5);
 			}
 		}
 	};
-	
+
 	
 	/**
 	 * Record the given observation.  When we're done, the alarm manager
@@ -249,9 +423,6 @@ public class WeatherService
 	 * @param	press		Pressure value in millibars.
 	 */
 	private void recordObservation(long time, double press) {
-		// The timestamp in the event is garbage; replace it.
-        time = System.currentTimeMillis();
-
         Log.i(TAG, "Weather record " + press);
 		// Create an Observation record, and add it to the database.
 		obsValues.put(WeatherSchema.Observations.TIME, time);
@@ -274,11 +445,14 @@ public class WeatherService
 		 * If we have alerts to sound, run them, and pass finishObservation
 		 * as the completion handler.  Else just run finishObservation now.
 		 */
-		if (press < 900)
-			soundService.textAlert(SoundService.Alert.TYPHOON,
-								   "Are we up a mountain or what?",
-								   finishObservation);
-		else
+		Sound cs = changeRate.alertSound;
+		Sound ps = pressState.alertSound;
+		if (cs != null || ps != null) {
+			if (cs != null)
+				soundService.playSound(cs, ps != null ? null : finishObservation);
+			if (ps != null)
+				soundService.playSound(ps, finishObservation);
+		} else
 			finishObservation.run();
 	}
 
@@ -295,7 +469,8 @@ public class WeatherService
 				msgHandler.removeCallbacks(this);
 
 				alarmHandler.done();
-		    	sensorManager.unregisterListener(baroListener);
+		        if (baroSensor != null)
+		        	sensorManager.unregisterListener(baroListener);
 			}
 		}
 	};
@@ -387,79 +562,94 @@ public class WeatherService
         		   prevTrend + "(" + prevCount + ")");
         Log.i(TAG, "==> rate=" + rateTot + "(" + rateCount + ")");
 
-		int stateMsg;
 		if (recentCount < 3)
-			stateMsg = R.string.weather_nodata;
+			changeState = ChangeState.NO_DATA;
 		else if (trendCount < 3) {
 			if (prevCount >= 3)
-				stateMsg = R.string.weather_changing;
+				changeState = ChangeState.CHANGING;
 			else
-				stateMsg = R.string.weather_steady;
+				changeState = ChangeState.STEADY;
 		} else {
 			if (prevCount >= 3) {
 				if (trend == 1)
-					stateMsg = R.string.weather_turn_rising;
+					changeState = ChangeState.TURN_RISE;
 				else if (trend == -1)
-					stateMsg = R.string.weather_turn_falling;
+					changeState = ChangeState.TURN_FALL;
 				else
-					stateMsg = R.string.weather_steady;
+					changeState = ChangeState.STEADY;
 			} else {
 				if (trend == 1)
-					stateMsg = R.string.weather_rising;
+					changeState = ChangeState.RISING;
 				else if (trend == -1)
-					stateMsg = R.string.weather_falling;
+					changeState = ChangeState.FALLING;
 				else
-					stateMsg = R.string.weather_steady;
+					changeState = ChangeState.STEADY;
 			}
 		}
 
 		// Give a rate message, if there has been a sustained trend.
-		int rateMsg = 0;
-		if (rateCount >= 3) {
-			double absRate = Math.abs(rate);
-			if (absRate > 10)
-				rateMsg = R.string.weather_quick_5;
-			else if (absRate > 5)
-				rateMsg = R.string.weather_quick_4;
-			else if (absRate > 2)
-				rateMsg = R.string.weather_quick_3;
-			else if (absRate > 1)
-				rateMsg = R.string.weather_quick_2;
-			else if (absRate > 0.5)
-				rateMsg = R.string.weather_quick_1;
-		}
+		if (trend != 0 && trendCount >= 3 && rateCount >= 3) {
+			if (rate > 10)
+				changeRate = ChangeRate.RISE_INSANE;
+			else if (rate > 5)
+				changeRate = ChangeRate.RISE_EXTREME;
+			else if (rate > 2)
+				changeRate = ChangeRate.RISE_VERY_FAST;
+			else if (rate > 1)
+				changeRate = ChangeRate.RISE_FAST;
+			else if (rate > 0.5)
+				changeRate = ChangeRate.RISE_MOD;
+			else if (rate > 0.0)
+				changeRate = ChangeRate.RISE_SLOW;
+			else if (rate < -10)
+				changeRate = ChangeRate.FALL_INSANE;
+			else if (rate < -5)
+				changeRate = ChangeRate.FALL_EXTREME;
+			else if (rate < -2)
+				changeRate = ChangeRate.FALL_VERY_FAST;
+			else if (rate < -1)
+				changeRate = ChangeRate.FALL_FAST;
+			else if (rate < -0.5)
+				changeRate = ChangeRate.FALL_MOD;
+			else if (rate < -0.0)
+				changeRate = ChangeRate.FALL_SLOW;
+			else
+				changeRate = ChangeRate.NIL;
+		} else
+			changeRate = ChangeRate.NO_DATA;
 
 		// Make a pressure message.
-		int pressMsg = 0;
 		if (prevPress < 850)
-			pressMsg = R.string.weather_low_5;
+			pressState = PressState.LOW_INSANE;
 		else if (prevPress < 870)
-			pressMsg = R.string.weather_low_4;
+			pressState = PressState.LOW_TORNADO;
 		else if (prevPress < 900)
-			pressMsg = R.string.weather_low_3;
+			pressState = PressState.LOW_HURRICANE;
 		else if (prevPress < 940)
-			pressMsg = R.string.weather_low_2;
+			pressState = PressState.LOW_STORM;
 		else if (prevPress < 980)
-			pressMsg = R.string.weather_low_1;
+			pressState = PressState.LOW_DEPRESSION;
 		else if (prevPress > 1080)
-			pressMsg = R.string.weather_high_4;
+			pressState = PressState.HIGH_INSANE;
 		else if (prevPress > 1060)
-			pressMsg = R.string.weather_high_3;
+			pressState = PressState.HIGH_EXTREME;
 		else if (prevPress > 1040)
-			pressMsg = R.string.weather_high_2;
+			pressState = PressState.HIGH_VERY;
 		else if (prevPress > 1020)
-			pressMsg = R.string.weather_high_1;
-		
+			pressState = PressState.HIGH_MILD;
+		else
+			pressState = PressState.NORMAL;
+			
 		// Produce the combined weather message.
-		String msg = appContext.getString(stateMsg);
-		if (rateMsg != 0)
-			msg += " " + appContext.getString(rateMsg);
-		if (pressMsg != 0)
-			msg += "; " + appContext.getString(pressMsg);
+		String msg = appContext.getString(changeState.textId);
+		if (changeRate != ChangeRate.NO_DATA && changeRate != ChangeRate.NIL)
+			msg += " " + appContext.getString(changeRate.textId);
+		if (pressState != PressState.NORMAL)
+			msg += "; " + appContext.getString(pressState.textId);
 		weatherMessage = msg;
 	}
-	
-	
+
+
 	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
@@ -475,9 +665,6 @@ public class WeatherService
 	
 	// Time in ms over which we analyse recent observations.
 	private static final int RECENT_OBS_TIME = NUM_RECENT_OBS * 5 * 60 * 1000;
-	
-	// Time in ms which is considered very recent, for rate analysis.
-	private static final int CURRENT_OBS_TIME = 30 * 60 * 1000;
 	
 	// Amount in mb by which pressure has to move to start a new trend.
 	private static final float TREND_TOLERANCE = 1f;
@@ -520,6 +707,11 @@ public class WeatherService
 	private int recentCount = 0;
 	private int recentIndex = 0;
 	
+	// Current barometer state; change rate; and pressure state.
+	private ChangeState changeState;
+	private ChangeRate changeRate;
+	private PressState pressState;
+
 	// Current weather status message.
 	private String weatherMessage = null;
 	
