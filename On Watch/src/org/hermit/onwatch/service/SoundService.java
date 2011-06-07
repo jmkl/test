@@ -17,6 +17,7 @@
 package org.hermit.onwatch.service;
 
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 
@@ -333,11 +334,18 @@ public class SoundService
 
     // This class implements a thread which continuously scans the queue
     // for sounds to play, and plays them.
-    private class QueuePlayer extends Thread {
+    private class QueuePlayer
+    	extends Thread 
+    	implements TextToSpeech.OnUtteranceCompletedListener
+    {
     	QueuePlayer() {
     		super("Sound queue");
     		soundQueue = new LinkedList<Sound>();
-    		textToSpeech.setOnUtteranceCompletedListener(speechComplete);
+    		
+    		// Note: in order to get an onUtteranceComplete call, you
+    		// have to set KEY_PARAM_UTTERANCE_ID.
+			ttsParams = new HashMap<String, String>();
+			ttsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "end");
     	}
     	
     	/**
@@ -370,25 +378,25 @@ public class SoundService
     	 */
     	@Override
     	public void run() {
-    		synchronized (this) {
-    			try {
-    				while (true) {
-    	    			Log.i(TAG, "QP wait");
+    		try {
+    			while (true) {
+    				Log.i(TAG, "QP wait");
+    				synchronized (this) {
     					wait();
     					Sound sound = soundQueue.poll();
     					if (sound != null) {
-    		    			Log.i(TAG, "QP play " + sound);
+    						Log.i(TAG, "QP play " + sound);
     						play(sound);
     					}
     				}
-    			} catch (InterruptedException e1) {
-    				// We've been killed.
-	    			Log.i(TAG, "QP killed");
     			}
+    		} catch (InterruptedException e1) {
+    			// We've been killed.
+    			Log.i(TAG, "QP killed");
     		}
     	}
 
-    	
+
     	/**
     	 * Play the given sound.  Doesn't return until the sound is done.
     	 * 
@@ -398,6 +406,7 @@ public class SoundService
     	private void play(Sound sound) throws InterruptedException {
     		// Play the sound effects.
     		if (sound.soundEffect != null) {
+    			Log.i(TAG, "QP play -> effect");
     			int num = sound.effectCount;
     			SoundEffect fx = sound.soundEffect;
     			while (num > 0) {
@@ -407,40 +416,52 @@ public class SoundService
     				num -= fx == SoundEffect.BELL2 ? 2 : 1;
 					sleep(fx.interDelay);
     			}
+    			Log.i(TAG, "QP play -> effects done, sleep");
     			sleep(fx.postDelay);
     		}
 
     		// Play any text there may be.
 			if (sound.spokenText != 0) {
-    			synchronized (speechComplete) {
-    				String text = appContext.getString(sound.spokenText);
-    				textToSpeech.setSpeechRate(0.8f);
-    				textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, null);
-    				
-    				// Block until the speech is done.
-    				speechComplete.wait();
-    			}
+				String text = appContext.getString(sound.spokenText);
+				Log.i(TAG, "QP play -> \"" + text + "\"");
+				textToSpeech.setSpeechRate(0.8f);
+				textToSpeech.setOnUtteranceCompletedListener(this);
+				int stat = textToSpeech.speak(text,
+											  TextToSpeech.QUEUE_ADD,
+											  ttsParams);
+				if (stat == TextToSpeech.SUCCESS) {
+					// Block until the speech is done.
+					Log.i(TAG, "QP play -> wait complete");
+					synchronized (soundSem) {
+						soundSem.wait();
+					}
+					Log.i(TAG, "QP play -> speech complete");
+				} else
+					Log.i(TAG, "QP play -> speech FAILED");
 			}
 
 			// Notify the listener, if any.
+			Log.i(TAG, "QP play tell listeners");
 			if (sound.playListener != null)
 				sound.playListener.run();
+			Log.i(TAG, "QP play done");
     	}
     	
     	// Speech complete handler.
-    	private TextToSpeech.OnUtteranceCompletedListener speechComplete =
-    						new TextToSpeech.OnUtteranceCompletedListener() {
-    		@Override
-    		public void onUtteranceCompleted(String arg0) {
-    			synchronized (speechComplete) {
-    				// Unblock the sound player.
-    				speechComplete.notify();
-    			}
+    	@Override
+    	public void onUtteranceCompleted(String arg0) {
+			Log.i(TAG, "QP play -> onUtteranceCompleted");
+    		synchronized (soundSem) {
+    			// Unblock the sound player.
+    			soundSem.notify();
     		}
-    	};
+			Log.i(TAG, "QP play -> onUtteranceCompleted notified");
+    	}
     	
     	// The queue.
     	private LinkedList<Sound> soundQueue;
+    	private Object soundSem = new Object();
+    	private HashMap<String, String> ttsParams;
     }
     
 

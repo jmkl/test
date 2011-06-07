@@ -189,6 +189,7 @@ public class WeatherService
         sensorManager = (SensorManager)
         				appContext.getSystemService(Context.SENSOR_SERVICE);
         baroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+//		contentResolver.delete(WeatherSchema.Observations.CONTENT_URI, null, null);
 
     	obsValues = new ContentValues();
     	
@@ -333,7 +334,7 @@ public class WeatherService
 				
 				float hours = (time - prevTime) / 1000f / 3600f;
 				float step = rate * hours;
-				if (step > Math.abs(target - simPress)) {
+				if (step == 0 || step > Math.abs(target - simPress)) {
 					simPress = target;
 					++simStep;
 				} else {
@@ -358,11 +359,16 @@ public class WeatherService
 	
 	// List of { target pressure, rate }.
 	private static final float[][] SIMU_PROGRAM = {
-		{ 1013.0f, 1.0f	},
-		{ 1000.0f, 0.4f	},
-		{ 980.0f, 0.6f	},
-		{ 950.0f, 2.1f	},
-		{ 910.0f, 8.1f	},
+		{ 1000.0f, 0f	},
+		{ 970.0f, 0f	},
+		{ 930.0f, 0f	},
+		{ 880.0f, 0f	},
+		{ 860.0f, 0f	},
+		{ 820.0f, 0f	},
+		{ 1000.0f, 0f	},
+		{ 999.0f, 8f	},
+		{ 998.0f, 12f	},
+		{ 996.0f, 22f	},
 	};
 
 	private SimuListener simuListener = new SimuListener();
