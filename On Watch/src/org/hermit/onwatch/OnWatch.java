@@ -39,6 +39,7 @@ import android.app.ActionBar;
 import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.app.ActionBar.Tab;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -49,6 +50,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.AudioManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -636,14 +638,17 @@ public class OnWatch
      * Backup the app data to SD card.
      */
     private void backupData() {
-    	try {
-    		VesselSchema.DB_SCHEMA.backupDb(this, BACKUP_DIR);
-    		WeatherSchema.DB_SCHEMA.backupDb(this, BACKUP_DIR);
-    	} catch (FileNotFoundException e) {
-    		Errors.reportException(this, e);
-		} catch (IOException e) {
-			Errors.reportException(this, e);
-		}
+    	YesNoDialog yn = new YesNoDialog(this,
+    									 R.string.button_ok,
+    									 R.string.button_cancel);
+    	yn.setOnOkListener(new YesNoDialog.OnOkListener() {
+    		@Override
+    		public void onOk() {
+    			BackupTask bt = new BackupTask();
+    			bt.execute();
+    		}
+    	});
+    	yn.show(R.string.backup_title, R.string.backup_text);
     }
     
 
@@ -651,17 +656,102 @@ public class OnWatch
      * Restore the app data from SD card.
      */
     private void restoreData() {
-    	try {
-    		VesselSchema.DB_SCHEMA.restoreDb(this, BACKUP_DIR);
-    		WeatherSchema.DB_SCHEMA.restoreDb(this, BACKUP_DIR);
-    	} catch (FileNotFoundException e) {
-    		Errors.reportException(this, e);
-		} catch (IOException e) {
-			Errors.reportException(this, e);
-		}
+    	YesNoDialog yn = new YesNoDialog(this,
+    									 R.string.button_ok,
+    									 R.string.button_cancel);
+    	yn.setOnOkListener(new YesNoDialog.OnOkListener() {
+    		@Override
+    		public void onOk() {
+    			RestoreTask rt = new RestoreTask();
+    			rt.execute();
+    		}
+    	});
+    	yn.show(R.string.restore_title, R.string.restore_text);
     }
- 
-	
+    
+
+    private class BackupTask extends AsyncTask<Void, Integer, Integer> {
+    	@Override
+    	protected void onPreExecute() {
+    		prog = new ProgressDialog(OnWatch.this);
+    		prog.setIndeterminate(true);
+    		prog.show();
+    	}
+
+    	@Override
+    	protected Integer doInBackground(Void... nothing) {
+    		//            int count = urls.length;
+    		//            int totalSize = 0;
+    		//            for (int i = 0; i < count; i++) {
+    		//                totalSize += Downloader.downloadFile(urls[i]);
+    		//                publishProgress((int) ((i / (float) count) * 100));
+    		//            }
+    		try {
+    			VesselSchema.DB_SCHEMA.backupDb(OnWatch.this, BACKUP_DIR);
+    			WeatherSchema.DB_SCHEMA.backupDb(OnWatch.this, BACKUP_DIR);
+    		} catch (FileNotFoundException e) {
+    			Errors.reportException(OnWatch.this, e);
+    		} catch (IOException e) {
+    			Errors.reportException(OnWatch.this, e);
+    		}
+    		return 100;
+    	}
+
+    	@Override
+    	protected void onProgressUpdate(Integer... progress) {
+
+    	}
+
+    	@Override
+    	protected void onPostExecute(Integer result) {
+    		prog.hide();
+    	}
+
+    	private ProgressDialog prog;
+    }
+
+
+    private class RestoreTask extends AsyncTask<Void, Integer, Integer> {
+    	@Override
+    	protected void onPreExecute() {
+    		prog = new ProgressDialog(OnWatch.this);
+    		prog.setIndeterminate(true);
+    		prog.show();
+    	}
+
+    	@Override
+    	protected Integer doInBackground(Void... nothing) {
+    		//            int count = urls.length;
+    		//            int totalSize = 0;
+    		//            for (int i = 0; i < count; i++) {
+    		//                totalSize += Downloader.downloadFile(urls[i]);
+    		//                publishProgress((int) ((i / (float) count) * 100));
+    		//            }
+	    	try {
+	    		VesselSchema.DB_SCHEMA.restoreDb(OnWatch.this, BACKUP_DIR);
+	    		WeatherSchema.DB_SCHEMA.restoreDb(OnWatch.this, BACKUP_DIR);
+	    	} catch (FileNotFoundException e) {
+	    		Errors.reportException(OnWatch.this, e);
+			} catch (IOException e) {
+				Errors.reportException(OnWatch.this, e);
+			}
+    		return 100;
+    	}
+
+    	@Override
+    	protected void onProgressUpdate(Integer... progress) {
+
+    	}
+
+    	@Override
+    	protected void onPostExecute(Integer result) {
+    		prog.hide();
+    	}
+
+    	private ProgressDialog prog;
+    }
+
+
 	// ******************************************************************** //
 	// Shutdown.
 	// ******************************************************************** //

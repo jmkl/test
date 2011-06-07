@@ -81,10 +81,15 @@ to download speech data from the Android market.  Do you wish to do this
 now?</string>
     <string name="tts_ok">OK</string>
     <string name="tts_cancel">Continue without voice</string>
+    <string name="backup_title">Confirm Backup</string>
+    <string name="backup_text">Back up all data to SD card?</string>
+    <string name="restore_title">Confirm Restore</string>
+    <string name="restore_text">Wipe all existing data and restore from SD card?</string>
 
     <!-- Button strings. -->
     <string name="button_ok">OK</string>
     <string name="button_close">OK</string>
+    <string name="button_cancel">Cancel</string>
     <string name="button_license">License</string>
     <string name="button_homepage">Project</string>
 
