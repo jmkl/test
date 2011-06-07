@@ -27,18 +27,19 @@ import java.util.ArrayList;
 import org.hermit.android.core.Errors;
 import org.hermit.android.core.MainActivity;
 import org.hermit.android.core.SplashActivity;
+import org.hermit.android.notice.YesNoDialog;
 import org.hermit.android.widgets.TimeZoneActivity;
 import org.hermit.onwatch.provider.VesselSchema;
 import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
-import org.hermit.onwatch.service.OnWatchService.OnWatchBinder;
 import org.hermit.onwatch.service.SoundService;
+import org.hermit.onwatch.service.OnWatchService.OnWatchBinder;
 
 import android.app.ActionBar;
-import android.app.ActionBar.Tab;
 import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.ActionBar.Tab;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -53,6 +54,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -103,6 +105,9 @@ public class OnWatch
         setAboutInfo(R.string.about_text);
         setHomeInfo(R.string.url_homepage);
         setLicenseInfo(R.string.url_license);
+        
+        // Set up TTS.
+        checkTtsData();
         
         // Make sure we have a vessel.
         createDefaultVessel();
@@ -328,6 +333,71 @@ public class OnWatch
 			v.stop();
     }
 
+    
+    // ******************************************************************** //
+    // Text-To-Speech Setup.
+    // ******************************************************************** //
+
+    /**
+     * Check whether we have the TTS data installed.
+     */
+    private void checkTtsData() {
+        Log.i(TAG, "checkTtsData()");
+    	Intent checkIntent = new Intent();
+    	checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+    	startActivityForResult(checkIntent, new ActivityListener() {
+    		@Override
+    		public void onActivityResult(int resultCode, Intent data) {
+                if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+                    Log.i(TAG, "checkTtsData() => OK");
+        			ttsSetUp = true;
+        			if (onWatchService != null)
+        				onWatchService.ttsInitialised();
+                } else {
+                	YesNoDialog yn = new YesNoDialog(OnWatch.this,
+                									 R.string.tts_ok,
+                									 R.string.tts_cancel);
+                	yn.setOnOkListener(new YesNoDialog.OnOkListener() {
+						@Override
+						public void onOk() {
+		                	installTtsData();
+						}
+                	});
+                	yn.show(R.string.tts_need_data_title, R.string.tts_need_data);
+                }
+    		}
+
+    		@Override
+    		public void onActivityCanceled(Intent data) {
+    			
+    		}
+    	});
+    }
+
+    
+    /**
+     * Install the speech data for the TTS engine.
+     */
+    private void installTtsData() {
+        Log.e(TAG, "installTtsData()");
+    	Intent installIntent = new Intent();
+    	installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+    	startActivityForResult(installIntent, new ActivityListener() {
+    		@Override
+    		public void onActivityResult(int resultCode, Intent data) {
+                Log.i(TAG, "installTtsData() => OK");
+    			ttsSetUp = true;
+    			if (onWatchService != null)
+    				onWatchService.ttsInitialised();
+    		}
+
+    		@Override
+    		public void onActivityCanceled(Intent data) {
+
+    		}
+    	});
+    }
+    
 
     // ******************************************************************** //
     // Service Communications.
@@ -349,6 +419,10 @@ public class OnWatch
             // Start all the views and give them the service.
     		for (ViewFragment v : childViews)
     			v.start(onWatchService);
+    		
+			// If TTS is set up, tell the service.
+			if (ttsSetUp)
+				onWatchService.ttsInitialised();
         }
 
         @Override
@@ -806,6 +880,9 @@ public class OnWatch
 
     // Log whether we showed the splash screen yet this run.
     private boolean shownSplash = false;
+    
+    // Flag if TTS has been set up.
+    private boolean ttsSetUp = false;
 
 }
 

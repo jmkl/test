@@ -161,8 +161,6 @@ public class SoundService
 		wakeupManager.register(alarmHandler);
 		
 		// Get a text-to-speech instance.
-        textToSpeech = new TextToSpeech(appContext, null);
-        textToSpeech.setLanguage(Locale.US);
         
         // Load the sounds.
         soundPool = createSoundPool();
@@ -193,10 +191,75 @@ public class SoundService
 
 	synchronized void shutdown() {
 		queuePlayer.kill();
-		textToSpeech.shutdown();
+		if (textToSpeech != null)
+			textToSpeech.shutdown();
 	}
 	
-	
+
+	// ******************************************************************** //
+	// Speech Setup.
+	// ******************************************************************** //
+
+    /**
+     * Be informed that we have done all the checks for TTS data, and the
+     * TTS service is as initialised as it will ever be.
+     */
+    public void ttsInitialised() {
+        Log.i(TAG, "SS ttsInitialised() -- create TextToSpeech");
+        textToSpeech = new TextToSpeech(appContext, ttsOnInit);
+    }
+    
+    
+    private TextToSpeech.OnInitListener ttsOnInit =
+    									new TextToSpeech.OnInitListener() {
+		@Override
+		public void onInit(int status) {
+	        if (status != TextToSpeech.SUCCESS) {
+	            Log.e(TAG, "TextToSpeech initialisation failed.");
+				textToSpeech.shutdown();
+	        	textToSpeech = null;
+	            return;
+	        }
+	        
+	        // Set the TTS locale to one of the ones we want, if available.
+	        int result = TextToSpeech.LANG_MISSING_DATA;
+	        for (Locale loc : SPEECH_LOCALES) {
+	        	result = textToSpeech.setLanguage(loc);
+		        if (result == TextToSpeech.SUCCESS)
+		        	break;
+	        }
+	        if (result == TextToSpeech.SUCCESS) {
+	        	// We're ready to roll.
+	            Log.i(TAG, "SS TextToSpeech OK: " + textToSpeech.getLanguage());
+	        	ttsSetUp = true;
+	        } else {
+				textToSpeech.shutdown();
+				textToSpeech = null;
+				switch (result) {
+				case TextToSpeech.LANG_MISSING_DATA:
+					Log.e(TAG, "TTS setup failed: language data is missing.");
+					break;
+				case TextToSpeech.LANG_NOT_SUPPORTED:
+					Log.e(TAG, "TTS setup failed: language is not available.");
+					break;
+				case TextToSpeech.LANG_AVAILABLE:
+					Log.e(TAG, "TTS setup failed: language country and variant not available.");
+					break;
+				case TextToSpeech.LANG_COUNTRY_AVAILABLE:
+					Log.e(TAG, "TTS setup failed: language variant not available.");
+					break;
+				case TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE:
+					Log.e(TAG, "TTS setup failed: language is available exactly as specified.");
+					break;
+				default:
+					Log.e(TAG, "TTS setup failed: error " + result);
+					break;
+				}
+	        }
+		}
+    };
+    
+
 	// ******************************************************************** //
 	// Configuration.
 	// ******************************************************************** //
@@ -421,7 +484,7 @@ public class SoundService
     		}
 
     		// Play any text there may be.
-			if (sound.spokenText != 0) {
+			if (sound.spokenText != 0 && ttsSetUp) {
 				String text = appContext.getString(sound.spokenText);
 				Log.i(TAG, "QP play -> \"" + text + "\"");
 				textToSpeech.setSpeechRate(0.8f);
@@ -437,7 +500,7 @@ public class SoundService
 					}
 					Log.i(TAG, "QP play -> speech complete");
 				} else
-					Log.i(TAG, "QP play -> speech FAILED");
+					Log.e(TAG, "QP play -> speech FAILED");
 			}
 
 			// Notify the listener, if any.
@@ -550,7 +613,12 @@ public class SoundService
 
     // Debugging tag.
 	private static final String TAG = "onwatch";
- 
+    
+    // Preferred TTS locales, in order of preference.
+    private static final Locale[] SPEECH_LOCALES = {
+    	Locale.UK, Locale.US, Locale.ENGLISH,
+    };
+
 	// The instance of the chimer; null if not created yet.
 	private static SoundService chimerInstance = null;
 
@@ -577,8 +645,11 @@ public class SoundService
 	// Ringer thread currently playing bells; null if not playing.
 	private QueuePlayer queuePlayer = null;
 	
-	// Our text-to-speech instance.
+	// Our text-to-speech instance.  Null if we don't have TTS.
 	private TextToSpeech textToSpeech;
+	
+	// Flag if TTS is set up fully and ready to speak.
+	private boolean ttsSetUp = false;
 
 }
 

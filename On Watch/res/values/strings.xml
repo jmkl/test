@@ -74,6 +74,14 @@ for more details.\n</string>
     <string name="prefs_debug_space">Manual Position Control</string>
     <string name="prefs_debug_space_summary">Adjust location by the trackball</string>
 
+    <!-- Dialog strings. -->
+    <string name="tts_need_data_title">Text-To-Speech Data Missing</string>
+    <string name="tts_need_data">In order to provide voice alerts, we need
+to download speech data from the Android market.  Do you wish to do this
+now?</string>
+    <string name="tts_ok">OK</string>
+    <string name="tts_cancel">Continue without voice</string>
+
     <!-- Button strings. -->
     <string name="button_ok">OK</string>
     <string name="button_close">OK</string>

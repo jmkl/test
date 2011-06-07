@@ -225,6 +225,19 @@ public class OnWatchService
 
 
 	// ******************************************************************** //
+	// Speech Setup.
+	// ******************************************************************** //
+
+    /**
+     * Be informed that we have done all the checks for TTS data, and the
+     * TTS service is as initialised as it will ever be.
+     */
+    public void ttsInitialised() {
+    	soundService.ttsInitialised();
+    }
+    
+    
+	// ******************************************************************** //
 	// Alert Controls Handling.
 	// ******************************************************************** //
 
