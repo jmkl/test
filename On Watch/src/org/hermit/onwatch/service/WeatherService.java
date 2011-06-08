@@ -98,8 +98,8 @@ public class WeatherService
 			alertSound = alert;
 		}
 
-		private final int textId;
-		private final Sound alertSound;
+		final int textId;
+		final Sound alertSound;
 	}
 	
 
@@ -119,11 +119,11 @@ public class WeatherService
 		NORMAL(R.string.weather_low_0),
 		HIGH_MILD(R.string.weather_high_1),
 		HIGH_VERY(R.string.weather_high_2,
-				   new Sound(Alert.ALARM, R.string.weather_v_high_2)),
+				   new Sound(Alert.WARNING, R.string.weather_v_high_2)),
 		HIGH_EXTREME(R.string.weather_high_3,
-				   new Sound(Alert.ALARM, R.string.weather_v_high_3)),
+				   new Sound(Alert.WARNING, R.string.weather_v_high_3)),
 		HIGH_INSANE(R.string.weather_high_4,
-				   new Sound(Alert.ALARM, R.string.weather_v_high_4));
+				   new Sound(Alert.WARNING, R.string.weather_v_high_4));
 
 		PressState(int msg) {
 			textId = msg;
@@ -135,8 +135,8 @@ public class WeatherService
 			alertSound = alert;
 		}
 		
-		private final int textId;
-		private final Sound alertSound;
+		final int textId;
+		final Sound alertSound;
 	}
 	
 

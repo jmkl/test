@@ -34,6 +34,7 @@ import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
 import org.hermit.onwatch.service.SoundService;
 import org.hermit.onwatch.service.OnWatchService.OnWatchBinder;
+import org.hermit.onwatch.service.WeatherService.ChangeRate;
 
 import android.app.ActionBar;
 import android.app.AlarmManager;
@@ -572,6 +573,9 @@ public class OnWatch
         case R.id.menu_exit:
         	shutdown();
         	break;
+        case R.id.menu_debug_alerts:
+        	debugPlayAlerts();
+        	break;
     	default:
     		return super.onOptionsItemSelected(item);
     	}
@@ -889,7 +893,20 @@ public class OnWatch
     public String getWeatherMessage() {
 		return onWatchService != null ? onWatchService.getWeatherMessage() : null;
 	}
-	
+
+    
+    // ******************************************************************** //
+    // Debug.
+    // ******************************************************************** //
+
+    /**
+     * Play all the alerts, for testing.
+     */
+	private void debugPlayAlerts() {
+		if (onWatchService != null)
+			onWatchService.debugPlayAlerts();
+	}
+
 
     // ******************************************************************** //
     // Private Types.

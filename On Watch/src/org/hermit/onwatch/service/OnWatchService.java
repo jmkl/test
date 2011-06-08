@@ -22,6 +22,8 @@ package org.hermit.onwatch.service;
 
 import org.hermit.onwatch.OnWatch;
 import org.hermit.onwatch.R;
+import org.hermit.onwatch.service.WeatherService.ChangeRate;
+import org.hermit.onwatch.service.WeatherService.PressState;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -406,6 +408,25 @@ public class OnWatchService
     	stopSelf();
     }
     
+    
+    // ******************************************************************** //
+    // Debug.
+    // ******************************************************************** //
+
+    /**
+     * Play all the alerts, for testing.
+     */
+    public void debugPlayAlerts() {
+		for (ChangeRate r : ChangeRate.values()) {
+			if (r.alertSound != null)
+				soundService.playSound(r.alertSound, null);
+		}
+		for (PressState r : PressState.values()) {
+			if (r.alertSound != null)
+				soundService.playSound(r.alertSound, null);
+		}
+	}
+
 
 	// ******************************************************************** //
 	// Class Data.

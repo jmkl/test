@@ -446,8 +446,8 @@ public class SoundService
     				Log.i(TAG, "QP wait");
     				synchronized (this) {
     					wait();
-    					Sound sound = soundQueue.poll();
-    					if (sound != null) {
+    					Sound sound;
+    					while ((sound = soundQueue.poll()) != null) {
     						Log.i(TAG, "QP play " + sound);
     						play(sound);
     					}
@@ -498,6 +498,9 @@ public class SoundService
 					synchronized (soundSem) {
 						soundSem.wait();
 					}
+					
+					// Leave a gap after a speech alert.
+					sleep(1000);
 					Log.i(TAG, "QP play -> speech complete");
 				} else
 					Log.e(TAG, "QP play -> speech FAILED");
@@ -579,7 +582,7 @@ public class SoundService
     	BUZZER(R.raw.alert_buzzer, 1000, 1000),
     	
     	/** A long major alert sound. */
-    	DEFCON_LONG(R.raw.defcon, 1600, 500),
+    	DEFCON_LONG(R.raw.defcon_long, 1600, 500),
     	
     	/** A short major alert sound (good for repeating). */
     	DEFCON(R.raw.defcon, 1000, 500),
