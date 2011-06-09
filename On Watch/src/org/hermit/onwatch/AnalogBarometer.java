@@ -197,15 +197,11 @@ public class AnalogBarometer
 		pressMin = min;
 		pressMax = max;
 
-		// Find a dial mode that accommodates the pressure range.  Use
-		// FULL if nothing else fits.
-		dialMode = DialMode.FULL;
-		for (DialMode m : DialMode.VALUES) {
-			if (pressMin >= m.minPress && pressMax <= m.maxPress) {
-				dialMode = m;
-				dialChanged = true;
-				break;
-			}
+		// Find a dial mode that accommodates the pressure range.
+		DialMode dial = DialMode.forRange(pressMin, pressMax);
+		if (dial != dialMode) {
+			dialMode = dial;
+			dialChanged = true;
 		}
 		
 		reDrawContent();
@@ -244,9 +240,11 @@ public class AnalogBarometer
 	 * @param	canvas		Canvas to draw into.
 	 */
     protected void drawBaro(Canvas canvas) {
+        Log.i(TAG, "Draw baro: " + dialMode);
+        
         int cx = dispWidth / 2;
         int cy = dispHeight / 2;
-
+        
         final Drawable dial = dialMode.dialImage;
         int dw = dial.getIntrinsicWidth();
         int dh = dial.getIntrinsicHeight();
@@ -357,7 +355,7 @@ public class AnalogBarometer
 	private static final int POINT_COL = 0xffff0040;
 
 	// Number of hours of history to display in the dial.
-	private static final int HISTORY_HOURS = 24;
+	private static final int HISTORY_HOURS = 12;
 	
 	// Fraction of the width of the dial to use for displaying history.
 	private static final float HISTORY_DIAL_FRAC = 0.85f;
@@ -396,8 +394,8 @@ public class AnalogBarometer
 	// displayable, and pressure increment per "hour", on each dial.
 	private enum DialMode {
 		STANDARD(R.drawable.baro_dial_normal, 975, 1025, 5),
-		EXTENDED(R.drawable.baro_dial_normal, 940, 1040, 10),
-		FULL(R.drawable.baro_dial_normal, 860, 1100, 20);
+		EXTENDED(R.drawable.baro_dial_extended, 940, 1040, 10),
+		FULL(R.drawable.baro_dial_full, 860, 1100, 20);
 		
 		DialMode(int res, float min, float max, float incr) {
 			resId = res;
@@ -408,6 +406,13 @@ public class AnalogBarometer
 	    
 	    float angle(float press) {
 	    	return (press - 1000f) / pressIncr / 12f * 360.0f;
+	    }
+	    
+	    static DialMode forRange(float min, float max) {
+			for (DialMode m : VALUES)
+				if (min >= m.minPress && max <= m.maxPress)
+					return m;
+			return FULL;
 	    }
 	    
 		private static final DialMode[] VALUES = values();
