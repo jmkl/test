@@ -18,11 +18,9 @@ package org.hermit.onwatch;
 
 import java.util.Calendar;
 
-import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.utils.CharFormatter;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -162,53 +160,36 @@ public class WeatherWidget
 	/**
 	 * Update the displayed data.
 	 * 
-	 * @param	c		Cursor containing the weather observations to display.
+	 * @param	times	Times of all the observations.
+	 * @param	press	Pressure values of all the observations.
+	 * @param	t		Time of the latest observation.
+	 * @param	p		Pressure value of the latest observation.
+	 * @param	min		Lowest pressure value.
+	 * @param	max		Highest pressure value.
 	 * @param	msg		Current weather message; null if none.
 	 */
-	void setData(Cursor c, String msg) {
-		// If there's no data, do nothing -- keep the old data.
-		if (!c.moveToFirst())
-			return;
-		
+	void setData(long[] times, float[] press, long t, float p,
+				 float min, float max, String msg)
+	{
 		// Copy the data down for later use.
-		numPoints = c.getCount();
-		if (pointTimes == null || pointTimes.length != numPoints)
-			pointTimes = new long[numPoints];
-		if (pointPress == null || pointPress.length != numPoints)
-			pointPress = new float[numPoints];
-		
-		final int ti = c.getColumnIndexOrThrow(WeatherSchema.Observations.TIME);
-		final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
-		pressTime = 0;
-		pressNow = 0;
-	    pressMin = 1000f;
-	    pressMax = 1020f;
-		int i = 0;
-		while (!c.isAfterLast()) {
-			final long t = c.getLong(ti);
-			final float p = (float) c.getDouble(pi);
-			pointTimes[i] = t;
-			pointPress[i] = p;
-			
-			pressTime = t;
-			pressNow = p;
-			if (p < pressMin)
-				pressMin = p;
-			if (p > pressMax)
-				pressMax = p;
-			++i;
-			c.moveToNext();
-		}
-	    pressRange = pressMax - pressMin;
-		
+		pointTimes = times;
+		pointPress = press;
+		numPoints = pointTimes.length;
+
+		pressTime = t;
+		pressNow = p;
+		pressMin = min;
+		pressMax = max;
+		pressRange = pressMax - pressMin;
+
 		// Round the displayed pressure limits to the pressure grid.
-	    dispMin = (int) Math.floor(pressMin / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
-	    dispMax = (int) Math.ceil(pressMax / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
-	    dispRange = dispMax - dispMin;
-	    
-	    // Calculate the grid spacing.
-	    calculateGrid();
-	    
+		dispMin = (int) Math.floor(pressMin / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
+		dispMax = (int) Math.ceil(pressMax / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
+		dispRange = dispMax - dispMin;
+
+		// Calculate the grid spacing.
+		calculateGrid();
+
 		// Calculate the last time to display as the last hour for which
 		// we have data.
 		Calendar baseTime = Calendar.getInstance();
@@ -219,10 +200,10 @@ public class WeatherWidget
 		lastTime = baseTime;
 		lastTimeVal = baseTime.getTimeInMillis();
 		firstTimeVal = lastTimeVal - (DISPLAY_HOURS * 3600 * 1000);
-		
+
 		weatherMessage = msg;
-		
-    	reDrawContent();
+
+		reDrawContent();
 	}
 
 
@@ -265,18 +246,18 @@ public class WeatherWidget
 	
 
 	// ******************************************************************** //
-	// Cell Drawing.
+	// Drawing.
 	// ******************************************************************** //
 
 	/**
-	 * This method is called to ask the cell to draw itself.
+	 * This method is called to ask the widget to draw itself.
 	 * 
 	 * @param	canvas		Canvas to draw into.
 	 */
 	@Override
 	protected void onDraw(Canvas canvas) {
         // If we haven't been set up yet, do nothing.
-        if (backingCanvas == null || numPoints == 0)
+        if (backingCanvas == null)
             return;
 
         // Just re-draw from our cached bitmap.
@@ -567,9 +548,9 @@ public class WeatherWidget
 	private String weatherMessage = null;
 
     // Min and max pressures in the actual data.
-    private float pressMin = 0;
-    private float pressMax = 0;
-    private float pressRange = 0;
+    private float pressMin = 1000;
+    private float pressMax = 1020;
+    private float pressRange = 20;
     
     // Latest pressure time and value; 0 if not known.
 	private long pressTime = 0;

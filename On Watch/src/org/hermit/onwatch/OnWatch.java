@@ -34,7 +34,6 @@ import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
 import org.hermit.onwatch.service.SoundService;
 import org.hermit.onwatch.service.OnWatchService.OnWatchBinder;
-import org.hermit.onwatch.service.WeatherService.ChangeRate;
 
 import android.app.ActionBar;
 import android.app.AlarmManager;
@@ -218,10 +217,6 @@ public class OnWatch
         // Bind to the OnWatch service.
         Intent intent = new Intent(this, OnWatchService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-
-        // FIXME: do we need this?
-//		for (ViewFragment v : childViews)
-//			v.start();
     }
 
 
@@ -243,9 +238,6 @@ public class OnWatch
         // First time round, show the EULA.
         showFirstEula();
         
-        // FIXME: do we need this?
-//		for (ViewFragment v : childViews)
-//			v.resume();
         locationModel.resume();
 
         // Start the 1-second tick events.
@@ -303,10 +295,6 @@ public class OnWatch
 		}
 		
         locationModel.pause();
-        
-        // FIXME: do we need this?
-//		for (ViewFragment v : childViews)
-//			v.pause();
     }
 
 

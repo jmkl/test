@@ -37,8 +37,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -187,7 +187,8 @@ public class HomeFragment
         
         // Weather
         
-        weatherWidget = (WeatherWidget) view.findViewById(R.id.weather_chart);
+        baroDial = (AnalogBarometer) view.findViewById(R.id.weather_baro);
+        baroGraph = (WeatherWidget) view.findViewById(R.id.weather_chart);
         
         
 		updateClock();
@@ -515,7 +516,48 @@ public class HomeFragment
 	
 
 	private void displayWeather(Cursor c) {
-		weatherWidget.setData(c, appContext.getWeatherMessage());
+		// If there's no data, do nothing -- keep the old data.
+		if (!c.moveToFirst())
+			return;
+		
+		// Copy the data down for later use.
+		numPoints = c.getCount();
+		if (pointTimes == null || pointTimes.length != numPoints)
+			pointTimes = new long[numPoints];
+		if (pointPress == null || pointPress.length != numPoints)
+			pointPress = new float[numPoints];
+		
+		final int ti = c.getColumnIndexOrThrow(WeatherSchema.Observations.TIME);
+		final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
+		long pressTime = 0;
+		float pressNow = 0;
+		float pressMin = 1000f;
+		float pressMax = 1020f;
+		int i = 0;
+		while (!c.isAfterLast()) {
+			final long t = c.getLong(ti);
+			final float p = (float) c.getDouble(pi);
+			pointTimes[i] = t;
+			pointPress[i] = p;
+			
+			pressTime = t;
+			pressNow = p;
+			if (p < pressMin)
+				pressMin = p;
+			if (p > pressMax)
+				pressMax = p;
+			++i;
+			c.moveToNext();
+		}
+		
+		baroDial.setData(pointTimes, pointPress,
+				  		 pressTime, pressNow,
+				  		 pressMin, pressMax,
+				  		 appContext.getWeatherMessage());
+    	baroGraph.setData(pointTimes, pointPress,
+    					  pressTime, pressNow,
+    					  pressMin, pressMax,
+    					  appContext.getWeatherMessage());
 	}
 	
 	
@@ -687,7 +729,13 @@ public class HomeFragment
 	
 	// Weather
     
-    private WeatherWidget weatherWidget;
+    private AnalogBarometer baroDial;
+    private WeatherWidget baroGraph;
+	
+	// Current weather observation data.
+	private int numPoints;
+	private long[] pointTimes;
+	private float[] pointPress;
 
 }
 
