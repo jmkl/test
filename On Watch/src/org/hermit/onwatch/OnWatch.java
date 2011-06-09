@@ -97,8 +97,7 @@ public class OnWatch
         super.onCreate(icicle);
         
         // Kick off our service, if it's not running.
-        Intent intent = new Intent(this, OnWatchService.class);
-        startService(intent);
+        launchService();
 
         // Create our EULA box.
         createEulaBox(R.string.eula_title, R.string.eula_text, R.string.button_close);       
@@ -215,8 +214,7 @@ public class OnWatch
         super.onStart();
 
         // Bind to the OnWatch service.
-        Intent intent = new Intent(this, OnWatchService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        bindService();
     }
 
 
@@ -313,11 +311,8 @@ public class OnWatch
         
         super.onStop();
         
-        // Unbind from the OnWatch service.
-        if (onWatchService != null) {
-            unbindService(mConnection);
-            onWatchService = null;
-        }
+        // Unbind from the OnWatch service (but don't stop it).
+        unbindService();
 
         // Stop all the views.
 		for (ViewFragment v : childViews)
@@ -341,9 +336,7 @@ public class OnWatch
     		public void onActivityResult(int resultCode, Intent data) {
                 if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                     Log.i(TAG, "checkTtsData() => OK");
-        			ttsSetUp = true;
-        			if (onWatchService != null)
-        				onWatchService.ttsInitialised();
+                    ttsReady();
                 } else {
                 	YesNoDialog yn = new YesNoDialog(OnWatch.this,
                 									 R.string.tts_ok,
@@ -377,9 +370,7 @@ public class OnWatch
     		@Override
     		public void onActivityResult(int resultCode, Intent data) {
                 Log.i(TAG, "installTtsData() => OK");
-    			ttsSetUp = true;
-    			if (onWatchService != null)
-    				onWatchService.ttsInitialised();
+                ttsReady();
     		}
 
     		@Override
@@ -389,10 +380,80 @@ public class OnWatch
     	});
     }
     
+    
+    /**
+     * TTS is ready.
+     */
+    private void ttsReady() {
+		ttsSetUp = true;
+		if (onWatchService != null)
+			onWatchService.ttsInitialised();
+    }
+    
 
     // ******************************************************************** //
     // Service Communications.
     // ******************************************************************** //
+
+    /**
+     * Start the service, if it's not running.
+     */
+    private void launchService() {
+        Intent intent = new Intent(this, OnWatchService.class);
+        startService(intent);
+    }
+    
+
+    /**
+     * Bind to the service.
+     */
+    private void bindService() {
+        Intent intent = new Intent(this, OnWatchService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+    
+
+    /**
+     * Pause the service (e.g. for maintenance).
+     */
+    public void pauseService() {
+    	onWatchService.pause();
+    }
+    
+
+    /**
+     * Resume the service from a pause.
+     */
+    public void resumeService() {
+    	onWatchService.resume();
+    }
+    
+
+    /**
+     * Unbind from the service -- without stopping it.
+     */
+    private void unbindService() {
+        // Unbind from the OnWatch service.
+        if (onWatchService != null) {
+            unbindService(mConnection);
+            onWatchService = null;
+        }
+    }
+
+
+    /**
+     * Shut down the app, including the background service.
+     */
+    private void shutdown() {
+        if (onWatchService != null) {
+        	onWatchService.shutdown();
+            unbindService(mConnection);
+            onWatchService = null;
+        }
+        
+    	finish();
+    }
+    
 
     /**
      * Defines callbacks for service binding, passed to bindService().
@@ -644,27 +705,13 @@ public class OnWatch
     }
     
 
-    /**
-     * Restore the app data from SD card.
-     */
-    private void restoreData() {
-    	YesNoDialog yn = new YesNoDialog(this,
-    									 R.string.button_ok,
-    									 R.string.button_cancel);
-    	yn.setOnOkListener(new YesNoDialog.OnOkListener() {
-    		@Override
-    		public void onOk() {
-    			RestoreTask rt = new RestoreTask();
-    			rt.execute();
-    		}
-    	});
-    	yn.show(R.string.restore_title, R.string.restore_text);
-    }
-    
-
     private class BackupTask extends AsyncTask<Void, Integer, Integer> {
     	@Override
     	protected void onPreExecute() {
+    		// Pause the service during the backup, so it's not writing
+    		// to the database.
+    	    pauseService();
+
     		prog = new ProgressDialog(OnWatch.this);
     		prog.setIndeterminate(true);
     		prog.show();
@@ -697,15 +744,40 @@ public class OnWatch
     	@Override
     	protected void onPostExecute(Integer result) {
     		prog.hide();
+    		
+    		// Resume the service.
+    	    resumeService();
     	}
 
     	private ProgressDialog prog;
     }
 
 
+    /**
+     * Restore the app data from SD card.
+     */
+    private void restoreData() {
+    	YesNoDialog yn = new YesNoDialog(this,
+    									 R.string.button_ok,
+    									 R.string.button_cancel);
+    	yn.setOnOkListener(new YesNoDialog.OnOkListener() {
+    		@Override
+    		public void onOk() {
+    			RestoreTask rt = new RestoreTask();
+    			rt.execute();
+    		}
+    	});
+    	yn.show(R.string.restore_title, R.string.restore_text);
+    }
+    
+
     private class RestoreTask extends AsyncTask<Void, Integer, Integer> {
     	@Override
     	protected void onPreExecute() {
+    		// Pause the service during the restore, so it's not writing
+    		// to the database.
+    	    pauseService();
+
     		prog = new ProgressDialog(OnWatch.this);
     		prog.setIndeterminate(true);
     		prog.show();
@@ -737,25 +809,15 @@ public class OnWatch
 
     	@Override
     	protected void onPostExecute(Integer result) {
-    		prog.hide();
+    		prog.dismiss();
+    		
+    		// Resume the service.
+    	    resumeService();
     	}
 
     	private ProgressDialog prog;
     }
 
-
-	// ******************************************************************** //
-	// Shutdown.
-	// ******************************************************************** //
-
-    /**
-     * Shut down the app, including the background service.
-     */
-    private void shutdown() {
-        onWatchService.shutdown();
-    	finish();
-    }
-    
 
 	// ******************************************************************** //
 	// Vessel Management.

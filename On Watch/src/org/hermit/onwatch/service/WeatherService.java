@@ -202,28 +202,34 @@ public class WeatherService
 		// Query the database for recent observations.
     	long time = System.currentTimeMillis();
     	long baseTime = time - RECENT_OBS_TIME;
-    	Cursor c = contentResolver.query(WeatherSchema.Observations.CONTENT_URI,
-    									 WeatherSchema.Observations.PROJECTION,
-    									 WeatherSchema.Observations.TIME + ">=?",
-    									 new String[] { "" + baseTime },
-    									 WeatherSchema.Observations.TIME + " asc");
-    	if (c.moveToFirst()) {
-    		final int ti = c.getColumnIndexOrThrow(WeatherSchema.Observations.TIME);
-    		final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
+    	Cursor c = null;
+    	try {
+    		c = contentResolver.query(WeatherSchema.Observations.CONTENT_URI,
+    				WeatherSchema.Observations.PROJECTION,
+    				WeatherSchema.Observations.TIME + ">=?",
+    				new String[] { "" + baseTime },
+    				WeatherSchema.Observations.TIME + " asc");
+    		if (c.moveToFirst()) {
+    			final int ti = c.getColumnIndexOrThrow(WeatherSchema.Observations.TIME);
+    			final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
 
-    		// Copy the data down for later use.
-    		while (!c.isAfterLast() && recentCount < NUM_RECENT_OBS) {
-    			final float p = (float) c.getDouble(pi);
-    			recentTimes[recentCount] = c.getLong(ti);
-    			recentPress[recentCount] = p;
-    			++recentCount;
-    			if (++recentIndex >= NUM_RECENT_OBS)
-    				recentIndex = 0;
-    			c.moveToNext();
+    			// Copy the data down for later use.
+    			while (!c.isAfterLast() && recentCount < NUM_RECENT_OBS) {
+    				final float p = (float) c.getDouble(pi);
+    				recentTimes[recentCount] = c.getLong(ti);
+    				recentPress[recentCount] = p;
+    				++recentCount;
+    				if (++recentIndex >= NUM_RECENT_OBS)
+    					recentIndex = 0;
+    				c.moveToNext();
+    			}
     		}
+    	} finally {
+    		if (c != null)
+    			c.close();
     	}
-        Log.i(TAG, "Weather service opened: history " + recentCount);
-    	
+    	Log.i(TAG, "Weather service opened: history " + recentCount);
+
 		checkTrends(time);
 	}
 

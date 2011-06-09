@@ -159,7 +159,6 @@ public class AnalogBarometer
     	if (width <= 0 || height <= 0)
     		return;
 
-        dialChanged = true;
     	dispWidth = width;
     	dispHeight = height;
 
@@ -199,10 +198,8 @@ public class AnalogBarometer
 
 		// Find a dial mode that accommodates the pressure range.
 		DialMode dial = DialMode.forRange(pressMin, pressMax);
-		if (dial != dialMode) {
+		if (dial != dialMode)
 			dialMode = dial;
-			dialChanged = true;
-		}
 		
 		reDrawContent();
 	}
@@ -259,19 +256,16 @@ public class AnalogBarometer
             scaled = true;
         }
 
-        if (dialChanged)
-            dial.setBounds(cx - (dw / 2), cy - (dh / 2), cx + (dw / 2), cy + (dh / 2));
+        dial.setBounds(cx - (dw / 2), cy - (dh / 2), cx + (dw / 2), cy + (dh / 2));
         dial.draw(canvas);
 
         if (numPoints > 0) {
         	canvas.save();
         	canvas.rotate(dialMode.angle(pressNow), cx, cy);
         	final Drawable hand = baroHand;
-        	if (dialChanged) {
-        		int hw = hand.getIntrinsicWidth();
-        		int hh = hand.getIntrinsicHeight();
-        		hand.setBounds(cx - (hw / 2), cy - (hh / 2), cx + (hw / 2), cy + (hh / 2));
-        	}
+        	int hw = hand.getIntrinsicWidth();
+        	int hh = hand.getIntrinsicHeight();
+        	hand.setBounds(cx - (hw / 2), cy - (hh / 2), cx + (hw / 2), cy + (hh / 2));
         	hand.draw(canvas);
         	canvas.restore();
         	
@@ -297,11 +291,10 @@ public class AnalogBarometer
             	final float r = chartWidth - age * hourWidth;
             	final float a = (float) Math.toRadians(dialMode.angle(p));
             	
+            	// Calculate the X and Y and plot the point, with a line
+            	// to the previous point if any.
             	final float gx = r * (float) Math.sin(a);
             	final float gy = r * (float) -Math.cos(a);
-            	Log.i(TAG, "age=" + age + " press=" + p + " ->" +
-            				" r=" + r + " ang=" + a + " ->" +
-            				" x=" + gx + " y=" + gy);
             	if (havePrev) {
                     graphPaint.setColor(CURVE_COL);
                     canvas.drawLine(cx + px, cy + py, cx + gx, cy + gy, graphPaint);
@@ -315,7 +308,6 @@ public class AnalogBarometer
             }
         }
 
-        dialChanged = false;
         if (scaled)
             canvas.restore();
     }
@@ -463,9 +455,6 @@ public class AnalogBarometer
 	
 	// Paint used for graphics.
 	private Paint graphPaint;
-
-	// Flag whether the dial needs to be re-rendered.
-    private boolean dialChanged;
 
 }
 

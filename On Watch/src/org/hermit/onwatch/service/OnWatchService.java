@@ -89,19 +89,8 @@ public class OnWatchService
 		// Create the sound service.
 		soundService = SoundService.getInstance(this);
 		
-		// Get the passage and weather services.
-		passageService = PassageService.getInstance(this);
-		weatherService = WeatherService.getInstance(this);
-		
-        // Restore our preferences.
-        updatePreferences();
-
-        // Start everything up.
-		passageService.open();
-		weatherService.open();
-		
-		// Start our regular alarms.
-		setupAlarms();
+		// Set ourselves running.
+		resume();
     }
     
 
@@ -180,6 +169,21 @@ public class OnWatchService
         
         super.onDestroy();
         
+        // Shut down.
+        pause();
+    }
+
+
+	// ******************************************************************** //
+	// Run Control.
+	// ******************************************************************** //
+
+    /**
+     * Pause the service (e.g. for maintenance).
+     */
+    public void pause() {
+        Log.i(TAG, "S pause()");
+        
         cancelAlarms();
 		
 		if (passageService != null) {
@@ -192,7 +196,40 @@ public class OnWatchService
 			weatherService = null;
 		}
     }
+    
 
+    /**
+     * Resume the service from a pause.
+     */
+    public void resume() {
+        Log.i(TAG, "S resume()");
+        
+		// Get the passage and weather services.
+		passageService = PassageService.getInstance(this);
+		weatherService = WeatherService.getInstance(this);
+		
+        // Restore our preferences.
+        updatePreferences();
+
+        // Start everything up.
+		passageService.open();
+		weatherService.open();
+		
+		// Start our regular alarms.
+		setupAlarms();
+    }
+    
+
+    /**
+     * Shut down the service.
+     */
+    public void shutdown() {
+        Log.i(TAG, "S shutdown()");
+        
+        pause();
+    	stopSelf();
+    }
+    
 
 	// ******************************************************************** //
 	// Preferences Handling.
@@ -396,18 +433,6 @@ public class OnWatchService
     	wakeupManager.cancelAlarms();
     }
 
-
-	// ******************************************************************** //
-	// Shutdown.
-	// ******************************************************************** //
-
-    /**
-     * Shut down the service.
-     */
-    public void shutdown() {
-    	stopSelf();
-    }
-    
     
     // ******************************************************************** //
     // Debug.

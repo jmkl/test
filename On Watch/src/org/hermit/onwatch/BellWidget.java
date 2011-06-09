@@ -97,11 +97,30 @@ public class BellWidget
 	 */
 	@Override
 	protected void onMeasure(int wspec, int hspec) {
-		// Our height is half the specified width.
-	    int wd = getDefaultSize(getSuggestedMinimumWidth(), wspec);
-		int bell = wd / 8 - BELL_PAD_X * 2;
-		int by = Math.min(bell, BELL_SIZE);
-		setMeasuredDimension(bell * 8 + BELL_PAD_X * 2, by + BELL_PAD_Y * 2);
+		int baseWidth = BELL_SIZE * 8 + BELL_PAD_X * 2;
+		int baseHeight = BELL_SIZE + BELL_PAD_Y * 2;
+		
+        int widthMode = MeasureSpec.getMode(wspec);
+        int widthSize =  MeasureSpec.getSize(wspec);
+        int heightMode = MeasureSpec.getMode(hspec);
+        int heightSize =  MeasureSpec.getSize(hspec);
+
+        float hScale = 1.0f;
+        float vScale = 1.0f;
+
+        if (widthMode != MeasureSpec.UNSPECIFIED)
+            hScale = (float) widthSize / (float) baseWidth;
+
+        if (heightMode != MeasureSpec.UNSPECIFIED)
+            vScale = (float )heightSize / (float) baseHeight;
+
+        float scale = Math.min(hScale, vScale);
+        if (scale > 1.1f)
+        	scale = 1.1f;
+
+        int hSize = resolveSize((int) (baseWidth * scale), wspec);
+        int vSize = resolveSize((int) (baseHeight * scale), hspec);
+        setMeasuredDimension(hSize, vSize);
 	}
 	
 	 
