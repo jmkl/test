@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- App name. -->
+    <string name="app_name">Chime Timer</string>
+
+    <!-- Menu. -->
+    <string name="menu_configure">Configure...</string>
+    <string name="menu_help">Help...</string>
+    <string name="menu_about">About...</string>
+
+    <!-- Buttons. -->
+    <string name="but_start">Start</string>
+    <string name="but_stop">Stop</string>
+    
+</resources>
+

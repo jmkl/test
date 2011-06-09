@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <style name="ClockDateline">
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textSize">36dp</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="ClockTime">
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:textSize">56dp</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="BigButton">
+        <item name="android:textSize">56dp</item>
+    </style>
+    
+</resources>
+
