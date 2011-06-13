@@ -330,14 +330,10 @@ public class WeatherService
 			float target = SIMU_PROGRAM[simStep][0];
 			float rate = SIMU_PROGRAM[simStep][1];
 			
-			if (startTime == 0) {
-				startTime = time;
+			if (prevTime == 0) {
 				simPress = target;
 				++simStep;
 			} else {
-				// Make time go 10x speed.
-				time = startTime + (time - startTime) * 10;
-				
 				float hours = (time - prevTime) / 1000f / 3600f;
 				float step = rate * hours;
 				if (step == 0 || step > Math.abs(target - simPress)) {
@@ -359,22 +355,28 @@ public class WeatherService
 		
 		private int simStep = 0;
 		private float simPress = 1013.0f;
-		private long startTime = 0;
 		private long prevTime = 0;
 	}
 	
 	// List of { target pressure, rate }.
 	private static final float[][] SIMU_PROGRAM = {
 		{ 1000.0f, 0f	},
+		{ 999.9f, 0.4f	},
+		{ 999.7f, 0.8f	},
+		{ 999.3f, 1.6f	},
 		{ 970.0f, 0f	},
 		{ 930.0f, 0f	},
-		{ 880.0f, 0f	},
+		{ 890.0f, 0f	},
 		{ 860.0f, 0f	},
-		{ 820.0f, 0f	},
-		{ 1000.0f, 0f	},
-		{ 999.0f, 8f	},
-		{ 998.0f, 12f	},
-		{ 996.0f, 22f	},
+		{ 830.0f, 0f	},
+		{ 860.0f, 0f	},
+		{ 890.0f, 0f	},
+		{ 930.0f, 0f	},
+		{ 970.0f, 0f	},
+		{ 999.3f, 1.6f	},
+		{ 999.7f, 0.8f	},
+		{ 999.9f, 0.4f	},
+		{ 1000.0f, 0.1f	},
 	};
 
 	private SimuListener simuListener = new SimuListener();
@@ -522,7 +524,7 @@ public class WeatherService
 			if (t < baseTime)
 				continue;
 			
-			if (i >= recentCount - 3 && prevTime != 0) {
+			if (i >= recentCount - TREND_OBS && prevTime != 0) {
 				double r = (p - prevPress) / (t - prevTime) * 1000d * 3600d;
 				rateTot += r;
 				++rateCount;
@@ -550,7 +552,7 @@ public class WeatherService
 				}
 				
 				if (change) {
-					if (trendCount >= 3 && trend != prevTrend) {
+					if (trendCount >= TREND_OBS && trend != prevTrend) {
 						prevTrend = trend;
 						prevCount = trendCount;
 					}
@@ -574,15 +576,15 @@ public class WeatherService
         		   prevTrend + "(" + prevCount + ")");
         Log.i(TAG, "==> rate=" + rateTot + "(" + rateCount + ")");
 
-		if (recentCount < 3)
+		if (recentCount < TREND_OBS)
 			changeState = ChangeState.NO_DATA;
-		else if (trendCount < 3) {
-			if (prevCount >= 3)
+		else if (trendCount < TREND_OBS) {
+			if (prevCount >= TREND_OBS)
 				changeState = ChangeState.CHANGING;
 			else
 				changeState = ChangeState.STEADY;
 		} else {
-			if (prevCount >= 3) {
+			if (prevCount >= TREND_OBS) {
 				if (trend == 1)
 					changeState = ChangeState.TURN_RISE;
 				else if (trend == -1)
@@ -600,7 +602,7 @@ public class WeatherService
 		}
 
 		// Give a rate message, if there has been a sustained trend.
-		if (trend != 0 && trendCount >= 3 && rateCount >= 3) {
+		if (trend != 0 && trendCount >= TREND_OBS && rateCount >= TREND_OBS) {
 			if (rate > 10)
 				changeRate = ChangeRate.RISE_INSANE;
 			else if (rate > 5)
@@ -675,6 +677,9 @@ public class WeatherService
 	// Maximum number of recent observations to use for trend analysis.
 	private static final int NUM_RECENT_OBS = 50;
 	
+	// Number of contiguous observations which can indicate a trend.
+	private static final int TREND_OBS = 6;
+
 	// Time in ms over which we analyse recent observations.
 	private static final int RECENT_OBS_TIME = NUM_RECENT_OBS * 5 * 60 * 1000;
 	

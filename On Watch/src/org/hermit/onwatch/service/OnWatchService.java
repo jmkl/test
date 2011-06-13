@@ -149,7 +149,8 @@ public class OnWatchService
      */
     @Override
 	public IBinder onBind(Intent intent) {
-        serviceBinder = new OnWatchBinder();
+    	if (serviceBinder == null)
+    		serviceBinder = new OnWatchBinder();
         
     	return serviceBinder;
     }

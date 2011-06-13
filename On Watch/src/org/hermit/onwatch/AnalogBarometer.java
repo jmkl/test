@@ -21,6 +21,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -260,58 +261,126 @@ public class AnalogBarometer
         dial.draw(canvas);
 
         if (numPoints > 0) {
-        	canvas.save();
-        	canvas.rotate(dialMode.angle(pressNow), cx, cy);
-        	final Drawable hand = baroHand;
-        	int hw = hand.getIntrinsicWidth();
-        	int hh = hand.getIntrinsicHeight();
-        	hand.setBounds(cx - (hw / 2), cy - (hh / 2), cx + (hw / 2), cy + (hh / 2));
-        	hand.draw(canvas);
-        	canvas.restore();
-        	
-        	long now = System.currentTimeMillis();
-        	
-            graphPaint.setStyle(Paint.Style.STROKE);
-            graphPaint.setColor(CURVE_COL);
-            graphPaint.setStrokeWidth(2);
-            
-            final float chartWidth = cx * HISTORY_DIAL_FRAC;
-            final float hourWidth = chartWidth / HISTORY_HOURS;
-            float px = 0;
-            float py = 0;
-            boolean havePrev = false;
-            for (int i = 0; i < numPoints; ++i) {
-            	final long t = pointTimes[i];
-            	final float p = pointPress[i];
-            	final float age = (now - t) / 1000f / 3600f;
-            	if (age > HISTORY_HOURS)
-            		continue;
-            	
-            	// Calculate the polar co-ordinates of this point.
-            	final float r = chartWidth - age * hourWidth;
-            	final float a = (float) Math.toRadians(dialMode.angle(p));
-            	
-            	// Calculate the X and Y and plot the point, with a line
-            	// to the previous point if any.
-            	final float gx = r * (float) Math.sin(a);
-            	final float gy = r * (float) -Math.cos(a);
-            	if (havePrev) {
-                    graphPaint.setColor(CURVE_COL);
-                    canvas.drawLine(cx + px, cy + py, cx + gx, cy + gy, graphPaint);
-            	}
-            	graphPaint.setColor(POINT_COL);
-            	canvas.drawPoint(cx + gx, cy + gy, graphPaint);
-            	
-                px = gx;
-                py = gy;
-                havePrev = true;
-            }
+        	drawHand(canvas, cx, cy);
+        	drawHistory(canvas, cx, cy);
         }
 
         if (scaled)
             canvas.restore();
     }
+    
 
+	/**
+	 * Draw the barometer hand into the given canvas.
+	 * 
+	 * @param	canvas		Canvas to draw into.
+	 * @param	cx			Centre x co-ordinate.
+	 * @param	cy			Centre y co-ordinate.
+	 */
+    protected void drawHand(Canvas canvas, int cx, int cy) {
+        canvas.save();
+        canvas.rotate(dialMode.angle(pressNow), cx, cy);
+        
+        final Drawable hand = baroHand;
+        int hw = hand.getIntrinsicWidth();
+        int hh = hand.getIntrinsicHeight();
+        hand.setBounds(cx - (hw / 2), cy - (hh / 2), cx + (hw / 2), cy + (hh / 2));
+        hand.draw(canvas);
+        
+        canvas.restore();
+    }
+    
+
+	/**
+	 * Draw the barometer history curve into the given canvas.
+	 * 
+	 * @param	canvas		Canvas to draw into.
+	 * @param	cx			Centre x co-ordinate.
+	 * @param	cy			Centre y co-ordinate.
+	 */
+    protected void drawHistory(Canvas canvas, int cx, int cy) {
+        long now = System.currentTimeMillis();
+
+        // We render the points into an array, and the curve into a path,
+        // for drawing later.
+        Path path = new Path();
+        float[] points = new float[numPoints * 2];
+        
+        // Number of points too old to draw.
+        int skip = 0;
+
+        // Calculate the width of the polar plot, and the width of an
+        // hour on the plot.
+        final float chartWidth = cx * HISTORY_DIAL_FRAC;
+        final float hourWidth = chartWidth / HISTORY_HOURS;
+        
+        // Previous radius and angle.
+        float prevRad = 0;
+        float prevAng = 0;
+        boolean havePrev = false;
+        
+        for (int i = 0; i < numPoints; ++i) {
+        	// Get the time, pressure and age of this point.  If it's
+        	// too old, skip it.
+        	final long t = pointTimes[i];
+        	final float p = pointPress[i];
+        	final float age = (now - t) / 1000f / 3600f;
+        	if (age > HISTORY_HOURS) {
+        		++skip;
+        		continue;
+        	}
+
+        	// Calculate the polar co-ordinates of this point.
+        	final float r = chartWidth - age * hourWidth;
+        	final float a = (float) Math.toRadians(dialMode.angle(p));
+        	final float span = a - prevAng;
+
+        	// Calculate the Cartesian co-ordinates.
+        	final float gx = r * (float) Math.sin(a);
+        	final float gy = r * (float) -Math.cos(a);
+        	Log.i(TAG, "age=" + age + " press=" + p + " ->" +
+        			" r=" + r + " ang=" + a + " ->" +
+        			" x=" + gx + " y=" + gy);
+        	
+        	// Plot this point.
+        	points[i * 2] = cx + gx;
+        	points[i * 2 + 1] = cy + gy;
+
+        	// Plot the segment of the curve.  If it's too long,
+        	// break it into smaller segments.
+        	if (!havePrev) {
+        		path.moveTo(cx + gx, cy + gy);
+            	havePrev = true;
+        	} else if (Math.abs(span) < ARC_SEG_MAX) {
+        		path.lineTo(cx + gx, cy + gy);
+        	} else {
+        		int stepCount = (int) Math.ceil(Math.abs(span) / ARC_SEG_MAX);
+        		float stepSize = span / stepCount;
+        		float rStep = (r - prevRad) / stepCount;
+        		for (int s = 1; s <= stepCount; ++s) {
+        			final float sa = prevAng + s * stepSize;
+        			final float sr = prevRad + s * rStep;
+        			final float sx = sr * (float) Math.sin(sa);
+        			final float sy = sr * (float) -Math.cos(sa);
+        			path.lineTo(cx + sx, cy + sy);
+        		}
+        	}
+
+        	prevRad = r;
+        	prevAng = a;
+        }
+        
+        // Now actually draw the curve.
+        graphPaint.setStyle(Paint.Style.STROKE);
+        graphPaint.setColor(CURVE_COL);
+        graphPaint.setStrokeWidth(2);
+        canvas.drawPath(path, graphPaint);
+       
+        // And draw the points on top.
+        graphPaint.setColor(POINT_COL);
+        canvas.drawPoints(points, skip * 2, numPoints - (skip * 2), graphPaint);
+    }
+    
 
 	// ******************************************************************** //
 	// Screen Drawing.
@@ -352,6 +421,10 @@ public class AnalogBarometer
 	// Fraction of the width of the dial to use for displaying history.
 	private static final float HISTORY_DIAL_FRAC = 0.85f;
 
+	// Maximum span, in radians, of an arc on the history plot that
+	// we won't break into line segments.
+    private static final float ARC_SEG_MAX = (float) Math.toRadians(2);
+
 	// Normal dial:
 	//            1000
 	//              .  
@@ -359,8 +432,7 @@ public class AnalogBarometer
 	//     990 *         * 1010
 	//    985 *           * 1015
 	//     980 *         * 1020
-	//       975 *  .  * 1025
-	//           970/1030
+	//       975 *     * 1025
 	//
 	// Extended dial:
 	//            1000
@@ -369,7 +441,7 @@ public class AnalogBarometer
 	//     980 *         * 1020
 	//    970 *           * 1030
 	//     960 *         * 1040
-	//       950 *  .  * 930/1050
+	//       950 *  .
 	//             940
 	//
 	// Full dial:
@@ -379,14 +451,14 @@ public class AnalogBarometer
 	//     960 *         * 1040
 	//    940 *           * 1060
 	//     920 *         * 1080
-	//       900 *  .  * 860/1100
+	//       900 *  .
 	//             880
 
 	// Enum defining the dial modes, with the min and max pressure
 	// displayable, and pressure increment per "hour", on each dial.
 	private enum DialMode {
-		STANDARD(R.drawable.baro_dial_normal, 975, 1025, 5),
-		EXTENDED(R.drawable.baro_dial_extended, 940, 1040, 10),
+		STANDARD(R.drawable.baro_dial_normal, 974, 1026, 5),
+		EXTENDED(R.drawable.baro_dial_extended, 939, 1041, 10),
 		FULL(R.drawable.baro_dial_full, 860, 1100, 20);
 		
 		DialMode(int res, float min, float max, float incr) {

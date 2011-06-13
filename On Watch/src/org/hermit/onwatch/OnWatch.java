@@ -967,12 +967,18 @@ public class OnWatch
 	 */
 	private class Ticker extends Thread {
 		public Ticker() {
+			super("OnWatch ticker");
 			enable = true;
 			start();
 		}
 
 		public void kill() {
 			enable = false;
+			try {
+				this.join();
+			} catch (InterruptedException e) {
+				Log.e(TAG, "Ticker interrupted while waiting to join");
+			}
 		}
 
 		@Override
