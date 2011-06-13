@@ -378,7 +378,7 @@ public class AnalogBarometer
        
         // And draw the points on top.
         graphPaint.setColor(POINT_COL);
-        canvas.drawPoints(points, skip * 2, numPoints - (skip * 2), graphPaint);
+        canvas.drawPoints(points, skip * 2, (numPoints - skip) * 2, graphPaint);
     }
     
 
