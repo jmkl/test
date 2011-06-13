@@ -67,12 +67,14 @@
 
     </LinearLayout>
                     
-    <org.hermit.onwatch.AnalogBarometer
-            android:id="@+id/weather_baro"
+    <LinearLayout
+            android:id="@+id/location_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"/>
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@id/clock_view"
+            android:orientation="horizontal" >
 
     <TableLayout
             android:id="@+id/location_data"
@@ -80,10 +82,7 @@
             android:stretchColumns="*"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_toRightOf="@id/clock_view"
-            android:layout_toLeftOf="@id/weather_baro"
-            android:layout_marginRight="32dp">
+            android:layout_weight="1">
          
         <TextView
                 style="@style/LocationStatus"
@@ -139,6 +138,14 @@
                     style="@style/LocationAuxText" />
         </TableRow>
     </TableLayout>
+                                
+    <org.hermit.onwatch.AnalogBarometer
+            android:id="@+id/weather_baro"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"/>
+            
+    </LinearLayout>
             
     <HorizontalScrollView
             android:id="@+id/weather_scroller"
@@ -148,7 +155,8 @@
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/clock_view"
             android:layout_alignParentRight="true"
-            android:layout_below="@id/weather_baro"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@id/location_layout"
             android:layout_marginTop="32dp">
         
         <org.hermit.onwatch.WeatherWidget

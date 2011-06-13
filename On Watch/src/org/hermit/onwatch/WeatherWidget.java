@@ -182,11 +182,6 @@ public class WeatherWidget
 		pressMax = max;
 		pressRange = pressMax - pressMin;
 
-		// Round the displayed pressure limits to the pressure grid.
-		dispMin = (int) Math.floor(pressMin / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
-		dispMax = (int) Math.ceil(pressMax / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
-		dispRange = dispMax - dispMin;
-
 		// Calculate the grid spacing.
 		calculateGrid();
 
@@ -217,7 +212,12 @@ public class WeatherWidget
 	private void calculateGrid() {
 		if (dispHeight == 0 || pressRange == 0)
 			return;
-		
+
+		// Round the displayed pressure limits to the pressure grid.
+		dispMin = (int) Math.floor(pressMin / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
+		dispMax = (int) Math.ceil(pressMax / PRESS_GRID_MAJ) * PRESS_GRID_MAJ;
+		dispRange = dispMax - dispMin;
+
 		// Now work out the actual height of a millibar on the plot.
     	mbHeight = (float) dispHeight / dispRange;
 
@@ -244,9 +244,151 @@ public class WeatherWidget
 		}
 	}
 	
+	
+	// ******************************************************************** //
+	// Content Drawing.
+	// ******************************************************************** //
+	
+    /**
+     * This method is called when some data has changed.  Re-draw the
+     * widget's content to the backing bitmap.
+     */
+    private void reDrawContent() {
+        // If we haven't been set up yet, do nothing.
+        if (backingCanvas == null)
+            return;
+        
+        synchronized (backingBitmap) {
+            final Canvas canvas = backingCanvas;
+            canvas.drawColor(0xff000000);
+
+            // Draw in the pressure grid and hour labels.
+            drawGrid(canvas);
+
+            // Draw in the pressure curve.
+            drawPressure(canvas);
+
+            // Widget needs a redraw now.
+            postInvalidate();
+        }
+    }
+
+
+    /**
+     * Draw in the grid and axis labels.
+     */
+    private void drawGrid(Canvas canvas) {
+        // Draw the vertical lines and the hour labels, if we have a
+    	// data time.
+    	if (lastTime != null) {
+    		graphPaint.setStyle(Paint.Style.STROKE);
+    		float hourY = dispBot + marginBot - labelSize - 8;
+    		float dayY = dispBot + marginBot - 6;
+    		Calendar time = (Calendar) lastTime.clone();
+    		time.add(Calendar.HOUR_OF_DAY, -DISPLAY_HOURS);
+    		for (int hour = 0; hour < DISPLAY_HOURS; ++hour) {
+    			float x = (float) hour * (float) HOUR_WIDTH;
+    			int h = time.get(Calendar.HOUR_OF_DAY);
+
+    			// Verticals, with a heavy line every 4.
+    			graphPaint.setStrokeWidth(h % 4 == 0 ? 2 : 1);
+    			graphPaint.setColor(GRID_MAJ_COL);
+    			canvas.drawLine(x, dispTop, x, dispBot, graphPaint);
+
+    			// Hour labels every 4 hours.
+    			graphPaint.setStrokeWidth(0);
+    			if (h % 4 == 0) {
+    				int count = formatTime(h, 0);
+    				float dx = -count * 4;
+    				graphPaint.setColor(MAIN_LABEL_COL);
+    				graphPaint.setTextSize(labelSmSize);
+    				canvas.drawText(charBuf, 0, count, x + dx, hourY, graphPaint);
+
+    				// Day labels every noon and midnight.
+    				if (h % 12 == 0) {
+    					int wd = time.get(Calendar.DAY_OF_WEEK);
+    					graphPaint.setColor(MAIN_LABEL_COL);
+    					graphPaint.setTextSize(labelSize);
+    					String name = TimeModel.weekdayName(wd);
+    					canvas.drawText(name, x + dx, dayY, graphPaint);
+    				}
+    			}
+
+    			time.add(Calendar.HOUR_OF_DAY, 1);
+    		}
+    	}
+
+        // Draw in the minor grid, if required.
+        if (pressGridMinor > 0) {
+            graphPaint.setStyle(Paint.Style.STROKE);
+            graphPaint.setColor(GRID_MIN_COL);
+            for (int p = dispMin; p <= dispMax; p += pressGridMinor) {
+            	graphPaint.setStrokeWidth(p % pressLabels == 0 ? 2 : 1);
+            	final float y = dispBot - (p - dispMin) * mbHeight;
+                canvas.drawLine(0, y, dispWidth, y, graphPaint);
+            }
+        }
+
+        // Draw in the major grid lines.
+        graphPaint.setStyle(Paint.Style.STROKE);
+        graphPaint.setColor(GRID_MAJ_COL);
+        for (int p = dispMin; p <= dispMax; p += PRESS_GRID_MAJ) {
+            graphPaint.setStrokeWidth(p % 100 == 0 ? 2 : 1);
+        	final float y = dispBot - (p - dispMin) * mbHeight;
+            canvas.drawLine(0, y, dispWidth, y, graphPaint);
+        }
+        
+        // Draw in the standard pressure line.
+        graphPaint.setStyle(Paint.Style.STROKE);
+        graphPaint.setColor(GRID_HL_COL);
+        graphPaint.setStrokeWidth(1);
+    	final float y = dispBot - (PRESS_STD - dispMin) * mbHeight;
+        canvas.drawLine(0, y, dispWidth, y, graphPaint);
+    }
+    
+    
+    /**
+     * Draw in the pressure curve.
+     */
+    private void drawPressure(Canvas canvas) {
+        graphPaint.setStyle(Paint.Style.STROKE);
+        graphPaint.setColor(CURVE_COL);
+        graphPaint.setStrokeWidth(2);
+        
+        float px = 0;
+        float py = 0;
+        for (int i = 0; i < numPoints; ++i) {
+        	final long t = pointTimes[i];
+        	final float x = (float) (t - firstTimeVal) / 1000f / 3600f * HOUR_WIDTH;
+        	
+        	final float p = pointPress[i];
+        	final float y = dispBot - (p - dispMin) * mbHeight;
+        	
+        	if (i > 0) {
+                graphPaint.setColor(CURVE_COL);
+                canvas.drawLine(px, py, x, y, graphPaint);
+        	}
+        	graphPaint.setColor(POINT_COL);
+        	canvas.drawPoint(x, y, graphPaint);
+            px = x;
+            py = y;
+        }
+    }
+    
+
+    private int formatTime(int h, int m) {
+        charBuf[0] = (char) ('0' + h / 10);
+        charBuf[1] = (char) ('0' + h %  10);
+        charBuf[2] = ':';
+        charBuf[3] = (char) ('0' + m /  10);
+        charBuf[4] = (char) ('0' + m %  10);
+        
+        return 5;
+    }
+    
 
 	// ******************************************************************** //
-	// Drawing.
+	// Screen Drawing.
 	// ******************************************************************** //
 
 	/**
@@ -317,141 +459,6 @@ public class WeatherWidget
 	    charBuf[7] = 'b';
 	    return String.valueOf(charBuf, 0, 8);
 	}
-    
-	
-    /**
-     * This method is called when some data has changed.  Re-draw the
-     * widget's content to the backing bitmap.
-     */
-    private void reDrawContent() {
-        // If we haven't been set up yet, do nothing.
-        if (backingCanvas == null || numPoints == 0)
-            return;
-        
-        synchronized (backingBitmap) {
-            final Canvas canvas = backingCanvas;
-            canvas.drawColor(0xff000000);
-
-            // Draw in the pressure grid and hour labels.
-            drawGrid(canvas);
-
-            // Draw in the pressure curve.
-            drawPressure(canvas);
-
-            // Widget needs a redraw now.
-            postInvalidate();
-        }
-    }
-
-
-    /**
-     * Draw in the grid and axis labels.
-     */
-    private void drawGrid(Canvas canvas) {
-        // Draw the vertical lines and the hour labels.
-        graphPaint.setStyle(Paint.Style.STROKE);
-        float hourY = dispBot + marginBot - labelSize - 8;
-        float dayY = dispBot + marginBot - 6;
-        Calendar time = (Calendar) lastTime.clone();
-        time.add(Calendar.HOUR_OF_DAY, -DISPLAY_HOURS);
-        for (int hour = 0; hour < DISPLAY_HOURS; ++hour) {
-            float x = (float) hour * (float) HOUR_WIDTH;
-            int h = time.get(Calendar.HOUR_OF_DAY);
-
-            // Verticals, with a heavy line every 4.
-            graphPaint.setStrokeWidth(h % 4 == 0 ? 2 : 1);
-            graphPaint.setColor(GRID_MAJ_COL);
-            canvas.drawLine(x, dispTop, x, dispBot, graphPaint);
-
-            // Hour labels every 4 hours.
-            graphPaint.setStrokeWidth(0);
-            if (h % 4 == 0) {
-                int count = formatTime(h, 0);
-                float dx = -count * 4;
-                graphPaint.setColor(MAIN_LABEL_COL);
-                graphPaint.setTextSize(labelSmSize);
-                canvas.drawText(charBuf, 0, count, x + dx, hourY, graphPaint);
-                
-                // Day labels every noon and midnight.
-                if (h % 12 == 0) {
-                    int wd = time.get(Calendar.DAY_OF_WEEK);
-                    graphPaint.setColor(MAIN_LABEL_COL);
-                    graphPaint.setTextSize(labelSize);
-                    String name = TimeModel.weekdayName(wd);
-                    canvas.drawText(name, x + dx, dayY, graphPaint);
-                }
-            }
-            
-            time.add(Calendar.HOUR_OF_DAY, 1);
-        }
-
-        // Draw in the minor grid, if required.
-        if (pressGridMinor > 0) {
-            graphPaint.setStyle(Paint.Style.STROKE);
-            graphPaint.setColor(GRID_MIN_COL);
-            for (int p = dispMin; p <= dispMax; p += pressGridMinor) {
-            	graphPaint.setStrokeWidth(p % pressLabels == 0 ? 2 : 1);
-            	final float y = dispBot - (p - dispMin) * mbHeight;
-                canvas.drawLine(0, y, dispWidth, y, graphPaint);
-            }
-        }
-
-        // Draw in the major grid lines.
-        graphPaint.setStyle(Paint.Style.STROKE);
-        graphPaint.setColor(GRID_MAJ_COL);
-        for (int p = dispMin; p <= dispMax; p += PRESS_GRID_MAJ) {
-            graphPaint.setStrokeWidth(p % 100 == 0 ? 2 : 1);
-        	final float y = dispBot - (p - dispMin) * mbHeight;
-            canvas.drawLine(0, y, dispWidth, y, graphPaint);
-        }
-        
-        // Draw in the standard pressure line.
-        graphPaint.setStyle(Paint.Style.STROKE);
-        graphPaint.setColor(GRID_HL_COL);
-        graphPaint.setStrokeWidth(1);
-    	final float y = dispBot - (PRESS_STD - dispMin) * mbHeight;
-        canvas.drawLine(0, y, dispWidth, y, graphPaint);
-    }
-    
-    
-    /**
-     * Draw in the pressure curve.
-     */
-    private void drawPressure(Canvas canvas) {
-        graphPaint.setStyle(Paint.Style.STROKE);
-        graphPaint.setColor(CURVE_COL);
-        graphPaint.setStrokeWidth(2);
-        
-        float px = 0;
-        float py = 0;
-        for (int i = 0; i < numPoints; ++i) {
-        	final long t = pointTimes[i];
-        	final float x = (float) (t - firstTimeVal) / 1000f / 3600f * HOUR_WIDTH;
-        	
-        	final float p = pointPress[i];
-        	final float y = dispBot - (p - dispMin) * mbHeight;
-        	
-        	if (i > 0) {
-                graphPaint.setColor(CURVE_COL);
-                canvas.drawLine(px, py, x, y, graphPaint);
-        	}
-        	graphPaint.setColor(POINT_COL);
-        	canvas.drawPoint(x, y, graphPaint);
-            px = x;
-            py = y;
-        }
-    }
-    
-
-    private int formatTime(int h, int m) {
-        charBuf[0] = (char) ('0' + h / 10);
-        charBuf[1] = (char) ('0' + h %  10);
-        charBuf[2] = ':';
-        charBuf[3] = (char) ('0' + m /  10);
-        charBuf[4] = (char) ('0' + m %  10);
-        
-        return 5;
-    }
     
    
 	// ******************************************************************** //
@@ -550,7 +557,7 @@ public class WeatherWidget
     // Min and max pressures in the actual data.
     private float pressMin = 1000;
     private float pressMax = 1020;
-    private float pressRange = 20;
+    private float pressRange = pressMax - pressMin;
     
     // Latest pressure time and value; 0 if not known.
 	private long pressTime = 0;
