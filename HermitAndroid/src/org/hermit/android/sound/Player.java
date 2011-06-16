@@ -20,11 +20,14 @@
 package org.hermit.android.sound;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import android.content.Context;
-import android.media.AudioManager;
-import android.media.SoundPool;
+import android.content.res.AssetFileDescriptor;
+import android.media.MediaPlayer;
+import android.util.Log;
 
 
 /**
@@ -34,6 +37,113 @@ import android.media.SoundPool;
  */
 public class Player
 {
+
+    // ******************************************************************** //
+    // Package-Shared Types.
+    // ******************************************************************** //
+
+    // Class wrapping up a MediaPlayer with our information about its state.
+    class PoolPlayer {
+    	
+    	/**
+    	 * Create a PoolPlayer.  This allocates the MediaPlayer.
+    	 */
+    	private PoolPlayer() {
+    		mediaPlayer = new MediaPlayer();
+    		loadedEffect = null;
+    	}
+
+    	
+        /**
+         * Play the given sound effect.  The sound won't be played if the volume
+         * would be zero or less.
+         * 
+         * @param   effect      The sound effect to play.
+         * @param   vol         Volume for this sound, 0 - 1.
+         * @param   loop        If true, loop the sound forever.
+         * @return				true iff the sound was loaded OK.
+         */
+        private boolean load(Effect effect, float vol, boolean loop) {
+        	// Set this player up for the given sound.
+        	int resId = effect.getResourceId();
+        	AssetFileDescriptor afd =
+        				appContext.getResources().openRawResourceFd(resId);
+        	try {
+        		mediaPlayer.reset();
+        		mediaPlayer.setDataSource(afd.getFileDescriptor(),
+        							 afd.getStartOffset(),
+        							 afd.getDeclaredLength());
+        		mediaPlayer.prepare();
+        	} catch (Exception e) {
+        		Log.e(TAG, "Failed to set up media player: " + e.getMessage(), e);
+        		return false;
+        	} finally {
+        		try {
+        			afd.close();
+        		} catch (IOException e) { }
+        	}
+    		loadedEffect = effect;
+
+        	// Set the play volume.
+        	mediaPlayer.setVolume(vol, vol);
+
+        	// Loop if required.
+        	mediaPlayer.setLooping(loop);
+
+    		return true;
+        }
+
+        
+        /**
+         * Start this player.
+         */
+        private void start() {
+        	if (mediaPlayer == null || loadedEffect == null)
+        		throw new IllegalStateException("tried to play with no effect");
+        	mediaPlayer.start();
+        }
+
+        
+        /**
+         * Stop this player.
+         */
+        private void stop() {
+        	if (mediaPlayer == null || loadedEffect == null)
+        		throw new IllegalStateException("tried to stop with no effect");
+        	mediaPlayer.stop();
+        	loadedEffect = null;
+        }
+
+
+        /**
+         * Determine whether the given effect is playing.
+         * 
+         * @param	e			Effect to check.
+         * @return              True iff e is playing in this player.
+         */
+        final boolean isPlaying(Effect e) {
+            return loadedEffect == e && mediaPlayer.isPlaying();
+        }
+        
+        
+        /**
+         * Releases resources associated with this player and its MediaPlayer
+         * object.
+         */
+        private void release() {
+        	mediaPlayer.release();
+        	mediaPlayer = null;
+        	loadedEffect = null;
+        }
+
+       
+    	// The actual media player.
+        private MediaPlayer mediaPlayer;
+    	
+    	// The effect it is playing.
+        private Effect loadedEffect;
+    }
+    
 
     // ******************************************************************** //
     // Constructor.
@@ -60,7 +170,9 @@ public class Player
         appContext = context;
         numStreams = streams;
         soundEffects = new ArrayList<Effect>();
-        soundPool = null;
+
+        // The player pool is null until we resume.
+        playerPool = null;
     }
 
 
@@ -71,12 +183,12 @@ public class Player
     /**
      * Add a sound effect to this player.
      * 
-     * @param   sound       Resource ID of the sound sample for this effect.
+     * @param   resId       Resource ID of the sound sample for this effect.
      * @return              An Effect object representing the new effect.
      *                      Use this object to actually play the sound.
      */
-    public Effect addEffect(int sound) {
-        return addEffect(sound, 1f);
+    public Effect addEffect(int resId) {
+        return addEffect(resId, 1f);
     }
 
 
@@ -93,15 +205,53 @@ public class Player
         
         synchronized (this) {
             soundEffects.add(effect);
-
-            // If we are running, we can load the sound now.
-            if (soundPool != null) {
-                int id = soundPool.load(appContext, effect.getResourceId(), 1);
-                effect.setSoundId(id);
-            }
         }
 
         return effect;
+    }
+
+
+	// ******************************************************************** //
+	// Suspend / Resume.
+	// ******************************************************************** //
+
+    /**
+     * Resume this player.  This allocates the media resources for all our
+     * registered sound effects.  This method must be called before the
+     * player can be used, and must be called again after calling
+     * {@link #suspend()}
+     * 
+     * <p>It's a good idea for apps to do this in Activity.onResume().
+     */
+    public void resume() {
+    	synchronized (this) {
+    		// Create the player pool.
+    		if (playerPool == null) {
+    			playerPool = new LinkedList<PoolPlayer>();
+    			for (int i = 0; i < numStreams; ++i)
+    				playerPool.add(new PoolPlayer());
+    		}
+    	}
+    }
+
+
+    /**
+     * Suspend this player.  This closes down the media resources the
+     * player is using.  It's a good idea for apps to do this in
+     * Activity.onPause().
+     * 
+     * <p>Following suspend, {@link #resume()} must be called before this
+     * player can be used again.
+     */
+    public void suspend() {
+        synchronized (this) {
+            if (playerPool != null) {
+            	PoolPlayer pp;
+            	while ((pp = playerPool.poll()) != null)
+            		pp.release();
+            	playerPool = null;
+            }
+        }
     }
 
 
@@ -153,20 +303,28 @@ public class Player
      */
     public void play(Effect effect, float rvol, boolean loop) {
         synchronized (this) {
-            if (soundPool == null)
+            if (playerPool == null)
                 throw new IllegalStateException("can't play while suspended");
 
-            // Calculate the play volume.
-            float vol = soundGain * rvol;
-            if (vol <= 0f)
-                return;
-            if (vol > 1f)
-                vol = 1f;
+        	// Calculate the play volume.
+        	float vol = soundGain * rvol;
+        	if (vol <= 0f) {
+        		Log.e(TAG, "Computed volume=" + vol + "; ignoring");
+        		return;
+        	}
+        	if (vol > 1f)
+        		vol = 1f;
+
+            // Get the next player and push it to the end.
+            PoolPlayer player = playerPool.poll();
+            playerPool.addLast(player);
+     
+            // Set this player up for the given sound.
+            player.load(effect, vol, loop);
 
             // Set it playing.
-            int stream = soundPool.play(effect.getSoundId(), vol, vol, 1,
-                    loop ? -1 : 0, 1f);
-            effect.setStreamId(stream);
+            effect.setPlayer(player);
+        	player.start();
         }
     }
 	
@@ -180,13 +338,13 @@ public class Player
      */
     public void stop(Effect effect) {
         synchronized (this) {
-            if (soundPool == null)
+            if (playerPool == null)
                 throw new IllegalStateException("can't stop while suspended");
 
-            int id = effect.getStreamId();
-            if (id != 0) {
-                soundPool.stop(id);
-                effect.setStreamId(0);
+            PoolPlayer player = effect.getPlayer();
+            if (player != null) {
+                player.stop();
+                effect.setPlayer(null);
             }
         }
     }
@@ -202,61 +360,12 @@ public class Player
         }
     }
     
-
-	// ******************************************************************** //
-	// Suspend / Resume.
-	// ******************************************************************** //
-
-    /**
-     * Resume this player.  This allocates the media resources for all our
-     * registered sound effects.  This method must be called before the
-     * player can be used, and must be called again after calling
-     * {@link #suspend()}
-     * 
-     * <p>It's a good idea for apps to do this in Activity.onResume().
-     */
-    public void resume() {
-        synchronized (this) {
-            if (soundPool == null) {
-                soundPool = new SoundPool(numStreams, AudioManager.STREAM_MUSIC, 0);
-
-                for (Effect e : soundEffects) {
-                    int id = soundPool.load(appContext, e.getResourceId(), 1);
-                    e.setSoundId(id);
-                }
-            }
-        }
-    }
     
-
-    /**
-     * Suspend this player.  This closes down the media resources the
-     * player is using.  It's a good idea for apps to do this in
-     * Activity.onPause().
-     * 
-     * <p>Following suspend, {@link #resume()} must be called before this
-     * player can be used again.
-     */
-    public void suspend() {
-        synchronized (this) {
-            if (soundPool != null) {
-                for (Effect e : soundEffects) {
-                    stop(e);
-                    e.setSoundId(-1);
-                }
-                soundPool.release();
-                soundPool = null;
-            }
-        }
-    }
-
-
     // ******************************************************************** //
     // Class Data.
     // ******************************************************************** //
 
     // Debugging tag.
-	@SuppressWarnings("unused")
     private static final String TAG = "sound";
 
 
@@ -269,11 +378,13 @@ public class Player
     
     // Maximum number of sound streams to play simultaneously.
     private final int numStreams;
- 
-    // Sound pool used for sound effects.  Null if not allocated; e.g.
-    // if we are suspended.
-    private SoundPool soundPool;
     
+    // The pool of players we use to play sounds.  The most recently
+    // started player will be at the end; so the least recently used,
+    // and the one which should be recycled next, is on top.
+    // playerPool is null while we are suspended.
+    private LinkedList<PoolPlayer> playerPool;
+ 
     // All sound effects.
     private ArrayList<Effect> soundEffects;
     

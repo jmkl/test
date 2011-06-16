@@ -88,22 +88,22 @@ public class Effect
     
 
     /**
-     * Get the playing stream ID for this sound.
+     * Get the player for this sound.
      * 
-     * @return              Playing stream of this effect.  0 if not playing.
+     * @return              Current player of this effect.  null if not playing.
      */
-    final int getStreamId() {
-        return streamId;
+    final Player.PoolPlayer getPlayer() {
+        return player;
     }
 
     
     /**
-     * Set the playing stream for this sound.
+     * Set the player for this sound.
      * 
-     * @param   id          Playing stream of this effect.  0 if not playing.
+     * @param   p           Current player of this effect.  null if not playing.
      */
-    final void setStreamId(int id) {
-        streamId = id;
+    final void setPlayer(Player.PoolPlayer p) {
+        player = p;
     }
     
 
@@ -182,7 +182,7 @@ public class Effect
      * @return              True if this sound effect is playing.
      */
     public final boolean isPlaying() {
-        return streamId != 0;
+        return player != null && player.isPlaying(this);
     }
 
 
@@ -203,9 +203,9 @@ public class Effect
     // we don't currently have a media connection.
     private int playerSoundId;
 
-    // Stream ID of the stream which is playing this effect; 0
+    // The pool player which is playing this effect; null
     // if it's not playing.
-    private int streamId = 0;
+    private Player.PoolPlayer player = null;
 
 }
 
