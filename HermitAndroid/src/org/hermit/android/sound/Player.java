@@ -116,7 +116,17 @@ public class Player
 
 
         /**
-         * Determine whether the given effect is playing.
+         * Determine whether this player is playing anything.
+         * 
+         * @return              True iff something is playing in this player.
+         */
+        final boolean isPlaying() {
+            return mediaPlayer.isPlaying();
+        }
+        
+
+        /**
+         * Determine whether this player is playing the given effect.
          * 
          * @param	e			Effect to check.
          * @return              True iff e is playing in this player.
@@ -131,9 +141,11 @@ public class Player
          * object.
          */
         private void release() {
-        	mediaPlayer.release();
-        	mediaPlayer = null;
-        	loadedEffect = null;
+        	if (mediaPlayer == null) {
+        		mediaPlayer.release();
+        		mediaPlayer = null;
+        		loadedEffect = null;
+        	}
         }
 
        
@@ -315,8 +327,17 @@ public class Player
         	if (vol > 1f)
         		vol = 1f;
 
-            // Get the next player and push it to the end.
-            PoolPlayer player = playerPool.poll();
+            // Get the next idle player and push it to the end.  Failing that,
+        	// use the least recently used player, which is the first one.
+            PoolPlayer player = null;
+        	for (PoolPlayer p : playerPool) {
+        		if (!p.isPlaying()) {
+        			player = p;
+        			break;
+        		}
+        	}
+        	if (player == null)
+        		player = playerPool.poll();
             playerPool.addLast(player);
      
             // Set this player up for the given sound.
