@@ -7,12 +7,25 @@
 
     <application android:icon="@drawable/icon" android:label="@string/app_name">
         <activity android:name=".ChimeTimer"
-                  android:label="@string/app_name">
+                  android:label="@string/app_name"
+                  android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <activity android:name=".Configuration"
+                  android:label="@string/config_name"
+                  android:launchMode="singleTop"
+                  android:excludeFromRecents="true"
+                  android:stateNotNeeded="true">
+        </activity>
+
+        <service android:name=".ChimerService"
+                android:enabled="true"
+                android:exported="false"/>
+
     </application>
 </manifest>
+

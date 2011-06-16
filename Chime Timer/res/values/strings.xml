@@ -14,5 +14,11 @@
     <string name="but_start">Start</string>
     <string name="but_stop">Stop</string>
     
+    <!-- Configurator. -->
+    <string name="config_name">Configuration</string>
+      
+    <!-- Service. -->
+    <string name="service_notif">ChimeTimer running</string>
+    
 </resources>
 

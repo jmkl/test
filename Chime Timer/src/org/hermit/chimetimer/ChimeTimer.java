@@ -3,25 +3,27 @@
 package org.hermit.chimetimer;
 
 
-import java.util.prefs.Preferences;
-
 import org.hermit.android.core.MainActivity;
+import org.hermit.chimetimer.ChimerService.ChimerBinder;
 
-import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 
@@ -53,14 +55,21 @@ public class ChimeTimer
 	 */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "M onCreate()");
+        
         super.onCreate(savedInstanceState);
         setContentView(R.layout.clock_view);
         
+        // Kick off our service, if it's not running.
+        launchService();
+
+        // Set up our data.
+        timerConfigs = new TimerConfig[TimerConfig.NUM_TIMERS];
+        for (int i = 0; i < TimerConfig.NUM_TIMERS; ++i)
+        	timerConfigs[i] = new TimerConfig();
+
         // We want the audio controls to control our sound volume.
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        
-        // Load the sounds.
-        soundPool = createSoundPool();
 
 		// Clock
 
@@ -68,9 +77,22 @@ public class ChimeTimer
 		timeText.append("00:00:00");
 
 		// Get the relevant widgets.
+        timerChoice = (Spinner) findViewById(R.id.timer_choice);
 		timeField = (TextView) findViewById(R.id.timer_time);
+        
+        // Handle timer selections.
+        timerChoice.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> a, View v, int pos, long id) {
+				selectTimer(pos);
+			}
 
-		// Get the relevant widgets.
+			@Override
+			public void onNothingSelected(AdapterView<?> a) {
+			}
+		});
+
+		// Handle start/stop.
 		startButton = (Button) findViewById(R.id.start_button);
 		startButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -86,8 +108,26 @@ public class ChimeTimer
 				updateClock(m.what);
 			}
 		};
+        
+    	currentTimer = 0;
     }
     
+    
+    /**
+     * Called after {@link #onCreate} or {@link #onStop} when the current
+     * activity is now being displayed to the user.  It will
+     * be followed by {@link #onRestart}.
+     */
+    @Override
+	protected void onStart() {
+        Log.i(TAG, "M onStart()");
+        
+        super.onStart();
+
+        // Bind to the service.
+        bindService();
+    }
+
 
     /**
      * Called after onRestoreInstanceState(Bundle), onRestart(), or onPause(),
@@ -100,9 +140,12 @@ public class ChimeTimer
      */
     @Override
     protected void onResume() {
-        Log.i(TAG, "onResume()");
+        Log.i(TAG, "M onResume()");
 
         super.onResume();
+    	
+    	// Our configuration may have changed -- reload it.
+		loadConfigs();
 
         // First time round, show the EULA.
      // FIXME: showFirstEula();
@@ -123,7 +166,7 @@ public class ChimeTimer
      */
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.i(TAG, "onSaveInstanceState()");
+        Log.i(TAG, "M onSaveInstanceState()");
         super.onSaveInstanceState(outState);
         
         // Save our state.
@@ -146,8 +189,8 @@ public class ChimeTimer
      */
     @Override
     protected void onPause() {
-        Log.i(TAG, "onPause()");
-        
+        Log.i(TAG, "M onPause()");
+
         super.onPause();
         
 		// Stop the tick events.
@@ -156,6 +199,123 @@ public class ChimeTimer
 			ticker = null;
 		}
     }
+
+
+    /**
+     * Called when you are no longer visible to the user.  You will next
+     * receive either {@link #onStart}, {@link #onDestroy}, or nothing,
+     * depending on later user activity.
+     * 
+     * <p>Note that this method may never be called, in low memory situations
+     * where the system does not have enough memory to keep your activity's
+     * process running after its {@link #onPause} method is called.
+     */
+    @Override
+	protected void onStop() {
+        Log.i(TAG, "M onStop()");
+        
+        super.onStop();
+        
+        // Unbind from the service (but don't stop it).
+        unbindService();
+    }
+
+
+    // ******************************************************************** //
+    // Service Communications.
+    // ******************************************************************** //
+
+    /**
+     * Start the service, if it's not running.
+     */
+    private void launchService() {
+        Intent intent = new Intent(this, ChimerService.class);
+        startService(intent);
+    }
+    
+
+    /**
+     * Bind to the service.
+     */
+    private void bindService() {
+        Intent intent = new Intent(this, ChimerService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+    
+
+    /**
+     * Pause the service (e.g. for maintenance).
+     */
+    public void pauseService() {
+    	chimerService.pause();
+    }
+    
+
+    /**
+     * Resume the service from a pause.
+     */
+    public void resumeService() {
+    	chimerService.resume();
+    }
+    
+
+    /**
+     * Unbind from the service -- without stopping it.
+     */
+    private void unbindService() {
+        // Unbind from the OnWatch service.
+        if (chimerService != null) {
+            unbindService(serviceConnection);
+            chimerService = null;
+        }
+    }
+
+
+    /**
+     * Shut down the app, including the background service.
+     */
+    private void shutdown() {
+        if (chimerService != null) {
+        	chimerService.shutdown();
+            unbindService(serviceConnection);
+            chimerService = null;
+        }
+        
+    	finish();
+    }
+    
+
+    /**
+     * Defines callbacks for service binding, passed to bindService().
+     */
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            Log.i(TAG, "M onServiceConnected()");
+            
+            // We've bound to ChimerService; cast the IBinder to
+        	// the right type.
+            ChimerBinder binder = (ChimerBinder) service;
+            chimerService = binder.getService();
+        	
+            // Start all the views and give them the service.
+//    		for (ViewFragment v : childViews)
+//    			v.start(onWatchService);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            Log.i(TAG, "M onServiceDisconnected()");
+            
+            chimerService = null;
+            
+            // Stop all the views.
+//    		for (ViewFragment v : childViews)
+//    			v.stop();
+        }
+        
+    };
 
 
 	// ******************************************************************** //
@@ -208,24 +368,21 @@ public class ChimeTimer
     	case R.id.menu_configure:
         	// Launch the configuration activity as a subactivity, so we
         	// know when it returns.
+            Log.i(TAG, "M Launch config");
         	Intent cint = new Intent();
         	cint.setClass(this, Configuration.class);
-        	startActivityForResult(cint, new MainActivity.ActivityListener() {
-				@Override
-				public void onActivityResult(int resultCode, Intent data) {
-		            updatePreferences();
-				}
-        	});
+        	startActivity(cint);
         	break;
     	case R.id.menu_help:
+            Log.i(TAG, "M Launch help");
             // TODO: Launch the help activity as a subactivity.
 //            Intent hIntent = new Intent();
 //            hIntent.setClass(this, Help.class);
 //            startActivity(hIntent);
     		break;
     	case R.id.menu_about:
-    		// TODO: show the about box.
-//            showAbout();
+            Log.i(TAG, "M Launch about");
+            showAbout();
      		break;
     	default:
     		return super.onOptionsItemSelected(item);
@@ -239,8 +396,8 @@ public class ChimeTimer
      * Read our application preferences and configure ourself appropriately.
      */
     private void updatePreferences() {
-    	SharedPreferences prefs =
-    					PreferenceManager.getDefaultSharedPreferences(this);
+//    	SharedPreferences prefs =
+//    					PreferenceManager.getDefaultSharedPreferences(this);
 
 //    	boolean nautTime = false;
 //    	try {
@@ -272,6 +429,36 @@ public class ChimeTimer
 	// ******************************************************************** //
 	// State Control.
 	// ******************************************************************** //
+	
+	/**
+	 * Load from persistent storage all the timers' configurations.
+	 */
+	private void loadConfigs() {
+		for (int timer = 0; timer < TimerConfig.NUM_TIMERS; ++timer) {
+			String base = "timer" + timer + "_";
+			SharedPreferences prefs = getSharedPreferences("timers", 0);
+	        TimerConfig c = timerConfigs[timer];
+	        c.name = prefs.getString(base + "name", c.name);
+	        c.preTime = prefs.getLong(base + "preTime", c.preTime);
+	        c.startBell = prefs.getInt(base + "startBell", c.startBell);
+	        c.runTime = prefs.getLong(base + "runTime", c.runTime);
+	        c.endBell = prefs.getInt(base + "endBell", c.endBell);
+		}
+		selectTimer(currentTimer);
+	}
+
+
+    /**
+     * Select the timer to configure.
+     * 
+     * @param	pos			Index of the timer to configure.
+     */
+	private void selectTimer(int pos) {
+		currentTimer = pos;
+		currentConfig = timerConfigs[currentTimer];
+		updateClock(currentConfig.runTime);
+	}
+	
 
     /**
      * Start/stop button has been clicked; take the appropriate action.
@@ -295,8 +482,8 @@ public class ChimeTimer
      * 
      * @param	msLeft		Number of ms left to run.  If zero, we're done.
      */
-    private void updateClock(int msLeft) {
-    	int sLeft = (msLeft + 500) / 1000;
+    private void updateClock(long msLeft) {
+    	int sLeft = (int) ((msLeft + 500) / 1000);
     	int hour = sLeft / 3600;
     	int min = sLeft / 60 % 60;
     	int sec = sLeft % 60;
@@ -310,60 +497,9 @@ public class ChimeTimer
 	}
 
 
-	// ******************************************************************** //
-	// Sound Playing.
-	// ******************************************************************** //
-    
-    /**
-     * Create a SoundPool containing the app's sound effects.
-     */
-    private SoundPool createSoundPool() {
-        SoundPool pool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        for (SoundEffect sound : SoundEffect.values())
-            sound.soundId = pool.load(this, sound.soundRes, 1);
-        
-        return pool;
-    }
-
-    
-    /**
-     * Make a sound.  Play it immediately.  Don't touch the queue.
-     * 
-     * @param	which			ID of the sound to play.
-     */
-    private void makeSound(SoundEffect which) {
-        float vol = 1.0f;
-        soundPool.play(which.soundId, vol, vol, 1, 0, 1f);
-	}
-
-
     // ******************************************************************** //
     // Private Types.
     // ******************************************************************** //
-
-    /**
-     * The sounds that we make.
-     */
-	private static enum SoundEffect {
-    	BELL_1(R.raw.s0),
-    	BELL_2(R.raw.s1),
-    	BELL_3(R.raw.s2),
-    	BELL_4(R.raw.s3),
-    	BELL_5(R.raw.s4),
-    	BELL_6(R.raw.s5),
-    	BELL_7(R.raw.s7);
-	
-    	private SoundEffect(int res) {
-    		soundRes = res;
-    	}
-    	
-    	// Resource ID for the sound file.
-    	private final int soundRes;
-    	
-    	// Sound ID for playing.
-        private int soundId = 0;        
-    }
-
 
 	/**
 	 * Class which generates our ticks.
@@ -417,6 +553,9 @@ public class ChimeTimer
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
+    
+    // Our service.  null if we haven't bound to it yet.
+    private ChimerService chimerService = null;
 
     // Timer we use to generate tick events.
     private Ticker ticker = null;
@@ -427,15 +566,24 @@ public class ChimeTimer
     
 	// Buffer we create the time display in.
 	private StringBuilder timeText;
-	   
+
+    // Timer selector spinner.
+    private Spinner timerChoice;
+
     // Fields for displaying the date and time.
     private TextView timeField;
     
     // Start / stop button.
     private Button startButton;
     
-    // Sound pool used for sound effects.
-    private SoundPool soundPool = null;
+    // Current timer configurations.
+    private TimerConfig[] timerConfigs;
+
+    // Index of the timer we're editing.
+    private int currentTimer = 0;
+	
+	// Current timer's configuration.
+	private TimerConfig currentConfig = null;
 
 }
 

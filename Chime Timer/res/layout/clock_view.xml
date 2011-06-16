@@ -12,6 +12,11 @@
         	    android:dial="@drawable/clock_dial"
                 android:hand_hour="@drawable/clock_hand_hour"
                 android:hand_minute="@drawable/clock_hand_minute" />
+              
+        <Spinner android:id="@+id/timer_choice"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/timer_choices" />
 
 		<TextView
             	style="@style/ClockTime"
@@ -19,9 +24,8 @@
         		android:layout_width="fill_parent"
         		android:layout_height="wrap_content" />
 
-        <Button
+        <Button android:id="@+id/start_button"
                 style="@style/BigButton"
-                android:id="@+id/start_button"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/but_start" />
