@@ -1,19 +1,29 @@
 
+/**
+ * Chime Timer: a simple and elegant timer.
+ * <br>Copyright 2011 Ian Cameron Smith
+ * 
+ * <p>This app is a configurable, but simple and nice countdown timer.
+ *
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
+ * 
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
 
 package org.hermit.chimetimer;
 
 
 import org.hermit.android.widgets.TimeoutPicker;
-import org.hermit.chimetimer.ChimerService.ChimerBinder;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -55,9 +65,6 @@ public class Configuration
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.config_view);
-        
-        // Kick off our service, if it's not running.
-        launchService();
 
         // Set up our data.
         timerConfigs = new TimerConfig[TimerConfig.NUM_TIMERS];
@@ -159,8 +166,7 @@ public class Configuration
         
         super.onStart();
 
-        // Bind to the service.
-        bindService();
+        soundManager = new Sounds(this);
     }
 
 
@@ -178,6 +184,8 @@ public class Configuration
         Log.i(TAG, "Config onResume()");
 
         super.onResume();
+        
+        soundManager.resume();
     }
 
 
@@ -221,6 +229,8 @@ public class Configuration
         Log.i(TAG, "Config onPause()");
         
         super.onPause();
+        
+		soundManager.pause();
     }
 
 
@@ -239,84 +249,8 @@ public class Configuration
         
         super.onStop();
         
-        // Unbind from the service (but don't stop it).
-        unbindService();
+		soundManager.shutdown();
     }
-
-
-    // ******************************************************************** //
-    // Service Communications.
-    // ******************************************************************** //
-
-    /**
-     * Start the service, if it's not running.
-     */
-    private void launchService() {
-        Intent intent = new Intent(this, ChimerService.class);
-        startService(intent);
-    }
-    
-
-    /**
-     * Bind to the service.
-     */
-    private void bindService() {
-        Intent intent = new Intent(this, ChimerService.class);
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-    }
-    
-
-    /**
-     * Pause the service (e.g. for maintenance).
-     */
-    public void pauseService() {
-    	chimerService.pause();
-    }
-    
-
-    /**
-     * Resume the service from a pause.
-     */
-    public void resumeService() {
-    	chimerService.resume();
-    }
-    
-
-    /**
-     * Unbind from the service -- without stopping it.
-     */
-    private void unbindService() {
-        // Unbind from the OnWatch service.
-        if (chimerService != null) {
-            unbindService(serviceConnection);
-            chimerService = null;
-        }
-    }
-
-
-    /**
-     * Defines callbacks for service binding, passed to bindService().
-     */
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            Log.i(TAG, "Config onServiceConnected()");
-            
-            // We've bound to ChimerService; cast the IBinder to
-        	// the right type.
-            ChimerBinder binder = (ChimerBinder) service;
-            chimerService = binder.getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            Log.i(TAG, "Config onServiceDisconnected()");
-            
-            chimerService = null;
-        }
-        
-    };
 
 
 	// ******************************************************************** //
@@ -377,17 +311,11 @@ public class Configuration
 	// Bell Selection.
 	// ******************************************************************** //
 
-	private void playBell(int pos) {
-		if (chimerService == null) {
-            Log.i(TAG, "Config bell: no service");
-			return;
-		}
-		
-        Log.i(TAG, "Config bell " + pos);
-		ChimerService.SoundEffect[] bells = ChimerService.SoundEffect.VALUES;
-		if (pos < 0 || pos >= bells.length)
-			return;
-		chimerService.makeSound(bells[pos]);
+	private void playBell(int ordinal) {
+        Log.i(TAG, "Config bell " + ordinal);
+		Sounds.SoundEffect bell = Sounds.SoundEffect.valueOf(ordinal);
+		if (bell != null)
+			soundManager.makeSound(bell);
 	}
 	
 	
@@ -403,8 +331,8 @@ public class Configuration
 	// Private Data.
 	// ******************************************************************** //
     
-    // Our service.  null if we haven't bound to it yet.
-    private ChimerService chimerService = null;
+    // Sound manager used for sound effects.
+    private Sounds soundManager = null;
 
     // Timer selector spinner.
     private Spinner timerChoice;

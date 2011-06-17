@@ -1,10 +1,9 @@
 
 /**
- * On Watch: sailor's watchkeeping assistant.
- * <br>Copyright 2009 Ian Cameron Smith
+ * Chime Timer: a simple and elegant timer.
+ * <br>Copyright 2011 Ian Cameron Smith
  * 
- * <p>This program acts as a bridge buddy for a cruising sailor on watch.
- * It displays time and navigation data, sounds chimes and alarms, etc.
+ * <p>This app is a configurable, but simple and nice countdown timer.
  *
  * <p>This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -20,15 +19,16 @@
 package org.hermit.chimetimer;
 
 
-import org.hermit.android.sound.Effect;
-import org.hermit.android.sound.Player;
+import org.hermit.chimetimer.Sounds.SoundEffect;
 
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 
 
@@ -55,40 +55,28 @@ public class ChimerService
         }
     }
 
-
-    /**
-     * The sounds that we make.
-     */
-	static enum SoundEffect {
-    	BELL_1(R.raw.s0),
-    	BELL_2(R.raw.s1),
-    	BELL_3(R.raw.s2),
-    	BELL_4(R.raw.s3),
-    	BELL_5(R.raw.s4),
-    	BELL_6(R.raw.s5),
-    	BELL_7(R.raw.s7);
 	
-    	private SoundEffect(int res) {
-    		soundRes = res;
-    	}
-    	
-    	void play() {
-    		if (playerEffect == null)
-    			throw new IllegalStateException("tried to play before player" +
-    											" was initialised");
-    		playerEffect.play();
-    	}
-        
-        static final SoundEffect[] VALUES = values();
-
-    	// Resource ID for the sound file.
-    	private final int soundRes;
-    	
-    	// Effect object representing this sound.
-        private Effect playerEffect = null;
-    }
-
-
+	/**
+	 * Timer state in tick messages: not started yet.
+	 */
+	static final int STATE_READY = 1;
+	
+	/**
+	 * Timer state in tick messages: pre-timer running.
+	 */
+	static final int STATE_PRE = 2;
+	
+	/**
+	 * Timer state in tick messages: main timer running.
+	 */
+	static final int STATE_RUNNING = 3;
+	
+	/**
+	 * Timer state in tick messages: finished.
+	 */
+	static final int STATE_FINISHED = 4;
+	
+	
 	// ******************************************************************** //
     // Service Lifecycle.
     // ******************************************************************** //
@@ -100,10 +88,9 @@ public class ChimerService
     public void onCreate() {
     	Log.i(TAG, "Svc onCreate()");
         super.onCreate();
-        
-        // Load the sounds.
-        soundPlayer = createSoundPlayer();
 
+        soundManager = new Sounds(this);
+        
         // Set myself up as a foreground service.
         Notification n = new Notification(R.drawable.bell0,
         								  getText(R.string.service_notif),
@@ -113,7 +100,9 @@ public class ChimerService
         n.setLatestEventInfo(this, getText(R.string.service_notif),
         					 getText(R.string.service_notif), pi);
         startForeground(1, n);
-		
+
+        currentState = STATE_READY;
+        
 		// Set ourselves running.
 		resume();
     }
@@ -201,12 +190,22 @@ public class ChimerService
 	// ******************************************************************** //
 
     /**
-     * Pause the service (e.g. for maintenance).
+     * Register a client for this service.  Send ticks to the
+     * supplied handler.
      */
-    public void pause() {
-        Log.i(TAG, "Svc pause()");
-        
-        soundPlayer.suspend();
+    void registerClient(Handler handler) {
+    	tickHandler = handler;
+    	
+    	// Tell the new client where we are.
+    	signalClients(lastState, lastRemain);
+    }
+    
+
+    /**
+     * Un-register the given client handler for this service.
+     */
+    void unregisterClient(Handler handler) {
+    	tickHandler = null;
     }
     
 
@@ -216,7 +215,23 @@ public class ChimerService
     public void resume() {
         Log.i(TAG, "Svc resume()");
         
-        soundPlayer.resume();
+        soundManager.resume();
+    }
+    
+
+    /**
+     * Pause the service (e.g. for maintenance).
+     */
+    public void pause() {
+        Log.i(TAG, "Svc pause()");
+        
+		// Stop the tick events.
+		if (ticker != null) {
+			ticker.kill();
+			ticker = null;
+		}
+        
+		soundManager.pause();
     }
     
 
@@ -227,34 +242,158 @@ public class ChimerService
         Log.i(TAG, "Svc shutdown()");
         
         pause();
+		soundManager.shutdown();
     	stopSelf();
     }
     
 
 	// ******************************************************************** //
-	// Sound Playing.
+	// Timer Control.
 	// ******************************************************************** //
-    
-    /**
-     * Create a sound player containing the app's sound effects.
-     */
-    private Player createSoundPlayer() {
-    	Player player = new Player(this, 3);
-        for (SoundEffect sound : SoundEffect.VALUES)
-            sound.playerEffect = player.addEffect(sound.soundRes, 1);
-        
-        return player;
-    }
 
+    /**
+     * Start a timer with the given configuration.  Send ticks to the
+     * supplied handler.
+     */
+    void startTimer(TimerConfig config) {
+    	if (ticker != null) {
+    		ticker.kill();
+    		ticker = null;
+    	}
+
+    	// Start the tick events.
+    	ticker = new Ticker(config);
+    }
+    
+
+    /**
+     * Stop the current timer.
+     */
+    void stopTimer() {
+    	if (ticker != null) {
+    		ticker.kill();
+    		ticker = null;
+    	}
+        currentState = STATE_READY;
+        signalClients(currentState, 0);
+    }
+    
     
     /**
-     * Make a sound.  Play it immediately.  Don't touch the queue.
+     * Tell whether the timer is running.
      * 
-     * @param	which			ID of the sound to play.
+     * @return				true iff the timer is running.
      */
-    void makeSound(SoundEffect which) {
-        Log.i(TAG, "Svc play " + which);
-        which.play();
+    boolean isRunning() {
+    	return currentState == STATE_PRE || currentState == STATE_RUNNING;
+    }
+	
+    
+    /**
+     * Get the current state of the timer.
+     * 
+     * @return				Current timer state.
+     */
+    int getState() {
+    	return currentState;
+    }
+	
+  
+    /**
+     * Tell the client where we are.
+     * 
+     * @param state
+     * @param time
+     */
+	void signalClients(int state, int time) {
+		if (tickHandler != null) {
+			Message msg = tickHandler.obtainMessage(state, time, 0);
+			tickHandler.sendMessage(msg);
+		}
+		lastState = state;
+		lastRemain = time;
+	}
+
+
+    // ******************************************************************** //
+    // Private Types.
+    // ******************************************************************** //
+
+	/**
+	 * Class which generates our ticks.
+	 */
+	private class Ticker extends Thread {
+		public Ticker(TimerConfig config) {
+			timerConfig = config;
+			startTime = System.currentTimeMillis();
+
+			enable = true;
+			start();
+		}
+
+		public void kill() {
+			enable = false;
+			interrupt();
+		}
+
+		@Override
+		public void run() {
+			long base = startTime;
+			
+			if (enable && timerConfig.preTime > 0) {
+				currentState = STATE_PRE;
+				base += timerConfig.preTime;
+				runSegment(base);
+			}
+			
+			if (enable && timerConfig.startBell != 0) {
+				SoundEffect bell = SoundEffect.valueOf(timerConfig.startBell - 1);
+				soundManager.makeSound(bell);
+			}
+			
+			if (enable && timerConfig.runTime > 0) {
+				base += timerConfig.runTime;
+				currentState = STATE_RUNNING;
+				runSegment(base);
+			}
+			
+			currentState = STATE_FINISHED;
+			signalClients(STATE_FINISHED, 0);
+
+			if (enable && timerConfig.endBell != 0) {
+				SoundEffect bell = SoundEffect.valueOf(timerConfig.endBell - 1);
+				soundManager.makeSound(bell);
+			}
+			
+			enable = false;
+			ticker = null;
+		}
+
+		// Time up to the given end time.  Ping the handler when we start and
+		// then every whole second up to the end time, and return when
+		// we get there.
+		private void runSegment(long endTime) {
+			while (enable) {
+				int remain = (int) (endTime - System.currentTimeMillis());
+				if (remain < 0)
+					remain = 0;
+				signalClients(currentState, remain);
+				if (remain == 0)
+					break;
+				
+				// Try to sleep up to the next 1-second boundary, so we
+				// tick just about on the second.
+				try {
+					sleep(remain % 1000);
+				} catch (InterruptedException e) {
+					enable = false;
+				}
+			}
+		}
+
+		private final TimerConfig timerConfig;
+		private final long startTime;
+		private boolean enable;
 	}
 
 
@@ -273,8 +412,22 @@ public class ChimerService
     // The Binder given to clients.
     private IBinder serviceBinder = null;
     
-    // Sound player used for sound effects.
-    private Player soundPlayer = null;
+    // Sound manager used for sound effects.
+    private Sounds soundManager = null;
+
+    // Timer we use to generate tick events.
+    private Ticker ticker = null;
+	
+	// Handler for updates, supplied by the client.  If null, no updates are
+    // generated.
+	private Handler tickHandler = null;
+
+	// Current timer state.
+	private int currentState = STATE_READY;
+
+	// Last state data sent to clients.
+	private int lastState = STATE_READY;
+	private int lastRemain = 0;
 
 }
 

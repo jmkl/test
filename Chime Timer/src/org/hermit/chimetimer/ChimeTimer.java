@@ -1,4 +1,20 @@
 
+/**
+ * Chime Timer: a simple and elegant timer.
+ * <br>Copyright 2011 Ian Cameron Smith
+ * 
+ * <p>This app is a configurable, but simple and nice countdown timer.
+ *
+ * <p>This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation (see COPYING).
+ * 
+ * <p>This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
 
 package org.hermit.chimetimer;
 
@@ -58,10 +74,7 @@ public class ChimeTimer
         Log.i(TAG, "M onCreate()");
         
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.clock_view);
-        
-        // Kick off our service, if it's not running.
-        launchService();
+        setContentView(R.layout.main_view);
 
         // Set up our data.
         timerConfigs = new TimerConfig[TimerConfig.NUM_TIMERS];
@@ -78,6 +91,7 @@ public class ChimeTimer
 
 		// Get the relevant widgets.
         timerChoice = (Spinner) findViewById(R.id.timer_choice);
+        preField = (TextView) findViewById(R.id.timer_pre);
 		timeField = (TextView) findViewById(R.id.timer_time);
         
         // Handle timer selections.
@@ -100,14 +114,6 @@ public class ChimeTimer
 				startStop();
 			}
 		});
-		
-		// Create a handler for tick events.
-		tickHandler = new Handler() {
-			@Override
-			public void handleMessage(Message m) {
-				updateClock(m.what);
-			}
-		};
         
     	currentTimer = 0;
     }
@@ -123,6 +129,9 @@ public class ChimeTimer
         Log.i(TAG, "M onStart()");
         
         super.onStart();
+        
+        // Kick off our service, if it's not running.
+        launchService();
 
         // Bind to the service.
         bindService();
@@ -192,12 +201,6 @@ public class ChimeTimer
         Log.i(TAG, "M onPause()");
 
         super.onPause();
-        
-		// Stop the tick events.
-		if (ticker != null) {
-			ticker.kill();
-			ticker = null;
-		}
     }
 
 
@@ -215,9 +218,15 @@ public class ChimeTimer
         Log.i(TAG, "M onStop()");
         
         super.onStop();
-        
-        // Unbind from the service (but don't stop it).
-        unbindService();
+
+        // If the service is running, unbind from it but don't stop it.
+        // But if it's not running, stop it.
+        if (chimerService != null) {
+        	if (!chimerService.isRunning())
+        		shutdownService();
+        	else
+        		unbindService();
+        }
     }
 
 
@@ -265,6 +274,8 @@ public class ChimeTimer
     private void unbindService() {
         // Unbind from the OnWatch service.
         if (chimerService != null) {
+        	chimerService.unregisterClient(tickHandler);
+        	
             unbindService(serviceConnection);
             chimerService = null;
         }
@@ -274,13 +285,21 @@ public class ChimeTimer
     /**
      * Shut down the app, including the background service.
      */
-    private void shutdown() {
+    private void shutdownService() {
         if (chimerService != null) {
         	chimerService.shutdown();
+        	
             unbindService(serviceConnection);
             chimerService = null;
         }
-        
+    }
+    
+
+    /**
+     * Shut down the app, including the background service.
+     */
+    private void shutdownCompletely() {
+    	shutdownService();
     	finish();
     }
     
@@ -299,9 +318,8 @@ public class ChimeTimer
             ChimerBinder binder = (ChimerBinder) service;
             chimerService = binder.getService();
         	
-            // Start all the views and give them the service.
-//    		for (ViewFragment v : childViews)
-//    			v.start(onWatchService);
+            // Register for tick updates.
+        	chimerService.registerClient(tickHandler);
         }
 
         @Override
@@ -309,10 +327,6 @@ public class ChimeTimer
             Log.i(TAG, "M onServiceDisconnected()");
             
             chimerService = null;
-            
-            // Stop all the views.
-//    		for (ViewFragment v : childViews)
-//    			v.stop();
         }
         
     };
@@ -383,6 +397,10 @@ public class ChimeTimer
     	case R.id.menu_about:
             Log.i(TAG, "M Launch about");
             showAbout();
+     		break;
+    	case R.id.menu_exit:
+            Log.i(TAG, "M User exit");
+            shutdownCompletely();
      		break;
     	default:
     		return super.onOptionsItemSelected(item);
@@ -456,33 +474,106 @@ public class ChimeTimer
 	private void selectTimer(int pos) {
 		currentTimer = pos;
 		currentConfig = timerConfigs[currentTimer];
-		updateClock(currentConfig.runTime);
+        Log.i(TAG, "M select timer " + pos + " -> " + currentConfig);
+		if (currentConfig.preTime > 0) {
+			preField.setVisibility(View.VISIBLE);
+			updateClock(preField, currentConfig.preTime);
+		} else {
+			preField.setVisibility(View.INVISIBLE);
+		}
+		updateClock(timeField, currentConfig.runTime);
 	}
-	
+
 
     /**
-     * Start/stop button has been clicked; take the appropriate action.
+     * Toggle the running state of the timer.
      */
     private void startStop() {
-    	if (ticker == null) {
-    		// Start the tick events.
-    		ticker = new Ticker(System.currentTimeMillis(), 5000);
-    		startButton.setText(R.string.but_stop);
-    	} else {
-    		// Start the tick events.
-    		ticker.kill();
-    		ticker = null;
-    		startButton.setText(R.string.but_start);
-    	}
+    	if (chimerService == null)
+    		return;
+    	
+		switch (chimerService.getState()) {
+		case ChimerService.STATE_READY:
+	        Log.i(TAG, "M button READY");
+    		startTimer();
+			break;
+		case ChimerService.STATE_PRE:
+	        Log.i(TAG, "M button PRE");
+    		stopTimer();
+			break;
+		case ChimerService.STATE_RUNNING:
+	        Log.i(TAG, "M button RUN");
+    		stopTimer();
+			break;
+		case ChimerService.STATE_FINISHED:
+	        Log.i(TAG, "M button FINISHED");
+	    	startButton.setText(R.string.but_start);
+	    	chimerService.stopTimer();
+			break;
+		}
     }
     
+
+    /**
+     * Start button has been clicked; start the timer.
+     */
+    private void startTimer() {
+    	if (chimerService == null)
+    		return;
+    	
+    	chimerService.startTimer(currentConfig);
+    }
     
+
+    /**
+     * Stop button has been clicked; stop the timer.
+     */
+    private void stopTimer() {
+    	if (chimerService == null)
+    		return;
+    	
+    	chimerService.stopTimer();
+    }
+    
+	
+	// Handler for updates.  We need this to get back onto
+	// our thread so we can update the GUI.
+	private Handler tickHandler = new Handler() {
+		@Override
+		public void handleMessage(Message m) {
+			int state = m.what;
+			switch (state) {
+			case ChimerService.STATE_READY:
+		        Log.i(TAG, "M tick READY");
+		        selectTimer(currentTimer);
+		    	startButton.setText(R.string.but_start);
+				break;
+			case ChimerService.STATE_PRE:
+		        Log.i(TAG, "M tick PRE " + m.arg1);
+				updateClock(preField, m.arg1);
+		    	startButton.setText(R.string.but_stop);
+				break;
+			case ChimerService.STATE_RUNNING:
+		        Log.i(TAG, "M tick RUN " + m.arg1);
+				updateClock(preField, 0);
+				updateClock(timeField, m.arg1);
+		    	startButton.setText(R.string.but_stop);
+				break;
+			case ChimerService.STATE_FINISHED:
+		        Log.i(TAG, "M tick FINISHED");
+		    	startButton.setText(R.string.but_done);
+				break;
+			}
+		}
+	};
+
+	
     /**
      * Display the current date and time.
      * 
      * @param	msLeft		Number of ms left to run.  If zero, we're done.
      */
-    private void updateClock(long msLeft) {
+    private void updateClock(TextView field, long msLeft) {
     	int sLeft = (int) ((msLeft + 500) / 1000);
     	int hour = sLeft / 3600;
     	int min = sLeft / 60 % 60;
@@ -493,52 +584,7 @@ public class ChimeTimer
     	timeText.setCharAt(4, (char) ('0' + min % 10));
     	timeText.setCharAt(6, (char) ('0' + sec / 10));
     	timeText.setCharAt(7, (char) ('0' + sec % 10));
-    	timeField.setText(timeText);
-	}
-
-
-    // ******************************************************************** //
-    // Private Types.
-    // ******************************************************************** //
-
-	/**
-	 * Class which generates our ticks.
-	 */
-	private class Ticker extends Thread {
-		public Ticker(long now, long durn) {
-			endTime = now + durn;
-			enable = true;
-			start();
-		}
-
-		public void kill() {
-			enable = false;
-		}
-
-		@Override
-		public void run() {
-			while (enable) {
-				int remain = (int) (endTime - System.currentTimeMillis());
-				if (remain < 0)
-					remain = 0;
-		    	tickHandler.sendEmptyMessage(remain);
-				if (remain == 0)
-					break;
-				
-				// Try to sleep up to the next 1-second boundary, so we
-				// tick just about on the second.
-				try {
-					sleep(remain % 1000);
-				} catch (InterruptedException e) {
-					enable = false;
-				}
-			}
-			enable = false;
-    		ticker = null;
-		}
-		
-		private final long endTime;
-		private boolean enable;
+    	field.setText(timeText);
 	}
 
 
@@ -556,13 +602,6 @@ public class ChimeTimer
     
     // Our service.  null if we haven't bound to it yet.
     private ChimerService chimerService = null;
-
-    // Timer we use to generate tick events.
-    private Ticker ticker = null;
-	
-	// Handler for updates.  We need this to get back onto
-	// our thread so we can update the GUI.
-	private Handler tickHandler;
     
 	// Buffer we create the time display in.
 	private StringBuilder timeText;
@@ -570,7 +609,8 @@ public class ChimeTimer
     // Timer selector spinner.
     private Spinner timerChoice;
 
-    // Fields for displaying the date and time.
+    // Fields for displaying the pre-timer and the main timer.
+    private TextView preField;
     private TextView timeField;
     
     // Start / stop button.
@@ -584,6 +624,6 @@ public class ChimeTimer
 	
 	// Current timer's configuration.
 	private TimerConfig currentConfig = null;
-
+	
 }
 
