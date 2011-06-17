@@ -267,6 +267,21 @@ public class Player
     }
 
 
+    /**
+     * Shut this player down completely.  This frees all resources
+     * associated with this Player.
+     * 
+     * <p>Following shutdown, this instance can not be used again.
+     */
+    public void shutdown() {
+        synchronized (this) {
+        	suspend();
+        	soundEffects = null;
+        	appContext = null;
+        }
+    }
+
+
     // ******************************************************************** //
     // Sound Playing.
     // ******************************************************************** //
@@ -395,7 +410,7 @@ public class Player
 	// ******************************************************************** //
 
     // Our parent application context.
-    private final Context appContext;
+    private Context appContext;
     
     // Maximum number of sound streams to play simultaneously.
     private final int numStreams;
