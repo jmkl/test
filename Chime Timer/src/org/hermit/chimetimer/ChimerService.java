@@ -104,6 +104,7 @@ public class ChimerService
         					 			     getText(R.string.service_ready), appIntent);
         startForeground(1, stateNotification);
 
+        currentState = -1;
         setState(STATE_READY, 0);
         
 		// Set ourselves running.
@@ -314,33 +315,35 @@ public class ChimerService
 			Message msg = tickHandler.obtainMessage(state, time, 0);
 			tickHandler.sendMessage(msg);
 		}
-		
-		int stateMsg = R.string.service_ready;
-		int icon = R.drawable.notif_ready;
-		switch (state) {
-		case STATE_READY:
-			stateMsg = R.string.service_ready;
-			icon = R.drawable.notif_ready;
-			break;
-		case STATE_PRE:
-			stateMsg = R.string.service_pre;
-			icon = R.drawable.notif_pre;
-			break;
-		case STATE_RUNNING:
-			stateMsg = R.string.service_running;
-			icon = R.drawable.notif_run;
-			break;
-		case STATE_FINISHED:
-			stateMsg = R.string.service_finished;
-			icon = R.drawable.notif_finish;
-			break;
+
+		if (state != currentState) {
+			int stateMsg = R.string.service_ready;
+			int icon = R.drawable.notif_ready;
+			switch (state) {
+			case STATE_READY:
+				stateMsg = R.string.service_ready;
+				icon = R.drawable.notif_ready;
+				break;
+			case STATE_PRE:
+				stateMsg = R.string.service_pre;
+				icon = R.drawable.notif_pre;
+				break;
+			case STATE_RUNNING:
+				stateMsg = R.string.service_running;
+				icon = R.drawable.notif_run;
+				break;
+			case STATE_FINISHED:
+				stateMsg = R.string.service_finished;
+				icon = R.drawable.notif_finish;
+				break;
+			}
+			Log.i(TAG, "Svc st=" + state + ", notif " + stateMsg);
+			stateNotification.icon = icon;
+			stateNotification.setLatestEventInfo(this, getText(R.string.service_title),
+					getText(stateMsg), appIntent);
+			notifManager.notify(1, stateNotification);
 		}
-		Log.i(TAG, "Svc st=" + state + ", notif " + stateMsg);
-        stateNotification.icon = icon;
-        stateNotification.setLatestEventInfo(this, getText(R.string.service_title),
-			     							 getText(stateMsg), appIntent);
-        notifManager.notify(1, stateNotification);
-        
+
         currentState = state;
 		lastRemain = time;
 	}
