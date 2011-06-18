@@ -95,7 +95,7 @@ public class Configuration
         timerName.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence s, int st, int b, int c) {
-				currentConfig.name = timerName.getText().toString();
+				currentConfig.name = timerName.getText().toString().trim();
 				saveConfig();
 			}
 			@Override

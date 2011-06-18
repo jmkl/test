@@ -22,6 +22,7 @@ package org.hermit.chimetimer;
 import org.hermit.chimetimer.Sounds.SoundEffect;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -91,17 +92,19 @@ public class ChimerService
 
         soundManager = new Sounds(this);
         
-        // Set myself up as a foreground service.
-        Notification n = new Notification(R.drawable.bell0,
-        								  getText(R.string.service_notif),
-        								  System.currentTimeMillis());
-        Intent ni = new Intent(this, ChimeTimer.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
-        n.setLatestEventInfo(this, getText(R.string.service_notif),
-        					 getText(R.string.service_notif), pi);
-        startForeground(1, n);
+        notifManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        currentState = STATE_READY;
+        // Set myself up as a foreground service.
+        stateNotification = new Notification(R.drawable.notif_ready,
+        								     getText(R.string.service_title),
+        								     System.currentTimeMillis());
+        Intent ni = new Intent(this, ChimeTimer.class);
+        appIntent = PendingIntent.getActivity(this, 0, ni, 0);
+        stateNotification.setLatestEventInfo(this, getText(R.string.service_title),
+        					 			     getText(R.string.service_ready), appIntent);
+        startForeground(1, stateNotification);
+
+        setState(STATE_READY, 0);
         
 		// Set ourselves running.
 		resume();
@@ -197,7 +200,8 @@ public class ChimerService
     	tickHandler = handler;
     	
     	// Tell the new client where we are.
-    	signalClients(lastState, lastRemain);
+		Message msg = tickHandler.obtainMessage(currentState, lastRemain, 0);
+		tickHandler.sendMessage(msg);
     }
     
 
@@ -274,8 +278,8 @@ public class ChimerService
     		ticker.kill();
     		ticker = null;
     	}
-        currentState = STATE_READY;
-        signalClients(currentState, 0);
+    	
+        setState(STATE_READY, 0);
     }
     
     
@@ -305,12 +309,39 @@ public class ChimerService
      * @param state
      * @param time
      */
-	void signalClients(int state, int time) {
+	private void setState(int state, int time) {
 		if (tickHandler != null) {
 			Message msg = tickHandler.obtainMessage(state, time, 0);
 			tickHandler.sendMessage(msg);
 		}
-		lastState = state;
+		
+		int stateMsg = R.string.service_ready;
+		int icon = R.drawable.notif_ready;
+		switch (state) {
+		case STATE_READY:
+			stateMsg = R.string.service_ready;
+			icon = R.drawable.notif_ready;
+			break;
+		case STATE_PRE:
+			stateMsg = R.string.service_pre;
+			icon = R.drawable.notif_pre;
+			break;
+		case STATE_RUNNING:
+			stateMsg = R.string.service_running;
+			icon = R.drawable.notif_run;
+			break;
+		case STATE_FINISHED:
+			stateMsg = R.string.service_finished;
+			icon = R.drawable.notif_finish;
+			break;
+		}
+		Log.i(TAG, "Svc st=" + state + ", notif " + stateMsg);
+        stateNotification.icon = icon;
+        stateNotification.setLatestEventInfo(this, getText(R.string.service_title),
+			     							 getText(stateMsg), appIntent);
+        notifManager.notify(1, stateNotification);
+        
+        currentState = state;
 		lastRemain = time;
 	}
 
@@ -341,7 +372,7 @@ public class ChimerService
 			long base = startTime;
 			
 			if (enable && timerConfig.preTime > 0) {
-				currentState = STATE_PRE;
+				setState(STATE_PRE, (int) timerConfig.preTime);
 				base += timerConfig.preTime;
 				runSegment(base);
 			}
@@ -353,12 +384,11 @@ public class ChimerService
 			
 			if (enable && timerConfig.runTime > 0) {
 				base += timerConfig.runTime;
-				currentState = STATE_RUNNING;
+				setState(STATE_RUNNING, (int) timerConfig.runTime);
 				runSegment(base);
 			}
 			
-			currentState = STATE_FINISHED;
-			signalClients(STATE_FINISHED, 0);
+			setState(STATE_FINISHED, 0);
 
 			if (enable && timerConfig.endBell != 0) {
 				SoundEffect bell = SoundEffect.valueOf(timerConfig.endBell - 1);
@@ -377,7 +407,7 @@ public class ChimerService
 				int remain = (int) (endTime - System.currentTimeMillis());
 				if (remain < 0)
 					remain = 0;
-				signalClients(currentState, remain);
+				setState(currentState, remain);
 				if (remain == 0)
 					break;
 				
@@ -409,9 +439,18 @@ public class ChimerService
 	// Private Data.
 	// ******************************************************************** //
 	
+    // Our notification manager.
+    private NotificationManager notifManager;
+
     // The Binder given to clients.
     private IBinder serviceBinder = null;
     
+    // Intent to bring the user to the app.
+    private PendingIntent appIntent;
+
+    // Status bar notification.
+    private Notification stateNotification;
+
     // Sound manager used for sound effects.
     private Sounds soundManager = null;
 
@@ -425,8 +464,7 @@ public class ChimerService
 	// Current timer state.
 	private int currentState = STATE_READY;
 
-	// Last state data sent to clients.
-	private int lastState = STATE_READY;
+	// Most recent notified time remaining.
 	private int lastRemain = 0;
 
 }

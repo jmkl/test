@@ -38,6 +38,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -78,8 +79,12 @@ public class ChimeTimer
 
         // Set up our data.
         timerConfigs = new TimerConfig[TimerConfig.NUM_TIMERS];
-        for (int i = 0; i < TimerConfig.NUM_TIMERS; ++i)
+        timerBaseNames = getResources().getStringArray(R.array.timer_choices);
+        timerNames = new String[TimerConfig.NUM_TIMERS];
+        for (int i = 0; i < TimerConfig.NUM_TIMERS; ++i) {
         	timerConfigs[i] = new TimerConfig();
+        	timerNames[i] = timerBaseNames[i];
+        }
 
         // We want the audio controls to control our sound volume.
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -93,7 +98,13 @@ public class ChimeTimer
         timerChoice = (Spinner) findViewById(R.id.timer_choice);
         preField = (TextView) findViewById(R.id.timer_pre);
 		timeField = (TextView) findViewById(R.id.timer_time);
-        
+		
+		// Set the content of the timer choice widget.
+        timerAdapter = new ArrayAdapter<String>(this,
+                		android.R.layout.simple_spinner_item, timerNames);
+        timerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        timerChoice.setAdapter(timerAdapter);
+
         // Handle timer selections.
         timerChoice.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
@@ -409,40 +420,6 @@ public class ChimeTimer
     	return true;
     }
 
-
-    /**
-     * Read our application preferences and configure ourself appropriately.
-     */
-    private void updatePreferences() {
-//    	SharedPreferences prefs =
-//    					PreferenceManager.getDefaultSharedPreferences(this);
-
-//    	boolean nautTime = false;
-//    	try {
-//    		nautTime = prefs.getBoolean("nautTime", false);
-//    	} catch (Exception e) {
-//    		Log.i(TAG, "Pref: bad nautTime");
-//    	}
-//    	Log.i(TAG, "Prefs: nautTime " + nautTime);
-//    	timeModel.setNauticalTime(nautTime);
-//
-//    	boolean debugSpace = false;
-//    	try {
-//    		debugSpace = prefs.getBoolean("debugSpace", false);
-//    	} catch (Exception e) {
-//    		Log.i(TAG, "Pref: bad debugSpace");
-//    	}
-//    	Log.i(TAG, "Prefs: debugSpace " + debugSpace);
-//
-//    	boolean debugTime = false;
-//    	try {
-//    		debugTime = prefs.getBoolean("debugTime", false);
-//    	} catch (Exception e) {
-//    		Log.i(TAG, "Pref: bad debugTime");
-//    	}
-//    	Log.i(TAG, "Prefs: debugTime " + debugTime);
-    }
-    
     
 	// ******************************************************************** //
 	// State Control.
@@ -456,12 +433,19 @@ public class ChimeTimer
 			String base = "timer" + timer + "_";
 			SharedPreferences prefs = getSharedPreferences("timers", 0);
 	        TimerConfig c = timerConfigs[timer];
-	        c.name = prefs.getString(base + "name", c.name);
+	        c.name = prefs.getString(base + "name", c.name).trim();
 	        c.preTime = prefs.getLong(base + "preTime", c.preTime);
 	        c.startBell = prefs.getInt(base + "startBell", c.startBell);
 	        c.runTime = prefs.getLong(base + "runTime", c.runTime);
 	        c.endBell = prefs.getInt(base + "endBell", c.endBell);
+	        
+	        if (c.name.length() > 0)
+	        	timerNames[timer] = c.name;
+	        else
+	        	timerNames[timer] = timerBaseNames[timer];
 		}
+		
+        timerAdapter.notifyDataSetChanged();
 		selectTimer(currentTimer);
 	}
 
@@ -507,8 +491,7 @@ public class ChimeTimer
 			break;
 		case ChimerService.STATE_FINISHED:
 	        Log.i(TAG, "M button FINISHED");
-	    	startButton.setText(R.string.but_start);
-	    	chimerService.stopTimer();
+    		stopTimer();
 			break;
 		}
     }
@@ -547,21 +530,25 @@ public class ChimeTimer
 		        Log.i(TAG, "M tick READY");
 		        selectTimer(currentTimer);
 		    	startButton.setText(R.string.but_start);
+		    	startButton.setBackgroundColor(BUT_READY);
 				break;
 			case ChimerService.STATE_PRE:
 		        Log.i(TAG, "M tick PRE " + m.arg1);
 				updateClock(preField, m.arg1);
 		    	startButton.setText(R.string.but_stop);
+		    	startButton.setBackgroundColor(BUT_PRE);
 				break;
 			case ChimerService.STATE_RUNNING:
 		        Log.i(TAG, "M tick RUN " + m.arg1);
 				updateClock(preField, 0);
 				updateClock(timeField, m.arg1);
 		    	startButton.setText(R.string.but_stop);
+		    	startButton.setBackgroundColor(BUT_RUNNING);
 				break;
 			case ChimerService.STATE_FINISHED:
 		        Log.i(TAG, "M tick FINISHED");
 		    	startButton.setText(R.string.but_done);
+		    	startButton.setBackgroundColor(BUT_FINISHED);
 				break;
 			}
 		}
@@ -595,6 +582,18 @@ public class ChimeTimer
     // Debugging tag.
 	private static final String TAG = "ChimeTimer";
 	
+	// Button colour for state ready.
+	private static final int BUT_READY = 0xff80ff80;
+	
+	// Button colour for state pre-time running.
+	private static final int BUT_PRE = 0xffc0c000;
+	
+	// Button colour for state main running.
+	private static final int BUT_RUNNING = 0xffff8080;
+	
+	// Button colour for state finished.
+	private static final int BUT_FINISHED = 0xff8080ff;
+
 
 	// ******************************************************************** //
 	// Private Data.
@@ -621,7 +620,14 @@ public class ChimeTimer
 
     // Index of the timer we're editing.
     private int currentTimer = 0;
-	
+
+    // Basic timer names, and the current configured timer names.
+    private String[] timerBaseNames;
+    private String[] timerNames;
+    
+    // Array adapter which provides the choices of the timer names.
+    private  ArrayAdapter<String> timerAdapter;
+
 	// Current timer's configuration.
 	private TimerConfig currentConfig = null;
 	

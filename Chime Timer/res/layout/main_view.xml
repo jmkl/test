@@ -15,8 +15,7 @@
               
         <Spinner android:id="@+id/timer_choice"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:entries="@array/timer_choices" />
+                android:layout_height="wrap_content" />
 
 		<TextView android:id="@+id/timer_pre"
             	style="@style/ClockSmallTime"

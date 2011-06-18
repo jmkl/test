@@ -20,7 +20,11 @@
     <string name="config_name">Configuration</string>
       
     <!-- Service. -->
-    <string name="service_notif">ChimeTimer running</string>
+    <string name="service_title">Chime Timer</string>
+    <string name="service_ready">Timer ready</string>
+    <string name="service_pre">Timer countdown</string>
+    <string name="service_running">Timer running</string>
+    <string name="service_finished">Timer finished</string>
     
 </resources>
 
