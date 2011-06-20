@@ -41,13 +41,21 @@ class Sounds
      * The sounds that we make.
      */
 	static enum SoundEffect {
-    	BELL_1(R.raw.s0),
-    	BELL_2(R.raw.s1),
-    	BELL_3(R.raw.s2),
-    	BELL_4(R.raw.s3),
-    	BELL_5(R.raw.s4),
-    	BELL_6(R.raw.s5),
-    	BELL_7(R.raw.s7);
+    	BELL_A(R.raw.analogue_a),
+    	BELL_Bb(R.raw.analogue_bflat),
+    	BELL_C(R.raw.analogue_c),
+    	BELL_Cs(R.raw.analogue_csharp),
+    	BELL_D(R.raw.analogue_d),
+    	BELL_Eb(R.raw.analogue_eb),
+    	BELL_F(R.raw.analogue_f),
+    	BELL_G(R.raw.analogue_g),
+    	CHIME_1(R.raw.tibetan_01),
+    	CHIME_2(R.raw.tibetan_02),
+    	CHIME_3(R.raw.tibetan_03),
+    	CHIME_4(R.raw.tibetan_04),
+    	CHIME_5(R.raw.tibetan_05),
+    	CHIME_6(R.raw.tibetan_06),
+    	SIMPLE_1(R.raw.shriek_2011);
 	
     	private SoundEffect(int res) {
     		soundRes = res;

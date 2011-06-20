@@ -77,6 +77,11 @@ public class ChimeTimer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_view);
 
+        // Create the message and info boxes.
+        setAboutInfo(R.string.about_text);
+        setHomeInfo(R.string.url_homepage);
+        setLicenseInfo(R.string.url_license);
+
         // Set up our data.
         timerConfigs = new TimerConfig[TimerConfig.NUM_TIMERS];
         timerBaseNames = getResources().getStringArray(R.array.timer_choices);

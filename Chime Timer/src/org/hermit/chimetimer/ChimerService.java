@@ -95,7 +95,7 @@ public class ChimerService
         notifManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         // Set myself up as a foreground service.
-        stateNotification = new Notification(R.drawable.notif_ready,
+        stateNotification = new Notification(R.drawable.ic_stat_ready,
         								     getText(R.string.service_title),
         								     System.currentTimeMillis());
         Intent ni = new Intent(this, ChimeTimer.class);
@@ -318,23 +318,23 @@ public class ChimerService
 
 		if (state != currentState) {
 			int stateMsg = R.string.service_ready;
-			int icon = R.drawable.notif_ready;
+			int icon = R.drawable.ic_stat_ready;
 			switch (state) {
 			case STATE_READY:
 				stateMsg = R.string.service_ready;
-				icon = R.drawable.notif_ready;
+				icon = R.drawable.ic_stat_ready;
 				break;
 			case STATE_PRE:
 				stateMsg = R.string.service_pre;
-				icon = R.drawable.notif_pre;
+				icon = R.drawable.ic_stat_play;
 				break;
 			case STATE_RUNNING:
 				stateMsg = R.string.service_running;
-				icon = R.drawable.notif_run;
+				icon = R.drawable.ic_stat_play;
 				break;
 			case STATE_FINISHED:
 				stateMsg = R.string.service_finished;
-				icon = R.drawable.notif_finish;
+				icon = R.drawable.ic_stat_ready;
 				break;
 			}
 			Log.i(TAG, "Svc st=" + state + ", notif " + stateMsg);

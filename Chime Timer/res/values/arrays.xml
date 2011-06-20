@@ -18,13 +18,21 @@
     <!-- Bell selection spinners. -->
     <string-array name="bell_choices">
         <item>No Bell</item>
-        <item>Bell 1</item>
-        <item>Bell 2</item>
-        <item>Bell 3</item>
-        <item>Bell 4</item>
-        <item>Bell 5</item>
-        <item>Bell 6</item>
-        <item>Bell 7</item>
+        <item>Bell A</item>
+        <item>Bell Bb</item>
+        <item>Bell C</item>
+        <item>Bell C#</item>
+        <item>Bell D</item>
+        <item>Bell Eb</item>
+        <item>Bell F</item>
+        <item>Bell G</item>
+        <item>Tibetan 1</item>
+        <item>Tibetan 2</item>
+        <item>Tibetan 3</item>
+        <item>Tibetan 4</item>
+        <item>Tibetan 5</item>
+        <item>Tibetan 6</item>
+        <item>Simple 1</item>
     </string-array>
     
 

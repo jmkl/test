@@ -4,6 +4,32 @@
 
     <!-- App name. -->
     <string name="app_name">Chime Timer</string>
+    <string name="description">Turn your phone into a working tricorder.</string>
+
+    <string name="about_text"><b>Chime Timer</b> by Ian Cameron Smith.\n\
+\n\
+Sounds by:\n\
+\n\
+• Shriek Productions: http://www.shriek-music.com/\n\
+• Barnaby McAll: http://www.barneymcall.com/bm/home.html\n\
+• Licensed through SoundSnap: http://www.soundsnap.com/\n\
+\n\
+For information and source code see the project home page.\n\
+\n\
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.\n\
+\n\
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License at http://www.gnu.org/licenses/gpl-2.0.html
+for more details.\n</string>
+    
+    <!-- URLs. -->
+    <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
+    <string name="url_homepage">http://code.google.com/p/moonblink/wiki/ChimeTimer</string>
 
     <!-- Menu. -->
     <string name="menu_configure">Configure...</string>
