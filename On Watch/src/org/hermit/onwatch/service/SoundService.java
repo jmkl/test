@@ -21,11 +21,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 
+import org.hermit.android.sound.Effect;
+import org.hermit.android.sound.Player;
 import org.hermit.onwatch.R;
 
 import android.content.Context;
-import android.media.AudioManager;
-import android.media.SoundPool;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
@@ -163,8 +163,9 @@ public class SoundService
 		// Get a text-to-speech instance.
         
         // Load the sounds.
-        soundPool = createSoundPool();
-        
+        soundPlayer = createSoundPool();
+        soundPlayer.resume();
+
         // Create the sound queue player.
     	queuePlayer = new QueuePlayer();
     	queuePlayer.start();
@@ -191,6 +192,7 @@ public class SoundService
 
 	synchronized void shutdown() {
 		queuePlayer.kill();
+        soundPlayer.shutdown();
 		if (textToSpeech != null)
 			textToSpeech.shutdown();
 	}
@@ -538,12 +540,11 @@ public class SoundService
     /**
      * Create a SoundPool containing the app's sound effects.
      */
-    private SoundPool createSoundPool() {
-        SoundPool pool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        for (SoundEffect sound : SoundEffect.values())
-            sound.soundId = pool.load(appContext, sound.soundRes, 1);
-        
-        return pool;
+    private Player createSoundPool() {
+    	Player player = new Player(appContext, 3);
+        for (SoundEffect sound : SoundEffect.VALUES)
+            sound.playerEffect = player.addEffect(sound.soundRes, 1);
+        return player;
     }
 
     
@@ -553,8 +554,7 @@ public class SoundService
      * @param	which			ID of the sound to play.
      */
     private void makeSound(SoundEffect which) {
-        float vol = 1.0f;
-        soundPool.play(which.soundId, vol, vol, 1, 0, 1f);
+        which.play();
 	}
 	
 
@@ -596,6 +596,13 @@ public class SoundService
     		postDelay = post;
     	}
     	
+    	void play() {
+    		if (playerEffect == null)
+    			throw new IllegalStateException("tried to play before player" +
+    											" was initialised");
+    		playerEffect.play();
+    	}
+
     	// Resource ID for the sound file.
     	private final int soundRes;
     	
@@ -605,8 +612,10 @@ public class SoundService
     	// Delay in ms after the last iteration of the sound (added to inter).
     	private final int postDelay;
     	
-    	// Sound ID for playing.
-        private int soundId = 0;        
+    	// Effect object representing this sound.
+        private Effect playerEffect = null;
+        
+    	private static final SoundEffect[] VALUES = values();
     }
 
 
@@ -643,7 +652,7 @@ public class SoundService
     private RepeatAlarmMode alarmMode = RepeatAlarmMode.OFF;
     
     // Sound pool used for sound effects.
-    private SoundPool soundPool = null;
+    private Player soundPlayer = null;
 	
 	// Ringer thread currently playing bells; null if not playing.
 	private QueuePlayer queuePlayer = null;

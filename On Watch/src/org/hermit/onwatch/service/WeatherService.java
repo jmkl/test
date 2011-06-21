@@ -107,6 +107,7 @@ public class WeatherService
 	 * Enum representing the current barometric pressure state.
 	 */
 	public enum PressState {
+		NO_DATA(R.string.weather_nodata),
 		LOW_INSANE(R.string.weather_low_5,
 				   new Sound(Alert.SPACE, R.string.weather_v_low_5)),
 		LOW_TORNADO(R.string.weather_low_4,
@@ -202,6 +203,9 @@ public class WeatherService
 		// Query the database for recent observations.
     	long time = System.currentTimeMillis();
     	long baseTime = time - RECENT_OBS_TIME;
+//		contentResolver.delete(WeatherSchema.Observations.CONTENT_URI,
+//				WeatherSchema.Observations.TIME + ">=?",
+//				new String[] { "" + (baseTime - 3600 * 1000) });
     	Cursor c = null;
     	try {
     		c = contentResolver.query(WeatherSchema.Observations.CONTENT_URI,
@@ -632,33 +636,36 @@ public class WeatherService
 		} else
 			changeRate = ChangeRate.NO_DATA;
 
-		// Make a pressure message.
-		if (prevPress < 850)
-			pressState = PressState.LOW_INSANE;
-		else if (prevPress < 870)
-			pressState = PressState.LOW_TORNADO;
-		else if (prevPress < 900)
-			pressState = PressState.LOW_HURRICANE;
-		else if (prevPress < 940)
-			pressState = PressState.LOW_STORM;
-		else if (prevPress < 980)
-			pressState = PressState.LOW_DEPRESSION;
-		else if (prevPress > 1080)
-			pressState = PressState.HIGH_INSANE;
-		else if (prevPress > 1060)
-			pressState = PressState.HIGH_EXTREME;
-		else if (prevPress > 1040)
-			pressState = PressState.HIGH_VERY;
-		else if (prevPress > 1020)
-			pressState = PressState.HIGH_MILD;
-		else
-			pressState = PressState.NORMAL;
+		// Make a pressure message, if we have a pressure.
+		if (prevPress != 0) {
+			if (prevPress < 850)
+				pressState = PressState.LOW_INSANE;
+			else if (prevPress < 870)
+				pressState = PressState.LOW_TORNADO;
+			else if (prevPress < 900)
+				pressState = PressState.LOW_HURRICANE;
+			else if (prevPress < 940)
+				pressState = PressState.LOW_STORM;
+			else if (prevPress < 980)
+				pressState = PressState.LOW_DEPRESSION;
+			else if (prevPress > 1080)
+				pressState = PressState.HIGH_INSANE;
+			else if (prevPress > 1060)
+				pressState = PressState.HIGH_EXTREME;
+			else if (prevPress > 1040)
+				pressState = PressState.HIGH_VERY;
+			else if (prevPress > 1020)
+				pressState = PressState.HIGH_MILD;
+			else
+				pressState = PressState.NORMAL;
+		} else
+			pressState = PressState.NO_DATA;
 			
 		// Produce the combined weather message.
 		String msg = appContext.getString(changeState.textId);
 		if (changeRate != ChangeRate.NO_DATA && changeRate != ChangeRate.NIL)
 			msg += " " + appContext.getString(changeRate.textId);
-		if (pressState != PressState.NORMAL)
+		if (pressState != PressState.NO_DATA && pressState != PressState.NORMAL)
 			msg += "; " + appContext.getString(pressState.textId);
 		weatherMessage = msg;
 	}

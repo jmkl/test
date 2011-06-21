@@ -185,10 +185,9 @@ public class WeatherWidget
 		// Calculate the grid spacing.
 		calculateGrid();
 
-		// Calculate the last time to display as the last hour for which
-		// we have data.
+		// Calculate the last time to display as the next whole
+		// hour from now.
 		Calendar baseTime = Calendar.getInstance();
-		baseTime.setTimeInMillis(pointTimes[numPoints - 1]);
 		baseTime.add(Calendar.HOUR_OF_DAY, 1);
 		baseTime.set(Calendar.MINUTE, 0);
 		baseTime.set(Calendar.SECOND, 0);
