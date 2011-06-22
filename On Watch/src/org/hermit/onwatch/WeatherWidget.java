@@ -44,7 +44,7 @@ public class WeatherWidget
     // ******************************************************************** //
 
     // The number of hours of data displayed.
-    static final int DISPLAY_HOURS = 3 * 24;
+    static final int DISPLAY_HOURS = 6 * 24;
     
 
 	// ******************************************************************** //

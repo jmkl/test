@@ -416,7 +416,7 @@ public class AnalogBarometer
 	private static final int POINT_COL = 0xffff0040;
 
 	// Number of hours of history to display in the dial.
-	private static final int HISTORY_HOURS = 12;
+	private static final int HISTORY_HOURS = 24;
 	
 	// Fraction of the width of the dial to use for displaying history.
 	private static final float HISTORY_DIAL_FRAC = 0.85f;
