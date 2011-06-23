@@ -4,7 +4,7 @@
 
     <!-- App name. -->
     <string name="app_name">Chime Timer</string>
-    <string name="description">Turn your phone into a working tricorder.</string>
+    <string name="description">A simple and elegant timer.</string>
 
     <string name="about_text"><b>Chime Timer</b> by Ian Cameron Smith.\n\
 \n\
