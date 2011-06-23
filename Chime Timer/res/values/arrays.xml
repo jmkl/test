@@ -44,148 +44,59 @@
     <string-array name="help_titles">
 		<item></item>
 		<item>Display</item>
-		<item>@array/help_disp_titles</item>
 		<item>Menu</item>
-		<item>Settings</item>  
-		<item>@array/help_prefs_titles</item>
-		<item>More Information</item>
-		<item>@array/help_info_titles</item>
+        <item>Configuration</item>
     </string-array>
 
     <!-- Help section texts. -->
     <string-array name="help_texts">
     
-<item><b>On Watch</b> displays a selection of useful information for a sailing
-watchkeeper, and sounds chimes and alerts to keep you on your toes.
-It also lets you know about interesting astronomical phenomena to look
-out for on those long night watches.</item>
-
-<item>On Watch has several display pages, each one showing a different
-kind of information.  At the bottom of the screen, you will see "left"
-and "right" buttons, which you can use to flip between the pages.\n\
+<item><b>Chime Timer</b> is a simple configurable timer app, with
+nice chime sounds.  It lets you create up to four timer configurations,
+each of which can have a pre-timer, a start bell, and an end bell.\n\
 \n\
-The following sections describe each of the pages in detail.</item>
+Chime Timer keeps running in the background even if you navigate away
+to some other app; so you can play Scrambled Net, for example, while
+you\'re waiting for whatever it is.  A notification icon in the status
+bar lets you know that a timer is running, and lets you get back to the app
+easily.  Any time you leave Chime Timer without the timer running, the
+background service is killed automatically.</item>
               
-<item>@array/help_disp_texts</item>
+<item>The main display has the following items:\n\
+• A time-of-day clock (if screen space allows), for your convenience.\n\
+• A selector which you can use to choose which of your timer configurations
+to use (see \"Configuration\" below).\n\
+• The pre-timer countdown time, if the configuration has a pre-timer.\n\
+• The main timer time.\n\
+• The control button.</item>
               
 <item>The device\'s \"menu\" button pops up a menu containing a number
 of options:\n\
-• <b>Settings</b> takes you to the settings screen; see \"Settings\" below.\n\
+• <b>Configure</b> takes you to the configuration screen, where you
+can set up your timers; see \"Configuration\" below.\n\
 • <b>Help</b> displays this help.\n\
 • <b>About</b> displays an about box, with links to the license and
 the project home page.\n\
-• <b>Disclaimer</b> re-displays the one-time warning screen.\n\
-• <b>Exit</b> stops the application.</item>
-              
-<item>On Watch has a number of user-configurable options in its Settings
-screen.  This screen is reached through the menu, as described under \"Menu\"
-above.  The available settings are detailed in the following sections.</item>
+• <b>Quit</b> stops the application.  (You don\'t need to do this --
+any time you navigate away from Chime Timer without a timer running,
+it is suspended and all the resources it has become available to other apps.
+But some people like to manually quit their apps, so here you are.)</item>
 
-<item>@array/help_prefs_texts</item>
-
-<item>If you would like more information and help with On Watch, or if you
-want to to report a bug, there are some on-line resources which may be of
-interest, as described in the following sections.</item>
-
-<item>@array/help_info_texts</item>
-
-    </string-array>
-        
-                
-    <!-- Section titles for the settings help. -->
-    <string-array name="help_disp_titles">
-
-<item>Time and Location</item>
-
-<item>Trip Log</item>
-
-<item>Watch Schedule</item>
-
-<item>Sky Watch</item>
-
-    </string-array>
-
-    <!-- Section contents for the screens help. -->
-    <string-array name="help_disp_texts">
-
-<item>The <b>time and location</b> page shows</item>
-
-<item>The <b>trip log</b> page shows</item>
-
-<item>The <b>watch schedule</b> page shows</item>
-
-<item>The <b>sky watch</b> page shows</item>
-
-    </string-array>
-        
-    <!-- Section titles for the settings help. -->
-    <string-array name="help_prefs_titles">
-
-<item>Time Settings</item>
-
-<item>Debug Settings</item>
-
-    </string-array>
-
-    <!-- Section contents for the screens help. -->
-    <string-array name="help_prefs_texts">
-
-<item><b>Use Nautical Time</b> tells On Watch to set your device\'s
-timezone automatically, based on your longitude.  Note that this
-affects the entire device, not just OnWatch.</item>
-
-<item><b>Manual Time Control</b> lets you bump the time using the
-D-pad / trackball.\n\
+<item>The configuration screen lets you create up to four timer configurations,
+which are stored so they can be used any time.\n\
 \n\
-<b>Manual Position Control</b> lets you bump the location using the
-D-pad / trackball.</item>
-
-    </string-array>
-          
-    <!-- Section titles for the more info help. -->
-    <string-array name="help_info_titles">
-
-<item>Discussion Groups</item>
-
-<item>Reporting Bugs</item>
-
-<item>Join In</item>
-
-    </string-array>
-
-    <!-- Section contents for the more info help. -->
-    <string-array name="help_info_texts">
-
-<item>There is a discussion board where you
-can suggest ideas for On Watch, share experiences and thoughts with
-other users, and generally waffle.  Please note that this group
-is shared with the other Moonblink projects, so mention
-On Watch when you post:\n\
-\n\
-• http://groups.google.com/group/moonblink</item>
-
-<item>If you want to report a bug, you can use the Moonblink Issue tracker.
-Before you post, <b>please</b> look through the existing issues -- including
-closed issues -- before raising a new one.  Your problem may already have been
-solved.\n\
-\n\
-If you do need to raise a new issue:\n\
-• The issue tracker is used by a number of projects.  Please click on the
-\"Product-\" label to set the product you are reporting against.  You can
-also set the other fields as appropriate.\n\
-• Please tell me what device, and what version of Android, you are using.\n\
-• If the bug is a crash, then please attach a log if you possibly can.
-If you don\'t know how, don\'t sweat it.\n\
-\n\
-So, the issue tracker is here:\n\
-\n\
-• http://code.google.com/p/moonblink/issues/list</item>
-
-<item>On Watch is an open project, so if you
-want to join in and make contributions, you can.  See the project page for
-information:\n\
-\n\
-• http://code.google.com/p/moonblink/wiki/OnWatch</item>
+Use the selector at the top of the screen to choose a configuration to edit.
+Then, for each configuration, you can set up the following:\n\
+• A name for this configuration; this will be shown in the selector on
+the main screen.\n\
+• A pre-timer countdown.  Set this to zero if you don\'t want it; but it
+may come in handy to let you prepare before the main timer begins.\n\
+• A starting bell; this will sound when the main timer begins (which
+may be useful in conjunction with the pre-timer).\n\
+• The main timer time.\n\
+• An ending bell; this will sound when the main timer finishes.\n\
+Once you have set up the configurations you need, hit the "Done" button
+to go back to the main screen.</item>
 
     </string-array>
         

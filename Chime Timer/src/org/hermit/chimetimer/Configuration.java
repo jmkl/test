@@ -20,6 +20,7 @@ package org.hermit.chimetimer;
 
 
 import org.hermit.android.widgets.TimeoutPicker;
+import org.hermit.android.widgets.TimeoutPickerDialog;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -29,6 +30,8 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
@@ -66,19 +69,40 @@ public class Configuration
         super.onCreate(savedInstanceState);
         setContentView(R.layout.config_view);
 
+		timeText = new StringBuilder(8);
+		timeText.append("00:00:00");
+
         // Set up our data.
         timerConfigs = new TimerConfig[TimerConfig.NUM_TIMERS];
-        for (int i = 0; i < TimerConfig.NUM_TIMERS; ++i)
+        timerBaseNames = getResources().getStringArray(R.array.timer_choices);
+        timerNames = new String[TimerConfig.NUM_TIMERS];
+        for (int i = 0; i < TimerConfig.NUM_TIMERS; ++i) {
         	timerConfigs[i] = new TimerConfig();
+        	timerNames[i] = timerBaseNames[i];
+        }
+        bellNames = getResources().getStringArray(R.array.bell_choices);
 
 		// Get the relevant widgets.
         timerChoice = (Spinner) findViewById(R.id.timer_choice);
         timerName = (EditText) findViewById(R.id.name);
-        preTime = (TimeoutPicker) findViewById(R.id.pre_time);
+        butPreTime = (Button) findViewById(R.id.but_pre_time);
         startBell = (Spinner) findViewById(R.id.start_bell);
-        runTime = (TimeoutPicker) findViewById(R.id.run_time);
+        butRunTime = (Button) findViewById(R.id.but_run_time);
         endBell = (Spinner) findViewById(R.id.finish_bell);
-        
+		
+		// Set the content of the timer choice widget.
+        timerAdapter = new ArrayAdapter<String>(this,
+                						R.layout.spinner_item, timerNames);
+        timerAdapter.setDropDownViewResource(R.layout.spinner_dropdown);
+        timerChoice.setAdapter(timerAdapter);
+		
+		// Set the content of the bell choice widgets.
+        ArrayAdapter<String> bellAdapter = new ArrayAdapter<String>(this,
+                						R.layout.spinner_item, bellNames);
+        bellAdapter.setDropDownViewResource(R.layout.spinner_dropdown);
+        startBell.setAdapter(bellAdapter);
+        endBell.setAdapter(bellAdapter);
+
         // Handle timer selections.
         timerChoice.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
@@ -89,67 +113,98 @@ public class Configuration
 			@Override
 			public void onNothingSelected(AdapterView<?> a) {
 			}
-		});
-        
+        });
+
         // Handle timer property changes.
         timerName.addTextChangedListener(new TextWatcher() {
+        	@Override
+        	public void onTextChanged(CharSequence s, int st, int b, int c) {
+        		currentConfig.name = timerName.getText().toString().trim();
+        		saveConfig();
+        	}
+        	@Override
+        	public void beforeTextChanged(CharSequence s, int st, int c, int a) {
+        	}
+        	@Override
+        	public void afterTextChanged(Editable s) {
+        	}
+        });
+
+        butPreTime.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onTextChanged(CharSequence s, int st, int b, int c) {
-				currentConfig.name = timerName.getText().toString().trim();
-				saveConfig();
-			}
-			@Override
-			public void beforeTextChanged(CharSequence s, int st, int c, int a) {
-			}
-			@Override
-			public void afterTextChanged(Editable s) {
+			public void onClick(View v) {
+				preTimeDialog.updateTime(currentConfig.preTime);
+				preTimeDialog.show();
 			}
 		});
         
-        preTime.setOnTimeChangedListener(new TimeoutPicker.OnTimeChangedListener() {
-			@Override
-			public void onTimeChanged(TimeoutPicker view, long millis) {
-				currentConfig.preTime = millis;
-				saveConfig();
-			}
-		});
-        
+        preTimeDialog = new TimeoutPickerDialog(this, new TimeoutPickerDialog.OnTimeSetListener() {
+    		@Override
+    		public void onTimeSet(TimeoutPicker view, long millis) {
+    			updateButton(butPreTime, millis);
+        		currentConfig.preTime = millis;
+        		saveConfig();
+    		}
+    	}, 0);
+
         startBell.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> a, View v, int pos, long id) {
-				if (pos != 0)
-					playBell(pos - 1);
-				currentConfig.startBell = pos;
-				saveConfig();
-			}
+        	@Override
+        	public void onItemSelected(AdapterView<?> a, View v, int pos, long id) {
+        		if (!uiUpdating) {
+        			if (pos != 0)
+        				playBell(pos - 1);
+        			currentConfig.startBell = pos;
+        			saveConfig();
+        		}
+        	}
 
+        	@Override
+        	public void onNothingSelected(AdapterView<?> a) {
+        	}
+        });
+
+        butRunTime.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onNothingSelected(AdapterView<?> a) {
+			public void onClick(View v) {
+				runTimeDialog.updateTime(currentConfig.runTime);
+				runTimeDialog.show();
 			}
 		});
         
-        runTime.setOnTimeChangedListener(new TimeoutPicker.OnTimeChangedListener() {
-			@Override
-			public void onTimeChanged(TimeoutPicker view, long millis) {
-				currentConfig.runTime = millis;
-				saveConfig();
-			}
-		});
-        
+        runTimeDialog = new TimeoutPickerDialog(this, new TimeoutPickerDialog.OnTimeSetListener() {
+    		@Override
+    		public void onTimeSet(TimeoutPicker view, long millis) {
+    			updateButton(butRunTime, millis);
+        		currentConfig.runTime = millis;
+        		saveConfig();
+    		}
+    	}, 0);
+
         endBell.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> a, View v, int pos, long id) {
-				if (pos != 0)
-					playBell(pos - 1);
-				currentConfig.endBell = pos;
-				saveConfig();
-			}
+        	@Override
+        	public void onItemSelected(AdapterView<?> a, View v, int pos, long id) {
+        		if (!uiUpdating) {
+        			if (pos != 0)
+        				playBell(pos - 1);
+        			currentConfig.endBell = pos;
+        			saveConfig();
+        		}
+        	}
 
+        	@Override
+        	public void onNothingSelected(AdapterView<?> a) {
+        	}
+        });
+
+        // Set up the Done button.
+        Button done = (Button) findViewById(R.id.but_done);
+        done.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onNothingSelected(AdapterView<?> a) {
+			public void onClick(View v) {
+				finish();
 			}
 		});
-        
+
     	currentTimer = 0;
     	loadConfigs();
     }
@@ -186,6 +241,8 @@ public class Configuration
         super.onResume();
         
         soundManager.resume();
+        
+        uiUpdating = false;
     }
 
 
@@ -265,13 +322,18 @@ public class Configuration
 	private void selectTimer(int pos) {
 		currentTimer = pos;
 		currentConfig = timerConfigs[currentTimer];
+		
+        uiUpdating = true;
+		
 		timerName.setText(currentConfig.name);
-		preTime.setMillis(currentConfig.preTime);
+		updateButton(butPreTime, currentConfig.preTime);
 		startBell.setSelection(currentConfig.startBell);
-		runTime.setMillis(currentConfig.runTime);
+		updateButton(butRunTime, currentConfig.runTime);
 		endBell.setSelection(currentConfig.endBell);
+		
+        uiUpdating = false;
 	}
-	
+	    
 	
 	/**
 	 * Load from persistent storage all the timers' configurations.
@@ -286,7 +348,14 @@ public class Configuration
 	        c.startBell = prefs.getInt(base + "startBell", c.startBell);
 	        c.runTime = prefs.getLong(base + "runTime", c.runTime);
 	        c.endBell = prefs.getInt(base + "endBell", c.endBell);
+	        
+	        if (c.name.length() > 0)
+	        	timerNames[timer] = c.name;
+	        else
+	        	timerNames[timer] = timerBaseNames[timer];
 		}
+		
+        timerAdapter.notifyDataSetChanged();
 		selectTimer(currentTimer);
 	}
 
@@ -304,6 +373,33 @@ public class Configuration
         editor.putLong(base + "runTime", currentConfig.runTime);
         editor.putInt(base + "endBell", currentConfig.endBell);
         editor.commit();
+        
+        if (currentConfig.name.length() > 0)
+        	timerNames[currentTimer] = currentConfig.name;
+        else
+        	timerNames[currentTimer] = timerBaseNames[currentTimer];
+        timerAdapter.notifyDataSetChanged();
+	}
+
+	
+    /**
+     * Display the given timeout in the specified button.
+     * 
+     * @param	but			Button to set.
+     * @param	ms			Time in ms to display.
+     */
+    private void updateButton(Button but, long ms) {
+    	int sLeft = (int) ((ms + 500) / 1000);
+    	int hour = sLeft / 3600;
+    	int min = sLeft / 60 % 60;
+    	int sec = sLeft % 60;
+    	timeText.setCharAt(0, (char) ('0' + hour / 10));
+    	timeText.setCharAt(1, (char) ('0' + hour % 10));
+    	timeText.setCharAt(3, (char) ('0' + min / 10));
+    	timeText.setCharAt(4, (char) ('0' + min % 10));
+    	timeText.setCharAt(6, (char) ('0' + sec / 10));
+    	timeText.setCharAt(7, (char) ('0' + sec % 10));
+    	but.setText(timeText);
 	}
 
 
@@ -325,8 +421,8 @@ public class Configuration
 
     // Debugging tag.
 	private static final String TAG = "ChimeTimer";
-	
-
+	 
+	 
 	// ******************************************************************** //
 	// Private Data.
 	// ******************************************************************** //
@@ -339,19 +435,40 @@ public class Configuration
     
     // Timer configuration widgets.
     private EditText timerName;
-    private TimeoutPicker preTime;
+    private Button butPreTime;
     private Spinner startBell;
-    private TimeoutPicker runTime;
+    private Button butRunTime;
     private Spinner endBell;
     
+    // Timeout picker dialogs.
+    private TimeoutPickerDialog preTimeDialog;
+    private TimeoutPickerDialog runTimeDialog;
+
     // Current timer configurations.
     private TimerConfig[] timerConfigs;
-    
+
+    // Basic timer names, and the current configured timer names.
+    private String[] timerBaseNames;
+    private String[] timerNames;
+
+    // Array adapter which provides the choices of the timer names.
+    private  ArrayAdapter<String> timerAdapter;
+
+    // Bell names.
+    private String[] bellNames;
+
     // Index of the timer we're editing.
     private int currentTimer = 0;
 	
 	// Current timer's configuration.
 	private TimerConfig currentConfig = null;
+	
+	// Flag whether the UI is being updated programmatically.  It always
+	// is during setup, so we start true.
+	private boolean uiUpdating = true;
+    
+	// Buffer we create the time display in.
+	private StringBuilder timeText;
 
 }
 

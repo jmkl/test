@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- Standard text size for labels etc. -->
+    <dimen name="text_size">22dp</dimen>
+    
+</resources>
+

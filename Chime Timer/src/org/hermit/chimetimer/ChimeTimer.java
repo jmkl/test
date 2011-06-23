@@ -106,8 +106,8 @@ public class ChimeTimer
 		
 		// Set the content of the timer choice widget.
         timerAdapter = new ArrayAdapter<String>(this,
-                		android.R.layout.simple_spinner_item, timerNames);
-        timerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                						R.layout.spinner_item, timerNames);
+        timerAdapter.setDropDownViewResource(R.layout.spinner_dropdown);
         timerChoice.setAdapter(timerAdapter);
 
         // Handle timer selections.
@@ -405,10 +405,10 @@ public class ChimeTimer
         	break;
     	case R.id.menu_help:
             Log.i(TAG, "M Launch help");
-            // TODO: Launch the help activity as a subactivity.
-//            Intent hIntent = new Intent();
-//            hIntent.setClass(this, Help.class);
-//            startActivity(hIntent);
+            // Launch the help activity as a subactivity.
+            Intent hIntent = new Intent();
+            hIntent.setClass(this, Help.class);
+            startActivity(hIntent);
     		break;
     	case R.id.menu_about:
             Log.i(TAG, "M Launch about");
@@ -534,26 +534,34 @@ public class ChimeTimer
 			case ChimerService.STATE_READY:
 		        Log.i(TAG, "M tick READY");
 		        selectTimer(currentTimer);
+		        preField.setTextColor(COL_INACTIVE);
+		        timeField.setTextColor(COL_INACTIVE);
 		    	startButton.setText(R.string.but_start);
-		    	startButton.setBackgroundColor(BUT_READY);
+		    	startButton.setBackgroundColor(COL_READY);
 				break;
 			case ChimerService.STATE_PRE:
 		        Log.i(TAG, "M tick PRE " + m.arg1);
 				updateClock(preField, m.arg1);
+		        preField.setTextColor(COL_PRE);
+		        timeField.setTextColor(COL_INACTIVE);
 		    	startButton.setText(R.string.but_stop);
-		    	startButton.setBackgroundColor(BUT_PRE);
+		    	startButton.setBackgroundColor(COL_PRE);
 				break;
 			case ChimerService.STATE_RUNNING:
 		        Log.i(TAG, "M tick RUN " + m.arg1);
 				updateClock(preField, 0);
 				updateClock(timeField, m.arg1);
+		        preField.setTextColor(COL_INACTIVE);
+		        timeField.setTextColor(COL_RUNNING);
 		    	startButton.setText(R.string.but_stop);
-		    	startButton.setBackgroundColor(BUT_RUNNING);
+		    	startButton.setBackgroundColor(COL_RUNNING);
 				break;
 			case ChimerService.STATE_FINISHED:
 		        Log.i(TAG, "M tick FINISHED");
+		        preField.setTextColor(COL_INACTIVE);
+		        timeField.setTextColor(COL_FINISHED);
 		    	startButton.setText(R.string.but_done);
-		    	startButton.setBackgroundColor(BUT_FINISHED);
+		    	startButton.setBackgroundColor(COL_FINISHED);
 				break;
 			}
 		}
@@ -588,16 +596,19 @@ public class ChimeTimer
 	private static final String TAG = "ChimeTimer";
 	
 	// Button colour for state ready.
-	private static final int BUT_READY = 0xff80ff80;
+	private static final int COL_READY = 0xff80ff80;
 	
 	// Button colour for state pre-time running.
-	private static final int BUT_PRE = 0xffc0c000;
+	private static final int COL_PRE = 0xffc0c000;
 	
 	// Button colour for state main running.
-	private static final int BUT_RUNNING = 0xffff8080;
+	private static final int COL_RUNNING = 0xffff8080;
 	
 	// Button colour for state finished.
-	private static final int BUT_FINISHED = 0xff8080ff;
+	private static final int COL_FINISHED = 0xff8080ff;
+	
+	// Test colour for not active.
+	private static final int COL_INACTIVE = 0xffc0c0c0;
 
 
 	// ******************************************************************** //
