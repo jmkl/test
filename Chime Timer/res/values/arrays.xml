@@ -66,7 +66,7 @@ background service is killed automatically.</item>
 • A time-of-day clock (if screen space allows), for your convenience.\n\
 • A selector which you can use to choose which of your timer configurations
 to use (see \"Configuration\" below).\n\
-• The pre-timer countdown time, if the configuration has a pre-timer.\n\
+• The \"prepare\" countdown time, if the configuration has a pre-timer.\n\
 • The main timer time.\n\
 • The control button.</item>
               
@@ -89,7 +89,7 @@ Use the selector at the top of the screen to choose a configuration to edit.
 Then, for each configuration, you can set up the following:\n\
 • A name for this configuration; this will be shown in the selector on
 the main screen.\n\
-• A pre-timer countdown.  Set this to zero if you don\'t want it; but it
+• A \"prepare\" countdown.  Set this to zero if you don\'t want it; but it
 may come in handy to let you prepare before the main timer begins.\n\
 • A starting bell; this will sound when the main timer begins (which
 may be useful in conjunction with the pre-timer).\n\

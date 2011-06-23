@@ -45,10 +45,10 @@ for more details.\n</string>
     <!-- Configurator. -->
     <string name="config_name">Configuration</string>
     <string name="lab_name">Name:</string>
-    <string name="lab_pre">Pre-timer:</string>
-    <string name="lab_start">Start bell:</string>
+    <string name="lab_pre">Prepare:</string>
+    <string name="lab_start">Start:</string>
     <string name="lab_time">Time:</string>
-    <string name="lab_finish">End bell:</string>
+    <string name="lab_finish">End:</string>
       
     <!-- Service. -->
     <string name="service_title">Chime Timer</string>

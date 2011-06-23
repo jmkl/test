@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+       android:layout_width="fill_parent"
+       android:layout_height="fill_parent"
+       android:orientation="vertical">
+              
+    <Spinner android:id="@+id/timer_choice"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+            
+    <TableLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*">
+            
+        <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_span="2"
+                    android:textSize="@dimen/text_size"
+                    android:text="@string/lab_name" />
+            <EditText android:id="@+id/name"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_span="2"
+                    android:textSize="@dimen/text_size">
+                <requestFocus />
+            </EditText>
+        </TableRow>
+        
+        <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_size"
+                    android:text="@string/lab_pre" />
+            <Button android:id="@+id/but_pre_time"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_size"
+                    android:typeface="monospace"/>
+
+            <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_size"
+                    android:text="@string/lab_start" />
+            <Spinner android:id="@+id/start_bell"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" />
+        </TableRow>
+        
+        <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_size"
+                    android:text="@string/lab_time" />
+            <Button android:id="@+id/but_run_time"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_size"
+                    android:typeface="monospace" />
+
+            <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_size"
+                    android:text="@string/lab_finish" />
+            <Spinner android:id="@+id/finish_bell"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" />
+        </TableRow>
+        
+    </TableLayout>
+    
+    <Button android:id="@+id/but_done"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_size"
+            android:text="@string/but_done" />
+            
+</LinearLayout>
+
