@@ -6,5 +6,9 @@
     <string name="button_license">Show license</string>
     <string name="button_homepage">Home page</string>
     
+    <!-- TimeoutPickerDialog strings. -->
+    <string name="timeout_set">Set time interval</string>
+    <string name="timeout_cancel">Cancel</string>
+    
 </resources>
 
