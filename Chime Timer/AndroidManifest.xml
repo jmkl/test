@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.hermit.chimetimer"
-      android:versionCode="1"
-      android:versionName="1.0">
+      android:installLocation="auto" android:versionCode="2" android:versionName="1.1">
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="11"/>
     <supports-screens android:smallScreens="true" android:resizeable="true" android:largeScreens="true" android:normalScreens="true" android:anyDensity="true"></supports-screens>
 
