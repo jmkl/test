@@ -87,7 +87,8 @@ public class TimeoutPickerDialog extends AlertDialog implements OnClickListener,
         mTimePicker.setOnTimeChangedListener(this);
     }
     
-    public void onClick(DialogInterface dialog, int which) {
+    @Override
+	public void onClick(DialogInterface dialog, int which) {
         if (mCallback != null) {
             mTimePicker.clearFocus();
             mCallback.onTimeSet(mTimePicker, mTimePicker.getMillis());
