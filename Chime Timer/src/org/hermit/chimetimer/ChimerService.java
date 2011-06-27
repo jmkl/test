@@ -334,7 +334,7 @@ public class ChimerService
 				break;
 			case STATE_FINISHED:
 				stateMsg = R.string.service_finished;
-				icon = R.drawable.ic_stat_ready;
+				icon = R.drawable.ic_stat_finish;
 				break;
 			}
 			Log.i(TAG, "Svc st=" + state + ", notif " + stateMsg);
