@@ -24,6 +24,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewParent;
@@ -192,9 +194,10 @@ public class WeatherWidget
 		baseTime.set(Calendar.MINUTE, 0);
 		baseTime.set(Calendar.SECOND, 0);
 		lastTime = baseTime;
-		lastTimeVal = baseTime.getTimeInMillis();
-		firstTimeVal = lastTimeVal - (DISPLAY_HOURS * 3600 * 1000);
-
+		firstTime = (Calendar) lastTime.clone();
+		firstTime.add(Calendar.HOUR_OF_DAY, -DISPLAY_HOURS);
+		firstTimeVal = firstTime.getTimeInMillis();
+			
 		weatherMessage = msg;
 
 		reDrawContent();
@@ -261,6 +264,9 @@ public class WeatherWidget
             final Canvas canvas = backingCanvas;
             canvas.drawColor(0xff000000);
 
+            // Draw in the day/night background.
+            drawBackground(canvas);
+
             // Draw in the pressure grid and hour labels.
             drawGrid(canvas);
 
@@ -274,6 +280,28 @@ public class WeatherWidget
 
 
     /**
+     * Draw in the day/night background.
+     */
+    private void drawBackground(Canvas canvas) {
+        // Draw the vertical lines and the hour labels, if we have a
+    	// data time.
+    	if (lastTime != null) {
+    		GradientDrawable dayGrad = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, DAY_GRAD_COLS);
+    		graphPaint.setStyle(Paint.Style.FILL);
+    		
+    		int hour = -firstTime.get(Calendar.HOUR_OF_DAY);
+    		while (hour < DISPLAY_HOURS) {
+    			int x1 = hour * HOUR_WIDTH;
+    			hour += 24;
+    			int x2 = hour * HOUR_WIDTH;
+    			dayGrad.setBounds(x1, dispTop, x2, dispBot);
+    			dayGrad.draw(canvas);
+    		}
+    	}
+    }
+
+
+    /**
      * Draw in the grid and axis labels.
      */
     private void drawGrid(Canvas canvas) {
@@ -283,8 +311,7 @@ public class WeatherWidget
     		graphPaint.setStyle(Paint.Style.STROKE);
     		float hourY = dispBot + marginBot - labelSize - 8;
     		float dayY = dispBot + marginBot - 6;
-    		Calendar time = (Calendar) lastTime.clone();
-    		time.add(Calendar.HOUR_OF_DAY, -DISPLAY_HOURS);
+    		Calendar time = (Calendar) firstTime.clone();
     		for (int hour = 0; hour < DISPLAY_HOURS; ++hour) {
     			float x = (float) hour * (float) HOUR_WIDTH;
     			int h = time.get(Calendar.HOUR_OF_DAY);
@@ -350,12 +377,11 @@ public class WeatherWidget
      * Draw in the pressure curve.
      */
     private void drawPressure(Canvas canvas) {
-        graphPaint.setStyle(Paint.Style.STROKE);
-        graphPaint.setColor(CURVE_COL);
-        graphPaint.setStrokeWidth(2);
+        // We render the points into an array, and the curve into a path,
+        // for drawing later.
+        Path path = new Path();
+        float[] points = new float[numPoints * 2];
         
-        float px = 0;
-        float py = 0;
         for (int i = 0; i < numPoints; ++i) {
         	final long t = pointTimes[i];
         	final float x = (float) (t - firstTimeVal) / 1000f / 3600f * HOUR_WIDTH;
@@ -363,15 +389,26 @@ public class WeatherWidget
         	final float p = pointPress[i];
         	final float y = dispBot - (p - dispMin) * mbHeight;
         	
-        	if (i > 0) {
-                graphPaint.setColor(CURVE_COL);
-                canvas.drawLine(px, py, x, y, graphPaint);
-        	}
-        	graphPaint.setColor(POINT_COL);
-        	canvas.drawPoint(x, y, graphPaint);
-            px = x;
-            py = y;
+        	// Plot this point.
+        	points[i * 2] = x;
+        	points[i * 2 + 1] = y;
+
+        	// Plot the segment of the curve.
+        	if (i == 0)
+        		path.moveTo(x, y);
+        	else
+        		path.lineTo(x, y);
         }
+        
+        // Now actually draw the curve.
+        graphPaint.setStyle(Paint.Style.STROKE);
+        graphPaint.setColor(CURVE_COL);
+        graphPaint.setStrokeWidth(2);
+        canvas.drawPath(path, graphPaint);
+       
+        // And draw the points on top.
+        graphPaint.setColor(POINT_COL);
+        canvas.drawPoints(points, graphPaint);
     }
     
 
@@ -476,6 +513,22 @@ public class WeatherWidget
 
 	// Width of an hour on the display, in pixels.
 	private static final int HOUR_WIDTH = 16;
+	
+	// Colours for the day/night background.
+	private static final int BG_NIGHT_COL = 0x90000000;
+	private static final int BG_TWI_COL = 0x90000000;
+	private static final int BG_DAY_COL = 0x90ffe000;
+	
+	// Colour gradient for the day/night background.
+	private static final int[] DAY_GRAD_COLS = {
+		BG_NIGHT_COL,
+		BG_TWI_COL,
+		BG_DAY_COL,
+		BG_DAY_COL,
+		BG_DAY_COL,
+		BG_TWI_COL,
+		BG_NIGHT_COL,
+	};
 
     // Colour to draw the grid.
     private static final int GRID_MIN_COL = 0xff4040a0;
@@ -484,7 +537,7 @@ public class WeatherWidget
     
     // Colour to draw the object bars.
 	private static final int CURVE_COL = 0xff9060d0;
-	private static final int POINT_COL = 0xffc0c000;
+	private static final int POINT_COL = 0xffff0040;
 
     // Colour to draw the labels.
 	private static final int MAIN_LABEL_COL = 0xffffffff;
@@ -572,7 +625,7 @@ public class WeatherWidget
 
 	// The time shown at the left and right edges of the display.
 	private long firstTimeVal = 0;
-	private long lastTimeVal = 0;
+	private Calendar firstTime = null;
 	private Calendar lastTime = null;
 	
 	// Paint used for graphics.
