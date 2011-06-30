@@ -262,7 +262,7 @@ public class AnalogBarometer
 
         if (numPoints > 0) {
         	drawHand(canvas, cx, cy);
-        	drawHistory(canvas, cx, cy);
+        	drawHistory(canvas, cx, cy, dw / 2);
         }
 
         if (scaled)
@@ -297,8 +297,9 @@ public class AnalogBarometer
 	 * @param	canvas		Canvas to draw into.
 	 * @param	cx			Centre x co-ordinate.
 	 * @param	cy			Centre y co-ordinate.
+	 * @param	radius		Radius for the plot.
 	 */
-    protected void drawHistory(Canvas canvas, int cx, int cy) {
+    protected void drawHistory(Canvas canvas, int cx, int cy, float radius) {
         long now = System.currentTimeMillis();
 
         // We render the points into an array, and the curve into a path,
@@ -311,8 +312,8 @@ public class AnalogBarometer
 
         // Calculate the width of the polar plot, and the width of an
         // hour on the plot.
-        final float chartWidth = cx * HISTORY_DIAL_FRAC;
-        final float hourWidth = chartWidth / HISTORY_HOURS;
+        radius *= HISTORY_DIAL_FRAC;
+        final float hourWidth = radius / HISTORY_HOURS;
         
         // Previous radius and angle.
         float prevRad = 0;
@@ -331,16 +332,13 @@ public class AnalogBarometer
         	}
 
         	// Calculate the polar co-ordinates of this point.
-        	final float r = chartWidth - age * hourWidth;
+        	final float r = radius - age * hourWidth;
         	final float a = (float) Math.toRadians(dialMode.angle(p));
         	final float span = a - prevAng;
 
         	// Calculate the Cartesian co-ordinates.
         	final float gx = r * (float) Math.sin(a);
         	final float gy = r * (float) -Math.cos(a);
-        	Log.i(TAG, "age=" + age + " press=" + p + " ->" +
-        			" r=" + r + " ang=" + a + " ->" +
-        			" x=" + gx + " y=" + gy);
         	
         	// Plot this point.
         	points[i * 2] = cx + gx;
@@ -419,7 +417,7 @@ public class AnalogBarometer
 	private static final int HISTORY_HOURS = 24;
 	
 	// Fraction of the width of the dial to use for displaying history.
-	private static final float HISTORY_DIAL_FRAC = 0.85f;
+	private static final float HISTORY_DIAL_FRAC = 0.93f;
 
 	// Maximum span, in radians, of an arc on the history plot that
 	// we won't break into line segments.

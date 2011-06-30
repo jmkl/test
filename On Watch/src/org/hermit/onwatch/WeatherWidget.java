@@ -87,6 +87,9 @@ public class WeatherWidget
 		charBuf = new char[20];
 		graphPaint = new Paint();
 		graphPaint.setAntiAlias(true);
+		
+		dayGrad = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
+									   DAY_GRAD_COLS);
         
         numPoints = 0;
 	}
@@ -286,7 +289,6 @@ public class WeatherWidget
         // Draw the vertical lines and the hour labels, if we have a
     	// data time.
     	if (lastTime != null) {
-    		GradientDrawable dayGrad = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, DAY_GRAD_COLS);
     		graphPaint.setStyle(Paint.Style.FILL);
     		
     		int hour = -firstTime.get(Calendar.HOUR_OF_DAY);
@@ -516,7 +518,7 @@ public class WeatherWidget
 	
 	// Colours for the day/night background.
 	private static final int BG_NIGHT_COL = 0x90000000;
-	private static final int BG_TWI_COL = 0x90000000;
+	private static final int BG_TWI_COL = 0x90807000;
 	private static final int BG_DAY_COL = 0x90ffe000;
 	
 	// Colour gradient for the day/night background.
@@ -631,6 +633,9 @@ public class WeatherWidget
 	// Paint used for graphics.
 	private Paint graphPaint;
 	
+	// Gradient for background.
+	private GradientDrawable dayGrad = null;
+
 	// Char buffer used for formatting.
 	private char[] charBuf;
 
