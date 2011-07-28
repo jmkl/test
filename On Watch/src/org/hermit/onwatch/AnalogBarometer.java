@@ -16,6 +16,8 @@
 
 package org.hermit.onwatch;
 
+import org.hermit.onwatch.service.WeatherService.WeatherState;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -179,24 +181,37 @@ public class AnalogBarometer
 	 * 
 	 * @param	times	Times of all the observations.
 	 * @param	press	Pressure values of all the observations.
-	 * @param	t		Time of the latest observation.
-	 * @param	p		Pressure value of the latest observation.
-	 * @param	min		Lowest pressure value.
-	 * @param	max		Highest pressure value.
-	 * @param	msg		Current weather message; null if none.
+	 * @param	msg		Current weather state; null if none.
 	 */
-	void setData(long[] times, float[] press, long t, float p,
-				 float min, float max, String msg)
+	void setData(long[] times, float[] press, WeatherState state)
 	{
 		// Copy the data down for later use.
 		pointTimes = times;
 		pointPress = press;
 		numPoints = pointTimes.length;
-
-		pressNow = p;
-		pressMin = min;
-		pressMax = max;
-
+		
+		pressNow = pointPress[numPoints - 1];
+		
+		// Find the first data point that's within the allowed time.
+		// Also find the pressure range within the remaining data.
+		pointFirstIndex = -1;
+		pressMin = 1000f;
+		pressMax = 1020f;
+        long now = System.currentTimeMillis();
+		for (int i = 0; i < numPoints; ++i) {
+			final long t = pointTimes[i];
+			final float p = pointPress[i];
+			final float age = (now - t) / 1000f / 3600f;
+			if (age <= HISTORY_HOURS) {
+				if (pointFirstIndex < 0)
+					pointFirstIndex = i;
+				if (p < pressMin)
+					pressMin = p;
+				if (p > pressMax)
+					pressMax = p;
+			}
+		}
+		
 		// Find a dial mode that accommodates the pressure range.
 		DialMode dial = DialMode.forRange(pressMin, pressMax);
 		if (dial != dialMode)
@@ -260,7 +275,7 @@ public class AnalogBarometer
         dial.setBounds(cx - (dw / 2), cy - (dh / 2), cx + (dw / 2), cy + (dh / 2));
         dial.draw(canvas);
 
-        if (numPoints > 0) {
+        if (numPoints > 0 && pointFirstIndex >= 0) {
         	drawHand(canvas, cx, cy);
         	drawHistory(canvas, cx, cy, dw / 2);
         }
@@ -305,10 +320,7 @@ public class AnalogBarometer
         // We render the points into an array, and the curve into a path,
         // for drawing later.
         Path path = new Path();
-        float[] points = new float[numPoints * 2];
-        
-        // Number of points too old to draw.
-        int skip = 0;
+        float[] points = new float[(numPoints - pointFirstIndex) * 2];
 
         // Calculate the width of the polar plot, and the width of an
         // hour on the plot.
@@ -320,19 +332,17 @@ public class AnalogBarometer
         float prevAng = 0;
         boolean havePrev = false;
         
-        for (int i = 0; i < numPoints; ++i) {
+        for (int i = pointFirstIndex; i < numPoints; ++i) {
         	// Get the time, pressure and age of this point.  If it's
         	// too old, skip it.
         	final long t = pointTimes[i];
         	final float p = pointPress[i];
         	final float age = (now - t) / 1000f / 3600f;
-        	if (age > HISTORY_HOURS) {
-        		++skip;
-        		continue;
-        	}
 
         	// Calculate the polar co-ordinates of this point.
-        	final float r = radius - age * hourWidth;
+        	float r = radius - age * hourWidth;
+        	if (r < 0)
+        		r = 0;
         	final float a = (float) Math.toRadians(dialMode.angle(p));
         	final float span = a - prevAng;
 
@@ -341,8 +351,9 @@ public class AnalogBarometer
         	final float gy = r * (float) -Math.cos(a);
         	
         	// Plot this point.
-        	points[i * 2] = cx + gx;
-        	points[i * 2 + 1] = cy + gy;
+        	int px = i - pointFirstIndex;
+        	points[px * 2] = cx + gx;
+        	points[px * 2 + 1] = cy + gy;
 
         	// Plot the segment of the curve.  If it's too long,
         	// break it into smaller segments.
@@ -376,7 +387,7 @@ public class AnalogBarometer
        
         // And draw the points on top.
         graphPaint.setColor(POINT_COL);
-        canvas.drawPoints(points, skip * 2, (numPoints - skip) * 2, graphPaint);
+        canvas.drawPoints(points, graphPaint);
     }
     
 
@@ -508,6 +519,14 @@ public class AnalogBarometer
 	private int numPoints = 0;
 	private long[] pointTimes = null;
 	private float[] pointPress = null;
+	
+	// Index of the first data point that's within the time range of the
+	// barometer.  -1 if we have no applicable data.
+	// Note: this is calculated when we get new data; so if
+	// data collection stops, we will potentially be trying to draw
+	// out-of-range data.  This will be clipped out in the drawing code,
+	// however.
+	private int pointFirstIndex = 0;
 
     // Min and max pressures in the actual data.
     private float pressMin = 0;

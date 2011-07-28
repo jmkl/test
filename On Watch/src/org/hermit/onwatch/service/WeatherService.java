@@ -26,6 +26,9 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -70,36 +73,51 @@ public class WeatherService
 	 */
 	public enum ChangeRate {
 		NO_DATA(R.string.weather_nodata),
-		NIL(R.string.weather_rate_0),
-		FALL_SLOW(R.string.weather_rate_slow),
-		FALL_MOD(R.string.weather_rate_mod),
-		FALL_FAST(R.string.weather_rate_quick,
+		NIL(R.string.weather_steady),
+		FALL_SLOW(R.string.weather_fall_slow),
+		FALL_MOD(R.string.weather_fall_mod),
+		FALL_FAST(R.string.weather_fall_quick,
 				   new Sound(Alert.WARNING, R.string.weather_v_fall_quick)),
-		FALL_VERY_FAST(R.string.weather_rate_very,
+		FALL_VERY_FAST(R.string.weather_fall_very,
 				   new Sound(Alert.ALARM, R.string.weather_v_fall_very)),
-		FALL_EXTREME(R.string.weather_rate_extreme,
+		FALL_EXTREME(R.string.weather_fall_extreme,
 				   new Sound(Alert.DANGER, R.string.weather_v_fall_extreme)),
-		FALL_INSANE(R.string.weather_rate_insane,
+		FALL_INSANE(R.string.weather_fall_insane,
 				   new Sound(Alert.TYPHOON, R.string.weather_v_fall_insane)),
-		RISE_SLOW(R.string.weather_rate_slow),
-		RISE_MOD(R.string.weather_rate_mod),
-		RISE_FAST(R.string.weather_rate_quick),
-		RISE_VERY_FAST(R.string.weather_rate_very),
-		RISE_EXTREME(R.string.weather_rate_extreme),
-		RISE_INSANE(R.string.weather_rate_insane);
+		RISE_SLOW(R.string.weather_rise_slow),
+		RISE_MOD(R.string.weather_rise_mod),
+		RISE_FAST(R.string.weather_rise_quick),
+		RISE_VERY_FAST(R.string.weather_rise_very),
+		RISE_EXTREME(R.string.weather_rise_extreme),
+		RISE_INSANE(R.string.weather_rise_insane);
 	
 		ChangeRate(int msg) {
+			iconId = 0;
 			textId = msg;
 			alertSound = null;
 		}
 
 		ChangeRate(int msg, Sound alert) {
+			iconId = 0;
 			textId = msg;
 			alertSound = alert;
 		}
+		
+		public int getIcon() {
+			return iconId;
+		}
 
-		final int textId;
-		final Sound alertSound;
+		public int getMsg() {
+			return textId;
+		}
+
+		public Sound getSound() {
+			return alertSound;
+		}
+
+		private final int iconId;
+		private final int textId;
+		private final Sound alertSound;
 	}
 	
 
@@ -127,17 +145,90 @@ public class WeatherService
 				   new Sound(Alert.WARNING, R.string.weather_v_high_4));
 
 		PressState(int msg) {
+			iconId = 0;
 			textId = msg;
 			alertSound = null;
 		}
 
 		PressState(int msg, Sound alert) {
+			iconId = 0;
 			textId = msg;
 			alertSound = alert;
 		}
 		
-		final int textId;
-		final Sound alertSound;
+		public int getIcon() {
+			return iconId;
+		}
+
+		public int getMsg() {
+			return textId;
+		}
+
+		public Sound getSound() {
+			return alertSound;
+		}
+
+		
+		private final int iconId;
+		private final int textId;
+		private final Sound alertSound;
+	}
+	
+	
+	public static class WeatherState {
+		public WeatherState(ChangeState cs, ChangeRate cr, PressState ps) {
+			changeState = cs;
+			changeRate = cr;
+			pressState = ps;
+		}
+		
+
+		public Sound[] getAlerts() {
+			Sound cs = changeRate.alertSound;
+			Sound ps = pressState.alertSound;
+			int n = cs == null ? (ps == null ? 0 : 1) : (ps == null ? 1 : 2);
+			
+			Sound[] alerts = new Sound[n];
+			int i = 0;
+			if (cs != null)
+				alerts[i++] = cs;
+			if (ps != null)
+				alerts[i++] = ps;
+			
+			return alerts;
+		}
+		
+
+		public int getChangeIcon() {
+			return changeRate.iconId;
+		}
+
+
+		public int getChangeMsg() {
+			if (changeRate != ChangeRate.NO_DATA && changeRate != ChangeRate.NIL)
+				return changeRate.textId;
+			return changeState.textId;
+		}
+
+		
+		public PressState getPressureState() {
+			return pressState;
+		}
+
+
+		public int getPressureIcon() {
+			return pressState.iconId;
+		}
+
+	
+		public int getPressureMsg() {
+			return pressState.textId;
+		}
+
+
+		private ChangeState changeState;
+		private ChangeRate changeRate;
+		private PressState pressState;
 	}
 	
 
@@ -250,12 +341,12 @@ public class WeatherService
 	// ******************************************************************** //
 
 	/**
-	 * Get the current weather message text, if any.
+	 * Get the current weather state.
 	 * 
-	 * @return				Current weather message; null if none.
+	 * @return				Current weather state; null if not known yet.
 	 */
-	String getWeatherMessage() {
-		return weatherMessage;
+	WeatherState getWeatherState() {
+		return weatherState;
 	}
 	
 	
@@ -463,13 +554,10 @@ public class WeatherService
 		 * If we have alerts to sound, run them, and pass finishObservation
 		 * as the completion handler.  Else just run finishObservation now.
 		 */
-		Sound cs = changeRate.alertSound;
-		Sound ps = pressState.alertSound;
-		if (cs != null || ps != null) {
-			if (cs != null)
-				soundService.playSound(cs, ps != null ? null : finishObservation);
-			if (ps != null)
-				soundService.playSound(ps, finishObservation);
+		Sound[] alerts = weatherState == null ? null : weatherState.getAlerts();
+		if (alerts != null) {
+			for (int i = 0; i < alerts.length; ++i)
+				soundService.playSound(alerts[i], i < alerts.length - 1 ? null : finishObservation);
 		} else
 			finishObservation.run();
 	}
@@ -579,95 +667,93 @@ public class WeatherService
         		   trend + "(" + trendCount + ") from " +
         		   prevTrend + "(" + prevCount + ")");
         Log.i(TAG, "==> rate=" + rateTot + "(" + rateCount + ")");
-
+    	
+    	ChangeState cState;
 		if (recentCount < TREND_OBS)
-			changeState = ChangeState.NO_DATA;
+			cState = ChangeState.NO_DATA;
 		else if (trendCount < TREND_OBS) {
 			if (prevCount >= TREND_OBS)
-				changeState = ChangeState.CHANGING;
+				cState = ChangeState.CHANGING;
 			else
-				changeState = ChangeState.STEADY;
+				cState = ChangeState.STEADY;
 		} else {
 			if (prevCount >= TREND_OBS) {
 				if (trend == 1)
-					changeState = ChangeState.TURN_RISE;
+					cState = ChangeState.TURN_RISE;
 				else if (trend == -1)
-					changeState = ChangeState.TURN_FALL;
+					cState = ChangeState.TURN_FALL;
 				else
-					changeState = ChangeState.STEADY;
+					cState = ChangeState.STEADY;
 			} else {
 				if (trend == 1)
-					changeState = ChangeState.RISING;
+					cState = ChangeState.RISING;
 				else if (trend == -1)
-					changeState = ChangeState.FALLING;
+					cState = ChangeState.FALLING;
 				else
-					changeState = ChangeState.STEADY;
+					cState = ChangeState.STEADY;
 			}
 		}
 
 		// Give a rate message, if there has been a sustained trend.
+    	ChangeRate cRate;
 		if (trend != 0 && trendCount >= TREND_OBS && rateCount >= TREND_OBS) {
 			if (rate > 10)
-				changeRate = ChangeRate.RISE_INSANE;
+				cRate = ChangeRate.RISE_INSANE;
 			else if (rate > 5)
-				changeRate = ChangeRate.RISE_EXTREME;
+				cRate = ChangeRate.RISE_EXTREME;
 			else if (rate > 2)
-				changeRate = ChangeRate.RISE_VERY_FAST;
+				cRate = ChangeRate.RISE_VERY_FAST;
 			else if (rate > 1)
-				changeRate = ChangeRate.RISE_FAST;
+				cRate = ChangeRate.RISE_FAST;
 			else if (rate > 0.5)
-				changeRate = ChangeRate.RISE_MOD;
+				cRate = ChangeRate.RISE_MOD;
 			else if (rate > 0.0)
-				changeRate = ChangeRate.RISE_SLOW;
+				cRate = ChangeRate.RISE_SLOW;
 			else if (rate < -10)
-				changeRate = ChangeRate.FALL_INSANE;
+				cRate = ChangeRate.FALL_INSANE;
 			else if (rate < -5)
-				changeRate = ChangeRate.FALL_EXTREME;
+				cRate = ChangeRate.FALL_EXTREME;
 			else if (rate < -2)
-				changeRate = ChangeRate.FALL_VERY_FAST;
+				cRate = ChangeRate.FALL_VERY_FAST;
 			else if (rate < -1)
-				changeRate = ChangeRate.FALL_FAST;
+				cRate = ChangeRate.FALL_FAST;
 			else if (rate < -0.5)
-				changeRate = ChangeRate.FALL_MOD;
+				cRate = ChangeRate.FALL_MOD;
 			else if (rate < -0.0)
-				changeRate = ChangeRate.FALL_SLOW;
+				cRate = ChangeRate.FALL_SLOW;
 			else
-				changeRate = ChangeRate.NIL;
+				cRate = ChangeRate.NIL;
 		} else
-			changeRate = ChangeRate.NO_DATA;
+			cRate = ChangeRate.NO_DATA;
 
 		// Make a pressure message, if we have a pressure.
+    	PressState pState;
 		if (prevPress != 0) {
 			if (prevPress < 850)
-				pressState = PressState.LOW_INSANE;
+				pState = PressState.LOW_INSANE;
 			else if (prevPress < 870)
-				pressState = PressState.LOW_TORNADO;
+				pState = PressState.LOW_TORNADO;
 			else if (prevPress < 900)
-				pressState = PressState.LOW_HURRICANE;
+				pState = PressState.LOW_HURRICANE;
 			else if (prevPress < 940)
-				pressState = PressState.LOW_STORM;
+				pState = PressState.LOW_STORM;
 			else if (prevPress < 980)
-				pressState = PressState.LOW_DEPRESSION;
+				pState = PressState.LOW_DEPRESSION;
 			else if (prevPress > 1080)
-				pressState = PressState.HIGH_INSANE;
+				pState = PressState.HIGH_INSANE;
 			else if (prevPress > 1060)
-				pressState = PressState.HIGH_EXTREME;
+				pState = PressState.HIGH_EXTREME;
 			else if (prevPress > 1040)
-				pressState = PressState.HIGH_VERY;
+				pState = PressState.HIGH_VERY;
 			else if (prevPress > 1020)
-				pressState = PressState.HIGH_MILD;
+				pState = PressState.HIGH_MILD;
 			else
-				pressState = PressState.NORMAL;
+				pState = PressState.NORMAL;
 		} else
-			pressState = PressState.NO_DATA;
+			pState = PressState.NO_DATA;
 			
-		// Produce the combined weather message.
-		String msg = appContext.getString(changeState.textId);
-		if (changeRate != ChangeRate.NO_DATA && changeRate != ChangeRate.NIL)
-			msg += " " + appContext.getString(changeRate.textId);
-		if (pressState != PressState.NO_DATA && pressState != PressState.NORMAL)
-			msg += "; " + appContext.getString(pressState.textId);
-		weatherMessage = msg;
+		// Produce the combined weather state.
+		weatherState = new WeatherState(cState, cRate, pState);
 	}
 
 
@@ -730,14 +816,9 @@ public class WeatherService
 	private double[] recentPress = null;
 	private int recentCount = 0;
 	private int recentIndex = 0;
-	
-	// Current barometer state; change rate; and pressure state.
-	private ChangeState changeState;
-	private ChangeRate changeRate;
-	private PressState pressState;
 
-	// Current weather status message.
-	private String weatherMessage = null;
+	// Current weather state.  null if not known.
+	private WeatherState weatherState = null;
 	
 }
 

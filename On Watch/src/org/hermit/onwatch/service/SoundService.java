@@ -169,6 +169,9 @@ public class SoundService
         // Create the sound queue player.
     	queuePlayer = new QueuePlayer();
     	queuePlayer.start();
+    	
+    	// Set up TTS.  This may fail if TTS data needs to be installed.
+        textToSpeech = new TextToSpeech(appContext, ttsOnInit);
 	}
 
 	
@@ -203,15 +206,19 @@ public class SoundService
 	// ******************************************************************** //
 
     /**
-     * Be informed that we have done all the checks for TTS data, and the
-     * TTS service is as initialised as it will ever be.
+     * Be informed that TTS data has been installed.  That means we should
+     * tell the sound service to have another go at initializing TTS, in
+     * case it failed earlier.
      */
-    public void ttsInitialised() {
-        Log.i(TAG, "SS ttsInitialised() -- create TextToSpeech");
-        textToSpeech = new TextToSpeech(appContext, ttsOnInit);
+    public void ttsDataInstalled() {
+    	if (ttsHasFailed) {
+    		Log.i(TAG, "SS ttsDataInstalled() -- re-try TextToSpeech");
+    		ttsHasFailed = false;
+    		textToSpeech = new TextToSpeech(appContext, ttsOnInit);
+    	}
     }
     
-    
+
     private TextToSpeech.OnInitListener ttsOnInit =
     									new TextToSpeech.OnInitListener() {
 		@Override
@@ -220,6 +227,7 @@ public class SoundService
 	            Log.e(TAG, "TextToSpeech initialisation failed.");
 				textToSpeech.shutdown();
 	        	textToSpeech = null;
+	        	ttsHasFailed = true;
 	            return;
 	        }
 	        
@@ -237,6 +245,7 @@ public class SoundService
 	        } else {
 				textToSpeech.shutdown();
 				textToSpeech = null;
+	        	ttsHasFailed = true;
 				switch (result) {
 				case TextToSpeech.LANG_MISSING_DATA:
 					Log.e(TAG, "TTS setup failed: language data is missing.");
@@ -659,7 +668,15 @@ public class SoundService
 	
 	// Our text-to-speech instance.  Null if we don't have TTS.
 	private TextToSpeech textToSpeech;
-	
+    
+    // Flag whether the initial TTS setup has failed.  If this is true,
+    // and the app subsequently installs TTS data, we will re-try the TTS
+    // setup.
+	// 
+	// Note that ttsHasFailed == false doesn't say anything about the state
+    // of TTS: ttsSetUp is the flag to use to see if TTS is running.
+    private boolean ttsHasFailed = false;
+
 	// Flag if TTS is set up fully and ready to speak.
 	private boolean ttsSetUp = false;
 

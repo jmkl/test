@@ -22,6 +22,7 @@ import org.hermit.onwatch.WatchModel.Crew;
 import org.hermit.onwatch.provider.VesselSchema;
 import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
+import org.hermit.onwatch.service.WeatherService.WeatherState;
 import org.hermit.utils.Angle;
 import org.hermit.utils.TimeUtils;
 
@@ -188,7 +189,7 @@ public class HomeFragment
         // Weather
         
         baroDial = (AnalogBarometer) view.findViewById(R.id.weather_baro);
-        baroGraph = (WeatherWidget) view.findViewById(R.id.weather_chart);
+        baroGraph = (BarographWidget) view.findViewById(R.id.weather_chart);
         
         
 		updateClock();
@@ -456,7 +457,7 @@ public class HomeFragment
 		    // Create a loader that watches the current passage state.
 			// Look for only 5 days of observations.
 			long now = System.currentTimeMillis();
-			long start = now - WeatherWidget.DISPLAY_HOURS * 3600L * 1000L;
+			long start = now - BarographWidget.DISPLAY_HOURS * 3600L * 1000L;
 		    Uri baseUri = WeatherSchema.Observations.CONTENT_URI;
 		    String where = WeatherSchema.Observations.TIME + ">?";
 		    String[] wargs = new String[] { "" + start };
@@ -529,35 +530,19 @@ public class HomeFragment
 		
 		final int ti = c.getColumnIndexOrThrow(WeatherSchema.Observations.TIME);
 		final int pi = c.getColumnIndexOrThrow(WeatherSchema.Observations.PRESS);
-		long pressTime = 0;
-		float pressNow = 0;
-		float pressMin = 1000f;
-		float pressMax = 1020f;
 		int i = 0;
 		while (!c.isAfterLast()) {
 			final long t = c.getLong(ti);
 			final float p = (float) c.getDouble(pi);
 			pointTimes[i] = t;
 			pointPress[i] = p;
-			
-			pressTime = t;
-			pressNow = p;
-			if (p < pressMin)
-				pressMin = p;
-			if (p > pressMax)
-				pressMax = p;
 			++i;
 			c.moveToNext();
 		}
 		
-		baroDial.setData(pointTimes, pointPress,
-				  		 pressTime, pressNow,
-				  		 pressMin, pressMax,
-				  		 appContext.getWeatherMessage());
-    	baroGraph.setData(pointTimes, pointPress,
-    					  pressTime, pressNow,
-    					  pressMin, pressMax,
-    					  appContext.getWeatherMessage());
+		WeatherState state = appContext.getWeatherState();
+		baroDial.setData(pointTimes, pointPress, state);
+    	baroGraph.setData(pointTimes, pointPress, state);
 	}
 	
 	
@@ -730,7 +715,7 @@ public class HomeFragment
 	// Weather
     
     private AnalogBarometer baroDial;
-    private WeatherWidget baroGraph;
+    private BarographWidget baroGraph;
 	
 	// Current weather observation data.
 	private int numPoints;

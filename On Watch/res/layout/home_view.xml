@@ -159,7 +159,7 @@
             android:layout_below="@id/location_layout"
             android:layout_marginTop="32dp">
         
-        <org.hermit.onwatch.WeatherWidget
+        <org.hermit.onwatch.BarographWidget
                 android:id="@+id/weather_chart"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent" />

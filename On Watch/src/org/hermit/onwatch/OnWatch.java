@@ -34,6 +34,7 @@ import org.hermit.onwatch.provider.WeatherSchema;
 import org.hermit.onwatch.service.OnWatchService;
 import org.hermit.onwatch.service.SoundService;
 import org.hermit.onwatch.service.OnWatchService.OnWatchBinder;
+import org.hermit.onwatch.service.WeatherService.WeatherState;
 
 import android.app.ActionBar;
 import android.app.AlarmManager;
@@ -336,7 +337,8 @@ public class OnWatch
     		public void onActivityResult(int resultCode, Intent data) {
                 if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                     Log.i(TAG, "checkTtsData() => OK");
-                    ttsReady();
+                    // Do nothing.  The sound service should set itself up
+                    // when it's ready, and this should succeed.
                 } else {
                 	YesNoDialog yn = new YesNoDialog(OnWatch.this,
                 									 R.string.tts_ok,
@@ -370,7 +372,7 @@ public class OnWatch
     		@Override
     		public void onActivityResult(int resultCode, Intent data) {
                 Log.i(TAG, "installTtsData() => OK");
-                ttsReady();
+                ttsDataInstalled();
     		}
 
     		@Override
@@ -384,10 +386,10 @@ public class OnWatch
     /**
      * TTS is ready.
      */
-    private void ttsReady() {
-		ttsSetUp = true;
+    private void ttsDataInstalled() {
+		ttsWasSetUp = true;
 		if (onWatchService != null)
-			onWatchService.ttsInitialised();
+			onWatchService.ttsDataInstalled();
     }
     
 
@@ -473,8 +475,8 @@ public class OnWatch
     			v.start(onWatchService);
     		
 			// If TTS is set up, tell the service.
-			if (ttsSetUp)
-				onWatchService.ttsInitialised();
+			if (ttsWasSetUp)
+				onWatchService.ttsDataInstalled();
         }
 
         @Override
@@ -936,15 +938,15 @@ public class OnWatch
     // ******************************************************************** //
 
 	/**
-	 * Get the current weather message text, if any.
+	 * Get the current weather state.
 	 * 
-	 * @return				Current weather message; null if none.
+	 * @return				Current weather state; null if not known yet.
 	 */
-    public String getWeatherMessage() {
-		return onWatchService != null ? onWatchService.getWeatherMessage() : null;
+    public WeatherState getWeatherState() {
+		return onWatchService != null ? onWatchService.getWeatherState() : null;
 	}
+	
 
-    
     // ******************************************************************** //
     // Debug.
     // ******************************************************************** //
@@ -1044,8 +1046,10 @@ public class OnWatch
     // Log whether we showed the splash screen yet this run.
     private boolean shownSplash = false;
     
-    // Flag if TTS has been set up.
-    private boolean ttsSetUp = false;
+    // Flag if we have installed TTS data.  That means we should tell
+    // the sound service to have another go at initializing TTS, in
+    // case it failed earlier.
+    private boolean ttsWasSetUp = false;
 
 }
 

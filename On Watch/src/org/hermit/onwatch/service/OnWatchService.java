@@ -24,6 +24,7 @@ import org.hermit.onwatch.OnWatch;
 import org.hermit.onwatch.R;
 import org.hermit.onwatch.service.WeatherService.ChangeRate;
 import org.hermit.onwatch.service.WeatherService.PressState;
+import org.hermit.onwatch.service.WeatherService.WeatherState;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -269,11 +270,12 @@ public class OnWatchService
 	// ******************************************************************** //
 
     /**
-     * Be informed that we have done all the checks for TTS data, and the
-     * TTS service is as initialised as it will ever be.
+     * Be informed that TTS data has been installed.  That means we should
+     * tell the sound service to have another go at initializing TTS, in
+     * case it failed earlier.
      */
-    public void ttsInitialised() {
-    	soundService.ttsInitialised();
+    public void ttsDataInstalled() {
+    	soundService.ttsDataInstalled();
     }
     
     
@@ -380,12 +382,12 @@ public class OnWatchService
 	// ******************************************************************** //
 
 	/**
-	 * Get the current weather message text, if any.
+	 * Get the current weather state.
 	 * 
-	 * @return				Current weather message; null if none.
+	 * @return				Current weather state; null if not known yet.
 	 */
-    public String getWeatherMessage() {
-		return weatherService.getWeatherMessage();
+    public WeatherState getWeatherState() {
+		return weatherService.getWeatherState();
 	}
 	
 
@@ -444,12 +446,12 @@ public class OnWatchService
      */
     public void debugPlayAlerts() {
 		for (ChangeRate r : ChangeRate.values()) {
-			if (r.alertSound != null)
-				soundService.playSound(r.alertSound, null);
+			if (r.getSound() != null)
+				soundService.playSound(r.getSound(), null);
 		}
 		for (PressState r : PressState.values()) {
-			if (r.alertSound != null)
-				soundService.playSound(r.alertSound, null);
+			if (r.getSound() != null)
+				soundService.playSound(r.getSound(), null);
 		}
 	}
 

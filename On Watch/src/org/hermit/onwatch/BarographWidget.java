@@ -18,6 +18,8 @@ package org.hermit.onwatch;
 
 import java.util.Calendar;
 
+import org.hermit.onwatch.service.WeatherService.PressState;
+import org.hermit.onwatch.service.WeatherService.WeatherState;
 import org.hermit.utils.CharFormatter;
 
 import android.content.Context;
@@ -37,7 +39,7 @@ import android.view.ViewParent;
  *
  * @author	Ian Cameron Smith
  */
-public class WeatherWidget
+public class BarographWidget
 	extends View
 {
 
@@ -58,7 +60,7 @@ public class WeatherWidget
 	 * 
 	 * @param	context			Parent application.
 	 */
-	public WeatherWidget(Context context) {
+	public BarographWidget(Context context) {
 		super(context);
 		init(context);
 	}
@@ -70,7 +72,7 @@ public class WeatherWidget
 	 * @param	context			Parent application.
 	 * @param	attrs			Layout attributes.
 	 */
-	public WeatherWidget(Context context, AttributeSet attrs) {
+	public BarographWidget(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init(context);
 	}
@@ -82,6 +84,8 @@ public class WeatherWidget
 	 * @param	context			Parent application.
 	 */
 	private void init(Context context) {
+		appContext = context;
+		
 		setMinimumWidth(MIN_WIDTH);
 
 		charBuf = new char[20];
@@ -167,25 +171,27 @@ public class WeatherWidget
 	 * 
 	 * @param	times	Times of all the observations.
 	 * @param	press	Pressure values of all the observations.
-	 * @param	t		Time of the latest observation.
-	 * @param	p		Pressure value of the latest observation.
-	 * @param	min		Lowest pressure value.
-	 * @param	max		Highest pressure value.
-	 * @param	msg		Current weather message; null if none.
+	 * @param	msg		Current weather state; null if none.
 	 */
-	void setData(long[] times, float[] press, long t, float p,
-				 float min, float max, String msg)
-	{
+	void setData(long[] times, float[] press, WeatherState state) {
 		// Copy the data down for later use.
 		pointTimes = times;
 		pointPress = press;
 		numPoints = pointTimes.length;
+		
+		pressTime = pointTimes[numPoints - 1];
+		pressNow = pointPress[numPoints - 1];
 
-		pressTime = t;
-		pressNow = p;
-		pressMin = min;
-		pressMax = max;
-		pressRange = pressMax - pressMin;
+		// Find the pressure range within the data.
+		pressMin = 1000f;
+		pressMax = 1020f;
+		for (int i = 0; i < numPoints; ++i) {
+			final float p = pointPress[i];
+			if (p < pressMin)
+				pressMin = p;
+			if (p > pressMax)
+				pressMax = p;
+		}
 
 		// Calculate the grid spacing.
 		calculateGrid();
@@ -201,7 +207,7 @@ public class WeatherWidget
 		firstTime.add(Calendar.HOUR_OF_DAY, -DISPLAY_HOURS);
 		firstTimeVal = firstTime.getTimeInMillis();
 			
-		weatherMessage = msg;
+		weatherState = state;
 
 		reDrawContent();
 	}
@@ -215,7 +221,9 @@ public class WeatherWidget
 	 * to provide a constant reference.
 	 */
 	private void calculateGrid() {
-		if (dispHeight == 0 || pressRange == 0)
+		// Note that if we have no data, we'll continue based on the
+		// default pressure range.
+		if (dispHeight == 0)
 			return;
 
 		// Round the displayed pressure limits to the pressure grid.
@@ -454,18 +462,26 @@ public class WeatherWidget
     	
         // Draw in the heading.
         {
-        	final int hs = headingSize;
         	graphPaint.setStyle(Paint.Style.FILL);
-        	graphPaint.setTextSize(hs);
+        	graphPaint.setTextSize(headingSize);
         	graphPaint.setColor(MAIN_LABEL_COL);
-        	canvas.drawText(pressHeading(), labX, hs, graphPaint);
+        	canvas.drawText(pressHeading(), labX, headingSize, graphPaint);
         	
-    		if (weatherMessage != null) {
-            	graphPaint.setStyle(Paint.Style.FILL);
-            	graphPaint.setTextSize(labelSize);
-            	graphPaint.setColor(MAIN_LABEL_COL);
-            	float x = labX + labW - graphPaint.measureText(weatherMessage);
-            	canvas.drawText(weatherMessage, x, hs, graphPaint);
+    		if (weatherState != null) {
+            	float x = labX + labW;
+            	final float y = headingSize;
+            	
+            	int ci = weatherState.getChangeIcon();
+            	int cm = weatherState.getChangeMsg();
+    			x = displayMsg(canvas, graphPaint, ci, cm, x, y);
+    			
+    			PressState ps = weatherState.getPressureState();
+    			if (ps != PressState.NO_DATA && ps != PressState.NORMAL) {
+        			int pi = ps.getIcon();
+        			int pm = ps.getMsg();
+    				x = displayMsg(canvas, graphPaint, pi, pm, x, y);
+    			}
+    			
     		}
         }
         
@@ -482,6 +498,19 @@ public class WeatherWidget
         		canvas.drawText("" + p, labX, ly + textOff - ls / 6, graphPaint);
         	}
         }
+	}
+	
+	
+	private float displayMsg(Canvas canvas, Paint paint, int icon, int msg, float x, float y) {
+		String text = appContext.getString(msg);
+		x -= paint.measureText(text);
+		
+		paint.setStyle(Paint.Style.FILL);
+		paint.setTextSize(labelSize);
+		paint.setColor(MAIN_LABEL_COL);
+    	canvas.drawText(text, x, y, paint);
+    	
+    	return x;
 	}
     
 	
@@ -569,6 +598,9 @@ public class WeatherWidget
 	// Private Data.
 	// ******************************************************************** //
 
+	// Our app context.
+	private Context appContext;
+	
 	// The scrolling window we're in.  Null if not provided by the app.
 	private View parentScroller = null;
 
@@ -601,17 +633,16 @@ public class WeatherWidget
     private Canvas backingCanvas;
 	
 	// Current observation data.
-	private int numPoints;
-	private long[] pointTimes;
-	private float[] pointPress;
+	private int numPoints = 0;
+	private long[] pointTimes = null;
+	private float[] pointPress = null;
 	
-	// Current weather status message.
-	private String weatherMessage = null;
+	// Current weather state; null if unknown.
+	private WeatherState weatherState = null;
 
     // Min and max pressures in the actual data.
     private float pressMin = 1000;
     private float pressMax = 1020;
-    private float pressRange = pressMax - pressMin;
     
     // Latest pressure time and value; 0 if not known.
 	private long pressTime = 0;
