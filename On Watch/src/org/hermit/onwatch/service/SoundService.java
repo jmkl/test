@@ -75,6 +75,8 @@ public class SoundService
 		 * @param	alert		Alert to play.
 		 */
 		public Sound(Alert alert) {
+			if (alert == null)
+				throw new NullPointerException("Null alert passed to Sound()");
 			soundEffect = alert.soundEffect;
 			effectCount = alert.soundCount;
 			spokenText = 0;
@@ -87,8 +89,23 @@ public class SoundService
 		 * @param	textId		Resource ID of the text to speak.
 		 */
 		public Sound(Alert alert, int textId) {
-			soundEffect = alert.soundEffect;
-			effectCount = alert.soundCount;
+			if (alert == null && textId == 0)
+				throw new IllegalArgumentException("Empty args passed to Sound()");
+			soundEffect = alert == null ? null : alert.soundEffect;
+			effectCount = alert == null ? 0 : alert.soundCount;
+			spokenText = textId;
+		}
+		
+		/**
+		 * Create a sound which will play a given voice alert.
+		 * 
+		 * @param	textId		Resource ID of the text to speak.
+		 */
+		public Sound(int textId) {
+			if (textId == 0)
+				throw new IllegalArgumentException("Empty text passed to Sound()");
+			soundEffect = null;
+			effectCount = 0;
 			spokenText = textId;
 		}
 

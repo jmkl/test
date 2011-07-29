@@ -17,13 +17,17 @@
 package org.hermit.onwatch;
 
 import java.util.Calendar;
+import java.util.HashMap;
 
+import org.hermit.onwatch.service.WeatherService;
 import org.hermit.onwatch.service.WeatherService.PressState;
 import org.hermit.onwatch.service.WeatherService.WeatherState;
 import org.hermit.utils.CharFormatter;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -85,12 +89,23 @@ public class BarographWidget
 	 */
 	private void init(Context context) {
 		appContext = context;
+		Resources res = context.getResources();
 		
 		setMinimumWidth(MIN_WIDTH);
 
 		charBuf = new char[20];
 		graphPaint = new Paint();
 		graphPaint.setAntiAlias(true);
+		
+		// Get the weather alert icons.
+		weatherIcons = new HashMap<WeatherService.Severity, Bitmap>();
+		for (WeatherService.Severity sev : WeatherService.Severity.values()) {
+			int id = sev.getIcon();
+			if (id != 0) {
+				Bitmap bm = BitmapFactory.decodeResource(res, id);
+				weatherIcons.put(sev, bm);
+			}
+		}
 		
 		dayGrad = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
 									   DAY_GRAD_COLS);
@@ -471,17 +486,16 @@ public class BarographWidget
             	float x = labX + labW;
             	final float y = headingSize;
             	
-            	int ci = weatherState.getChangeIcon();
+				Bitmap ci = weatherIcons.get(weatherState.getChangeSeverity());
             	int cm = weatherState.getChangeMsg();
     			x = displayMsg(canvas, graphPaint, ci, cm, x, y);
     			
     			PressState ps = weatherState.getPressureState();
     			if (ps != PressState.NO_DATA && ps != PressState.NORMAL) {
-        			int pi = ps.getIcon();
+    				Bitmap pi = weatherIcons.get(ps.getSeverity());
         			int pm = ps.getMsg();
     				x = displayMsg(canvas, graphPaint, pi, pm, x, y);
     			}
-    			
     		}
         }
         
@@ -501,7 +515,9 @@ public class BarographWidget
 	}
 	
 	
-	private float displayMsg(Canvas canvas, Paint paint, int icon, int msg, float x, float y) {
+	private float displayMsg(Canvas canvas, Paint paint,
+						     Bitmap icon, int msg, float x, float y)
+	{
 		String text = appContext.getString(msg);
 		x -= paint.measureText(text);
 		
@@ -509,6 +525,11 @@ public class BarographWidget
 		paint.setTextSize(labelSize);
 		paint.setColor(MAIN_LABEL_COL);
     	canvas.drawText(text, x, y, paint);
+    	
+    	if (icon != null) {
+    		x -= icon.getWidth();
+        	canvas.drawBitmap(icon, x, y, paint);
+    	}
     	
     	return x;
 	}
@@ -600,6 +621,9 @@ public class BarographWidget
 
 	// Our app context.
 	private Context appContext;
+	
+	// Set of icons used to display weather alerts.
+	private HashMap<WeatherService.Severity, Bitmap> weatherIcons = null;
 	
 	// The scrolling window we're in.  Null if not provided by the app.
 	private View parentScroller = null;

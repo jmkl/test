@@ -19,16 +19,12 @@ package org.hermit.onwatch.service;
 
 import org.hermit.onwatch.R;
 import org.hermit.onwatch.provider.WeatherSchema;
-import org.hermit.onwatch.service.SoundService.Alert;
 import org.hermit.onwatch.service.SoundService.Sound;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -46,6 +42,31 @@ public class WeatherService
 	// ******************************************************************** //
     // Public Types.
     // ******************************************************************** //
+
+	/**
+	 * Enum representing a severity of a weather condition.
+	 */
+	public enum Severity {
+		ROUTINE(null, 0),
+		WARNING(SoundService.Alert.WARNING, 0),
+		ALARM(SoundService.Alert.ALARM, 0),
+		DANGER(SoundService.Alert.DANGER, 0),
+		TYPHOON(SoundService.Alert.TYPHOON, 0),
+		SPACE(SoundService.Alert.SPACE, 0);
+	
+		Severity(SoundService.Alert sound, int icon) {
+			alertSound = sound;
+			iconId = icon;
+		}
+
+		public int getIcon() {
+			return iconId;
+		}
+
+		private final SoundService.Alert alertSound;
+		private final int iconId;
+	}
+	
 
 	/**
 	 * Enum representing the state of the barometer in terms of how
@@ -72,39 +93,43 @@ public class WeatherService
 	 * Enum representing the rate of change of the barometer.
 	 */
 	public enum ChangeRate {
-		NO_DATA(R.string.weather_nodata),
-		NIL(R.string.weather_steady),
-		FALL_SLOW(R.string.weather_fall_slow),
-		FALL_MOD(R.string.weather_fall_mod),
-		FALL_FAST(R.string.weather_fall_quick,
-				   new Sound(Alert.WARNING, R.string.weather_v_fall_quick)),
-		FALL_VERY_FAST(R.string.weather_fall_very,
-				   new Sound(Alert.ALARM, R.string.weather_v_fall_very)),
-		FALL_EXTREME(R.string.weather_fall_extreme,
-				   new Sound(Alert.DANGER, R.string.weather_v_fall_extreme)),
-		FALL_INSANE(R.string.weather_fall_insane,
-				   new Sound(Alert.TYPHOON, R.string.weather_v_fall_insane)),
-		RISE_SLOW(R.string.weather_rise_slow),
-		RISE_MOD(R.string.weather_rise_mod),
-		RISE_FAST(R.string.weather_rise_quick),
-		RISE_VERY_FAST(R.string.weather_rise_very),
-		RISE_EXTREME(R.string.weather_rise_extreme),
-		RISE_INSANE(R.string.weather_rise_insane);
+		NO_DATA(Severity.ROUTINE, R.string.weather_nodata),
+		NIL(Severity.ROUTINE, R.string.weather_steady),
+		FALL_SLOW(Severity.ROUTINE, R.string.weather_fall_slow),
+		FALL_MOD(Severity.ROUTINE, R.string.weather_fall_mod),
+		FALL_FAST(Severity.WARNING, R.string.weather_fall_quick,
+				   					R.string.weather_v_fall_quick),
+		FALL_VERY_FAST(Severity.ALARM, R.string.weather_fall_very,
+				   					   R.string.weather_v_fall_very),
+		FALL_EXTREME(Severity.DANGER, R.string.weather_fall_extreme,
+				   					  R.string.weather_v_fall_extreme),
+		FALL_INSANE(Severity.TYPHOON, R.string.weather_fall_insane,
+				   					  R.string.weather_v_fall_insane),
+		RISE_SLOW(Severity.ROUTINE, R.string.weather_rise_slow),
+		RISE_MOD(Severity.ROUTINE, R.string.weather_rise_mod),
+		RISE_FAST(Severity.ROUTINE, R.string.weather_rise_quick),
+		RISE_VERY_FAST(Severity.WARNING, R.string.weather_rise_very),
+		RISE_EXTREME(Severity.ALARM, R.string.weather_rise_extreme),
+		RISE_INSANE(Severity.ALARM, R.string.weather_rise_insane);
 	
-		ChangeRate(int msg) {
-			iconId = 0;
+		ChangeRate(Severity sev, int msg) {
+			severity = sev;
 			textId = msg;
-			alertSound = null;
+			alertSound = sev.alertSound == null ? null : new Sound(sev.alertSound);
 		}
 
-		ChangeRate(int msg, Sound alert) {
-			iconId = 0;
+		ChangeRate(Severity sev, int msg, int voice) {
+			severity = sev;
 			textId = msg;
-			alertSound = alert;
+			alertSound = new Sound(sev.alertSound, voice);
 		}
 		
+		public Severity getSeverity() {
+			return severity;
+		}
+
 		public int getIcon() {
-			return iconId;
+			return severity.iconId;
 		}
 
 		public int getMsg() {
@@ -115,7 +140,7 @@ public class WeatherService
 			return alertSound;
 		}
 
-		private final int iconId;
+		private final Severity severity;
 		private final int textId;
 		private final Sound alertSound;
 	}
@@ -125,39 +150,43 @@ public class WeatherService
 	 * Enum representing the current barometric pressure state.
 	 */
 	public enum PressState {
-		NO_DATA(R.string.weather_nodata),
-		LOW_INSANE(R.string.weather_low_5,
-				   new Sound(Alert.SPACE, R.string.weather_v_low_5)),
-		LOW_TORNADO(R.string.weather_low_4,
-				   new Sound(Alert.TYPHOON, R.string.weather_v_low_4)),
-		LOW_HURRICANE(R.string.weather_low_3,
-				   new Sound(Alert.DANGER, R.string.weather_v_low_3)),
-		LOW_STORM(R.string.weather_low_2,
-				   new Sound(Alert.ALARM, R.string.weather_v_low_2)),
-		LOW_DEPRESSION(R.string.weather_low_1),
-		NORMAL(R.string.weather_low_0),
-		HIGH_MILD(R.string.weather_high_1),
-		HIGH_VERY(R.string.weather_high_2,
-				   new Sound(Alert.WARNING, R.string.weather_v_high_2)),
-		HIGH_EXTREME(R.string.weather_high_3,
-				   new Sound(Alert.WARNING, R.string.weather_v_high_3)),
-		HIGH_INSANE(R.string.weather_high_4,
-				   new Sound(Alert.WARNING, R.string.weather_v_high_4));
-
-		PressState(int msg) {
-			iconId = 0;
+		NO_DATA(Severity.ROUTINE, R.string.weather_nodata),
+		LOW_INSANE(Severity.SPACE, R.string.weather_low_5,
+				   				   R.string.weather_v_low_5),
+		LOW_TORNADO(Severity.TYPHOON, R.string.weather_low_4,
+				   					  R.string.weather_v_low_4),
+		LOW_HURRICANE(Severity.DANGER, R.string.weather_low_3,
+				   					   R.string.weather_v_low_3),
+		LOW_STORM(Severity.ALARM, R.string.weather_low_2,
+				   				  R.string.weather_v_low_2),
+		LOW_DEPRESSION(Severity.ROUTINE, R.string.weather_low_1),
+		NORMAL(Severity.ROUTINE, R.string.weather_low_0),
+		HIGH_MILD(Severity.ROUTINE, R.string.weather_high_1),
+		HIGH_VERY(Severity.WARNING, R.string.weather_high_2,
+				   					R.string.weather_v_high_2),
+		HIGH_EXTREME(Severity.WARNING, R.string.weather_high_3,
+				   					   R.string.weather_v_high_3),
+		HIGH_INSANE(Severity.WARNING, R.string.weather_high_4,
+				   					  R.string.weather_v_high_4);
+		
+		PressState(Severity sev, int msg) {
+			severity = sev;
 			textId = msg;
-			alertSound = null;
+			alertSound = sev.alertSound == null ? null : new Sound(sev.alertSound);
 		}
 
-		PressState(int msg, Sound alert) {
-			iconId = 0;
+		PressState(Severity sev, int msg, int voice) {
+			severity = sev;
 			textId = msg;
-			alertSound = alert;
+			alertSound = new Sound(sev.alertSound, voice);
 		}
 		
+		public Severity getSeverity() {
+			return severity;
+		}
+
 		public int getIcon() {
-			return iconId;
+			return severity.iconId;
 		}
 
 		public int getMsg() {
@@ -168,8 +197,7 @@ public class WeatherService
 			return alertSound;
 		}
 
-		
-		private final int iconId;
+		private final Severity severity;
 		private final int textId;
 		private final Sound alertSound;
 	}
@@ -199,8 +227,8 @@ public class WeatherService
 		}
 		
 
-		public int getChangeIcon() {
-			return changeRate.iconId;
+		public Severity getChangeSeverity() {
+			return changeRate.getSeverity();
 		}
 
 
@@ -217,7 +245,7 @@ public class WeatherService
 
 
 		public int getPressureIcon() {
-			return pressState.iconId;
+			return pressState.getIcon();
 		}
 
 	
