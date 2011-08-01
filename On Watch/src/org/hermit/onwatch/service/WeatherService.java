@@ -48,11 +48,11 @@ public class WeatherService
 	 */
 	public enum Severity {
 		ROUTINE(null, 0),
-		WARNING(SoundService.Alert.WARNING, 0),
-		ALARM(SoundService.Alert.ALARM, 0),
-		DANGER(SoundService.Alert.DANGER, 0),
-		TYPHOON(SoundService.Alert.TYPHOON, 0),
-		SPACE(SoundService.Alert.SPACE, 0);
+		WARNING(SoundService.Alert.WARNING, R.drawable.alert_yellow),
+		ALARM(SoundService.Alert.ALARM, R.drawable.alert_orange),
+		DANGER(SoundService.Alert.DANGER, R.drawable.alert_red),
+		TYPHOON(SoundService.Alert.TYPHOON, R.drawable.alert_nuke),
+		SPACE(SoundService.Alert.SPACE, R.drawable.alert_cyan);
 	
 		Severity(SoundService.Alert sound, int icon) {
 			alertSound = sound;
@@ -484,11 +484,16 @@ public class WeatherService
 	// List of { target pressure, rate }.
 	private static final float[][] SIMU_PROGRAM = {
 		{ 1000.0f, 0f	},
-		{ 999.9f, 0.4f	},
-		{ 999.7f, 0.8f	},
-		{ 999.3f, 1.6f	},
-		{ 970.0f, 0f	},
-		{ 930.0f, 0f	},
+		{ 990f, 0f	},
+		{ 989f, 0f	},
+		{ 998f, 0f	},
+		{ 997f, 0f	},
+		{ 996f, 0f	},
+		{ 995f, 0f	},
+		{ 994f, 0f	},
+		{ 993f, 0f	},
+		{ 992f, 0f	},
+		{ 991f, 0f	},
 		{ 890.0f, 0f	},
 		{ 860.0f, 0f	},
 		{ 830.0f, 0f	},

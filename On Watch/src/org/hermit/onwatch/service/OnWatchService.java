@@ -465,6 +465,7 @@ public class OnWatchService
 
 	// The interval between wakeup alarms, in ms.
 	private static final long ALARM_INTERVAL = 5 * 60 * 1000;
+//	private static final long ALARM_INTERVAL = 30 * 1000;
 
 	// Intent action: wakeup alarm.
 	private static final String ACTION_ALARM = "org.hermit.onwatch.ACTION_ALARM";

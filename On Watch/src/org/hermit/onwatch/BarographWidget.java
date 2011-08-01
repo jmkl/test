@@ -89,23 +89,12 @@ public class BarographWidget
 	 */
 	private void init(Context context) {
 		appContext = context;
-		Resources res = context.getResources();
 		
 		setMinimumWidth(MIN_WIDTH);
 
 		charBuf = new char[20];
 		graphPaint = new Paint();
 		graphPaint.setAntiAlias(true);
-		
-		// Get the weather alert icons.
-		weatherIcons = new HashMap<WeatherService.Severity, Bitmap>();
-		for (WeatherService.Severity sev : WeatherService.Severity.values()) {
-			int id = sev.getIcon();
-			if (id != 0) {
-				Bitmap bm = BitmapFactory.decodeResource(res, id);
-				weatherIcons.put(sev, bm);
-			}
-		}
 		
 		dayGrad = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
 									   DAY_GRAD_COLS);
@@ -169,6 +158,22 @@ public class BarographWidget
     	
 	    // Calculate the grid spacing.
 	    calculateGrid();
+		
+		// Get the weather alert icons for the heading size.
+		Resources res = appContext.getResources();
+		weatherIcons = new HashMap<WeatherService.Severity, Bitmap>();
+		for (WeatherService.Severity sev : WeatherService.Severity.values()) {
+			int id = sev.getIcon();
+			if (id != 0) {
+				Bitmap bm = BitmapFactory.decodeResource(res, id);
+				float a = bm.getWidth() / bm.getHeight();
+				int h = headingSize;
+				int w = (int) (h * a);
+				Bitmap sm = Bitmap.createScaledBitmap(bm, w, h, true);
+				weatherIcons.put(sev, sm);
+				bm.recycle();
+			}
+		}
 
     	backingBitmap = Bitmap.createBitmap(width, height,
     	                                    Bitmap.Config.RGB_565);  // FIXME: config
@@ -484,11 +489,11 @@ public class BarographWidget
         	
     		if (weatherState != null) {
             	float x = labX + labW;
-            	final float y = headingSize;
+            	final float y = 0;
             	
 				Bitmap ci = weatherIcons.get(weatherState.getChangeSeverity());
             	int cm = weatherState.getChangeMsg();
-    			x = displayMsg(canvas, graphPaint, ci, cm, x, y);
+    			x = displayMsg(canvas, graphPaint, ci, cm, x, y) - 20f;
     			
     			PressState ps = weatherState.getPressureState();
     			if (ps != PressState.NO_DATA && ps != PressState.NORMAL) {
@@ -519,12 +524,13 @@ public class BarographWidget
 						     Bitmap icon, int msg, float x, float y)
 	{
 		String text = appContext.getString(msg);
-		x -= paint.measureText(text);
 		
 		paint.setStyle(Paint.Style.FILL);
 		paint.setTextSize(labelSize);
 		paint.setColor(MAIN_LABEL_COL);
-    	canvas.drawText(text, x, y, paint);
+		
+		x -= paint.measureText(text);
+    	canvas.drawText(text, x, y + headingSize, paint);
     	
     	if (icon != null) {
     		x -= icon.getWidth();
