@@ -114,30 +114,14 @@ class HeaderBarElement
 		final int t = bounds.top;
 		final int b = bounds.bottom;
 
-		// Create the path which defines the swoop shape.
-		outerCurveLeft = new RectF(l, t,
-								   l + swoopWidth * 2,
-								   t + swoopHeight * 2);
-		outerCurveRight = new RectF(r - swoopWidth * 2, t,
-									r, t + swoopHeight * 2);
-		innerCurveLeft = new RectF(l + sideBarWidth, b - gutterHeight,
-								   l + sideBarWidth + swoopWidth * 2, b);
-		innerCurveRight = new RectF(r - sideBarWidth - swoopWidth * 2,
-								    b - gutterHeight,
-								    r - sideBarWidth, b);
-
 		barPath = new Path();
 		barPath.moveTo(l, b);
-		barPath.lineTo(l, t + swoopHeight);
-		barPath.arcTo(outerCurveLeft, 180, 90);
-		barPath.lineTo(r - swoopWidth, t);
-		barPath.arcTo(outerCurveRight, 270, 90);
+		barPath.lineTo(l, t);
+		barPath.lineTo(r, t);
 		barPath.lineTo(r, b);
 		barPath.lineTo(r - sideBarWidth, b);
-		barPath.lineTo(r - sideBarWidth, b - gutterHeight / 2);
-		barPath.arcTo(innerCurveRight, 0, -90);
-		barPath.lineTo(l + sideBarWidth + swoopWidth, b - gutterHeight);
-		barPath.arcTo(innerCurveLeft, 270, -90);
+		barPath.lineTo(r - sideBarWidth, b - gutterHeight);
+		barPath.lineTo(l + sideBarWidth, b - gutterHeight);
 		barPath.lineTo(l + sideBarWidth, b);
 		barPath.close();
 	}

@@ -87,19 +87,13 @@ class HeaderBar
      */
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-		int subHeight = h - titleHeight;
-		int innerWidth = navWidth / 2;
-		outerCurve = new RectF(0, 0, navWidth * 2, h * 2);
-		innerCurve = new RectF(navWidth, titleHeight,
-							   navWidth + innerWidth * 2, h + subHeight);
-
 		barPath = new Path();
 		barPath.moveTo(0, h);
-		barPath.arcTo(outerCurve, 180, 90);
-		barPath.lineTo(w, 0);
+		barPath.lineTo(navWidth, h);
+		barPath.lineTo(navWidth, titleHeight);
 		barPath.lineTo(w, titleHeight);
-		barPath.lineTo(navWidth + innerWidth, titleHeight);
-		barPath.arcTo(innerCurve, 270, -90);
+		barPath.lineTo(w, 0);
+		barPath.lineTo(0, 0);
 		barPath.close();
 		
 		// Position the text, and set up the painter for it.

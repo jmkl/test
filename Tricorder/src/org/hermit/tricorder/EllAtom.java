@@ -72,26 +72,14 @@ class EllAtom
 		final int r = bounds.right;
 		final int t = bounds.top;
 		final int b = bounds.bottom;
-		final int w = r - l;
-		final int h = b - t;
-
-		final int cw = w - STRAIGHTS;
-		final int ch = h - STRAIGHTS;
-		
-		// Create the path which defines the swoop shape.
-		outerCurve = new RectF(l, b - ch * 2, l + cw * 2, b);
-		innerCurve = new RectF(l + barThickness, b - ch * 2 + barThickness,
-							   l + cw * 2 - barThickness, b - barThickness);
 
 		barPath = new Path();
-		barPath.moveTo(l, t);
-		barPath.lineTo(l, t + STRAIGHTS);
-		barPath.arcTo(outerCurve, 180, -90);
-		barPath.lineTo(r, b);
-		barPath.lineTo(r, b - barThickness);
-		barPath.lineTo(r - STRAIGHTS, b - barThickness);
-		barPath.arcTo(innerCurve, 90, 90);
-		barPath.lineTo(l + barThickness, t);
+		barPath.moveTo(r, b);
+		barPath.lineTo(l, b);
+		barPath.lineTo(l, t);
+		barPath.lineTo(l+barThickness, t);
+		barPath.lineTo(l+barThickness, b-barThickness);
+		barPath.lineTo(r, b-barThickness);
 		barPath.close();
 	}
 
